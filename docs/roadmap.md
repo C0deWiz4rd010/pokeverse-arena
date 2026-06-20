@@ -20,7 +20,7 @@ updated as work progresses. Detailed per-feature documentation lives in
 | 11 | Random battle + Arena | ✅ done |
 | 12 | Tournaments (brackets) | ✅ done |
 | 13 | World Explorer (regions) | ✅ done |
-| 14 | Berry Garden + Contest Mode | ⏳ |
+| 14 | Berry Garden + Contest Mode | ✅ done |
 | 15 | Landing 3D hero (Three.js, lazy) | ✅ done |
 | 16 | PWA, polish, a11y, mobile-first | ⏳ |
 | 17 | GitHub Pages deployment | ⏳ |

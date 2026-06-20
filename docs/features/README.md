@@ -23,6 +23,7 @@ For the high-level plan and milestone status, see
 | 9 | Tournaments (10 modes, visual bracket, 3-v-3 matches) | [tournaments.md](tournaments.md) | ✅ |
 | 10 | Arena (type-themed gym leaders, badges) | [arena.md](arena.md) | ✅ |
 | 11 | World Explorer (regions, native dex, home finder) | [world.md](world.md) | ✅ |
+| 12 | Contest Hall (berry Poffins, contest scoring) | [contest.md](contest.md) | ✅ |
 
 ## Cross-cutting docs
 

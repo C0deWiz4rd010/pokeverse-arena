@@ -35,6 +35,8 @@ export class HomeComponent implements OnDestroy {
     { path: '/battle', icon: '⚔️', title: 'Battle Engine', text: 'Deterministic, seeded turn-based battles with a PixiJS arena.' },
     { path: '/arena', icon: '🏟️', title: 'Arena', text: 'Take on type-themed gym leaders and earn badges.' },
     { path: '/tournaments', icon: '🏆', title: 'Tournaments', text: 'Single-elimination brackets — auto-sim or play it out.' },
+    { path: '/world', icon: '🗺️', title: 'World Explorer', text: 'Roam every region and find where each Pokémon lives.' },
+    { path: '/contest', icon: '🎀', title: 'Contest Hall', text: 'Blend berries into Poffins and dazzle the contest judges.' },
   ];
 
   constructor() {

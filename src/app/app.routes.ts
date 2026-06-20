@@ -50,5 +50,10 @@ export const routes: Routes = [
     title: 'World Explorer · PokéVerse Arena',
     loadComponent: () => import('./features/world/world').then((m) => m.WorldComponent),
   },
+  {
+    path: 'contest',
+    title: 'Contest Hall · PokéVerse Arena',
+    loadComponent: () => import('./features/contest/contest').then((m) => m.ContestComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

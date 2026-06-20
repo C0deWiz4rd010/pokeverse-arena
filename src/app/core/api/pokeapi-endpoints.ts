@@ -28,6 +28,7 @@ export const endpoints = {
   generationList: () => `${POKEAPI_BASE}/generation?limit=20`,
   item: (id: ResourceId) => `${POKEAPI_BASE}/item/${id}`,
   berry: (id: ResourceId) => `${POKEAPI_BASE}/berry/${id}`,
+  berryFlavor: (id: ResourceId) => `${POKEAPI_BASE}/berry-flavor/${id}`,
   region: (id: ResourceId) => `${POKEAPI_BASE}/region/${id}`,
   regionList: () => `${POKEAPI_BASE}/region?limit=50`,
   location: (id: ResourceId) => `${POKEAPI_BASE}/location/${id}`,

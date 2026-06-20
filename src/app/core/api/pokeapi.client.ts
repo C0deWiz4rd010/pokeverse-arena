@@ -5,6 +5,7 @@ import { CacheService } from '../cache/cache.service';
 import { endpoints, type ResourceId } from './pokeapi-endpoints';
 import type {
   AbilityDto,
+  BerryFlavorDto,
   EvolutionChainDto,
   GenerationDto,
   MoveDto,
@@ -93,6 +94,10 @@ export class PokeApiClient {
 
   generationList(): Promise<NamedApiResourceList> {
     return this.get(endpoints.generationList());
+  }
+
+  berryFlavor(id: ResourceId): Promise<BerryFlavorDto> {
+    return this.get(endpoints.berryFlavor(id));
   }
 
   byUrl<T>(url: string): Promise<T> {

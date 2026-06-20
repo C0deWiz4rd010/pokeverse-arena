@@ -233,3 +233,14 @@ export interface GenerationDto {
   main_region: NamedApiResource;
   pokemon_species: NamedApiResource[];
 }
+
+/* ---------------------------------------------------------- Berry flavour */
+
+export interface BerryFlavorDto {
+  id: number;
+  name: string;
+  /** Berries that carry this flavour, with their potency. */
+  berries: { potency: number; berry: NamedApiResource }[];
+  /** The contest type this flavour feeds (e.g. spicy → cool). */
+  contest_type: NamedApiResource;
+}

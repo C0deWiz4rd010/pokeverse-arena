@@ -25,6 +25,7 @@ export class App {
     { path: '/arena', label: 'Arena', icon: '🏟️' },
     { path: '/tournaments', label: 'Tournaments', icon: '🏆' },
     { path: '/world', label: 'World', icon: '🗺️' },
+    { path: '/contest', label: 'Contest', icon: '🎀' },
   ];
 
   protected toggleMenu(): void {

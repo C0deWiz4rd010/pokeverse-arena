@@ -1,0 +1,171 @@
+<pv-page-header
+  title="Contest Hall"
+  subtitle="Blend berries into Poffins, polish a Pokémon's condition and dazzle the judges."
+  icon="🎀"
+/>
+
+@switch (svc.status()) {
+  @case ('loading') {
+    <div class="state">
+      <pv-spinner label="Stocking the berry pantry…" />
+    </div>
+  }
+
+  @case ('error') {
+    <div class="state">
+      <p class="err">⚠️ {{ svc.error() }}</p>
+      <button type="button" class="btn" (click)="svc.retry()">Try again</button>
+    </div>
+  }
+
+  @case ('ready') {
+    <div class="stage-grid">
+      <!-- Performer + category -->
+      <section class="panel performer" [style.--accent]="info(svc.category()).accent">
+        <header class="panel-head">
+          <h2>On stage</h2>
+        </header>
+
+        @if (svc.performer(); as p) {
+          <div class="performer-card">
+            <img [src]="p.sprite" [alt]="p.name" width="120" height="120" />
+            <div class="who">
+              <strong>{{ p.name }}</strong>
+              <span class="dex">#{{ p.dex }}</span>
+            </div>
+          </div>
+        }
+
+        <form class="swap" (submit)="$event.preventDefault(); search()">
+          <input
+            type="search"
+            name="performer"
+            autocomplete="off"
+            placeholder="Swap performer (name or #)…"
+            [value]="query()"
+            (input)="query.set($any($event.target).value)"
+          />
+          <button type="submit" class="btn ghost">Swap</button>
+        </form>
+        @if (svc.searchError(); as err) {
+          <p class="msg err">⚠️ {{ err }}</p>
+        }
+
+        <fieldset class="categories">
+          <legend>Contest category</legend>
+          <div class="cat-row">
+            @for (c of categories; track c.key) {
+              <button
+                type="button"
+                class="cat"
+                [class.active]="svc.category() === c.key"
+                [style.--accent]="c.accent"
+                (click)="svc.setCategory(c.key)"
+              >
+                <span class="cat-icon" aria-hidden="true">{{ c.icon }}</span>
+                <span class="cat-label">{{ c.label }}</span>
+              </button>
+            }
+          </div>
+        </fieldset>
+
+        <!-- Condition bars -->
+        <div class="conditions">
+          @for (c of categories; track c.key) {
+            <div class="cond-row" [class.lead]="svc.category() === c.key">
+              <span class="cond-name">{{ c.icon }} {{ c.label }}</span>
+              <div class="cond-bar">
+                <span
+                  [style.--accent]="c.accent"
+                  [style.width.%]="(svc.conditions()[c.key] / 80) * 100"
+                ></span>
+              </div>
+              <span class="cond-num">{{ svc.conditions()[c.key] }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="enter-row">
+          <button
+            type="button"
+            class="btn enter"
+            [disabled]="!svc.canEnter()"
+            (click)="svc.enter()"
+          >
+            {{ svc.result() ? 'Perform again ↻' : 'Enter the ' + info(svc.category()).label + ' Contest ›' }}
+          </button>
+        </div>
+      </section>
+
+      <!-- Berry pantry / Poffin mix -->
+      <section class="panel pantry">
+        <header class="panel-head">
+          <h2>Poffin mix</h2>
+          <span class="mix-count">{{ svc.mix().length }} / 4</span>
+        </header>
+
+        <div class="mix-tray">
+          @for (b of svc.mix(); track b.name) {
+            <button type="button" class="chip" (click)="svc.toggleBerry(b)" title="Remove">
+              {{ b.name }} ✕
+            </button>
+          } @empty {
+            <p class="muted">Pick up to four berries below. Their flavours feed the matching condition.</p>
+          }
+          @if (svc.mix().length) {
+            <button type="button" class="chip clear" (click)="svc.clearMix()">Clear mix</button>
+          }
+        </div>
+
+        <p class="hint">
+          Highlighting <strong>{{ flavorForCategory(svc.category()) }}</strong> berries for
+          <strong>{{ info(svc.category()).label }}</strong>.
+        </p>
+
+        <ul class="berries">
+          @for (b of svc.pantry(); track b.name) {
+            <li>
+              <button
+                type="button"
+                class="berry"
+                [class.picked]="svc.inMix(b)"
+                [class.hot]="berryHighlight(b) > 0"
+                [disabled]="!svc.inMix(b) && svc.mixFull()"
+                (click)="svc.toggleBerry(b)"
+              >
+                <span class="berry-name">{{ b.name }}</span>
+                @if (berryHighlight(b) > 0) {
+                  <span class="berry-pot" [style.--accent]="info(svc.category()).accent">
+                    +{{ berryHighlight(b) }}
+                  </span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <!-- Result -->
+    @if (svc.result(); as res) {
+      <section class="result" [class.win]="res.won">
+        <h2>
+          @if (res.won) {
+            🏆 {{ info(res.category).label }} Contest — you won!
+          } @else {
+            Ribbon out of reach — you placed #{{ res.playerRank }}.
+          }
+        </h2>
+        <ol class="ranking">
+          @for (e of res.ranking; track e.name; let i = $index) {
+            <li [class.me]="e.isPlayer">
+              <span class="place">{{ i + 1 }}</span>
+              <span class="entrant">{{ e.name }}{{ e.isPlayer ? ' (you)' : '' }}</span>
+              <span class="appeal">{{ e.score }}</span>
+            </li>
+          }
+        </ol>
+      </section>
+    }
+  }
+}
