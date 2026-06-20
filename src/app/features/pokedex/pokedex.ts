@@ -9,13 +9,14 @@ import {
 import { PokedexService } from './pokedex.service';
 import { PokemonCardComponent } from './pokemon-card';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
+import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import { titleCase } from '../../core/ui/format';
 
 @Component({
   selector: 'pv-pokedex',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PokemonCardComponent, SpinnerComponent],
+  imports: [PokemonCardComponent, SpinnerComponent, PageHeaderComponent],
   templateUrl: './pokedex.html',
   styleUrl: './pokedex.scss',
 })

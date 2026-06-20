@@ -1,8 +1,9 @@
 <section class="container pokedex">
-  <header class="head">
-    <h1 class="gradient-text">Pokédex</h1>
-    <p class="sub">{{ store.total() }} Pokémon · search, filter and dive in.</p>
-  </header>
+  <pv-page-header
+    icon="📕"
+    title="Pokédex"
+    [subtitle]="store.total() + ' Pokémon · search, filter and dive in.'"
+  />
 
   <div class="controls glass">
     <label class="search">

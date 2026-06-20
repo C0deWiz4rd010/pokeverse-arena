@@ -3,6 +3,7 @@ import { TeamBuilderService, MAX_TEAM, MAX_MOVES, type TeamMember } from './team
 import { PokedexService } from '../pokedex/pokedex.service';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
+import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { titleCase, typeColorVar } from '../../core/ui/format';
 import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import { NATURES, natureByName, natureSummary } from '../../core/utils/natures';
@@ -20,7 +21,7 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
 @Component({
   selector: 'pv-team-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, SpinnerComponent],
+  imports: [TypeBadgeComponent, SpinnerComponent, PageHeaderComponent],
   templateUrl: './team-builder.html',
   styleUrl: './team-builder.scss',
 })
