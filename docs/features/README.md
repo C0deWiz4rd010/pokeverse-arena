@@ -21,6 +21,7 @@ For the high-level plan and milestone status, see
 | 7 | Team Builder (build, tune, analyze, persist) | [team-builder.md](team-builder.md) | ✅ |
 | 8 | Battle engine + UI (seeded combat, animated arena, weather) | [battle.md](battle.md) | ✅ |
 | 9 | Tournaments (10 modes, visual bracket, 3-v-3 matches) | [tournaments.md](tournaments.md) | ✅ |
+| 10 | Arena (type-themed gym leaders, badges) | [arena.md](arena.md) | ✅ |
 
 ## Cross-cutting docs
 

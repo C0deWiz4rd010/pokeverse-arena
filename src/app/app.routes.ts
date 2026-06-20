@@ -38,8 +38,7 @@ export const routes: Routes = [
   {
     path: 'arena',
     title: 'Arena · PokéVerse Arena',
-    component: ComingSoonComponent,
-    data: { title: 'Arena', icon: '🏟️', description: 'Challenge type-themed gym leaders and earn badges.' },
+    loadComponent: () => import('./features/arena/arena').then((m) => m.ArenaComponent),
   },
   {
     path: 'tournaments',

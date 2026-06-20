@@ -17,7 +17,7 @@ updated as work progresses. Detailed per-feature documentation lives in
 | 8 | Battle engine (pure) + unit tests | ✅ done |
 | 9 | Battle UI (Angular) | ✅ done |
 | 10 | Battle scene (PixiJS) + effects | ⏳ |
-| 11 | Random battle + Arena | ⏳ |
+| 11 | Random battle + Arena | ✅ done |
 | 12 | Tournaments (brackets) | ✅ done |
 | 13 | World Explorer (encounters) | ⏳ |
 | 14 | Berry Garden + Contest Mode | ⏳ |
