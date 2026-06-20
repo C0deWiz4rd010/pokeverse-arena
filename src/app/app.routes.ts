@@ -14,6 +14,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/pokedex/pokedex').then((m) => m.PokedexComponent),
   },
   {
+    path: 'pokemon/:id',
+    title: 'Pokémon · PokéVerse Arena',
+    loadComponent: () =>
+      import('./features/pokemon-detail/pokemon-detail').then((m) => m.PokemonDetailComponent),
+  },
+  {
     path: 'type-lab',
     title: 'Type Lab · PokéVerse Arena',
     component: ComingSoonComponent,

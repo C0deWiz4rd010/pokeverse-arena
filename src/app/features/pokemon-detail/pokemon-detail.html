@@ -1,0 +1,134 @@
+@let s = store.state();
+
+<section class="container detail">
+  <button class="btn back" type="button" (click)="goBack()">← Back</button>
+
+  @if (store.loading()) {
+    <pv-spinner label="Loading Pokémon…" />
+  } @else if (store.error()) {
+    <div class="state glass"><p>⚠️ {{ store.error() }}</p></div>
+  } @else if (s) {
+    <div class="layout">
+      <!-- Hero -->
+      <div class="hero glass" [style.--glow]="'var(--type-' + s.pokemon.types[0] + ')'">
+        <div class="hero-top">
+          <span class="num">{{ padId(s.pokemon.id) }}</span>
+          <div class="hero-actions">
+            @if (s.pokemon.cry) {
+              <button class="icon-btn" type="button" (click)="playCry()" aria-label="Play cry">🔊</button>
+            }
+            <button
+              class="icon-btn"
+              type="button"
+              [class.on]="shiny()"
+              (click)="toggleShiny()"
+              [attr.aria-pressed]="shiny()"
+              aria-label="Toggle shiny"
+            >✨</button>
+          </div>
+        </div>
+
+        <div class="art-wrap">
+          <img [src]="artwork()" [alt]="titleCase(s.pokemon.name)" />
+        </div>
+
+        <h1>{{ titleCase(s.pokemon.name) }}</h1>
+        <p class="genus">{{ s.species.genus }}</p>
+
+        <div class="types">
+          @for (t of s.pokemon.types; track t) {
+            <pv-type-badge [type]="t" />
+          }
+        </div>
+
+        <div class="meta">
+          <div><span>Height</span><b>{{ s.pokemon.heightM }} m</b><small>{{ metersToFeet(s.pokemon.heightM) }}</small></div>
+          <div><span>Weight</span><b>{{ s.pokemon.weightKg }} kg</b><small>{{ kgToLbs(s.pokemon.weightKg) }}</small></div>
+          <div><span>BST</span><b>{{ s.pokemon.baseStatTotal }}</b><small>base total</small></div>
+        </div>
+
+        @if (s.species.flavorText) {
+          <p class="flavor">“{{ s.species.flavorText }}”</p>
+        }
+      </div>
+
+      <!-- Details -->
+      <div class="info">
+        <div class="card glass">
+          <h2>Base stats</h2>
+          <div class="stats-grid">
+            <div class="bars">
+              @for (st of statLabels; track st.key) {
+                <pv-stat-bar [label]="st.name" [value]="s.pokemon.stats[st.key]" />
+              }
+            </div>
+            <pv-stat-radar [stats]="s.pokemon.stats" />
+          </div>
+        </div>
+
+        <div class="card glass">
+          <h2>Abilities</h2>
+          <div class="abilities">
+            @for (a of s.pokemon.abilities; track a.name) {
+              <span class="ability" [class.hidden]="a.isHidden">
+                {{ titleCase(a.name) }}
+                @if (a.isHidden) { <em>Hidden</em> }
+              </span>
+            }
+          </div>
+
+          <h2 class="mt">Breeding &amp; profile</h2>
+          <ul class="profile">
+            <li><span>Generation</span><b>{{ titleCase(s.species.generation) }}</b></li>
+            <li><span>Egg groups</span><b>{{ s.species.eggGroups.length ? '' : '—' }}
+              @for (g of s.species.eggGroups; track g) { {{ titleCase(g) }} }</b></li>
+            <li><span>Capture rate</span><b>{{ s.species.captureRate }}</b></li>
+            <li><span>Base happiness</span><b>{{ s.species.baseHappiness ?? '—' }}</b></li>
+            @if (s.species.habitat) { <li><span>Habitat</span><b>{{ titleCase(s.species.habitat) }}</b></li> }
+            <li><span>Color</span><b>{{ titleCase(s.species.color) }}</b></li>
+            @if (s.species.isLegendary) { <li class="flag">🌟 Legendary</li> }
+            @if (s.species.isMythical) { <li class="flag">✨ Mythical</li> }
+            @if (s.species.isBaby) { <li class="flag">🍼 Baby</li> }
+          </ul>
+        </div>
+
+        <div class="card glass">
+          <h2>Evolution</h2>
+          @if (s.evolution.children.length) {
+            <div class="evo-scroll">
+              <pv-evolution-tree [node]="s.evolution" />
+            </div>
+          } @else {
+            <p class="muted">This Pokémon does not evolve.</p>
+          }
+        </div>
+
+        <div class="card glass">
+          <h2>Moves</h2>
+          <div class="tabs">
+            @for (tab of moveTabs; track tab.id) {
+              <button
+                type="button"
+                class="tab"
+                [class.active]="moveTab() === tab.id"
+                (click)="moveTab.set(tab.id)"
+              >{{ tab.label }}</button>
+            }
+          </div>
+          @if (visibleMoves().length) {
+            <div class="moves">
+              @for (m of visibleMoves(); track m.name) {
+                <div class="move">
+                  @if (moveTab() === 'level-up') { <span class="lvl">Lv {{ m.levelLearnedAt }}</span> }
+                  <span class="mname">{{ titleCase(m.name) }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="muted">No moves in this category.</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>
