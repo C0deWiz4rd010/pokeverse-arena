@@ -19,7 +19,7 @@ updated as work progresses. Detailed per-feature documentation lives in
 | 10 | Battle scene (PixiJS) + effects | ✅ done |
 | 11 | Random battle + Arena | ✅ done |
 | 12 | Tournaments (brackets) | ✅ done |
-| 13 | World Explorer (encounters) | ⏳ |
+| 13 | World Explorer (regions) | ✅ done |
 | 14 | Berry Garden + Contest Mode | ⏳ |
 | 15 | Landing 3D hero (Three.js, lazy) | ✅ done |
 | 16 | PWA, polish, a11y, mobile-first | ⏳ |

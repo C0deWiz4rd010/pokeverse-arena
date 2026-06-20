@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ComingSoonComponent } from './core/ui/coming-soon/coming-soon';
 
 export const routes: Routes = [
   {
@@ -49,8 +48,7 @@ export const routes: Routes = [
   {
     path: 'world',
     title: 'World Explorer · PokéVerse Arena',
-    component: ComingSoonComponent,
-    data: { title: 'World Explorer', icon: '🗺️', description: 'Find where each Pokémon lives across every region.' },
+    loadComponent: () => import('./features/world/world').then((m) => m.WorldComponent),
   },
   { path: '**', redirectTo: '' },
 ];

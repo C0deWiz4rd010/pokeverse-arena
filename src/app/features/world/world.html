@@ -1,0 +1,113 @@
+<pv-page-header
+  title="World Explorer"
+  subtitle="Roam every region and discover where each Pokémon calls home."
+  icon="🗺️"
+/>
+
+<form class="finder" (submit)="$event.preventDefault(); search()">
+  <label class="sr-only" for="world-search">Find a Pokémon's home region</label>
+  <div class="finder-row">
+    <span class="finder-icon" aria-hidden="true">🔎</span>
+    <input
+      id="world-search"
+      type="search"
+      name="q"
+      autocomplete="off"
+      placeholder="Where does Pikachu live? Try a name or dex number…"
+      [value]="query()"
+      (input)="query.set($any($event.target).value)"
+    />
+    <button type="submit" class="btn">Locate</button>
+    @if (svc.sighting() || svc.searchError() || query()) {
+      <button type="button" class="btn ghost" (click)="reset()">Clear</button>
+    }
+  </div>
+
+  @if (svc.searchError(); as err) {
+    <p class="finder-msg err">⚠️ {{ err }}</p>
+  }
+  @if (svc.sighting(); as found) {
+    <p class="finder-msg hit">
+      <strong>{{ found.name }}</strong> (#{{ found.dex }}) first appears in
+      <strong [style.color]="found.region.accent">{{ found.region.name }}</strong>
+      — {{ found.region.games }}.
+    </p>
+  }
+</form>
+
+@switch (svc.status()) {
+  @case ('loading') {
+    <div class="state">
+      <pv-spinner [label]="'Charting ' + (svc.activeRegion()?.name ?? 'the region') + '…'" />
+    </div>
+  }
+
+  @case ('error') {
+    <div class="state">
+      <p class="err">⚠️ {{ svc.error() }}</p>
+      <button type="button" class="btn" (click)="svc.back()">Back to the map</button>
+    </div>
+  }
+
+  @case ('ready') {
+    @if (svc.activeRegion(); as region) {
+      <section class="region-view">
+        <header class="region-banner" [style.--accent]="region.accent">
+          <button type="button" class="back" (click)="svc.back()">‹ All regions</button>
+          <div class="banner-main">
+            <span class="emblem" aria-hidden="true">{{ region.icon }}</span>
+            <div class="banner-text">
+              <h2>{{ region.name }}</h2>
+              <p class="tagline">{{ region.tagline }}</p>
+              <p class="meta">
+                <span class="chip">Gen {{ region.generation }}</span>
+                <span class="chip">{{ region.games }}</span>
+                <span class="chip">{{ svc.count() }} native Pokémon</span>
+              </p>
+            </div>
+          </div>
+          <p class="blurb">{{ region.blurb }}</p>
+        </header>
+
+        <ul class="dex-grid">
+          @for (m of svc.members(); track m.dex) {
+            <li
+              class="mon"
+              [class.spotlight]="svc.sighting()?.dex === m.dex"
+              [style.--accent]="region.accent"
+            >
+              <a [routerLink]="['/pokemon', m.dex]" [title]="m.name">
+                <img [src]="m.sprite" [alt]="m.name" loading="lazy" width="72" height="72" />
+                <span class="dex">#{{ m.dex }}</span>
+                <span class="name">{{ m.name }}</span>
+              </a>
+            </li>
+          } @empty {
+            <li class="empty">No Pokémon found for this region.</li>
+          }
+        </ul>
+      </section>
+    }
+  }
+
+  @default {
+    <ul class="region-grid">
+      @for (r of svc.regions; track r.id) {
+        <li class="region-card" [style.--accent]="r.accent">
+          <button type="button" (click)="select(r)">
+            <span class="emblem" aria-hidden="true">{{ r.icon }}</span>
+            <span class="head">
+              <strong class="name">{{ r.name }}</strong>
+              <span class="gen">Gen {{ r.generation }}</span>
+            </span>
+            <span class="tagline">{{ r.tagline }}</span>
+            <span class="foot">
+              <span class="landmark">📍 {{ r.landmark }}</span>
+              <span class="num">{{ dexCount(r) }} Pokémon</span>
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+}
