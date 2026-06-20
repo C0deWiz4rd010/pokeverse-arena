@@ -25,9 +25,18 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
   effectiveness, crits, accuracy, status — pure & unit-tested.
 - **Battle Arena (PixiJS)** — animated sprites, HP bars, damage numbers, attack
   particles, screen shake.
-- **Arena · Tournaments · World Explorer · Berry Garden · Contests** — a growing
-  set of game modes powered by PokéAPI data.
-- **Offline-first** — every API response cached in IndexedDB; PWA-ready.
+- **Arena** — challenge eighteen type-themed gym leaders, earn badges and become
+  Champion (progress saved locally).
+- **Tournaments** — single-elimination brackets across ten modes; auto-sim or play
+  each 3-v-3 match yourself.
+- **World Explorer** — roam the nine regions, browse each one's native Pokédex and
+  find where any Pokémon first appeared.
+- **Contest Hall** — blend berries into Poffins to raise contest conditions, then
+  dazzle the judges against seeded rivals.
+- **Installable PWA** — web manifest, app icon and a service worker that caches the
+  app shell, PokéAPI data and sprites for offline play.
+- **Offline-first** — every API response cached in IndexedDB; accessible skip link
+  and `prefers-reduced-motion` respected throughout.
 
 ## 🧱 Tech stack
 

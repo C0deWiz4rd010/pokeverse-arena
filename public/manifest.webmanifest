@@ -1,0 +1,20 @@
+{
+  "name": "PokéVerse Arena",
+  "short_name": "PokéVerse",
+  "description": "A modular Pokémon platform & browser game built on the PokéAPI — Pokédex, Type Lab, Team Builder, seeded battles, tournaments, an arena, a world explorer and contests.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0a1f",
+  "theme_color": "#0b0a1f",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

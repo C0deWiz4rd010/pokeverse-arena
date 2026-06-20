@@ -6,6 +6,32 @@
   min-height: 100vh;
 }
 
+/* Accessibility: keyboard skip link, visible only when focused */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 50%;
+  transform: translate(-50%, -150%);
+  z-index: 1000;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #0b0a1f;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.18s ease;
+
+  &:focus-visible {
+    transform: translate(-50%, 0);
+    outline: 2px solid var(--accent-2);
+    outline-offset: 2px;
+  }
+}
+
+#main-content:focus {
+  outline: none;
+}
+
 /* Animated aurora background blobs */
 .aurora {
   position: fixed;

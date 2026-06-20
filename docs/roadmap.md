@@ -22,7 +22,7 @@ updated as work progresses. Detailed per-feature documentation lives in
 | 13 | World Explorer (regions) | ✅ done |
 | 14 | Berry Garden + Contest Mode | ✅ done |
 | 15 | Landing 3D hero (Three.js, lazy) | ✅ done |
-| 16 | PWA, polish, a11y, mobile-first | ⏳ |
+| 16 | PWA, polish, a11y, mobile-first | ✅ done |
 | 17 | GitHub Pages deployment | ⏳ |
 
 ## Git workflow

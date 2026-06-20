@@ -27,6 +27,7 @@ For the high-level plan and milestone status, see
 
 ## Cross-cutting docs
 
+- [PWA, accessibility & mobile](../pwa.md) — installable PWA, service worker, a11y.
 - [Mobile-first guidelines](../mobile-first.md) — breakpoints, rules, checklist.
 - [Technical decisions](../tech-decisions.md) — why PixiJS, Three.js, idb, GSAP.
 - [Architecture](../architecture.md) — folder structure & principles.

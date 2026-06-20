@@ -1,5 +1,7 @@
 <div class="aurora" aria-hidden="true"></div>
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <header class="topbar glass">
   <a class="brand" routerLink="/" (click)="closeMenu()">
     <span class="brand-ball" aria-hidden="true"></span>
@@ -31,7 +33,7 @@
   </nav>
 </header>
 
-<main class="content">
+<main class="content" id="main-content" tabindex="-1">
   <router-outlet />
 </main>
 
