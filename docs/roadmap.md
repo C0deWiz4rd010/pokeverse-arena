@@ -6,13 +6,13 @@ updated as work progresses.
 | Phase | Milestone | Status |
 | ----- | --------- | ------ |
 | 0 | Project scaffold (Angular 22, libs, docs) | ✅ done |
-| 1 | Core foundation: API client, IndexedDB cache, models, utils | ⏳ |
-| 2 | App shell: theme, layout, routing, navigation | ⏳ |
-| 3 | Pokédex MVP: list + infinite scroll + search | ⏳ |
-| 4 | Pokémon detail: stats, types, abilities, moves, evolution | ⏳ |
-| 5 | Pokédex filters & compare | ⏳ |
-| 6 | Type Lab: type chart + team weakness analyzer | ⏳ |
-| 7 | Team Builder: build, validate, export/import | ⏳ |
+| 1 | Core foundation: API client, IndexedDB cache, models, utils | ✅ done |
+| 2 | App shell: theme, layout, routing, navigation | ✅ done |
+| 3 | Pokédex MVP: list + infinite scroll + search | ✅ done |
+| 4 | Pokémon detail: stats, types, abilities, moves, evolution | ✅ done |
+| 5 | Pokédex filters & compare | ✅ done |
+| 6 | Type Lab: type chart + team weakness analyzer | ✅ done |
+| 7 | Team Builder: build, validate, export/import | 🔨 in progress |
 | 8 | Battle engine (pure) + unit tests | ⏳ |
 | 9 | Battle UI (Angular) | ⏳ |
 | 10 | Battle scene (PixiJS) + effects | ⏳ |
@@ -20,8 +20,8 @@ updated as work progresses.
 | 12 | Tournaments (brackets) | ⏳ |
 | 13 | World Explorer (encounters) | ⏳ |
 | 14 | Berry Garden + Contest Mode | ⏳ |
-| 15 | Landing 3D hero (Three.js, lazy) | ⏳ |
-| 16 | PWA, polish, a11y, mobile | ⏳ |
+| 15 | Landing 3D hero (Three.js, lazy) | ✅ done |
+| 16 | PWA, polish, a11y, mobile-first | ⏳ |
 | 17 | GitHub Pages deployment | ⏳ |
 
 ## Git workflow

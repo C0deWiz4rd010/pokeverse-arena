@@ -27,8 +27,8 @@ export const routes: Routes = [
   {
     path: 'team-builder',
     title: 'Team Builder · PokéVerse Arena',
-    component: ComingSoonComponent,
-    data: { title: 'Team Builder', icon: '🛠️', description: 'Build and validate teams of six soon.' },
+    loadComponent: () =>
+      import('./features/team-builder/team-builder').then((m) => m.TeamBuilderComponent),
   },
   {
     path: 'battle',

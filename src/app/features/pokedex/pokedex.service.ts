@@ -49,6 +49,9 @@ export class PokedexService {
   readonly total = computed(() => this.filtered().length);
   readonly hasMore = computed(() => this.visibleCount() < this.total());
 
+  /** All Pokémon names, for autocomplete/datalist consumers (e.g. Team Builder). */
+  readonly names = computed(() => this.index().map((e) => e.name));
+
   async ensureLoaded(): Promise<void> {
     if (this.index().length || this.loading()) return;
     this.loading.set(true);

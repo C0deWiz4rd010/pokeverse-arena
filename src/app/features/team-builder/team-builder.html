@@ -1,0 +1,182 @@
+<section class="team-builder">
+  <header class="head">
+    <h1 class="gradient-text">Team Builder</h1>
+    <p class="sub">Assemble a squad of six, tune levels &amp; natures, and expose your defensive gaps.</p>
+  </header>
+
+  <form class="add glass" (submit)="onSubmit($event)">
+    <input
+      type="text"
+      list="dex-names"
+      placeholder="Add a Pokémon by name or #…"
+      [value]="query()"
+      (input)="setQuery($event)"
+      [disabled]="store.full()"
+      aria-label="Pokémon name or number"
+    />
+    <datalist id="dex-names">
+      @for (n of names(); track n) {
+        <option [value]="n"></option>
+      }
+    </datalist>
+    <button class="btn" type="submit" [disabled]="store.full() || store.adding()">
+      @if (store.adding()) { Adding… } @else { + Add }
+    </button>
+    <span class="count" [class.full]="store.full()">{{ store.team().length }} / {{ MAX_TEAM }}</span>
+  </form>
+
+  @if (store.error()) {
+    <p class="err" role="alert">{{ store.error() }}</p>
+  }
+
+  @if (store.team().length === 0) {
+    <div class="empty glass">
+      <span class="poke" aria-hidden="true">⚪</span>
+      <p>Your team is empty. Search above to add your first Pokémon.</p>
+    </div>
+  } @else {
+    <div class="roster">
+      @for (member of store.team(); track member.uid) {
+        <article class="member glass">
+          <header class="m-head">
+            <img [src]="member.artwork" [alt]="member.name" loading="lazy" />
+            <div class="m-id">
+              <input
+                class="nick"
+                type="text"
+                [value]="member.nickname"
+                (input)="onNickname(member, $event)"
+                [placeholder]="titleCase(member.name)"
+                [attr.aria-label]="'Nickname for ' + member.name"
+              />
+              <span class="species">{{ titleCase(member.name) }} · #{{ member.id }}</span>
+              <div class="m-types">
+                @for (t of member.types; track t) {
+                  <pv-type-badge [type]="t" />
+                }
+              </div>
+            </div>
+            <button class="remove" type="button" (click)="store.remove(member.uid)" aria-label="Remove from team">✕</button>
+          </header>
+
+          <div class="m-config">
+            <label class="field">
+              <span>Level <strong>{{ member.level }}</strong></span>
+              <input type="range" min="1" max="100" [value]="member.level" (input)="onLevel(member, $event)" />
+            </label>
+
+            <label class="field">
+              <span>Nature</span>
+              <select [value]="member.natureName" (change)="onNature(member, $event)">
+                @for (n of natures; track n.name) {
+                  <option [value]="n.name" [selected]="n.name === member.natureName">{{ n.name }} ({{ natureSummary(n) }})</option>
+                }
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Ability</span>
+              <select [value]="member.ability" (change)="onAbility(member, $event)">
+                @for (a of member.abilities; track a) {
+                  <option [value]="a" [selected]="a === member.ability">{{ titleCase(a) }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <div class="m-stats">
+            @for (row of statsFor(member); track row.key) {
+              <div class="stat" [class]="natureMod(member, row.key)">
+                <span class="s-label">{{ row.label }}</span>
+                <span class="s-val">{{ row.value }}</span>
+              </div>
+            }
+          </div>
+
+          <details class="m-moves">
+            <summary>
+              Moves <span class="m-count">{{ member.moves.length }}/{{ MAX_MOVES }}</span>
+              @if (member.moves.length) {
+                <span class="chosen-moves">
+                  @for (mv of member.moves; track mv) { <em>{{ titleCase(mv) }}</em> }
+                </span>
+              }
+            </summary>
+            <div class="move-grid">
+              @for (mv of member.movePool; track mv) {
+                <button
+                  type="button"
+                  class="mv"
+                  [class.on]="member.moves.includes(mv)"
+                  [disabled]="!member.moves.includes(mv) && member.moves.length >= MAX_MOVES"
+                  (click)="store.toggleMove(member.uid, mv)"
+                >
+                  {{ titleCase(mv) }}
+                </button>
+              }
+            </div>
+          </details>
+        </article>
+      }
+    </div>
+
+    <!-- Team-wide defensive analysis -->
+    <section class="analysis glass">
+      <h2>Defensive analysis</h2>
+
+      @if (blindSpots().length) {
+        <div class="blind">
+          <strong>⚠️ Blind spots</strong>
+          <p>No team member resists these attacking types:</p>
+          <div class="chips">
+            @for (t of blindSpots(); track t) {
+              <span class="chip danger" [style.--c]="typeColorVar(t)">{{ titleCase(t) }}</span>
+            }
+          </div>
+        </div>
+      } @else {
+        <p class="all-clear">✅ Every attacking type is resisted by at least one member.</p>
+      }
+
+      @if (weaknessRows().length) {
+        <h3>Shared weaknesses</h3>
+        <ul class="weak-list">
+          @for (row of weaknessRows(); track row.type) {
+            <li [class.shared]="row.count >= 2">
+              <span class="wt" [style.--c]="typeColorVar(row.type)">{{ titleCase(row.type) }}</span>
+              <span class="bar"><span class="fill" [style.width.%]="(row.count / store.team().length) * 100" [style.--c]="typeColorVar(row.type)"></span></span>
+              <span class="num">{{ row.count }}×</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <div class="toolbar">
+      <button class="btn ghost" type="button" (click)="exportTeam()">⬇ Export JSON</button>
+      <button class="btn ghost" type="button" (click)="copyTeam()">{{ copied() ? '✓ Copied' : '⧉ Copy' }}</button>
+      <label class="btn ghost file">
+        ⬆ Import file
+        <input type="file" accept="application/json,.json" (change)="onImportFile($event)" hidden />
+      </label>
+      <button class="btn ghost" type="button" (click)="showImport.set(!showImport())">✎ Paste JSON</button>
+      <button class="btn ghost danger" type="button" (click)="store.clear()">🗑 Clear</button>
+    </div>
+
+    @if (showImport()) {
+      <div class="import glass">
+        <textarea
+          rows="5"
+          placeholder="Paste exported team JSON here…"
+          [value]="importText()"
+          (input)="setImportText($event)"
+        ></textarea>
+        <button class="btn" type="button" (click)="runImport()" [disabled]="store.adding()">Load team</button>
+      </div>
+    }
+  }
+
+  @if (store.adding() && store.team().length === 0) {
+    <pv-spinner />
+  }
+</section>
