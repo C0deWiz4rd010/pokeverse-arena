@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveness, effectivenessLabel, singleEffectiveness } from './type-chart';
+import {
+  analyzeTeamTypes,
+  defensiveProfile,
+  effectiveness,
+  effectivenessLabel,
+  offensiveProfile,
+  singleEffectiveness,
+} from './type-chart';
 
 describe('type-chart', () => {
   it('handles classic super-effective matchups', () => {
@@ -40,3 +47,40 @@ describe('type-chart', () => {
     expect(effectivenessLabel(1)).toBe('Neutral');
   });
 });
+
+describe('defensiveProfile', () => {
+  it('reflects a dual type from the defender perspective', () => {
+    const profile = defensiveProfile(['fire', 'flying']);
+    expect(profile['rock']).toBe(4); // 2x (fire) * 2x (flying)
+    expect(profile['ground']).toBe(0); // flying immunity
+    expect(profile['grass']).toBe(0.25); // 0.5 * 0.5
+    expect(profile['normal']).toBe(1);
+  });
+});
+
+describe('offensiveProfile', () => {
+  it('mirrors the single-type chart row', () => {
+    const profile = offensiveProfile('water');
+    expect(profile['fire']).toBe(2);
+    expect(profile['water']).toBe(0.5);
+    expect(profile['normal']).toBe(1);
+  });
+});
+
+describe('analyzeTeamTypes', () => {
+  it('counts shared weaknesses and uncovered threats', () => {
+    const team = [
+      { name: 'charizard', types: ['fire', 'flying'] as const },
+      { name: 'pidgeot', types: ['normal', 'flying'] as const },
+    ];
+    const analysis = analyzeTeamTypes(team);
+    // Both are weak to electric (flying) and rock.
+    expect(analysis.weaknesses['electric']).toBe(2);
+    expect(analysis.weaknesses['rock']).toBe(2);
+    // Neither resists electric -> uncovered blind spot.
+    expect(analysis.uncovered).toContain('electric');
+    // Both resist grass/bug via flying, so those are covered.
+    expect(analysis.resistances['bug']).toBe(2);
+  });
+});
+

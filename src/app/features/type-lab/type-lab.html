@@ -1,0 +1,203 @@
+<section class="type-lab">
+  <header class="head">
+    <h1 class="gradient-text">Type Lab</h1>
+    <p class="sub">Master every matchup — chart, calculator and defensive coverage, all offline.</p>
+  </header>
+
+  <nav class="tabs glass" role="tablist" aria-label="Type Lab tools">
+    <button
+      role="tab"
+      [class.active]="tab() === 'matrix'"
+      [attr.aria-selected]="tab() === 'matrix'"
+      (click)="setTab('matrix')"
+    >
+      <span aria-hidden="true">🗂️</span> Chart
+    </button>
+    <button
+      role="tab"
+      [class.active]="tab() === 'calculator'"
+      [attr.aria-selected]="tab() === 'calculator'"
+      (click)="setTab('calculator')"
+    >
+      <span aria-hidden="true">🧮</span> Calculator
+    </button>
+    <button
+      role="tab"
+      [class.active]="tab() === 'defender'"
+      [attr.aria-selected]="tab() === 'defender'"
+      (click)="setTab('defender')"
+    >
+      <span aria-hidden="true">🛡️</span> Coverage
+    </button>
+  </nav>
+
+  @switch (tab()) {
+    @case ('matrix') {
+      <div class="panel">
+        <div class="legend">
+          <span class="chip m2">2× Super</span>
+          <span class="chip m1">1× Neutral</span>
+          <span class="chip m05">½× Resist</span>
+          <span class="chip m0">0× Immune</span>
+          <span class="hint">Rows attack · columns defend</span>
+        </div>
+        <div class="matrix-scroll" role="region" aria-label="Type effectiveness chart" tabindex="0">
+          <table class="matrix">
+            <thead>
+              <tr>
+                <th class="corner" scope="col"><span class="atk">ATK</span><span class="def">DEF</span></th>
+                @for (def of types; track def) {
+                  <th
+                    scope="col"
+                    class="col-head"
+                    [class.hi]="hoverDefender() === def"
+                    [style.--c]="typeColorVar(def)"
+                    (mouseenter)="hoverDefender.set(def)"
+                    (mouseleave)="hoverDefender.set(null)"
+                  >
+                    <span>{{ titleCase(def).slice(0, 3) }}</span>
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (atk of types; track atk) {
+                <tr [class.hi]="hoverAttacker() === atk">
+                  <th
+                    scope="row"
+                    class="row-head"
+                    [style.--c]="typeColorVar(atk)"
+                    (mouseenter)="hoverAttacker.set(atk)"
+                    (mouseleave)="hoverAttacker.set(null)"
+                  >
+                    {{ titleCase(atk) }}
+                  </th>
+                  @for (def of types; track def) {
+                    <td
+                      class="cell"
+                      [class]="cellClass(cellMult(atk, def))"
+                      [class.cross]="hoverAttacker() === atk || hoverDefender() === def"
+                      (mouseenter)="hoverAttacker.set(atk); hoverDefender.set(def)"
+                      (mouseleave)="hoverAttacker.set(null); hoverDefender.set(null)"
+                      [attr.title]="titleCase(atk) + ' → ' + titleCase(def) + ': ' + formatMult(cellMult(atk, def))"
+                    >
+                      @if (cellMult(atk, def) !== 1) {
+                        {{ formatMult(cellMult(atk, def)) }}
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @case ('calculator') {
+      <div class="panel calc">
+        <div class="calc-pick">
+          <h2>Attacking move type</h2>
+          <div class="grid-types">
+            @for (t of types; track t) {
+              <button
+                class="t-btn"
+                [class.on]="calcAttacker() === t"
+                [style.--c]="typeColorVar(t)"
+                (click)="setCalcAttacker(t)"
+              >
+                {{ titleCase(t) }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="calc-pick">
+          <h2>Defender type(s) <small>pick up to 2</small></h2>
+          <div class="grid-types">
+            @for (t of types; track t) {
+              <button
+                class="t-btn"
+                [class.on]="calcDefenders().includes(t)"
+                [style.--c]="typeColorVar(t)"
+                (click)="toggleCalcDefender(t)"
+              >
+                {{ titleCase(t) }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="result glass" [class]="cellClass(calcResult().mult)">
+          <div class="combo">
+            <pv-type-badge [type]="calcAttacker()" />
+            <span class="arrow" aria-hidden="true">→</span>
+            @for (d of calcDefenders(); track d) {
+              <pv-type-badge [type]="d" />
+            }
+            @if (!calcDefenders().length) {
+              <span class="muted">select a defender</span>
+            }
+          </div>
+          <div class="big">{{ formatMult(calcResult().mult) }}</div>
+          <div class="verdict">{{ calcResult().label }}</div>
+          @if (calcBreakdown().length === 2) {
+            <div class="breakdown">
+              @for (b of calcBreakdown(); track b.type) {
+                <span>{{ titleCase(b.type) }}: {{ formatMult(b.mult) }}</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @case ('defender') {
+      <div class="panel">
+        <div class="calc-pick">
+          <h2>Build a defender <small>1–2 types</small></h2>
+          <div class="chosen">
+            @for (d of defenderTypes(); track d) {
+              <pv-type-badge [type]="d" />
+            }
+            @if (!defenderTypes().length) {
+              <span class="muted">tap types below</span>
+            }
+          </div>
+          <div class="grid-types">
+            @for (t of types; track t) {
+              <button
+                class="t-btn"
+                [class.on]="defenderTypes().includes(t)"
+                [style.--c]="typeColorVar(t)"
+                (click)="toggleDefenderType(t)"
+              >
+                {{ titleCase(t) }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (defenderBuckets().length) {
+          <div class="buckets">
+            @for (bucket of defenderBuckets(); track bucket.multiplier) {
+              <div class="bucket glass" [class]="cellClass(bucket.multiplier)">
+                <div class="bucket-head">
+                  <span class="b-mult">{{ formatMult(bucket.multiplier) }}</span>
+                  <span class="b-label">{{ bucket.label }}</span>
+                </div>
+                <div class="b-types">
+                  @for (t of bucket.types; track t) {
+                    <pv-type-badge [type]="t" />
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (defenderTypes().length) {
+          <p class="muted center">Perfectly neutral — no weaknesses or resistances.</p>
+        }
+      </div>
+    }
+  }
+</section>

@@ -60,3 +60,70 @@ export function effectivenessLabel(multiplier: number): string {
   if (multiplier < 1) return 'Not very effective';
   return 'Neutral';
 }
+
+/**
+ * Defensive profile of a (1–2 type) Pokémon: for every attacking type, the
+ * damage multiplier it would deal to this defender.
+ */
+export function defensiveProfile(
+  defenders: readonly PokemonType[],
+): Record<PokemonType, number> {
+  const out = {} as Record<PokemonType, number>;
+  for (const attacker of POKEMON_TYPES) {
+    out[attacker] = effectiveness(attacker, defenders);
+  }
+  return out;
+}
+
+/**
+ * Offensive profile of a single attacking type: the multiplier it deals to
+ * each defending type. Useful for "what does this move hit hard?".
+ */
+export function offensiveProfile(
+  attacker: PokemonType,
+): Record<PokemonType, number> {
+  const out = {} as Record<PokemonType, number>;
+  for (const defender of POKEMON_TYPES) {
+    out[defender] = singleEffectiveness(attacker, defender);
+  }
+  return out;
+}
+
+export interface TeamMemberTyping {
+  readonly name: string;
+  readonly types: readonly PokemonType[];
+}
+
+export interface TeamTypeAnalysis {
+  /** How many team members are weak (>1x) to each attacking type. */
+  readonly weaknesses: Record<PokemonType, number>;
+  /** How many team members resist (<1x, incl. immunities) each attacking type. */
+  readonly resistances: Record<PokemonType, number>;
+  /** Attacking types no team member resists — the team's blind spots. */
+  readonly uncovered: PokemonType[];
+}
+
+/**
+ * Aggregates the defensive profiles of a whole team to surface shared
+ * weaknesses and coverage gaps.
+ */
+export function analyzeTeamTypes(team: readonly TeamMemberTyping[]): TeamTypeAnalysis {
+  const weaknesses = {} as Record<PokemonType, number>;
+  const resistances = {} as Record<PokemonType, number>;
+  for (const attacker of POKEMON_TYPES) {
+    weaknesses[attacker] = 0;
+    resistances[attacker] = 0;
+  }
+  for (const member of team) {
+    const profile = defensiveProfile(member.types);
+    for (const attacker of POKEMON_TYPES) {
+      const mult = profile[attacker];
+      if (mult > 1) weaknesses[attacker]++;
+      else if (mult < 1) resistances[attacker]++;
+    }
+  }
+  const uncovered = POKEMON_TYPES.filter(
+    (attacker) => weaknesses[attacker] > 0 && resistances[attacker] === 0,
+  );
+  return { weaknesses, resistances, uncovered };
+}

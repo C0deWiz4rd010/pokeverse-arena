@@ -22,8 +22,7 @@ export const routes: Routes = [
   {
     path: 'type-lab',
     title: 'Type Lab · PokéVerse Arena',
-    component: ComingSoonComponent,
-    data: { title: 'Type Lab', icon: '🧪', description: 'Type matchup tools are on the way.' },
+    loadComponent: () => import('./features/type-lab/type-lab').then((m) => m.TypeLabComponent),
   },
   {
     path: 'team-builder',
