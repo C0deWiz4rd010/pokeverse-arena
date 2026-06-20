@@ -1,7 +1,8 @@
 # Roadmap & Milestones — PokéVerse Arena
 
 Each phase is shipped to `develop` as one or more focused commits. Status is
-updated as work progresses.
+updated as work progresses. Detailed per-feature documentation lives in
+[features/](features/README.md).
 
 | Phase | Milestone | Status |
 | ----- | --------- | ------ |
