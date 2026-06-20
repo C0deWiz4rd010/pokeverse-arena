@@ -8,6 +8,7 @@
  */
 import { effectiveness, type PokemonType } from '../../core/utils/type-chart';
 import type { Battler, BattleMove } from './battle-types';
+import { effectivenessRuled, weatherBoost, type BattleRules } from './rules';
 
 export const CRIT_MULTIPLIER = 1.5;
 export const STAB_MULTIPLIER = 1.5;
@@ -59,9 +60,13 @@ export function stabFor(attacker: Battler, move: BattleMove): number {
   return attacker.types.includes(move.type) ? STAB_MULTIPLIER : 1;
 }
 
-/** Type multiplier of a move against a defender's typing. */
-export function moveEffectiveness(move: BattleMove, defenderTypes: readonly PokemonType[]): number {
-  return effectiveness(move.type, defenderTypes);
+/** Type multiplier of a move against a defender's typing (rule-aware). */
+export function moveEffectiveness(
+  move: BattleMove,
+  defenderTypes: readonly PokemonType[],
+  rules?: BattleRules,
+): number {
+  return rules ? effectivenessRuled(move.type, defenderTypes, rules) : effectiveness(move.type, defenderTypes);
 }
 
 /** Pick the correct offensive/defensive stats for a move's damage class. */
@@ -87,15 +92,20 @@ export function resolveDamage(
   move: BattleMove,
   crit: boolean,
   roll: number,
+  rules?: BattleRules,
 ): DamageResult {
-  return computeDamage({
+  const typeEffectiveness = moveEffectiveness(move, defender.types, rules);
+  const boosted = typeEffectiveness * weatherBoost(move.type, rules);
+  const result = computeDamage({
     level: attacker.level,
     power: move.power,
     attack: offensiveStat(attacker, move),
     defense: defensiveStat(defender, move),
     stab: stabFor(attacker, move),
-    typeEffectiveness: moveEffectiveness(move, defender.types),
+    typeEffectiveness: boosted,
     crit,
     roll,
   });
+  // Report the true type effectiveness (without the weather boost) for the log.
+  return { ...result, effectiveness: typeEffectiveness };
 }

@@ -10,6 +10,7 @@
  */
 import { SeededRng } from '../../core/utils/rng';
 import { resolveDamage, CRIT_CHANCE, MIN_ROLL, MAX_ROLL, moveEffectiveness, stabFor } from './damage';
+import type { BattleRules } from './rules';
 import type {
   Battler,
   BattleEvent,
@@ -27,9 +28,16 @@ interface Action {
 export class Battle {
   readonly state: BattleState;
   private readonly rng: SeededRng;
+  private readonly rules?: BattleRules;
 
-  constructor(player: Battler, opponent: Battler, seed: number | string = Date.now()) {
+  constructor(
+    player: Battler,
+    opponent: Battler,
+    seed: number | string = Date.now(),
+    rules?: BattleRules,
+  ) {
     this.rng = new SeededRng(seed);
+    this.rules = rules;
     this.state = {
       sides: [makeSide(player), makeSide(opponent)],
       turn: 0,
@@ -49,6 +57,11 @@ export class Battle {
   /** Choose the opponent's move automatically (used by the UI / auto-battle). */
   chooseAiMove(): number {
     return this.bestMoveIndex(1, 0);
+  }
+
+  /** Choose the player's best move automatically (used by headless simulation). */
+  autoPlayerMove(): number {
+    return this.bestMoveIndex(0, 1);
   }
 
   /**
@@ -114,7 +127,7 @@ export class Battle {
 
     const crit = this.rng.chance(CRIT_CHANCE);
     const roll = MIN_ROLL + this.rng.next() * (MAX_ROLL - MIN_ROLL);
-    const result = resolveDamage(attackerSide.battler, defenderSide.battler, move, crit, roll);
+    const result = resolveDamage(attackerSide.battler, defenderSide.battler, move, crit, roll, this.rules);
 
     defenderSide.currentHp = Math.max(0, defenderSide.currentHp - result.damage);
     events.push({
@@ -147,7 +160,7 @@ export class Battle {
       const score =
         move.power <= 0
           ? 0
-          : move.power * stabFor(attacker, move) * moveEffectiveness(move, defender.types);
+          : move.power * stabFor(attacker, move) * moveEffectiveness(move, defender.types, this.rules);
       // Tie-break randomly but deterministically.
       const jittered = score + this.rng.next() * 0.001;
       if (jittered > bestScore) {
