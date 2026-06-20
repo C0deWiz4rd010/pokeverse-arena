@@ -20,6 +20,7 @@ For the high-level plan and milestone status, see
 | 6 | Type Lab (chart, calculator, coverage) | [type-lab.md](type-lab.md) | ✅ |
 | 7 | Team Builder (build, tune, analyze, persist) | [team-builder.md](team-builder.md) | ✅ |
 | 8 | Battle engine + UI (seeded combat, animated arena, weather) | [battle.md](battle.md) | ✅ |
+| 9 | Tournaments (10 modes, visual bracket, 3-v-3 matches) | [tournaments.md](tournaments.md) | ✅ |
 
 ## Cross-cutting docs
 

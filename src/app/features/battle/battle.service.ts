@@ -34,6 +34,11 @@ export class BattleService {
   /** Build an engine-ready Battler from a Pokémon id/name at a given level. */
   async buildBattler(idOrName: string | number, level = 50): Promise<Battler> {
     const dto = await this.api.pokemon(String(idOrName).toLowerCase());
+    return this.buildBattlerFromDto(dto, level);
+  }
+
+  /** Build an engine-ready Battler from an already-fetched DTO (saves a request). */
+  async buildBattlerFromDto(dto: PokemonDto, level = 50): Promise<Battler> {
     const baseStats = this.baseStats(dto);
     const stats = quickStats(baseStats, level);
     const types = dto.types
@@ -51,6 +56,11 @@ export class BattleService {
       moves,
       sprite: this.battleSprite(dto, 'front'),
     };
+  }
+
+  /** Base-stat total (BST) — used to gauge a Pokémon's raw power tier. */
+  totalBaseStats(dto: PokemonDto): number {
+    return dto.stats.reduce((sum, s) => sum + s.base_stat, 0);
   }
 
   /** Front (opponent) or back (player) battle sprite, with sensible fallbacks. */

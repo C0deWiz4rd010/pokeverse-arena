@@ -1,0 +1,80 @@
+<div class="match" [class.is-done]="done()">
+  @if (ruleBanner(); as banner) {
+    <p class="rule-banner">{{ banner }}</p>
+  }
+
+  <div class="arena">
+    <!-- Foe (top-right) -->
+    <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1">
+      @if (foeActive(); as foe) {
+        <div class="meta">
+          <div class="name-row">
+            <span class="name">{{ titleCase(foe.name) }}</span>
+            <span class="lvl">Lv{{ foe.level }}</span>
+          </div>
+          <div class="hpbar"><span class="fill" [class.low]="fHpPct() < 30" [style.width.%]="fHpPct()"></span></div>
+          <div class="types">
+            @for (t of foe.types; track t) { <pv-type-badge [type]="t" /> }
+          </div>
+        </div>
+        <img class="sprite" [src]="foe.sprite" [alt]="foe.name" loading="lazy" />
+      }
+    </div>
+
+    <!-- Player (bottom-left) -->
+    <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0">
+      @if (playerActive(); as me) {
+        <img class="sprite" [src]="me.sprite" [alt]="me.name" loading="lazy" />
+        <div class="meta">
+          <div class="name-row">
+            <span class="name">{{ titleCase(me.name) }}</span>
+            <span class="lvl">Lv{{ me.level }}</span>
+          </div>
+          <div class="hpbar"><span class="fill" [class.low]="pHpPct() < 30" [style.width.%]="pHpPct()"></span></div>
+          <div class="types">
+            @for (t of me.types; track t) { <pv-type-badge [type]="t" /> }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Team trays -->
+  <div class="trays">
+    <div class="tray">
+      <span class="tray-label">You</span>
+      @for (m of playerTray(); track m.mon.id) {
+        <img class="ball" [class.active]="m.active" [class.fainted]="m.fainted" [src]="m.mon.sprite" [alt]="m.mon.name" [title]="titleCase(m.mon.name)" />
+      }
+    </div>
+    <div class="tray foe-tray">
+      <span class="tray-label">{{ setup().foe.name }}</span>
+      @for (m of foeTray(); track m.mon.id) {
+        <img class="ball" [class.active]="m.active" [class.fainted]="m.fainted" [src]="m.mon.sprite" [alt]="m.mon.name" [title]="titleCase(m.mon.name)" />
+      }
+    </div>
+  </div>
+
+  <!-- Controls / log -->
+  @if (!done()) {
+    <div class="controls">
+      @for (mv of playerMoves(); track mv.name; let i = $index) {
+        <button class="move" type="button" [disabled]="busy()" (click)="useMove(i)">
+          <span class="mv-name">{{ titleCase(mv.name) }}</span>
+          <span class="mv-meta"><pv-type-badge [type]="mv.type" /> <span class="pwr">{{ mv.power }}</span></span>
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="result" [class.win]="playerWon()">
+      <p class="result-title">{{ playerWon() ? 'Victory!' : 'Defeated' }}</p>
+      <button class="btn continue" type="button" (click)="continue()">
+        {{ playerWon() ? 'Advance ›' : 'Back to bracket' }}
+      </button>
+    </div>
+  }
+
+  <ul class="log" aria-live="polite">
+    @for (line of log(); track $index) { <li>{{ line }}</li> }
+  </ul>
+</div>

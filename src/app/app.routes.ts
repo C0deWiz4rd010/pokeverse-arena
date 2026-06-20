@@ -44,8 +44,8 @@ export const routes: Routes = [
   {
     path: 'tournaments',
     title: 'Tournaments · PokéVerse Arena',
-    component: ComingSoonComponent,
-    data: { title: 'Tournaments', icon: '🏆', description: 'Single-elimination brackets you can auto-simulate or play.' },
+    loadComponent: () =>
+      import('./features/tournaments/tournaments').then((m) => m.TournamentsComponent),
   },
   {
     path: 'world',

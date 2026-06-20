@@ -1,0 +1,236 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { Battle, type Battler, type BattleEvent, type SideIndex } from '../../../game/engine';
+import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
+import { titleCase } from '../../../core/ui/format';
+import type { PlayerMatchSetup } from '../tournaments.service';
+
+interface TrayMon {
+  readonly mon: Battler;
+  readonly hp: number;
+  readonly maxHp: number;
+  readonly active: boolean;
+  readonly fainted: boolean;
+}
+
+export interface MatchOutcome {
+  readonly playerWon: boolean;
+  readonly playerFinalHp: number[];
+}
+
+@Component({
+  selector: 'pv-tournament-match',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TypeBadgeComponent],
+  templateUrl: './tournament-match.html',
+  styleUrl: './tournament-match.scss',
+})
+export class TournamentMatchComponent {
+  readonly setup = input.required<PlayerMatchSetup>();
+  readonly finished = output<MatchOutcome>();
+
+  protected readonly titleCase = titleCase;
+
+  private readonly hpA = signal<number[]>([]);
+  private readonly hpB = signal<number[]>([]);
+  private readonly ia = signal(0);
+  private readonly ib = signal(0);
+
+  protected readonly playerActive = signal<Battler | null>(null);
+  protected readonly foeActive = signal<Battler | null>(null);
+  protected readonly pHp = signal(0);
+  protected readonly pMax = signal(1);
+  protected readonly fHp = signal(0);
+  protected readonly fMax = signal(1);
+
+  protected readonly log = signal<string[]>([]);
+  protected readonly busy = signal(false);
+  protected readonly shakeSide = signal<SideIndex | null>(null);
+  protected readonly flashSide = signal<SideIndex | null>(null);
+  protected readonly done = signal(false);
+  protected readonly playerWon = signal(false);
+
+  protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
+  protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
+  protected readonly playerMoves = computed(() => this.playerActive()?.moves ?? []);
+
+  protected readonly playerTray = computed<TrayMon[]>(() => this.tray(this.setup().playerTeam, this.hpA(), this.ia()));
+  protected readonly foeTray = computed<TrayMon[]>(() => this.tray(this.setup().foeTeam, this.hpB(), this.ib()));
+
+  /** A short banner describing any special rule in force (inverse / weather). */
+  protected readonly ruleBanner = computed(() => {
+    const rules = this.setup().rules;
+    if (rules?.inverse) return '🔄 Inverse battle — the type chart is flipped!';
+    if (rules?.weatherBoostType) return `⛈️ ${titleCase(rules.weatherBoostType)}-type moves are boosted 1.5×!`;
+    return null;
+  });
+
+  private battle: Battle | null = null;
+  private duel = 0;
+  private started = false;
+
+  constructor() {
+    effect(() => {
+      const s = this.setup();
+      if (this.started || !s) return;
+      this.started = true;
+      this.begin(s);
+    });
+  }
+
+  protected async useMove(index: number): Promise<void> {
+    if (!this.battle || this.busy() || this.done()) return;
+    this.busy.set(true);
+    const events = this.battle.takeTurn(index);
+    await this.playEvents(events);
+    this.persistActiveHp();
+
+    if (this.battle.state.finished) {
+      if (this.battle.state.winner === 0) this.advanceFoe();
+      else this.advancePlayer();
+      this.duel++;
+      const s = this.setup();
+      if (this.ia() >= s.playerTeam.length || this.ib() >= s.foeTeam.length) {
+        this.endMatch();
+      } else {
+        await sleep(550);
+        this.startDuel();
+      }
+    }
+    this.busy.set(false);
+  }
+
+  protected continue(): void {
+    this.finished.emit({ playerWon: this.playerWon(), playerFinalHp: this.hpA() });
+  }
+
+  /* ---------------------------------------------------------------- engine */
+
+  private begin(s: PlayerMatchSetup): void {
+    this.hpA.set(s.playerTeam.map((m, i) => clamp(s.playerStartHp?.[i] ?? m.stats.hp, m.stats.hp)));
+    this.hpB.set(s.foeTeam.map((m, i) => clamp(s.foeStartHp?.[i] ?? m.stats.hp, m.stats.hp)));
+    this.ia.set(skipFainted(this.hpA(), 0));
+    this.ib.set(skipFainted(this.hpB(), 0));
+    this.log.set([`${s.foe.avatar} ${s.foe.name} wants to battle!`]);
+    this.startDuel();
+  }
+
+  private startDuel(): void {
+    const s = this.setup();
+    const a = s.playerTeam[this.ia()];
+    const b = s.foeTeam[this.ib()];
+    this.battle = new Battle(a, b, `${s.match.id}-d${this.duel}`, s.rules);
+    this.battle.state.sides[0].currentHp = clamp(this.hpA()[this.ia()], this.battle.state.sides[0].maxHp);
+    this.battle.state.sides[1].currentHp = clamp(this.hpB()[this.ib()], this.battle.state.sides[1].maxHp);
+
+    this.playerActive.set(a);
+    this.foeActive.set(b);
+    this.pMax.set(this.battle.state.sides[0].maxHp);
+    this.fMax.set(this.battle.state.sides[1].maxHp);
+    this.pHp.set(this.battle.player.currentHp);
+    this.fHp.set(this.battle.opponent.currentHp);
+    this.append(`Go, ${titleCase(a.name)}!`);
+    this.append(`${s.foe.name} sent out ${titleCase(b.name)}!`);
+  }
+
+  private persistActiveHp(): void {
+    if (!this.battle) return;
+    this.hpA.update((hp) => withAt(hp, this.ia(), this.battle!.player.currentHp));
+    this.hpB.update((hp) => withAt(hp, this.ib(), this.battle!.opponent.currentHp));
+  }
+
+  private advancePlayer(): void {
+    this.ia.set(skipFainted(this.hpA(), this.ia() + 1));
+  }
+
+  private advanceFoe(): void {
+    this.ib.set(skipFainted(this.hpB(), this.ib() + 1));
+  }
+
+  private endMatch(): void {
+    const won = this.ib() >= this.setup().foeTeam.length;
+    this.playerWon.set(won);
+    this.done.set(true);
+    this.append(won ? 'Match won! 🏆' : 'You were knocked out…');
+  }
+
+  private async playEvents(events: BattleEvent[]): Promise<void> {
+    for (const ev of events) {
+      switch (ev.kind) {
+        case 'move':
+          this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
+          await sleep(520);
+          break;
+        case 'miss':
+          this.append(`${titleCase(ev.attacker)}'s attack missed!`);
+          await sleep(450);
+          break;
+        case 'damage': {
+          this.flashSide.set(ev.side);
+          this.shakeSide.set(ev.side);
+          if (ev.side === 0) this.pHp.set(ev.remainingHp);
+          else this.fHp.set(ev.remainingHp);
+          if (ev.crit) this.append('A critical hit!');
+          const note = effectivenessNote(ev.effectiveness);
+          if (note) this.append(note);
+          await sleep(500);
+          this.shakeSide.set(null);
+          this.flashSide.set(null);
+          break;
+        }
+        case 'faint':
+          this.append(`${titleCase(ev.name)} fainted!`);
+          await sleep(650);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  private tray(team: Battler[], hp: number[], active: number): TrayMon[] {
+    return team.map((mon, i) => {
+      const current = hp[i] ?? mon.stats.hp;
+      return { mon, hp: current, maxHp: mon.stats.hp, active: i === active, fainted: current <= 0 };
+    });
+  }
+
+  private append(line: string): void {
+    this.log.update((l) => [...l, line]);
+  }
+}
+
+function withAt(arr: number[], i: number, value: number): number[] {
+  const copy = [...arr];
+  copy[i] = value;
+  return copy;
+}
+
+function clamp(hp: number, maxHp: number): number {
+  if (!Number.isFinite(hp)) return maxHp;
+  return Math.max(0, Math.min(hp, maxHp));
+}
+
+function skipFainted(hp: number[], from: number): number {
+  let i = from;
+  while (i < hp.length && hp[i] <= 0) i++;
+  return i;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function effectivenessNote(mult: number): string | null {
+  if (mult === 0) return "It doesn't affect the foe…";
+  if (mult >= 2) return "It's super effective!";
+  if (mult > 0 && mult < 1) return "It's not very effective…";
+  return null;
+}

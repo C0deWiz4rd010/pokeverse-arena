@@ -1,0 +1,159 @@
+<section class="container page">
+  <pv-page-header
+    icon="🏆"
+    title="Tournaments"
+    subtitle="Pick a format, then climb a 16-trainer bracket to the final. You play your matches — the rest of the field resolves itself." />
+
+  @switch (svc.status()) {
+    <!-- ───────────────────────────── mode select ───────────────────────────── -->
+    @case ('idle') {
+      @if (svc.error(); as err) {
+        <p class="error" role="alert">{{ err }}</p>
+      }
+      <div class="modes">
+        @for (m of modes; track m.id) {
+          <button class="mode-card" type="button" (click)="start(m.id)">
+            <span class="mode-icon">{{ m.icon }}</span>
+            <span class="mode-name">{{ m.name }}</span>
+            <span class="mode-tag">{{ m.tagline }}</span>
+            <span class="mode-desc">{{ m.description }}</span>
+          </button>
+        }
+      </div>
+    }
+
+    <!-- ───────────────────────────── loading ───────────────────────────── -->
+    @case ('loading') {
+      <div class="loading">
+        <pv-spinner />
+        <p>Seeding the bracket and building teams…</p>
+      </div>
+    }
+
+    <!-- ───────────────────────────── draft ───────────────────────────── -->
+    @case ('draft') {
+      <div class="draft">
+        <h2 class="draft-title">Draft your team</h2>
+        <p class="draft-sub">
+          Choose {{ draftSize() }} Pokémon — selected
+          <strong>{{ draftPicks().length }}/{{ draftSize() }}</strong>.
+        </p>
+        <div class="pool">
+          @for (mon of svc.draftPool(); track mon.id) {
+            <button class="pick" type="button" [class.on]="isPicked(mon)" (click)="toggleDraft(mon)">
+              <img [src]="mon.sprite" [alt]="mon.name" loading="lazy" />
+              <span class="pk-name">{{ titleCase(mon.name) }}</span>
+              <span class="pk-types">
+                @for (t of mon.types; track t) { <pv-type-badge [type]="t" /> }
+              </span>
+            </button>
+          }
+        </div>
+        <button class="btn confirm" type="button" [disabled]="!canConfirmDraft()" (click)="confirmDraft()">
+          Enter the bracket ›
+        </button>
+      </div>
+    }
+
+    <!-- ───────────────────────────── bracket / running ───────────────────────────── -->
+    @default {
+      <div class="run-bar">
+        <span class="run-mode">{{ svc.mode()?.icon }} {{ svc.mode()?.name }}</span>
+        @if (svc.monoType(); as mt) { <pv-type-badge [type]="mt" /> }
+        <button class="ghost" type="button" (click)="restart()">Quit</button>
+      </div>
+
+      <!-- Active match / call-to-action / finale -->
+      @if (inMatch() && svc.currentMatchSetup(); as setup) {
+        <pv-tournament-match [setup]="setup" (finished)="onFinished($event)" />
+      } @else if (svc.status() === 'done' && svc.champion(); as champ) {
+        <div class="finale" [class.you]="championIsPlayer()">
+          <span class="crown">👑</span>
+          <p class="champ-name">
+            {{ championIsPlayer() ? 'You are the Champion!' : champ.name + ' lifts the trophy' }}
+          </p>
+          @if (!championIsPlayer()) { <p class="champ-sub">You were knocked out — better luck next run.</p> }
+          <button class="btn" type="button" (click)="restart()">New tournament</button>
+        </div>
+      } @else if (svc.currentMatchSetup(); as setup) {
+        <div class="cta">
+          <span class="cta-round">{{ roundLabel[setup.round] }}</span>
+          <div class="cta-foe">
+            <span class="ava">{{ setup.foe.avatar }}</span>
+            <div class="cta-foe-meta">
+              <p class="vs">vs {{ setup.foe.name }}</p>
+              <p class="foe-title">{{ setup.foe.title }}</p>
+            </div>
+          </div>
+          <div class="cta-team">
+            @for (mon of setup.foeTeam; track mon.id) {
+              <img [src]="mon.sprite" [alt]="mon.name" [title]="titleCase(mon.name)" loading="lazy" />
+            }
+          </div>
+          <button class="btn battle" type="button" (click)="battle()">Battle ›</button>
+        </div>
+      }
+
+      <!-- Desktop converging tree -->
+      <div class="tree" aria-label="Tournament bracket">
+        <div class="side left">
+          <div class="round-col">
+            @for (m of leftR16(); track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
+          </div>
+          <div class="round-col">
+            @for (m of leftQf(); track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
+          </div>
+          <div class="round-col">
+            @for (m of leftSf(); track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
+          </div>
+        </div>
+
+        <div class="center">
+          <div class="round-col final-col">
+            @if (final(); as f) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: f }" /> }
+          </div>
+          <div class="champ-spot" [class.lit]="!!svc.champion()">
+            <span class="crown">{{ svc.champion() ? '👑' : '🏆' }}</span>
+            <span class="cn">{{ svc.champion() ? (championIsPlayer() ? 'You' : svc.champion()?.name) : 'Champion' }}</span>
+          </div>
+        </div>
+
+        <div class="side right">
+          <div class="round-col">
+            @for (m of rightSf(); track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
+          </div>
+          <div class="round-col">
+            @for (m of rightQf(); track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
+          </div>
+          <div class="round-col">
+            @for (m of rightR16(); track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile horizontal-scroll bracket -->
+      <div class="scroll" aria-label="Tournament bracket">
+        @for (col of columns(); track col.id) {
+          <div class="round-col">
+            <span class="rc-label">{{ col.label }}</span>
+            @for (m of col.matches; track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
+          </div>
+        }
+      </div>
+    }
+  }
+</section>
+
+<!-- Reusable bracket-match card -->
+<ng-template #card let-m>
+  <div class="bmatch" [class.live]="isLive(m)" [class.player]="hasPlayer(m)" [class.done]="m.played">
+    <div class="slot" [class.win]="m.played && m.winner === 0" [class.out]="m.played && m.winner === 1">
+      <span class="ava">{{ m.a?.avatar || '·' }}</span>
+      <span class="nm">{{ m.a ? (m.a.isPlayer ? 'You' : m.a.name) : 'TBD' }}</span>
+    </div>
+    <div class="slot" [class.win]="m.played && m.winner === 1" [class.out]="m.played && m.winner === 0">
+      <span class="ava">{{ m.b?.avatar || '·' }}</span>
+      <span class="nm">{{ m.b ? (m.b.isPlayer ? 'You' : m.b.name) : 'TBD' }}</span>
+    </div>
+  </div>
+</ng-template>
