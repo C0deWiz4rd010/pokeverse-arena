@@ -1,0 +1,66 @@
+<section class="container pokedex">
+  <header class="head">
+    <h1 class="gradient-text">Pokédex</h1>
+    <p class="sub">{{ store.total() }} Pokémon · search, filter and dive in.</p>
+  </header>
+
+  <div class="controls glass">
+    <label class="search">
+      <span class="sr-only">Search Pokémon</span>
+      <input
+        type="search"
+        inputmode="search"
+        placeholder="Search by name or #number…"
+        (input)="onSearch($event)"
+      />
+    </label>
+
+    <select class="gen" (change)="onGeneration($event)" aria-label="Filter by generation">
+      <option value="">All generations</option>
+      @for (g of generations; track g) {
+        <option [value]="g" [selected]="store.generationFilter() === g">Generation {{ g }}</option>
+      }
+    </select>
+
+    <button class="btn clear" type="button" (click)="clear()">Reset</button>
+  </div>
+
+  <div class="types" role="group" aria-label="Filter by type">
+    @for (t of types; track t) {
+      <button
+        type="button"
+        class="type-chip"
+        [class.active]="store.typeFilter() === t"
+        [style.--c]="'var(--type-' + t + ')'"
+        (click)="onType(t)"
+      >
+        {{ titleCase(t) }}
+      </button>
+    }
+  </div>
+
+  @if (store.loading() && store.total() === 0) {
+    <pv-spinner label="Loading the Pokédex…" />
+  } @else if (store.error()) {
+    <div class="state glass">
+      <p>⚠️ {{ store.error() }}</p>
+    </div>
+  } @else if (store.total() === 0) {
+    <div class="state glass">
+      <p>No Pokémon match your filters.</p>
+      <button class="btn btn-primary" type="button" (click)="clear()">Clear filters</button>
+    </div>
+  } @else {
+    <div class="grid">
+      @for (entry of store.visible(); track entry.id) {
+        <pv-pokemon-card [entry]="entry" />
+      }
+    </div>
+    <div #sentinel class="sentinel" aria-hidden="true"></div>
+    @if (store.hasMore()) {
+      <div class="more">
+        <button class="btn" type="button" (click)="store.loadMore()">Load more</button>
+      </div>
+    }
+  }
+</section>

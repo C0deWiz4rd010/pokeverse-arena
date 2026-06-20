@@ -11,8 +11,7 @@ export const routes: Routes = [
   {
     path: 'pokedex',
     title: 'Pokédex · PokéVerse Arena',
-    component: ComingSoonComponent,
-    data: { title: 'Pokédex', icon: '📕', description: 'The interactive Pokédex is being assembled.' },
+    loadComponent: () => import('./features/pokedex/pokedex').then((m) => m.PokedexComponent),
   },
   {
     path: 'type-lab',

@@ -1,0 +1,72 @@
+.pokedex { padding: 1rem 0 3rem; }
+
+.head { text-align: center; margin-bottom: 1.2rem; }
+.head h1 { font-size: 2.4rem; }
+.sub { color: var(--text-dim); }
+
+.controls {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.search { flex: 1; min-width: 200px; }
+.search input,
+.gen {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  font: inherit;
+}
+.gen { width: auto; cursor: pointer; }
+.gen option { color: #111; }
+.clear { white-space: nowrap; }
+
+.types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+.type-chip {
+  padding: 0.32rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  transition: all 0.15s ease;
+}
+.type-chip:hover { color: var(--text); border-color: var(--c); }
+.type-chip.active {
+  color: #fff;
+  background: var(--c);
+  border-color: var(--c);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--c) 60%, transparent);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.9rem;
+}
+
+.sentinel { height: 1px; }
+.more { display: grid; place-items: center; padding: 1.5rem 0; }
+
+.state {
+  text-align: center;
+  padding: 3rem 1rem;
+  display: grid;
+  gap: 1rem;
+  place-items: center;
+}
+
+@media (max-width: 520px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+}
