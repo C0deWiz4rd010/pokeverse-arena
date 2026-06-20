@@ -1,3 +1,5 @@
+@use '../../../styles/responsive' as *;
+
 .pokedex { padding: 1rem 0 3rem; }
 
 .head { text-align: center; margin-bottom: 1.2rem; }
@@ -6,12 +8,15 @@
 
 .controls {
   display: flex;
+  flex-direction: column;
   gap: 0.6rem;
   padding: 0.7rem;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
 }
-.search { flex: 1; min-width: 200px; }
+@include up(sm) {
+  .controls { flex-direction: row; flex-wrap: wrap; align-items: center; }
+}
+.search { flex: 1; min-width: 0; }
 .search input,
 .gen {
   width: 100%;
@@ -22,9 +27,12 @@
   color: var(--text);
   font: inherit;
 }
-.gen { width: auto; cursor: pointer; }
+.gen { width: 100%; cursor: pointer; }
 .gen option { color: #111; }
 .clear { white-space: nowrap; }
+@include up(sm) {
+  .gen { width: auto; }
+}
 
 .types {
   display: flex;
@@ -52,8 +60,11 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 0.7rem;
+}
+@include up(sm) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.9rem; }
 }
 
 .sentinel { height: 1px; }
@@ -65,8 +76,4 @@
   display: grid;
   gap: 1rem;
   place-items: center;
-}
-
-@media (max-width: 520px) {
-  .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 }

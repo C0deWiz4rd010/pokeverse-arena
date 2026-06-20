@@ -1,19 +1,28 @@
+@use '../../../styles/responsive' as *;
+
 .detail { padding: 0.5rem 0 3rem; }
 .back { margin-bottom: 1rem; }
 
 .layout {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 1fr;
   gap: 1.2rem;
   align-items: start;
+}
+@include up(lg) {
+  .layout { grid-template-columns: 360px 1fr; }
 }
 
 /* Hero */
 .hero {
   padding: 1.3rem;
   text-align: center;
-  position: sticky;
-  top: calc(var(--header-h) + 1rem);
+}
+@include up(lg) {
+  .hero {
+    position: sticky;
+    top: calc(var(--header-h) + 1rem);
+  }
 }
 .hero-top { display: flex; justify-content: space-between; align-items: center; }
 .num { color: var(--text-faint); font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -64,7 +73,10 @@
 .card h2 { font-size: 1.15rem; }
 .card h2.mt { margin-top: 1.4rem; }
 
-.stats-grid { display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center; }
+.stats-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: center; justify-items: center; }
+@include up(md) {
+  .stats-grid { grid-template-columns: 1fr auto; justify-items: stretch; }
+}
 
 .abilities { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .ability {
@@ -103,9 +115,3 @@
 
 .muted { color: var(--text-faint); }
 .state { text-align: center; padding: 3rem 1rem; }
-
-@media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
-  .hero { position: static; }
-  .stats-grid { grid-template-columns: 1fr; justify-items: center; }
-}

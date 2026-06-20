@@ -36,7 +36,8 @@ import type { EvolutionNode } from '../../core/models/pokemon.model';
   `,
   styles: [
     `
-      .stage { display: flex; align-items: center; gap: 0.6rem; }
+      .stage { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+      @media (min-width: 768px) { .stage { flex-direction: row; } }
       .node {
         display: grid;
         place-items: center;
@@ -56,9 +57,6 @@ import type { EvolutionNode } from '../../core/models/pokemon.model';
       .line { width: 40px; height: 2px; background: var(--glass-border); }
       .trigger { font-size: 0.68rem; color: var(--accent-3); white-space: nowrap; }
       .tip { color: var(--accent); }
-      @media (max-width: 640px) {
-        .stage { flex-direction: column; }
-      }
     `,
   ],
 })

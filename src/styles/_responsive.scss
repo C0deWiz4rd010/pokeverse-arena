@@ -1,0 +1,21 @@
+/* Shared mobile-first breakpoint mixins.
+   Usage:  @use '../../styles/responsive' as *;  .x { @include up(md) { ... } } */
+
+@use 'sass:map';
+
+$breakpoints: (
+  sm: 480px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px,
+);
+
+@mixin up($name) {
+  $min: map.get($breakpoints, $name);
+  @if $min == null {
+    @error "Unknown breakpoint: #{$name}";
+  }
+  @media (min-width: $min) {
+    @content;
+  }
+}

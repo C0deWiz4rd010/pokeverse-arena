@@ -1,3 +1,5 @@
+@use '../styles/responsive' as *;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -56,27 +58,37 @@
   color: var(--text-dim);
 }
 
+/* Mobile-first: nav is a dropdown panel toggled by the burger. */
 .nav {
-  margin-left: auto;
-  display: flex;
+  position: absolute;
+  top: calc(var(--header-h) + 0.4rem);
+  right: 0.6rem;
+  left: 0.6rem;
+  flex-direction: column;
   gap: 0.25rem;
-  flex-wrap: wrap;
+  padding: 0.5rem;
+  background: rgba(14, 12, 34, 0.97);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  display: none;
 }
+.nav.open { display: flex; }
 .nav a {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.45rem 0.7rem;
+  padding: 0.6rem 0.7rem;
   border-radius: var(--radius-sm);
   color: var(--text-dim);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 .nav a:hover {
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-1px);
 }
 .nav a.active {
   color: #0b0a1f;
@@ -85,7 +97,7 @@
 .nav-icon { font-size: 1rem; }
 
 .burger {
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 4px;
   margin-left: auto;
@@ -113,20 +125,20 @@
 }
 .footer a { color: var(--accent); }
 
-@media (max-width: 880px) {
-  .burger { display: flex; }
+/* Desktop: inline nav row, no burger. */
+@include up(lg) {
   .nav {
-    position: absolute;
-    top: calc(var(--header-h) + 0.4rem);
-    right: 0.6rem;
-    left: 0.6rem;
-    flex-direction: column;
-    padding: 0.5rem;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius);
-    backdrop-filter: blur(14px);
-    display: none;
+    position: static;
+    margin-left: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0;
+    background: none;
+    border: none;
+    backdrop-filter: none;
+    display: flex;
   }
-  .nav.open { display: flex; }
+  .nav a { font-size: 0.9rem; padding: 0.45rem 0.7rem; }
+  .nav a:hover { transform: translateY(-1px); }
+  .burger { display: none; }
 }

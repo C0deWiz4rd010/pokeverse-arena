@@ -66,7 +66,7 @@ export class StatRadarComponent {
   protected readonly rings = [0.25, 0.5, 0.75, 1];
   private readonly cx = 110;
   private readonly cy = 110;
-  private readonly r = 80;
+  private readonly r = 70;
 
   readonly points = computed<RadarPoint[]>(() => {
     const s = this.stats();
@@ -76,7 +76,7 @@ export class StatRadarComponent {
       const ratio = Math.min(1, s[entry.key] / max);
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
-      const labelR = this.r + 22;
+      const labelR = this.r + 20;
       return {
         vx: this.cx + cos * this.r * ratio,
         vy: this.cy + sin * this.r * ratio,
