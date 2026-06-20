@@ -13,12 +13,12 @@ updated as work progresses. Detailed per-feature documentation lives in
 | 4 | Pokémon detail: stats, types, abilities, moves, evolution | ✅ done |
 | 5 | Pokédex filters & compare | ✅ done |
 | 6 | Type Lab: type chart + team weakness analyzer | ✅ done |
-| 7 | Team Builder: build, validate, export/import | 🔨 in progress |
-| 8 | Battle engine (pure) + unit tests | ⏳ |
-| 9 | Battle UI (Angular) | ⏳ |
+| 7 | Team Builder: build, validate, export/import | ✅ done |
+| 8 | Battle engine (pure) + unit tests | ✅ done |
+| 9 | Battle UI (Angular) | ✅ done |
 | 10 | Battle scene (PixiJS) + effects | ⏳ |
 | 11 | Random battle + Arena | ⏳ |
-| 12 | Tournaments (brackets) | ⏳ |
+| 12 | Tournaments (brackets) | ✅ done |
 | 13 | World Explorer (encounters) | ⏳ |
 | 14 | Berry Garden + Contest Mode | ⏳ |
 | 15 | Landing 3D hero (Three.js, lazy) | ✅ done |

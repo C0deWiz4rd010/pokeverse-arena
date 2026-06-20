@@ -7,27 +7,29 @@
 
   @switch (phase()) {
     @case ('setup') {
-      <div class="setup glass">
-        <label class="field">
-          <span>Your Pokémon</span>
-          <input
-            type="text"
-            list="dex-names"
-            placeholder="Name or # (leave blank for random)"
-            [value]="playerInput()"
-            (input)="setPlayerInput($event)"
-            (keydown.enter)="start()"
-          />
-          <datalist id="dex-names">
-            @for (n of names(); track n) { <option [value]="n"></option> }
-          </datalist>
-        </label>
-        <div class="setup-actions">
-          <button class="btn" type="button" (click)="start()">⚔️ Fight</button>
-          <button class="btn ghost" type="button" (click)="surpriseMe()">🎲 Surprise me</button>
+      <div class="setup-wrap">
+        <div class="setup glass">
+          <label class="field">
+            <span>Your Pokémon</span>
+            <input
+              type="text"
+              list="dex-names"
+              placeholder="Name or # (leave blank for random)"
+              [value]="playerInput()"
+              (input)="setPlayerInput($event)"
+              (keydown.enter)="start()"
+            />
+            <datalist id="dex-names">
+              @for (n of names(); track n) { <option [value]="n"></option> }
+            </datalist>
+          </label>
+          <div class="setup-actions">
+            <button class="btn" type="button" (click)="start()">⚔️ Fight</button>
+            <button class="btn ghost" type="button" (click)="surpriseMe()">🎲 Surprise me</button>
+          </div>
+          @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
+          <p class="hint">Both sides fight at level 50 with their strongest level-up moves.</p>
         </div>
-        @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
-        <p class="hint">Both sides fight at level 50 with their strongest level-up moves.</p>
       </div>
     }
 
@@ -39,56 +41,9 @@
     }
 
     @default {
-      <div class="arena" [attr.data-weather]="weather()">
+      <div class="arena">
         <!-- Weather backdrop -->
-        <div class="weather" aria-hidden="true">
-          <div class="sky"></div>
-          @switch (weather()) {
-            @case ('sun') {
-              <div class="sun-glow"></div>
-              <div class="rays"></div>
-            }
-            @case ('rain') {
-              <div class="rain">
-                @for (d of drops; track d) { <span class="drop" [style.--i]="d"></span> }
-              </div>
-            }
-            @case ('storm') {
-              <div class="rain dense">
-                @for (d of drops; track d) { <span class="drop" [style.--i]="d"></span> }
-              </div>
-              <div class="lightning"></div>
-            }
-            @case ('snow') {
-              <div class="snow">
-                @for (f of flakes; track f) { <span class="flake" [style.--i]="f"></span> }
-              </div>
-            }
-            @case ('sand') {
-              <div class="sand">
-                @for (g of grains; track g) { <span class="grain" [style.--i]="g"></span> }
-                <div class="haze"></div>
-              </div>
-            }
-            @case ('fog') {
-              <div class="fog">
-                <span class="bank b1"></span>
-                <span class="bank b2"></span>
-                <span class="bank b3"></span>
-              </div>
-            }
-            @case ('leaves') {
-              <div class="leaves">
-                @for (l of leaves; track l) { <span class="leaf" [style.--i]="l">🍃</span> }
-              </div>
-            }
-          }
-        </div>
-        @if (weather() !== 'clear') {
-          <span class="weather-badge" [title]="weatherInfo().label">
-            {{ weatherInfo().icon }} {{ weatherInfo().label }}
-          </span>
-        }
+        <pv-weather-overlay [weather]="weather()" />
 
         <!-- Opponent -->
         @if (opponent(); as o) {
@@ -140,16 +95,12 @@
       @if (phase() === 'fighting') {
         <div class="moves" [class.disabled]="busy()">
           @for (move of playerMoves(); track move.name; let i = $index) {
-            <button
-              class="move-btn"
-              type="button"
-              [style.--c]="'var(--type-' + move.type + ')'"
+            <pv-move-button
+              [move]="move"
+              [defenderTypes]="opponent()?.types"
               [disabled]="busy()"
-              (click)="useMove(i)"
-            >
-              <span class="m-name">{{ titleCase(move.name) }}</span>
-              <span class="m-meta">{{ titleCase(move.type) }} · {{ move.power }} pow</span>
-            </button>
+              (picked)="useMove(i)"
+            />
           }
         </div>
         @if (busy()) { <p class="thinking">…</p> }

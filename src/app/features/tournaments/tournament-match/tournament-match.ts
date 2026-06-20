@@ -9,6 +9,10 @@ import {
 } from '@angular/core';
 import { Battle, type Battler, type BattleEvent, type SideIndex } from '../../../game/engine';
 import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
+import { WeatherOverlayComponent } from '../../../core/ui/weather-overlay/weather-overlay';
+import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
+import { pickWeather, weatherForType, type Weather } from '../../../core/ui/weather-overlay/weather';
+import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';
 import type { PlayerMatchSetup } from '../tournaments.service';
 
@@ -28,7 +32,7 @@ export interface MatchOutcome {
 @Component({
   selector: 'pv-tournament-match',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent],
+  imports: [TypeBadgeComponent, WeatherOverlayComponent, MoveButtonComponent],
   templateUrl: './tournament-match.html',
   styleUrl: './tournament-match.scss',
 })
@@ -71,6 +75,24 @@ export class TournamentMatchComponent {
     if (rules?.weatherBoostType) return `⛈️ ${titleCase(rules.weatherBoostType)}-type moves are boosted 1.5×!`;
     return null;
   });
+
+  /** Atmospheric weather for this match. Driven by the boosted type in Weather
+   *  mode, otherwise picked deterministically from the active fighters' types. */
+  protected readonly weather = computed<Weather>(() => {
+    const boost = this.setup().rules?.weatherBoostType;
+    if (boost) {
+      const w = weatherForType(boost);
+      if (w !== 'clear') return w;
+    }
+    const me = this.playerActive();
+    const foe = this.foeActive();
+    if (!me || !foe) return 'clear';
+    const rng = new SeededRng(`${this.setup().match.id}-wx`);
+    return pickWeather(me.types, foe.types, (items) => rng.pick(items));
+  });
+
+  protected readonly rules = computed(() => this.setup().rules);
+  protected readonly foeTypes = computed(() => this.foeActive()?.types);
 
   private battle: Battle | null = null;
   private duel = 0;
@@ -118,7 +140,7 @@ export class TournamentMatchComponent {
     this.hpB.set(s.foeTeam.map((m, i) => clamp(s.foeStartHp?.[i] ?? m.stats.hp, m.stats.hp)));
     this.ia.set(skipFainted(this.hpA(), 0));
     this.ib.set(skipFainted(this.hpB(), 0));
-    this.log.set([`${s.foe.avatar} ${s.foe.name} wants to battle!`]);
+    this.log.set([`${s.foe.name} wants to battle!`]);
     this.startDuel();
   }
 

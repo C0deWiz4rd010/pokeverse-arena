@@ -139,8 +139,14 @@
     font-weight: 700;
     color: var(--accent);
   }
-  .cta-foe { display: flex; align-items: center; gap: 0.5rem; }
-  .cta-foe .ava { font-size: 1.8rem; }
+  .cta-foe { display: flex; align-items: center; gap: 0.6rem; }
+  .cta-foe .ava {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--accent-2) 55%, transparent);
+    background: color-mix(in srgb, var(--bg) 60%, #000);
+  }
   .cta-foe-meta { display: flex; flex-direction: column; }
   .vs { margin: 0; font-weight: 700; }
   .foe-title { margin: 0; font-size: 0.78rem; color: var(--text-dim); }
@@ -168,6 +174,14 @@
   background: color-mix(in srgb, var(--bg) 70%, #000);
 
   .crown { font-size: 2.4rem; }
+  .champ-ava {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: 3px solid var(--accent-3);
+    background: color-mix(in srgb, var(--bg) 60%, #000);
+    box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--accent-3) 60%, transparent);
+  }
   .champ-name { margin: 0; font-size: 1.3rem; font-weight: 800; }
   .champ-sub { margin: 0; color: var(--text-dim); font-size: 0.85rem; }
 
@@ -208,7 +222,22 @@
     font-size: 0.74rem;
     background: color-mix(in srgb, var(--bg) 50%, #000);
 
-    .ava { font-size: 0.9rem; line-height: 1; }
+    .ava {
+      flex: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: color-mix(in srgb, var(--bg) 60%, #000);
+      border: 1px solid var(--glass-border);
+    }
+    .ava.ph {
+      display: grid;
+      place-items: center;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      border-style: dashed;
+    }
     .nm {
       white-space: nowrap;
       overflow: hidden;

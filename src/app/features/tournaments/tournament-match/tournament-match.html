@@ -3,7 +3,21 @@
     <p class="rule-banner">{{ banner }}</p>
   }
 
+  <div class="versus">
+    <div class="vs-trainer">
+      <img class="t-ava" [src]="setup().player.avatar" [alt]="setup().player.name" />
+      <span class="t-name">You</span>
+    </div>
+    <span class="vs-x">VS</span>
+    <div class="vs-trainer foe">
+      <span class="t-name">{{ setup().foe.name }}</span>
+      <img class="t-ava" [src]="setup().foe.avatar" [alt]="setup().foe.name" />
+    </div>
+  </div>
+
   <div class="arena">
+    <pv-weather-overlay [weather]="weather()" />
+
     <!-- Foe (top-right) -->
     <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1">
       @if (foeActive(); as foe) {
@@ -59,10 +73,13 @@
   @if (!done()) {
     <div class="controls">
       @for (mv of playerMoves(); track mv.name; let i = $index) {
-        <button class="move" type="button" [disabled]="busy()" (click)="useMove(i)">
-          <span class="mv-name">{{ titleCase(mv.name) }}</span>
-          <span class="mv-meta"><pv-type-badge [type]="mv.type" /> <span class="pwr">{{ mv.power }}</span></span>
-        </button>
+        <pv-move-button
+          [move]="mv"
+          [defenderTypes]="foeTypes()"
+          [rules]="rules()"
+          [disabled]="busy()"
+          (picked)="useMove(i)"
+        />
       }
     </div>
   } @else {

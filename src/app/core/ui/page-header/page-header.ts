@@ -1,19 +1,21 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 /**
- * Compact page header used across feature pages. A centered column: an optional
- * glowing icon chip on top, the gradient title beneath it, and the subtitle
- * centered below — tight and consistent, saving vertical space.
+ * Compact page header used across feature pages. The glowing icon chip sits
+ * inline next to the gradient title (one tight row) with the subtitle centered
+ * beneath — minimizing vertical space while staying centered and consistent.
  */
 @Component({
   selector: 'pv-page-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="ph">
-      @if (icon()) {
-        <span class="chip" aria-hidden="true">{{ icon() }}</span>
-      }
-      <h1 class="gradient-text">{{ title() }}</h1>
+      <div class="lead">
+        @if (icon()) {
+          <span class="chip" aria-hidden="true">{{ icon() }}</span>
+        }
+        <h1 class="gradient-text">{{ title() }}</h1>
+      </div>
       @if (subtitle()) {
         <p class="sub">{{ subtitle() }}</p>
       }
@@ -23,25 +25,32 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     `
       :host {
         display: block;
-        margin-bottom: 1.2rem;
+        margin-bottom: 0.9rem;
       }
       .ph {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 0.4rem;
+        gap: 0.25rem;
+      }
+      .lead {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
       }
       .chip {
+        flex: none;
         display: grid;
         place-items: center;
-        width: 2.7rem;
-        height: 2.7rem;
-        font-size: 1.4rem;
-        border-radius: 0.9rem;
+        width: 2.1rem;
+        height: 2.1rem;
+        font-size: 1.1rem;
+        border-radius: 0.7rem;
         background: linear-gradient(135deg, var(--accent), var(--accent-2));
         box-shadow:
-          0 8px 22px -8px color-mix(in srgb, var(--accent) 70%, transparent),
+          0 6px 16px -8px color-mix(in srgb, var(--accent) 70%, transparent),
           inset 0 0 0 1px rgba(255, 255, 255, 0.18);
         position: relative;
         overflow: hidden;
@@ -56,23 +65,28 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       }
       h1 {
         margin: 0;
-        font-size: 1.7rem;
+        font-size: 1.45rem;
         line-height: 1.1;
         letter-spacing: -0.01em;
       }
       .sub {
         margin: 0;
-        max-width: 54ch;
-        font-size: 0.86rem;
+        max-width: 56ch;
+        font-size: 0.82rem;
         color: var(--text-dim);
         line-height: 1.3;
       }
       @media (min-width: 768px) {
+        .chip {
+          width: 2.4rem;
+          height: 2.4rem;
+          font-size: 1.25rem;
+        }
         h1 {
-          font-size: 2.1rem;
+          font-size: 1.85rem;
         }
         .sub {
-          font-size: 0.92rem;
+          font-size: 0.88rem;
         }
       }
       @keyframes sheen {

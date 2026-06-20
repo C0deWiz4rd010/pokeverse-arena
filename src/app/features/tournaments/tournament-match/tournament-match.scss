@@ -17,6 +17,42 @@
   border: 1px solid color-mix(in srgb, var(--accent-2) 40%, transparent);
 }
 
+/* ------------------------------------------------------------ versus head */
+
+.versus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+}
+.vs-trainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &.foe { flex-direction: row; }
+}
+.t-ava {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bg) 60%, #000);
+  border: 2px solid var(--accent);
+
+  .foe & { border-color: var(--accent-2); }
+}
+.t-name {
+  font-weight: 800;
+  font-size: 0.92rem;
+  text-transform: capitalize;
+}
+.vs-x {
+  font-weight: 900;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
 /* -------------------------------------------------------------- arena */
 
 .arena {
@@ -38,6 +74,8 @@
 }
 
 .fighter {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -147,31 +185,6 @@
   gap: 0.5rem;
 
   @include up(md) { grid-template-columns: repeat(4, 1fr); }
-}
-
-.move {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.6rem 0.7rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-border);
-  background: color-mix(in srgb, var(--bg) 60%, #000);
-  color: var(--text);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.15s ease, transform 0.1s ease, background 0.15s ease;
-
-  &:hover:not(:disabled) {
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 12%, var(--bg));
-  }
-  &:active:not(:disabled) { transform: translateY(1px); }
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
-
-  .mv-name { font-weight: 600; font-size: 0.86rem; }
-  .mv-meta { display: flex; align-items: center; gap: 0.4rem; }
-  .pwr { font-size: 0.72rem; color: var(--text-dim); }
 }
 
 /* -------------------------------------------------------------- result */

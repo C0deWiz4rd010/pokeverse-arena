@@ -1,6 +1,6 @@
 @use '../../../styles/responsive' as *;
 
-.type-lab { padding: 1rem 0 3rem; }
+.type-lab { padding: 1rem 0 3rem; width: min(1000px, 100%); margin-inline: auto; }
 
 /* ---- tabs ---- */
 .tabs {
@@ -101,6 +101,7 @@
 .matrix {
   border-collapse: collapse;
   font-size: 0.62rem;
+  margin-inline: auto;
 }
 @include up(md) { .matrix { font-size: 0.72rem; } }
 .matrix th,

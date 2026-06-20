@@ -4,6 +4,8 @@ import { Battle, type Battler, type BattleEvent, type SideIndex } from '../../ga
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
+import { WeatherOverlayComponent } from '../../core/ui/weather-overlay/weather-overlay';
+import { MoveButtonComponent } from '../../core/ui/move-button/move-button';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { titleCase } from '../../core/ui/format';
 import { SeededRng } from '../../core/utils/rng';
@@ -14,7 +16,13 @@ type Phase = 'setup' | 'loading' | 'fighting' | 'done';
 @Component({
   selector: 'pv-battle',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, SpinnerComponent, PageHeaderComponent],
+  imports: [
+    TypeBadgeComponent,
+    SpinnerComponent,
+    PageHeaderComponent,
+    WeatherOverlayComponent,
+    MoveButtonComponent,
+  ],
   templateUrl: './battle.html',
   styleUrl: './battle.scss',
 })
@@ -44,12 +52,6 @@ export class BattleComponent {
   protected readonly winner = signal<SideIndex | null>(null);
   protected readonly weather = signal<Weather>('clear');
   protected readonly weatherInfo = computed(() => WEATHER_INFO[this.weather()]);
-
-  /** Static index arrays used to render weather particles in the template. */
-  protected readonly drops = Array.from({ length: 28 }, (_, i) => i);
-  protected readonly flakes = Array.from({ length: 24 }, (_, i) => i);
-  protected readonly grains = Array.from({ length: 30 }, (_, i) => i);
-  protected readonly leaves = Array.from({ length: 12 }, (_, i) => i);
 
   private battle: Battle | null = null;
 

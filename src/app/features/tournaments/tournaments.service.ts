@@ -28,6 +28,7 @@ type Status = 'idle' | 'loading' | 'draft' | 'ready' | 'done';
 export interface PlayerMatchSetup {
   readonly match: BracketMatch;
   readonly round: RoundId;
+  readonly player: Trainer;
   readonly foe: Trainer;
   readonly playerTeam: Battler[];
   readonly foeTeam: Battler[];
@@ -44,11 +45,27 @@ const TITLES = [
   'Black Belt', 'Cooltrainer', 'Dragon Tamer', 'Psychic', 'Bug Catcher', 'Champion-in-Training',
   'Ruin Maniac', 'Beauty', 'Guitarist',
 ];
-const AVATARS = ['🧢', '🥋', '🧙', '👮', '🕵️', '👸', '🤠', '🧑‍🚀', '🦹', '🧝', '👨‍🎤', '🧞', '🥷', '💂', '🧚'];
 const NAMES = [
   'Rowan', 'Sable', 'Iris', 'Cyrus', 'Lyra', 'Volk', 'Mira', 'Ezra', 'Nova', 'Kael',
   'Wren', 'Drake', 'Suki', 'Bram', 'Faye', 'Onyx', 'Vesper', 'Cleo', 'Roan', 'Thea',
 ];
+
+/**
+ * Deterministic trainer portrait via the DiceBear avatar library (HTTP API, no
+ * bundled assets). The same seed always yields the same character, so a trainer
+ * looks identical across the bracket, the match and the champion screen.
+ */
+function trainerAvatar(seed: string, accent = false): string {
+  const params = new URLSearchParams({
+    seed,
+    radius: '50',
+    backgroundType: 'gradientLinear',
+    backgroundColor: accent
+      ? 'ffd166,ffb703,fb8500'
+      : 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c8f7c5',
+  });
+  return `https://api.dicebear.com/9.x/adventurer/svg?${params.toString()}`;
+}
 
 function idFromUrl(url: string): number | null {
   const m = url.match(/\/pokemon\/(\d+)\/?$/);
@@ -115,6 +132,7 @@ export class TournamentService {
     return {
       match: pm,
       round: pm.round,
+      player,
       foe,
       playerTeam: player.team,
       foeTeam: this.teamForRound(foe, pm.round),
@@ -321,13 +339,21 @@ export class TournamentService {
 
   private makeTrainer(index: number, isPlayer: boolean, team: Battler[]): Trainer {
     if (isPlayer) {
-      return { id: 'player', name: 'You', title: 'Challenger', avatar: '🎮', team, isPlayer: true };
+      return {
+        id: 'player',
+        name: 'You',
+        title: 'Challenger',
+        avatar: trainerAvatar('Champion-Ace', true),
+        team,
+        isPlayer: true,
+      };
     }
+    const name = NAMES[(index * 7) % NAMES.length];
     return {
       id: `cpu-${index}`,
-      name: NAMES[(index * 7) % NAMES.length],
+      name,
       title: TITLES[index % TITLES.length],
-      avatar: AVATARS[index % AVATARS.length],
+      avatar: trainerAvatar(`${name}-${index}`),
       team,
     };
   }

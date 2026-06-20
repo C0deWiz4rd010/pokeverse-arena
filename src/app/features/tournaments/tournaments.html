@@ -69,6 +69,7 @@
       } @else if (svc.status() === 'done' && svc.champion(); as champ) {
         <div class="finale" [class.you]="championIsPlayer()">
           <span class="crown">👑</span>
+          <img class="champ-ava" [src]="champ.avatar" [alt]="champ.name" />
           <p class="champ-name">
             {{ championIsPlayer() ? 'You are the Champion!' : champ.name + ' lifts the trophy' }}
           </p>
@@ -79,7 +80,7 @@
         <div class="cta">
           <span class="cta-round">{{ roundLabel[setup.round] }}</span>
           <div class="cta-foe">
-            <span class="ava">{{ setup.foe.avatar }}</span>
+            <img class="ava" [src]="setup.foe.avatar" [alt]="setup.foe.name" loading="lazy" />
             <div class="cta-foe-meta">
               <p class="vs">vs {{ setup.foe.name }}</p>
               <p class="foe-title">{{ setup.foe.title }}</p>
@@ -148,11 +149,19 @@
 <ng-template #card let-m>
   <div class="bmatch" [class.live]="isLive(m)" [class.player]="hasPlayer(m)" [class.done]="m.played">
     <div class="slot" [class.win]="m.played && m.winner === 0" [class.out]="m.played && m.winner === 1">
-      <span class="ava">{{ m.a?.avatar || '·' }}</span>
+      @if (m.a) {
+        <img class="ava" [src]="m.a.avatar" [alt]="m.a.name" loading="lazy" />
+      } @else {
+        <span class="ava ph">·</span>
+      }
       <span class="nm">{{ m.a ? (m.a.isPlayer ? 'You' : m.a.name) : 'TBD' }}</span>
     </div>
     <div class="slot" [class.win]="m.played && m.winner === 1" [class.out]="m.played && m.winner === 0">
-      <span class="ava">{{ m.b?.avatar || '·' }}</span>
+      @if (m.b) {
+        <img class="ava" [src]="m.b.avatar" [alt]="m.b.name" loading="lazy" />
+      } @else {
+        <span class="ava ph">·</span>
+      }
       <span class="nm">{{ m.b ? (m.b.isPlayer ? 'You' : m.b.name) : 'TBD' }}</span>
     </div>
   </div>
