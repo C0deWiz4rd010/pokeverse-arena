@@ -68,6 +68,8 @@ npm run build      # production build
 - [`docs/architecture.md`](docs/architecture.md) — folder structure & principles.
 - [`docs/tech-decisions.md`](docs/tech-decisions.md) — library choices.
 - [`docs/roadmap.md`](docs/roadmap.md) — phased milestones.
+- [`docs/pwa.md`](docs/pwa.md) — PWA, accessibility & mobile.
+- [`docs/deployment.md`](docs/deployment.md) — GitHub Pages via Actions.
 
 ## 🙏 Credits
 

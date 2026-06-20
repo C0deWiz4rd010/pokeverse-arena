@@ -1,0 +1,60 @@
+name: Deploy to GitHub Pages
+
+# Build the production bundle and publish it to GitHub Pages.
+# Hash routing (withHashLocation) means deep links work without server rewrites;
+# the 404.html fallback covers any non-hash path that is requested directly.
+
+on:
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; cancel superseded runs.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (production, scoped base href)
+        run: npm run build -- --base-href=/pokeverse-arena/
+
+      - name: SPA + Pages housekeeping
+        run: |
+          cp dist/pokeverse-arena/browser/index.html dist/pokeverse-arena/browser/404.html
+          touch dist/pokeverse-arena/browser/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/pokeverse-arena/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
