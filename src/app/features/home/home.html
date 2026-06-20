@@ -1,0 +1,36 @@
+<section class="hero container">
+  <div class="hero-copy">
+    <span class="eyebrow">⚡ Gotta build 'em all</span>
+    <h1>
+      Welcome to <span class="gradient-text">PokéVerse Arena</span>
+    </h1>
+    <p class="lead">
+      A modular Pokémon platform &amp; browser game powered by the PokéAPI.
+      Explore an advanced Pokédex, analyze type matchups, build dream teams and
+      battle them in a seeded, deterministic arena.
+    </p>
+    <div class="cta">
+      <a class="btn btn-primary" routerLink="/pokedex">Open the Pokédex</a>
+      <a class="btn" routerLink="/battle">Start a Battle ⚔️</a>
+    </div>
+  </div>
+
+  <div class="hero-visual" [class.ready]="heroReady()">
+    <div class="poster" aria-hidden="true"></div>
+    <canvas #hero class="hero-canvas" aria-hidden="true"></canvas>
+  </div>
+</section>
+
+<section class="container features">
+  <h2 class="section-title">Everything inside</h2>
+  <div class="grid">
+    @for (f of features; track f.path) {
+      <a class="glass feature" [routerLink]="f.path">
+        <span class="f-icon" aria-hidden="true">{{ f.icon }}</span>
+        <h3>{{ f.title }}</h3>
+        <p>{{ f.text }}</p>
+        <span class="go">Explore →</span>
+      </a>
+    }
+  </div>
+</section>
