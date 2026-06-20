@@ -45,6 +45,10 @@
         <!-- Weather backdrop -->
         <pv-weather-overlay [weather]="weather()" />
 
+        <!-- GPU effects layer (lazy PixiJS; no-op if unavailable) -->
+        <pv-battle-fx />
+
+
         <!-- Opponent -->
         @if (opponent(); as o) {
           <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1" [class.fainted]="winner() === 0">

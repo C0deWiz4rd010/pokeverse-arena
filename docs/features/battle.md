@@ -15,6 +15,10 @@ Seeded, type-accurate 1-v-1 battles with an animated arena and weather backdrops
 - **Weather backdrops** — each battle gets a fitting atmosphere (sun, rain,
   thunderstorm, sandstorm, snow, fog, windswept leaves or clear) derived from the
   fighters' types, with animated particle effects.
+- **PixiJS effect layer** — a lazily-loaded WebGL overlay paints type-coloured
+  impact bursts, crit flashes and charge swirls on each hit. It degrades
+  gracefully: if WebGL is unavailable or the user prefers reduced motion the
+  canvas is never created and the battle still plays with its CSS animations.
 
 ## Files
 
@@ -25,7 +29,10 @@ Seeded, type-accurate 1-v-1 battles with an animated arena and weather backdrops
 | `game/engine/battle.ts` | `Battle` class: turn resolution, action ordering, seeded tie-breaks, simple expected-damage AI. |
 | `game/engine/index.ts` | Barrel export for the engine. |
 | `features/battle/battle.service.ts` | Builds `Battler`s from the API (stats, types, move pool), picks battle sprites. |
-| `features/battle/battle-weather.ts` | `Weather` type, type→weather mapping, seeded `pickWeather()`. |
+| `features/battle/battle-weather.ts` | Re-exports the shared weather model (now in `core/ui/weather-overlay/weather.ts`). |
+| `core/ui/weather-overlay/` | Shared `pv-weather-overlay` particle backdrop (used by battle, tournaments, arena). |
+| `core/ui/move-button/` | Shared `pv-move-button` (type-tinted, effectiveness badge, hover tooltip). |
+| `features/battle/pixi/battle-fx.ts` | Lazy `pv-battle-fx` PixiJS overlay: impact bursts, crit flashes, charge swirls. |
 | `features/battle/battle.ts` / `.html` / `.scss` | The component: setup form, animated arena, weather overlays, log, move buttons, result. |
 | `game/engine/damage.spec.ts` / `battle.spec.ts` | Engine unit tests. |
 

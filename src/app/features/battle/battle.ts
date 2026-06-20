@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { BattleService } from './battle.service';
 import { Battle, type Battler, type BattleEvent, type SideIndex } from '../../game/engine';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
@@ -6,10 +6,12 @@ import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { WeatherOverlayComponent } from '../../core/ui/weather-overlay/weather-overlay';
 import { MoveButtonComponent } from '../../core/ui/move-button/move-button';
+import { BattleFxComponent } from './pixi/battle-fx';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { titleCase } from '../../core/ui/format';
 import { SeededRng } from '../../core/utils/rng';
 import { pickWeather, WEATHER_INFO, type Weather } from './battle-weather';
+import type { PokemonType } from '../../core/utils/type-chart';
 
 type Phase = 'setup' | 'loading' | 'fighting' | 'done';
 
@@ -22,6 +24,7 @@ type Phase = 'setup' | 'loading' | 'fighting' | 'done';
     PageHeaderComponent,
     WeatherOverlayComponent,
     MoveButtonComponent,
+    BattleFxComponent,
   ],
   templateUrl: './battle.html',
   styleUrl: './battle.scss',
@@ -59,6 +62,9 @@ export class BattleComponent {
   protected readonly oppHpPct = computed(() => (this.oppHp() / this.oppMaxHp()) * 100);
   protected readonly playerMoves = computed(() => this.player()?.moves ?? []);
   protected readonly outcomeWon = computed(() => this.winner() === 0);
+
+  private readonly fx = viewChild(BattleFxComponent);
+  private pendingMove: { side: SideIndex; type: PokemonType } | null = null;
 
   constructor() {
     void this.pokedex.ensureLoaded();
@@ -143,15 +149,19 @@ export class BattleComponent {
       switch (ev.kind) {
         case 'move':
           this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
+          this.pendingMove = { side: ev.side, type: this.moveType(ev.side, ev.move) };
+          this.fx()?.cast(ev.side, this.pendingMove.type);
           await sleep(600);
           break;
         case 'miss':
           this.append(`${titleCase(ev.attacker)}'s attack missed!`);
+          this.pendingMove = null;
           await sleep(500);
           break;
         case 'damage': {
           this.flashSide.set(ev.side);
           this.shakeSide.set(ev.side);
+          if (this.pendingMove) this.fx()?.impact(ev.side, this.pendingMove.type, ev.crit);
           if (ev.side === 0) this.playerHp.set(ev.remainingHp);
           else this.oppHp.set(ev.remainingHp);
           const note = effectivenessNote(ev.effectiveness);
@@ -182,6 +192,13 @@ export class BattleComponent {
 
   private append(line: string): void {
     this.log.update((l) => [...l, line]);
+  }
+
+  /** Resolve a move's type by name from the attacking side's battler. */
+  private moveType(side: SideIndex, name: string): PokemonType {
+    const battler = side === 0 ? this.player() : this.opponent();
+    const move = battler?.moves.find((m) => m.name === name);
+    return move?.type ?? 'normal';
   }
 }
 

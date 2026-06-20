@@ -6,14 +6,17 @@ import {
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { Battle, type Battler, type BattleEvent, type SideIndex } from '../../../game/engine';
 import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
 import { WeatherOverlayComponent } from '../../../core/ui/weather-overlay/weather-overlay';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
+import { BattleFxComponent } from '../../battle/pixi/battle-fx';
 import { pickWeather, weatherForType, type Weather } from '../../../core/ui/weather-overlay/weather';
 import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';
+import type { PokemonType } from '../../../core/utils/type-chart';
 import type { PlayerMatchSetup } from '../tournaments.service';
 
 interface TrayMon {
@@ -32,7 +35,7 @@ export interface MatchOutcome {
 @Component({
   selector: 'pv-tournament-match',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, WeatherOverlayComponent, MoveButtonComponent],
+  imports: [TypeBadgeComponent, WeatherOverlayComponent, MoveButtonComponent, BattleFxComponent],
   templateUrl: './tournament-match.html',
   styleUrl: './tournament-match.scss',
 })
@@ -97,6 +100,9 @@ export class TournamentMatchComponent {
   private battle: Battle | null = null;
   private duel = 0;
   private started = false;
+
+  private readonly fx = viewChild(BattleFxComponent);
+  private pendingMove: { side: SideIndex; type: PokemonType } | null = null;
 
   constructor() {
     effect(() => {
@@ -188,15 +194,19 @@ export class TournamentMatchComponent {
       switch (ev.kind) {
         case 'move':
           this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
+          this.pendingMove = { side: ev.side, type: this.moveType(ev.side, ev.move) };
+          this.fx()?.cast(ev.side, this.pendingMove.type);
           await sleep(520);
           break;
         case 'miss':
           this.append(`${titleCase(ev.attacker)}'s attack missed!`);
+          this.pendingMove = null;
           await sleep(450);
           break;
         case 'damage': {
           this.flashSide.set(ev.side);
           this.shakeSide.set(ev.side);
+          if (this.pendingMove) this.fx()?.impact(ev.side, this.pendingMove.type, ev.crit);
           if (ev.side === 0) this.pHp.set(ev.remainingHp);
           else this.fHp.set(ev.remainingHp);
           if (ev.crit) this.append('A critical hit!');
@@ -226,6 +236,13 @@ export class TournamentMatchComponent {
 
   private append(line: string): void {
     this.log.update((l) => [...l, line]);
+  }
+
+  /** Resolve a move's type by name from the active fighter on the given side. */
+  private moveType(side: SideIndex, name: string): PokemonType {
+    const battler = side === 0 ? this.playerActive() : this.foeActive();
+    const move = battler?.moves.find((m) => m.name === name);
+    return move?.type ?? 'normal';
   }
 }
 

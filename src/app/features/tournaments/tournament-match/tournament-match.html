@@ -17,6 +17,7 @@
 
   <div class="arena">
     <pv-weather-overlay [weather]="weather()" />
+    <pv-battle-fx />
 
     <!-- Foe (top-right) -->
     <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1">
