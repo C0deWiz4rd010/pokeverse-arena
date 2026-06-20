@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { APP_VERSION } from './core/version';
 
 interface NavItem {
   path: string;
@@ -16,6 +17,7 @@ interface NavItem {
 })
 export class App {
   protected readonly menuOpen = signal(false);
+  protected readonly version = APP_VERSION;
 
   protected readonly nav: NavItem[] = [
     { path: '/pokedex', label: 'Pokédex', icon: '📕' },

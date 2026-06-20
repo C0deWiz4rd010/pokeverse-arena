@@ -41,84 +41,93 @@
     }
 
     @default {
-      <div class="arena">
-        <!-- Weather backdrop -->
-        <pv-weather-overlay [weather]="weather()" />
+      <div class="stage">
+        <div class="stage-main">
+          <div class="arena">
+            <!-- Weather backdrop -->
+            <pv-weather-overlay [weather]="weather()" />
 
-        <!-- GPU effects layer (lazy PixiJS; no-op if unavailable) -->
-        <pv-battle-fx />
+            <!-- GPU effects layer (lazy PixiJS; no-op if unavailable) -->
+            <pv-battle-fx />
 
 
-        <!-- Opponent -->
-        @if (opponent(); as o) {
-          <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1" [class.fainted]="winner() === 0">
-            <div class="info glass">
-              <div class="row">
-                <strong>{{ titleCase(o.name) }}</strong>
-                <span class="lv">Lv{{ o.level }}</span>
+            <!-- Opponent -->
+            @if (opponent(); as o) {
+              <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1" [class.crit]="critSide() === 1" [class.fainted]="winner() === 0">
+                @if (critSide() === 1) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
+                <div class="info glass">
+                  <div class="row">
+                    <strong>{{ titleCase(o.name) }}</strong>
+                    <span class="lv">Lv{{ o.level }}</span>
+                  </div>
+                  <div class="types">
+                    @for (t of o.types; track t) { <pv-type-badge [type]="t" /> }
+                  </div>
+                  <div class="hpbar">
+                    <span class="fill" [class.low]="oppHpPct() <= 25" [class.mid]="oppHpPct() > 25 && oppHpPct() <= 50" [style.width.%]="oppHpPct()"></span>
+                    <span class="kp">{{ oppHp() }} / {{ oppMaxHp() }} <small>KP</small></span>
+                  </div>
+                </div>
+                <img class="sprite" [src]="o.sprite" [alt]="o.name" />
               </div>
-              <div class="types">
-                @for (t of o.types; track t) { <pv-type-badge [type]="t" /> }
+            }
+
+            <!-- Player -->
+            @if (player(); as p) {
+              <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0" [class.crit]="critSide() === 0" [class.fainted]="winner() === 1">
+                <img class="sprite" [src]="p.sprite" [alt]="p.name" />
+                @if (critSide() === 0) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
+                <div class="info glass">
+                  <div class="row">
+                    <strong>{{ titleCase(p.name) }}</strong>
+                    <span class="lv">Lv{{ p.level }}</span>
+                  </div>
+                  <div class="types">
+                    @for (t of p.types; track t) { <pv-type-badge [type]="t" /> }
+                  </div>
+                  <div class="hpbar">
+                    <span class="fill" [class.low]="playerHpPct() <= 25" [class.mid]="playerHpPct() > 25 && playerHpPct() <= 50" [style.width.%]="playerHpPct()"></span>
+                    <span class="kp">{{ playerHp() }} / {{ playerMaxHp() }} <small>KP</small></span>
+                  </div>
+                </div>
               </div>
-              <div class="hpbar">
-                <span class="fill" [class.low]="oppHpPct() <= 25" [class.mid]="oppHpPct() > 25 && oppHpPct() <= 50" [style.width.%]="oppHpPct()"></span>
-              </div>
-              <span class="hpnum">{{ oppHp() }} / {{ oppMaxHp() }}</span>
-            </div>
-            <img class="sprite" [src]="o.sprite" [alt]="o.name" />
+            }
           </div>
-        }
 
-        <!-- Player -->
-        @if (player(); as p) {
-          <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0" [class.fainted]="winner() === 1">
-            <img class="sprite" [src]="p.sprite" [alt]="p.name" />
-            <div class="info glass">
-              <div class="row">
-                <strong>{{ titleCase(p.name) }}</strong>
-                <span class="lv">Lv{{ p.level }}</span>
-              </div>
-              <div class="types">
-                @for (t of p.types; track t) { <pv-type-badge [type]="t" /> }
-              </div>
-              <div class="hpbar">
-                <span class="fill" [class.low]="playerHpPct() <= 25" [class.mid]="playerHpPct() > 25 && playerHpPct() <= 50" [style.width.%]="playerHpPct()"></span>
-              </div>
-              <span class="hpnum">{{ playerHp() }} / {{ playerMaxHp() }}</span>
+          @if (phase() === 'fighting') {
+            <div class="moves" [class.disabled]="busy()">
+              @for (move of playerMoves(); track move.name; let i = $index) {
+                <pv-move-button
+                  [move]="move"
+                  [defenderTypes]="opponent()?.types"
+                  [disabled]="busy()"
+                  (picked)="useMove(i)"
+                />
+              }
             </div>
-          </div>
-        }
-      </div>
+            @if (busy()) { <p class="thinking">…</p> }
+          }
 
-      <div class="log glass" aria-live="polite">
-        @for (line of log(); track $index) {
-          <p>{{ line }}</p>
-        }
-      </div>
-
-      @if (phase() === 'fighting') {
-        <div class="moves" [class.disabled]="busy()">
-          @for (move of playerMoves(); track move.name; let i = $index) {
-            <pv-move-button
-              [move]="move"
-              [defenderTypes]="opponent()?.types"
-              [disabled]="busy()"
-              (picked)="useMove(i)"
-            />
+          @if (phase() === 'done') {
+            <div class="result glass" [class.win]="outcomeWon()">
+              <h2>{{ outcomeWon() ? 'Victory! 🏆' : 'Defeat 💢' }}</h2>
+              <div class="result-actions">
+                <button class="btn" type="button" (click)="rematch()">↻ Rematch</button>
+                <button class="btn ghost" type="button" (click)="newBattle()">⚔️ New battle</button>
+              </div>
+            </div>
           }
         </div>
-        @if (busy()) { <p class="thinking">…</p> }
-      }
 
-      @if (phase() === 'done') {
-        <div class="result glass" [class.win]="outcomeWon()">
-          <h2>{{ outcomeWon() ? 'Victory! 🏆' : 'Defeat 💢' }}</h2>
-          <div class="result-actions">
-            <button class="btn" type="button" (click)="rematch()">↻ Rematch</button>
-            <button class="btn ghost" type="button" (click)="newBattle()">⚔️ New battle</button>
+        <aside class="log glass" aria-live="polite">
+          <h3 class="log-title">📜 Battle Log</h3>
+          <div class="log-lines">
+            @for (line of log(); track $index) {
+              <p>{{ line }}</p>
+            }
           </div>
-        </div>
-      }
+        </aside>
+      </div>
     }
   }
 </section>

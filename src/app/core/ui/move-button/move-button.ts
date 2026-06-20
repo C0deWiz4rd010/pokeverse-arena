@@ -56,11 +56,23 @@ const CAT_META: Record<DamageClass, { icon: string; label: string }> = {
       }
 
       <span class="tip" role="tooltip">
-        <span class="tip-title">{{ label() }}</span>
-        <span class="tip-row"><span>Type</span><b>{{ titleCase(move().type) }}</b></span>
-        <span class="tip-row"><span>Class</span><b>{{ cat().icon }} {{ cat().label }}</b></span>
-        <span class="tip-row"><span>Power</span><b>{{ move().power || '—' }}</b></span>
-        <span class="tip-row"><span>Accuracy</span><b>{{ accLabel() }}</b></span>
+        <span class="tip-head">
+          <span class="tip-icon" aria-hidden="true">{{ cat().icon }}</span>
+          <span class="tip-titles">
+            <span class="tip-title">{{ label() }}</span>
+            <span class="tip-sub">{{ titleCase(move().type) }} · {{ cat().label }}</span>
+          </span>
+        </span>
+
+        <span class="tip-desc">{{ blurb() }}</span>
+
+        <span class="tip-grid">
+          <span class="cell"><i>Power</i><b>{{ move().power || '—' }}</b></span>
+          <span class="cell"><i>Accuracy</i><b>{{ accLabel() }}</b></span>
+          @if (ppLabel()) { <span class="cell"><i>PP</i><b>{{ ppLabel() }}</b></span> }
+          @if (priorityLabel()) { <span class="cell"><i>Priority</i><b>{{ priorityLabel() }}</b></span> }
+        </span>
+
         @if (eff(); as e) {
           <span class="tip-eff" [attr.data-tier]="e.tier">{{ effShort(e.mult) }} · {{ e.label }}</span>
         }
@@ -84,6 +96,37 @@ export class MoveButtonComponent {
   protected readonly accLabel = computed(() => {
     const a = this.move().accuracy;
     return a > 0 ? `${a}%` : '—';
+  });
+
+  /** Remaining-PP label, only when the move tracks PP. */
+  protected readonly ppLabel = computed(() => {
+    const pp = this.move().pp;
+    return pp !== undefined && Number.isFinite(pp) ? `${pp}` : null;
+  });
+
+  /** Signed priority bracket label, only when non-zero. */
+  protected readonly priorityLabel = computed(() => {
+    const p = this.move().priority ?? 0;
+    if (p === 0) return null;
+    return p > 0 ? `+${p}` : `${p}`;
+  });
+
+  /** A short scouting blurb generated from the move's profile. */
+  protected readonly blurb = computed(() => {
+    const mv = this.move();
+    const type = titleCase(mv.type);
+    if (mv.damageClass === 'status' || mv.power <= 0) {
+      return `A ${type}-type status move — sways the battle without dealing direct damage.`;
+    }
+    const punch =
+      mv.power >= 120 ? 'a devastating'
+      : mv.power >= 90 ? 'a powerful'
+      : mv.power >= 60 ? 'a solid'
+      : 'a quick';
+    const acc = mv.accuracy === 0 ? ' and never misses' : mv.accuracy < 85 ? ' but risky to land' : '';
+    const first = (mv.priority ?? 0) > 0 ? ' It strikes first in a pinch.' : '';
+    const kind = this.cat().label.toLowerCase();
+    return `A ${type}-type ${kind} move — ${punch} hit${acc}.${first}`;
   });
 
   /** Live effectiveness against the defender, when its types are provided. */

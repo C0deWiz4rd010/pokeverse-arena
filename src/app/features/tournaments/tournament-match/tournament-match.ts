@@ -61,6 +61,7 @@ export class TournamentMatchComponent {
   protected readonly busy = signal(false);
   protected readonly shakeSide = signal<SideIndex | null>(null);
   protected readonly flashSide = signal<SideIndex | null>(null);
+  protected readonly critSide = signal<SideIndex | null>(null);
   protected readonly done = signal(false);
   protected readonly playerWon = signal(false);
 
@@ -209,12 +210,16 @@ export class TournamentMatchComponent {
           if (this.pendingMove) this.fx()?.impact(ev.side, this.pendingMove.type, ev.crit);
           if (ev.side === 0) this.pHp.set(ev.remainingHp);
           else this.fHp.set(ev.remainingHp);
-          if (ev.crit) this.append('A critical hit!');
+          if (ev.crit) {
+            this.critSide.set(ev.side);
+            this.append('A critical hit!');
+          }
           const note = effectivenessNote(ev.effectiveness);
           if (note) this.append(note);
           await sleep(500);
           this.shakeSide.set(null);
           this.flashSide.set(null);
+          this.critSide.set(null);
           break;
         }
         case 'faint':

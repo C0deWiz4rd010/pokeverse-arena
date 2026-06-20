@@ -121,10 +121,12 @@
 }
 
 .hpbar {
-  height: 7px;
+  position: relative;
+  height: 15px;
   margin: 0.35rem 0;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--text) 14%, transparent);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--glass-border);
   overflow: hidden;
 
   .fill {
@@ -135,6 +137,23 @@
     transition: width 0.45s ease;
 
     &.low { background: linear-gradient(90deg, #ff5d6c, #ffb199); }
+  }
+
+  .kp {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 3px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+
+    small { font-size: 0.54rem; opacity: 0.85; font-weight: 700; }
   }
 }
 
@@ -237,8 +256,42 @@
   50% { filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45)) brightness(2.4); }
 }
 
+.fighter.crit .sprite { animation: crit-pop 0.5s ease; }
+@keyframes crit-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.16) rotate(-3deg); filter: drop-shadow(0 0 16px #ffd166) brightness(1.6); }
+  60% { transform: scale(0.96) rotate(2deg); }
+  100% { transform: scale(1); }
+}
+
+.crit-burst {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  z-index: 5;
+  translate: -50% 0;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: #2a1500;
+  background: linear-gradient(135deg, #ffe066, #ff9d2e);
+  box-shadow: 0 0 20px rgba(255, 209, 102, 0.85), 0 6px 14px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  animation: crit-burst 0.7s cubic-bezier(0.18, 0.9, 0.3, 1.2) forwards;
+}
+@keyframes crit-burst {
+  0% { opacity: 0; transform: scale(0.4) rotate(-12deg); translate: -50% 8px; }
+  35% { opacity: 1; transform: scale(1.2) rotate(-4deg); translate: -50% -2px; }
+  60% { transform: scale(1) rotate(0deg); translate: -50% -4px; }
+  100% { opacity: 0; transform: scale(1.05); translate: -50% -18px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fighter.shake,
-  .fighter.flash .sprite { animation: none; }
+  .fighter.flash .sprite,
+  .fighter.crit .sprite { animation: none; }
+  .crit-burst { animation: none; opacity: 1; }
   .hpbar .fill { transition: none; }
 }

@@ -36,7 +36,7 @@ import type { EvolutionNode } from '../../core/models/pokemon.model';
   `,
   styles: [
     `
-      .stage { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+      .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; }
       @media (min-width: 768px) { .stage { flex-direction: row; } }
       .node {
         display: grid;

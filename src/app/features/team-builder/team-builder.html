@@ -26,6 +26,38 @@
     <span class="count" [class.full]="store.full()">{{ store.team().length }} / {{ MAX_TEAM }}</span>
   </form>
 
+  <!-- Discovery: filter the pool, then roll random fighters -->
+  <div class="discover glass">
+    <div class="filters">
+      <label class="filter">
+        <span>Type</span>
+        <select [value]="store.filterType() ?? ''" (change)="onFilterType($event)">
+          <option value="">Any type</option>
+          @for (t of types; track t) {
+            <option [value]="t" [selected]="t === store.filterType()">{{ titleCase(t) }}</option>
+          }
+        </select>
+      </label>
+      <label class="filter">
+        <span>Generation</span>
+        <select [value]="store.filterGen() ?? ''" (change)="onFilterGen($event)">
+          <option value="">Any gen</option>
+          @for (g of generations; track g) {
+            <option [value]="g" [selected]="g === store.filterGen()">Gen {{ g }}</option>
+          }
+        </select>
+      </label>
+    </div>
+    <div class="roll-actions">
+      <button class="btn ghost" type="button" (click)="addRandom()" [disabled]="store.full() || store.rolling()">
+        @if (store.rolling()) { Rolling… } @else { 🎲 Random }
+      </button>
+      <button class="btn ghost" type="button" (click)="fillRandom()" [disabled]="store.full() || store.rolling()">
+        ✨ Fill team
+      </button>
+    </div>
+  </div>
+
   @if (store.error()) {
     <p class="err" role="alert">{{ store.error() }}</p>
   }
@@ -124,6 +156,29 @@
     <!-- Team-wide defensive analysis -->
     <section class="analysis glass">
       <h2>Defensive analysis</h2>
+
+      @if (store.rating(); as r) {
+        <div class="rating" [attr.data-grade]="r.grade">
+          <div class="grade" [attr.data-grade]="r.grade">
+            <span class="g-letter">{{ r.grade }}</span>
+            <span class="g-score">{{ r.score }}</span>
+          </div>
+          <div class="rating-body">
+            <strong class="rating-title">Team Power Rating</strong>
+            <p class="rating-verdict">{{ r.verdict }}</p>
+            <div class="rating-meters">
+              <div class="meter">
+                <span class="m-label">⚔️ Offense <b>{{ r.offense }}/18</b></span>
+                <span class="m-track"><span class="m-fill atk" [style.width.%]="(r.offense / 18) * 100"></span></span>
+              </div>
+              <div class="meter">
+                <span class="m-label">🛡️ Defense <b>{{ r.defense }}/18</b></span>
+                <span class="m-track"><span class="m-fill def" [style.width.%]="(r.defense / 18) * 100"></span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
 
       @if (blindSpots().length) {
         <div class="blind">

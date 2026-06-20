@@ -52,6 +52,7 @@ export class BattleComponent {
   protected readonly log = signal<string[]>([]);
   protected readonly shakeSide = signal<SideIndex | null>(null);
   protected readonly flashSide = signal<SideIndex | null>(null);
+  protected readonly critSide = signal<SideIndex | null>(null);
   protected readonly winner = signal<SideIndex | null>(null);
   protected readonly weather = signal<Weather>('clear');
   protected readonly weatherInfo = computed(() => WEATHER_INFO[this.weather()]);
@@ -165,11 +166,15 @@ export class BattleComponent {
           if (ev.side === 0) this.playerHp.set(ev.remainingHp);
           else this.oppHp.set(ev.remainingHp);
           const note = effectivenessNote(ev.effectiveness);
-          if (ev.crit) this.append('A critical hit!');
+          if (ev.crit) {
+            this.critSide.set(ev.side);
+            this.append('A critical hit!');
+          }
           if (note) this.append(note);
           await sleep(550);
           this.shakeSide.set(null);
           this.flashSide.set(null);
+          this.critSide.set(null);
           break;
         }
         case 'status':

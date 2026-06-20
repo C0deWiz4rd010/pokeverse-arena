@@ -95,6 +95,14 @@
 .profile .flag { color: var(--accent-3); font-weight: 700; justify-content: flex-start; }
 
 .evo-scroll { overflow-x: auto; padding-bottom: 0.5rem; }
+/* Center the evolution tree when it fits; auto margins collapse to 0 and let
+   it scroll from the start once a long chain overflows its container. */
+.evo-scroll pv-evolution-tree {
+  display: block;
+  width: fit-content;
+  min-width: 100%;
+  margin-inline: auto;
+}
 
 .tabs { display: flex; gap: 0.4rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
 .tab {

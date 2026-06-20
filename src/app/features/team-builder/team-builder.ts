@@ -18,6 +18,8 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
   { key: 'speed', label: 'Spe' },
 ];
 
+const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+
 @Component({
   selector: 'pv-team-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +34,7 @@ export class TeamBuilderComponent {
   protected readonly MAX_TEAM = MAX_TEAM;
   protected readonly MAX_MOVES = MAX_MOVES;
   protected readonly types = POKEMON_TYPES;
+  protected readonly generations = GENERATIONS;
   protected readonly natures = NATURES;
   protected readonly statRows = STAT_ROWS;
   protected readonly titleCase = titleCase;
@@ -137,6 +140,24 @@ export class TeamBuilderComponent {
 
   protected setQuery(event: Event): void {
     this.query.set((event.target as HTMLInputElement).value);
+  }
+
+  protected onFilterType(event: Event): void {
+    const v = (event.target as HTMLSelectElement).value;
+    this.store.setFilterType(v ? (v as PokemonType) : null);
+  }
+
+  protected onFilterGen(event: Event): void {
+    const v = (event.target as HTMLSelectElement).value;
+    this.store.setFilterGen(v ? Number(v) : null);
+  }
+
+  protected addRandom(): void {
+    void this.store.addRandom();
+  }
+
+  protected fillRandom(): void {
+    void this.store.fillRandom();
   }
 
   protected setImportText(event: Event): void {

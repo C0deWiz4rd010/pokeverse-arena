@@ -1,11 +1,13 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { CacheService } from '../../core/cache/cache.service';
-import { officialArtwork } from '../../core/api/pokeapi-endpoints';
-import type { PokemonDto } from '../../core/dto/pokeapi.dto';
+import { officialArtwork, POKEAPI_BASE } from '../../core/api/pokeapi-endpoints';
+import type { PokemonDto, TypeDto, GenerationDto } from '../../core/dto/pokeapi.dto';
 import { isPokemonType, type PokemonType, analyzeTeamTypes } from '../../core/utils/type-chart';
 import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
 import { natureByName } from '../../core/utils/natures';
+import { PokedexService } from '../pokedex/pokedex.service';
+import { rateTeam } from '../../game/team/team-rating';
 
 export const MAX_TEAM = 6;
 export const MAX_MOVES = 4;
@@ -45,17 +47,31 @@ const nextUid = () => `m${Date.now().toString(36)}-${uidCounter++}`;
 export class TeamBuilderService {
   private readonly api = inject(PokeApiClient);
   private readonly cache = inject(CacheService);
+  private readonly pokedex = inject(PokedexService);
 
   readonly team = signal<TeamMember[]>([]);
   readonly adding = signal(false);
   readonly error = signal<string | null>(null);
   private restored = false;
 
+  /** Active discovery filters for the random/fill generator. */
+  readonly filterType = signal<PokemonType | null>(null);
+  readonly filterGen = signal<number | null>(null);
+  readonly rolling = signal(false);
+
+  private readonly typeNameCache = new Map<PokemonType, Set<string>>();
+  private readonly genNameCache = new Map<number, Set<string>>();
+
   readonly full = computed(() => this.team().length >= MAX_TEAM);
 
   /** Defensive matchup summary across the whole roster. */
   readonly analysis = computed(() =>
     analyzeTeamTypes(this.team().map((m) => ({ name: m.name, types: m.types }))),
+  );
+
+  /** Offensive + defensive power rating for the current roster. */
+  readonly rating = computed(() =>
+    rateTeam(this.team().map((m) => ({ name: m.name, types: m.types }))),
   );
 
   /** Live computed stats per member at its chosen level + nature. */
@@ -99,6 +115,95 @@ export class TeamBuilderService {
 
   clear(): void {
     this.team.set([]);
+  }
+
+  /* ---------------------------------------------------- random / discovery */
+
+  setFilterType(type: PokemonType | null): void {
+    this.filterType.set(type);
+  }
+
+  setFilterGen(gen: number | null): void {
+    this.filterGen.set(gen);
+  }
+
+  clearFilters(): void {
+    this.filterType.set(null);
+    this.filterGen.set(null);
+  }
+
+  /** Add one random Pokémon that matches the active filters. */
+  async addRandom(): Promise<void> {
+    if (this.full() || this.rolling()) return;
+    this.rolling.set(true);
+    this.error.set(null);
+    try {
+      const choices = await this.availableChoices();
+      if (!choices.length) {
+        this.error.set('No Pokémon match those filters. Try widening them.');
+        return;
+      }
+      await this.add(pickRandom(choices));
+    } finally {
+      this.rolling.set(false);
+    }
+  }
+
+  /** Fill every remaining slot with random filter-matching Pokémon. */
+  async fillRandom(): Promise<void> {
+    if (this.full() || this.rolling()) return;
+    this.rolling.set(true);
+    this.error.set(null);
+    try {
+      let choices = await this.availableChoices();
+      if (!choices.length) {
+        this.error.set('No Pokémon match those filters. Try widening them.');
+        return;
+      }
+      while (!this.full() && choices.length) {
+        const pick = pickRandom(choices);
+        choices = choices.filter((n) => n !== pick);
+        await this.add(pick);
+      }
+    } finally {
+      this.rolling.set(false);
+    }
+  }
+
+  /** Names matching the active filters that aren't already on the team. */
+  private async availableChoices(): Promise<string[]> {
+    await this.pokedex.ensureLoaded();
+    let pool = this.pokedex.names();
+    const type = this.filterType();
+    if (type) {
+      const set = await this.namesOfType(type);
+      pool = pool.filter((n) => set.has(n));
+    }
+    const gen = this.filterGen();
+    if (gen) {
+      const set = await this.namesOfGen(gen);
+      pool = pool.filter((n) => set.has(n));
+    }
+    const taken = new Set(this.team().map((m) => m.name));
+    return pool.filter((n) => !taken.has(n));
+  }
+
+  private async namesOfType(type: PokemonType): Promise<Set<string>> {
+    const cached = this.typeNameCache.get(type);
+    if (cached) return cached;
+    const dto = await this.api.get<TypeDto>(`${POKEAPI_BASE}/type/${type}`);
+    const set = new Set(dto.pokemon.map((p) => p.pokemon.name));
+    this.typeNameCache.set(type, set);
+    return set;
+  }
+
+  private async namesOfGen(gen: number): Promise<Set<string>> {
+    const cached = this.genNameCache.get(gen);
+    if (cached) return cached;
+    const dto = await this.api.get<GenerationDto>(`${POKEAPI_BASE}/generation/${gen}`);
+    const set = new Set(dto.pokemon_species.map((s) => s.name));
+    this.genNameCache.set(gen, set);
+    return set;
   }
 
   patch(uid: string, change: Partial<Pick<TeamMember, 'nickname' | 'ability' | 'level' | 'natureName'>>): void {
@@ -239,4 +344,8 @@ function toStored(m: TeamMember): StoredMember {
     level: m.level,
     natureName: m.natureName,
   };
+}
+
+function pickRandom<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)];
 }
