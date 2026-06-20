@@ -1,0 +1,169 @@
+<section class="battle">
+  <pv-page-header
+    icon="⚔️"
+    title="Battle Arena"
+    subtitle="Seeded, type-accurate skirmishes. Pick a fighter or take on a random challenger."
+  />
+
+  @switch (phase()) {
+    @case ('setup') {
+      <div class="setup glass">
+        <label class="field">
+          <span>Your Pokémon</span>
+          <input
+            type="text"
+            list="dex-names"
+            placeholder="Name or # (leave blank for random)"
+            [value]="playerInput()"
+            (input)="setPlayerInput($event)"
+            (keydown.enter)="start()"
+          />
+          <datalist id="dex-names">
+            @for (n of names(); track n) { <option [value]="n"></option> }
+          </datalist>
+        </label>
+        <div class="setup-actions">
+          <button class="btn" type="button" (click)="start()">⚔️ Fight</button>
+          <button class="btn ghost" type="button" (click)="surpriseMe()">🎲 Surprise me</button>
+        </div>
+        @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
+        <p class="hint">Both sides fight at level 50 with their strongest level-up moves.</p>
+      </div>
+    }
+
+    @case ('loading') {
+      <div class="loading">
+        <pv-spinner />
+        <p>Entering the arena…</p>
+      </div>
+    }
+
+    @default {
+      <div class="arena" [attr.data-weather]="weather()">
+        <!-- Weather backdrop -->
+        <div class="weather" aria-hidden="true">
+          <div class="sky"></div>
+          @switch (weather()) {
+            @case ('sun') {
+              <div class="sun-glow"></div>
+              <div class="rays"></div>
+            }
+            @case ('rain') {
+              <div class="rain">
+                @for (d of drops; track d) { <span class="drop" [style.--i]="d"></span> }
+              </div>
+            }
+            @case ('storm') {
+              <div class="rain dense">
+                @for (d of drops; track d) { <span class="drop" [style.--i]="d"></span> }
+              </div>
+              <div class="lightning"></div>
+            }
+            @case ('snow') {
+              <div class="snow">
+                @for (f of flakes; track f) { <span class="flake" [style.--i]="f"></span> }
+              </div>
+            }
+            @case ('sand') {
+              <div class="sand">
+                @for (g of grains; track g) { <span class="grain" [style.--i]="g"></span> }
+                <div class="haze"></div>
+              </div>
+            }
+            @case ('fog') {
+              <div class="fog">
+                <span class="bank b1"></span>
+                <span class="bank b2"></span>
+                <span class="bank b3"></span>
+              </div>
+            }
+            @case ('leaves') {
+              <div class="leaves">
+                @for (l of leaves; track l) { <span class="leaf" [style.--i]="l">🍃</span> }
+              </div>
+            }
+          }
+        </div>
+        @if (weather() !== 'clear') {
+          <span class="weather-badge" [title]="weatherInfo().label">
+            {{ weatherInfo().icon }} {{ weatherInfo().label }}
+          </span>
+        }
+
+        <!-- Opponent -->
+        @if (opponent(); as o) {
+          <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1" [class.fainted]="winner() === 0">
+            <div class="info glass">
+              <div class="row">
+                <strong>{{ titleCase(o.name) }}</strong>
+                <span class="lv">Lv{{ o.level }}</span>
+              </div>
+              <div class="types">
+                @for (t of o.types; track t) { <pv-type-badge [type]="t" /> }
+              </div>
+              <div class="hpbar">
+                <span class="fill" [class.low]="oppHpPct() <= 25" [class.mid]="oppHpPct() > 25 && oppHpPct() <= 50" [style.width.%]="oppHpPct()"></span>
+              </div>
+              <span class="hpnum">{{ oppHp() }} / {{ oppMaxHp() }}</span>
+            </div>
+            <img class="sprite" [src]="o.sprite" [alt]="o.name" />
+          </div>
+        }
+
+        <!-- Player -->
+        @if (player(); as p) {
+          <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0" [class.fainted]="winner() === 1">
+            <img class="sprite" [src]="p.sprite" [alt]="p.name" />
+            <div class="info glass">
+              <div class="row">
+                <strong>{{ titleCase(p.name) }}</strong>
+                <span class="lv">Lv{{ p.level }}</span>
+              </div>
+              <div class="types">
+                @for (t of p.types; track t) { <pv-type-badge [type]="t" /> }
+              </div>
+              <div class="hpbar">
+                <span class="fill" [class.low]="playerHpPct() <= 25" [class.mid]="playerHpPct() > 25 && playerHpPct() <= 50" [style.width.%]="playerHpPct()"></span>
+              </div>
+              <span class="hpnum">{{ playerHp() }} / {{ playerMaxHp() }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="log glass" aria-live="polite">
+        @for (line of log(); track $index) {
+          <p>{{ line }}</p>
+        }
+      </div>
+
+      @if (phase() === 'fighting') {
+        <div class="moves" [class.disabled]="busy()">
+          @for (move of playerMoves(); track move.name; let i = $index) {
+            <button
+              class="move-btn"
+              type="button"
+              [style.--c]="'var(--type-' + move.type + ')'"
+              [disabled]="busy()"
+              (click)="useMove(i)"
+            >
+              <span class="m-name">{{ titleCase(move.name) }}</span>
+              <span class="m-meta">{{ titleCase(move.type) }} · {{ move.power }} pow</span>
+            </button>
+          }
+        </div>
+        @if (busy()) { <p class="thinking">…</p> }
+      }
+
+      @if (phase() === 'done') {
+        <div class="result glass" [class.win]="outcomeWon()">
+          <h2>{{ outcomeWon() ? 'Victory! 🏆' : 'Defeat 💢' }}</h2>
+          <div class="result-actions">
+            <button class="btn" type="button" (click)="rematch()">↻ Rematch</button>
+            <button class="btn ghost" type="button" (click)="newBattle()">⚔️ New battle</button>
+          </div>
+        </div>
+      }
+    }
+  }
+</section>

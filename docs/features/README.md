@@ -19,7 +19,7 @@ For the high-level plan and milestone status, see
 | 5 | Pokémon detail (stats, radar, evolution, moves) | [pokemon-detail.md](pokemon-detail.md) | ✅ |
 | 6 | Type Lab (chart, calculator, coverage) | [type-lab.md](type-lab.md) | ✅ |
 | 7 | Team Builder (build, tune, analyze, persist) | [team-builder.md](team-builder.md) | ✅ |
-| 8 | Battle engine + UI | _planned_ | ⏳ |
+| 8 | Battle engine + UI (seeded combat, animated arena, weather) | [battle.md](battle.md) | ✅ |
 
 ## Cross-cutting docs
 

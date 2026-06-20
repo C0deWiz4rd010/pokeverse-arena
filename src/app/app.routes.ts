@@ -33,8 +33,7 @@ export const routes: Routes = [
   {
     path: 'battle',
     title: 'Battle · PokéVerse Arena',
-    component: ComingSoonComponent,
-    data: { title: 'Battle', icon: '⚔️', description: 'The seeded battle engine is powering up.' },
+    loadComponent: () => import('./features/battle/battle').then((m) => m.BattleComponent),
   },
   {
     path: 'arena',
