@@ -71,6 +71,32 @@
 .m05 { --mc: 248, 113, 113; }
 .m0 { --mc: 100, 116, 139; }
 
+/* ---- chart: mobile explorer vs desktop matrix ---- */
+/* Mobile-first: show the readable single-type explorer, hide the wide grid.
+   On large screens there is room for the full matrix, so we swap them. */
+.matrix-panel { display: none; }
+@include up(lg) {
+  .explorer { display: none; }
+  .matrix-panel { display: block; }
+}
+
+.explorer-grid {
+  display: grid;
+  gap: 1rem;
+}
+@include up(sm) { .explorer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.explorer-col { display: flex; flex-direction: column; gap: 0.7rem; }
+.ex-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.ex-head pv-icon { color: var(--text); }
+
 /* ---- matrix ---- */
 .legend {
   display: flex;

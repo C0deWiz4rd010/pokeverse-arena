@@ -34,7 +34,77 @@
 
   @switch (tab()) {
     @case ('matrix') {
-      <div class="panel">
+      <!-- Mobile / tablet: interactive single-type explorer (no sideways scroll). -->
+      <div class="panel explorer">
+        <div class="calc-pick">
+          <h2>Explore a type</h2>
+          <div class="grid-types">
+            @for (t of types; track t) {
+              <button
+                class="t-btn"
+                [class.on]="focusType() === t"
+                [style.--c]="typeColorVar(t)"
+                (click)="setFocusType(t)"
+              >
+                {{ titleCase(t) }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="explorer-grid">
+          <div class="explorer-col">
+            <h3 class="ex-head">
+              <pv-icon name="swords" />
+              <pv-type-badge [type]="focusType()" /> attacks
+            </h3>
+            @if (focusOffense().length) {
+              @for (bucket of focusOffense(); track bucket.multiplier) {
+                <div class="bucket glass" [class]="cellClass(bucket.multiplier)">
+                  <div class="bucket-head">
+                    <span class="b-mult">{{ formatMult(bucket.multiplier) }}</span>
+                    <span class="b-label">{{ bucket.label }}</span>
+                  </div>
+                  <div class="b-types">
+                    @for (t of bucket.types; track t) {
+                      <pv-type-badge [type]="t" />
+                    }
+                  </div>
+                </div>
+              }
+            } @else {
+              <p class="muted">Deals neutral damage to every type.</p>
+            }
+          </div>
+
+          <div class="explorer-col">
+            <h3 class="ex-head">
+              <pv-icon name="shield" />
+              <pv-type-badge [type]="focusType()" /> defends
+            </h3>
+            @if (focusDefense().length) {
+              @for (bucket of focusDefense(); track bucket.multiplier) {
+                <div class="bucket glass" [class]="cellClass(bucket.multiplier)">
+                  <div class="bucket-head">
+                    <span class="b-mult">{{ formatMult(bucket.multiplier) }}</span>
+                    <span class="b-label">{{ bucket.label }}</span>
+                  </div>
+                  <div class="b-types">
+                    @for (t of bucket.types; track t) {
+                      <pv-type-badge [type]="t" />
+                    }
+                  </div>
+                </div>
+              }
+            } @else {
+              <p class="muted">Takes neutral damage from every type.</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: the full effectiveness matrix, shown only when there's room. -->
+      <div class="panel matrix-panel">
         <div class="legend">
           <span class="chip m2">2× Super</span>
           <span class="chip m1">1× Neutral</span>

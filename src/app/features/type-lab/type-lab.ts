@@ -8,6 +8,7 @@ import {
   defensiveProfile,
   effectiveness,
   effectivenessLabel,
+  offensiveProfile,
   singleEffectiveness,
   type PokemonType,
 } from '../../core/utils/type-chart';
@@ -38,6 +39,9 @@ export class TypeLabComponent {
   protected readonly hoverAttacker = signal<PokemonType | null>(null);
   protected readonly hoverDefender = signal<PokemonType | null>(null);
 
+  /** Chart explorer (mobile): the single type whose matchups are shown. */
+  protected readonly focusType = signal<PokemonType>('fire');
+
   /** Calculator state. */
   protected readonly calcAttacker = signal<PokemonType>('fire');
   protected readonly calcDefenders = signal<PokemonType[]>(['grass']);
@@ -60,30 +64,47 @@ export class TypeLabComponent {
     })),
   );
 
+  /** Chart explorer — what the focused type does on offense, grouped by multiplier. */
+  protected readonly focusOffense = computed<ProfileBucket[]>(() =>
+    this.bucketize(offensiveProfile(this.focusType()), (m) => this.offenseLabel(m)),
+  );
+
+  /** Chart explorer — how the focused type fares on defense, grouped by multiplier. */
+  protected readonly focusDefense = computed<ProfileBucket[]>(() =>
+    this.bucketize(defensiveProfile([this.focusType()]), (m) => this.multLabel(m)),
+  );
+
   /** Defensive buckets grouped by multiplier, sorted strongest threat first. */
   protected readonly defenderBuckets = computed<ProfileBucket[]>(() => {
     const defenders = this.defenderTypes();
     if (!defenders.length) return [];
-    const profile = defensiveProfile(defenders);
+    return this.bucketize(defensiveProfile(defenders), (m) => this.multLabel(m));
+  });
+
+  /** Groups a type profile into multiplier buckets (skipping neutral), strongest first. */
+  private bucketize(
+    profile: Record<PokemonType, number>,
+    label: (mult: number) => string,
+  ): ProfileBucket[] {
     const groups = new Map<number, PokemonType[]>();
-    for (const attacker of POKEMON_TYPES) {
-      const mult = profile[attacker];
+    for (const type of POKEMON_TYPES) {
+      const mult = profile[type];
       if (mult === 1) continue;
       const list = groups.get(mult) ?? [];
-      list.push(attacker);
+      list.push(type);
       groups.set(mult, list);
     }
     return [...groups.entries()]
       .sort((a, b) => b[0] - a[0])
-      .map(([multiplier, list]) => ({
-        multiplier,
-        label: this.multLabel(multiplier),
-        types: list,
-      }));
-  });
+      .map(([multiplier, list]) => ({ multiplier, label: label(multiplier), types: list }));
+  }
 
   protected setTab(tab: Tab): void {
     this.tab.set(tab);
+  }
+
+  protected setFocusType(type: PokemonType): void {
+    this.focusType.set(type);
   }
 
   protected cellMult(attacker: PokemonType, defender: PokemonType): number {
@@ -103,6 +124,14 @@ export class TypeLabComponent {
     if (mult === 0.5) return 'Resists (½×)';
     if (mult === 2) return 'Weak (2×)';
     if (mult === 4) return 'Doubly weak (4×)';
+    return `${mult}×`;
+  }
+
+  /** Multiplier label phrased from the attacker's point of view. */
+  protected offenseLabel(mult: number): string {
+    if (mult === 0) return 'No effect (0×)';
+    if (mult === 0.5) return 'Not very effective (½×)';
+    if (mult === 2) return 'Super effective (2×)';
     return `${mult}×`;
   }
 
