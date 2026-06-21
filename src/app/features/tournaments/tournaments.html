@@ -1,6 +1,6 @@
 <section class="container page">
   <pv-page-header
-    icon="🏆"
+    icon="trophy"
     title="Tournaments"
     subtitle="Pick a format, then climb a 16-trainer bracket to the final. You play your matches — the rest of the field resolves itself." />
 
@@ -13,7 +13,7 @@
       <div class="modes">
         @for (m of modes; track m.id) {
           <button class="mode-card" type="button" (click)="start(m.id)">
-            <span class="mode-icon">{{ m.icon }}</span>
+            <span class="mode-icon"><pv-icon [name]="m.icon" /></span>
             <span class="mode-name">{{ m.name }}</span>
             <span class="mode-tag">{{ m.tagline }}</span>
             <span class="mode-desc">{{ m.description }}</span>
@@ -58,7 +58,9 @@
     <!-- ───────────────────────────── bracket / running ───────────────────────────── -->
     @default {
       <div class="run-bar">
-        <span class="run-mode">{{ svc.mode()?.icon }} {{ svc.mode()?.name }}</span>
+        <span class="run-mode">
+          @if (svc.mode(); as md) { <pv-icon [name]="md.icon" /> {{ md.name }} }
+        </span>
         @if (svc.monoType(); as mt) { <pv-type-badge [type]="mt" /> }
         <button class="ghost" type="button" (click)="restart()">Quit</button>
       </div>
@@ -68,7 +70,7 @@
         <pv-tournament-match [setup]="setup" (finished)="onFinished($event)" />
       } @else if (svc.status() === 'done' && svc.champion(); as champ) {
         <div class="finale" [class.you]="championIsPlayer()">
-          <span class="crown">👑</span>
+          <span class="crown"><pv-icon name="crown" /></span>
           <img class="champ-ava" [src]="champ.avatar" [alt]="champ.name" />
           <p class="champ-name">
             {{ championIsPlayer() ? 'You are the Champion!' : champ.name + ' lifts the trophy' }}
@@ -114,7 +116,7 @@
             @if (final(); as f) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: f }" /> }
           </div>
           <div class="champ-spot" [class.lit]="!!svc.champion()">
-            <span class="crown">{{ svc.champion() ? '👑' : '🏆' }}</span>
+            <span class="crown"><pv-icon [name]="svc.champion() ? 'crown' : 'trophy'" /></span>
             <span class="cn">{{ svc.champion() ? (championIsPlayer() ? 'You' : svc.champion()?.name) : 'Champion' }}</span>
           </div>
         </div>

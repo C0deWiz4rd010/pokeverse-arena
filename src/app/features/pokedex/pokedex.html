@@ -1,6 +1,6 @@
 <section class="container pokedex">
   <pv-page-header
-    icon="📕"
+    icon="book"
     title="Pokédex"
     [subtitle]="store.total() + ' Pokémon · search, filter and dive in.'"
   />
@@ -44,7 +44,7 @@
     <pv-spinner label="Loading the Pokédex…" />
   } @else if (store.error()) {
     <div class="state glass">
-      <p>⚠️ {{ store.error() }}</p>
+      <p><pv-icon name="triangle-alert" /> {{ store.error() }}</p>
     </div>
   } @else if (store.total() === 0) {
     <div class="state glass">

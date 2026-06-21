@@ -59,12 +59,17 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  min-width: 0;
 }
 .mv-name {
   font-weight: 800;
   font-size: 0.9rem;
   letter-spacing: -0.01em;
   line-height: 1.1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .mv-cat {
   flex: none;
@@ -83,9 +88,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  min-width: 0;
+  flex-wrap: wrap;
 }
-.mv-stats { display: flex; gap: 0.55rem; }
-.stat { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; white-space: nowrap; }
+.mv-stats { display: flex; gap: 0.55rem; flex: none; }
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  white-space: nowrap;
+}
 
 /* effectiveness corner badge */
 .mv-eff {

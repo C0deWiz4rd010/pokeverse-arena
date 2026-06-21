@@ -1,6 +1,6 @@
 <section class="team-builder">
   <pv-page-header
-    icon="🛠️"
+    icon="wrench"
     title="Team Builder"
     subtitle="Assemble a squad of six, tune levels &amp; natures, and expose your defensive gaps."
   />
@@ -50,10 +50,10 @@
     </div>
     <div class="roll-actions">
       <button class="btn ghost" type="button" (click)="addRandom()" [disabled]="store.full() || store.rolling()">
-        @if (store.rolling()) { Rolling… } @else { 🎲 Random }
+        @if (store.rolling()) { Rolling… } @else { <pv-icon name="dices" /> Random }
       </button>
       <button class="btn ghost" type="button" (click)="fillRandom()" [disabled]="store.full() || store.rolling()">
-        ✨ Fill team
+        <pv-icon name="sparkles" /> Fill team
       </button>
     </div>
   </div>
@@ -64,7 +64,7 @@
 
   @if (store.team().length === 0) {
     <div class="empty glass">
-      <span class="poke" aria-hidden="true">⚪</span>
+      <span class="poke" aria-hidden="true"><pv-icon name="circle" /></span>
       <p>Your team is empty. Search above to add your first Pokémon.</p>
     </div>
   } @else {
@@ -89,7 +89,7 @@
                 }
               </div>
             </div>
-            <button class="remove" type="button" (click)="store.remove(member.uid)" aria-label="Remove from team">✕</button>
+            <button class="remove" type="button" (click)="store.remove(member.uid)" aria-label="Remove from team"><pv-icon name="x" /></button>
           </header>
 
           <div class="m-config">
@@ -168,11 +168,11 @@
             <p class="rating-verdict">{{ r.verdict }}</p>
             <div class="rating-meters">
               <div class="meter">
-                <span class="m-label">⚔️ Offense <b>{{ r.offense }}/18</b></span>
+                <span class="m-label"><pv-icon name="sword" /> Offense <b>{{ r.offense }}/18</b></span>
                 <span class="m-track"><span class="m-fill atk" [style.width.%]="(r.offense / 18) * 100"></span></span>
               </div>
               <div class="meter">
-                <span class="m-label">🛡️ Defense <b>{{ r.defense }}/18</b></span>
+                <span class="m-label"><pv-icon name="shield" /> Defense <b>{{ r.defense }}/18</b></span>
                 <span class="m-track"><span class="m-fill def" [style.width.%]="(r.defense / 18) * 100"></span></span>
               </div>
             </div>
@@ -182,7 +182,7 @@
 
       @if (blindSpots().length) {
         <div class="blind">
-          <strong>⚠️ Blind spots</strong>
+          <strong><pv-icon name="triangle-alert" /> Blind spots</strong>
           <p>No team member resists these attacking types:</p>
           <div class="chips">
             @for (t of blindSpots(); track t) {
@@ -191,7 +191,7 @@
           </div>
         </div>
       } @else {
-        <p class="all-clear">✅ Every attacking type is resisted by at least one member.</p>
+        <p class="all-clear"><pv-icon name="check" /> Every attacking type is resisted by at least one member.</p>
       }
 
       @if (weaknessRows().length) {
@@ -209,14 +209,16 @@
     </section>
 
     <div class="toolbar">
-      <button class="btn ghost" type="button" (click)="exportTeam()">⬇ Export JSON</button>
-      <button class="btn ghost" type="button" (click)="copyTeam()">{{ copied() ? '✓ Copied' : '⧉ Copy' }}</button>
+      <button class="btn ghost" type="button" (click)="exportTeam()"><pv-icon name="download" /> Export JSON</button>
+      <button class="btn ghost" type="button" (click)="copyTeam()">
+        @if (copied()) { <pv-icon name="check" /> Copied } @else { <pv-icon name="copy" /> Copy }
+      </button>
       <label class="btn ghost file">
-        ⬆ Import file
+        <pv-icon name="upload" /> Import file
         <input type="file" accept="application/json,.json" (change)="onImportFile($event)" hidden />
       </label>
-      <button class="btn ghost" type="button" (click)="showImport.set(!showImport())">✎ Paste JSON</button>
-      <button class="btn ghost danger" type="button" (click)="store.clear()">🗑 Clear</button>
+      <button class="btn ghost" type="button" (click)="showImport.set(!showImport())"><pv-icon name="pencil" /> Paste JSON</button>
+      <button class="btn ghost danger" type="button" (click)="store.clear()"><pv-icon name="trash-2" /> Clear</button>
     </div>
 
     @if (showImport()) {

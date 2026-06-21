@@ -4,6 +4,7 @@
  * that bend combat (inverse chart, weather boosts, climbing levels, …).
  */
 import type { RoundId } from './types';
+import type { IconName } from '../../core/ui/icon/icons.data';
 
 export type ModeId =
   | 'classic'
@@ -23,7 +24,7 @@ export type PoolFilter = 'all' | 'little' | 'legendary';
 export interface TournamentMode {
   readonly id: ModeId;
   readonly name: string;
-  readonly icon: string;
+  readonly icon: IconName;
   readonly tagline: string;
   readonly description: string;
   /** Pokémon per trainer team. */
@@ -51,7 +52,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'classic',
     name: 'Classic Cup',
-    icon: '🏆',
+    icon: 'trophy',
     tagline: '16 balanced trainers, one champion.',
     description:
       'The standard single-elimination ladder. Sixteen trainers receive randomly built but power-balanced teams. Win four rounds to lift the trophy.',
@@ -63,7 +64,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'monotype',
     name: 'Mono-Type Cup',
-    icon: '🎨',
+    icon: 'palette',
     tagline: 'Everyone fields a single shared type.',
     description:
       'A type is drawn for the whole bracket — including you. Every team is built purely from that type, turning the run into a mirror-matchup mind game.',
@@ -76,7 +77,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'random',
     name: 'Random Cup',
-    icon: '🎲',
+    icon: 'dices',
     tagline: 'No balancing. Pure chaos.',
     description:
       'Teams are rolled with zero balancing — you might draw three legendaries or three Magikarp. Embrace the variance.',
@@ -88,7 +89,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'little',
     name: 'Little Cup',
-    icon: '🐣',
+    icon: 'egg',
     tagline: 'Only the smallest contenders.',
     description:
       'Restricted to low base-stat, unevolved Pokémon. Speed and clever typing matter far more than raw power.',
@@ -100,7 +101,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'legendary',
     name: 'Legendary Cup',
-    icon: '🌟',
+    icon: 'star',
     tagline: 'Titans only.',
     description:
       'A clash of the giants — only high base-stat and legendary Pokémon are eligible. Every hit lands like a meteor.',
@@ -112,7 +113,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'draft',
     name: 'Draft Mode',
-    icon: '📝',
+    icon: 'clipboard-list',
     tagline: 'Pick your squad from a shared pool.',
     description:
       'Before the bracket begins you draft your three Pokémon from a curated pool. Build your dream team, then prove it.',
@@ -125,7 +126,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'survival',
     name: 'Survival Gauntlet',
-    icon: '💀',
+    icon: 'skull',
     tagline: 'HP carries over. No mercy.',
     description:
       'Single elimination where your surviving Pokémon keep their HP from one round to the next. There is no healing between matches — endure or fall.',
@@ -138,7 +139,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'inverse',
     name: 'Inverse Cup',
-    icon: '🔄',
+    icon: 'refresh-cw',
     tagline: 'The type chart, flipped.',
     description:
       'Resistances become weaknesses and immunities turn lethal. Everything you know about matchups is upside down.',
@@ -151,7 +152,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'weather',
     name: 'Weather Wars',
-    icon: '⛈️',
+    icon: 'cloud-lightning',
     tagline: 'Every arena, a different sky.',
     description:
       'Each match rolls its own weather, empowering one move type by 50%. Read the forecast and pick your attacks wisely.',
@@ -164,7 +165,7 @@ export const TOURNAMENT_MODES: readonly TournamentMode[] = [
   {
     id: 'ascent',
     name: 'Boss Ascent',
-    icon: '⛰️',
+    icon: 'mountain',
     tagline: 'Each round, a stronger wall.',
     description:
       'Your rivals grow more powerful every round — levels climb from the Round of 16 to a towering Final boss. Can you keep pace?',

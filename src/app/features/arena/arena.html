@@ -9,7 +9,7 @@
   }
 
   @case ('loading') {
-    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="🏟️" />
+    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="castle" />
     <div class="state">
       <pv-spinner label="Approaching the gym…" />
       <p class="muted">
@@ -23,20 +23,20 @@
   }
 
   @case ('error') {
-    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="🏟️" />
+    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="castle" />
     <div class="state">
-      <p class="err">⚠️ {{ svc.error() }}</p>
+      <p class="err"><pv-icon name="triangle-alert" /> {{ svc.error() }}</p>
       <button type="button" class="btn" (click)="svc.abandon()">Back to the hub</button>
     </div>
   }
 
   @default {
-    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="🏟️" />
+    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="castle" />
 
     <header class="progress" [class.champ]="svc.isChampion()">
       <div class="progress-text">
         @if (svc.isChampion()) {
-          <strong>🏆 Arena Champion!</strong>
+          <strong><pv-icon name="trophy" /> Arena Champion!</strong>
           <span class="muted">Every badge earned — you have mastered all {{ svc.total() }} types.</span>
         } @else {
           <strong>{{ svc.earnedCount() }} / {{ svc.total() }} badges</strong>
@@ -51,7 +51,7 @@
     @if (svc.lastResult(); as res) {
       <p class="toast" [class.win]="res.won" [class.loss]="!res.won">
         @if (res.won) {
-          {{ res.leader.icon }} You defeated {{ res.leader.name }} and earned the {{ res.leader.badge }}!
+          <pv-icon [name]="res.leader.icon" /> You defeated {{ res.leader.name }} and earned the {{ res.leader.badge }}!
         } @else {
           {{ res.leader.name }} stood firm. Train up and challenge the {{ titleCase(res.leader.type) }} gym again.
         }
@@ -61,7 +61,7 @@
     <ul class="grid">
       @for (l of svc.leaders; track l.type) {
         <li class="card" [class.owned]="svc.hasBadge(l.type)" [style.--type]="'var(--type-' + l.type + ')'">
-          <div class="badge-icon" [class.lit]="svc.hasBadge(l.type)" [attr.title]="l.badge">{{ l.icon }}</div>
+          <div class="badge-icon" [class.lit]="svc.hasBadge(l.type)" [attr.title]="l.badge"><pv-icon [name]="l.icon" /></div>
           <div class="info">
             <div class="who">
               <strong class="name">{{ l.name }}</strong>
@@ -72,7 +72,7 @@
           </div>
           <div class="action">
             @if (svc.hasBadge(l.type)) {
-              <span class="earned">✓ {{ l.badge }}</span>
+              <span class="earned"><pv-icon name="check" /> {{ l.badge }}</span>
               <button type="button" class="btn ghost" (click)="challenge(l)">Rematch</button>
             } @else {
               <button type="button" class="btn" (click)="challenge(l)">Challenge ›</button>

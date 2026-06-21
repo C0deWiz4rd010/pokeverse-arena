@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ContestService } from './contest.service';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
+import { IconComponent } from '../../core/ui/icon/icon';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import {
   CONTEST_CATEGORIES,
@@ -12,7 +13,7 @@ import {
 @Component({
   selector: 'pv-contest',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, SpinnerComponent],
+  imports: [PageHeaderComponent, SpinnerComponent, IconComponent],
   templateUrl: './contest.html',
   styleUrl: './contest.scss',
 })

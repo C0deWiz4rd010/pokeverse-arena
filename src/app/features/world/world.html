@@ -1,13 +1,13 @@
 <pv-page-header
   title="World Explorer"
   subtitle="Roam every region and discover where each Pokémon calls home."
-  icon="🗺️"
+  icon="map"
 />
 
 <form class="finder" (submit)="$event.preventDefault(); search()">
   <label class="sr-only" for="world-search">Find a Pokémon's home region</label>
   <div class="finder-row">
-    <span class="finder-icon" aria-hidden="true">🔎</span>
+    <span class="finder-icon" aria-hidden="true"><pv-icon name="search" /></span>
     <input
       id="world-search"
       type="search"
@@ -24,7 +24,7 @@
   </div>
 
   @if (svc.searchError(); as err) {
-    <p class="finder-msg err">⚠️ {{ err }}</p>
+    <p class="finder-msg err"><pv-icon name="triangle-alert" /> {{ err }}</p>
   }
   @if (svc.sighting(); as found) {
     <p class="finder-msg hit">
@@ -44,7 +44,7 @@
 
   @case ('error') {
     <div class="state">
-      <p class="err">⚠️ {{ svc.error() }}</p>
+      <p class="err"><pv-icon name="triangle-alert" /> {{ svc.error() }}</p>
       <button type="button" class="btn" (click)="svc.back()">Back to the map</button>
     </div>
   }
@@ -55,7 +55,7 @@
         <header class="region-banner" [style.--accent]="region.accent">
           <button type="button" class="back" (click)="svc.back()">‹ All regions</button>
           <div class="banner-main">
-            <span class="emblem" aria-hidden="true">{{ region.icon }}</span>
+            <span class="emblem" aria-hidden="true"><pv-icon [name]="region.icon" /></span>
             <div class="banner-text">
               <h2>{{ region.name }}</h2>
               <p class="tagline">{{ region.tagline }}</p>
@@ -95,14 +95,14 @@
       @for (r of svc.regions; track r.id) {
         <li class="region-card" [style.--accent]="r.accent">
           <button type="button" (click)="select(r)">
-            <span class="emblem" aria-hidden="true">{{ r.icon }}</span>
+            <span class="emblem" aria-hidden="true"><pv-icon [name]="r.icon" /></span>
             <span class="head">
               <strong class="name">{{ r.name }}</strong>
               <span class="gen">Gen {{ r.generation }}</span>
             </span>
             <span class="tagline">{{ r.tagline }}</span>
             <span class="foot">
-              <span class="landmark">📍 {{ r.landmark }}</span>
+              <span class="landmark"><pv-icon name="map-pin" /> {{ r.landmark }}</span>
               <span class="num">{{ dexCount(r) }} Pokémon</span>
             </span>
           </button>

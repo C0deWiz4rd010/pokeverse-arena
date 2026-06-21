@@ -1,18 +1,20 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { IconComponent } from '../icon/icon';
+import type { IconName } from '../icon/icons.data';
 
 /** Friendly placeholder for modules that are still on the roadmap. */
 @Component({
   selector: 'pv-coming-soon',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, IconComponent],
   template: `
     <section class="container wrap">
       <div class="glass card">
-        <div class="emoji" aria-hidden="true">{{ icon() }}</div>
+        <div class="emoji" aria-hidden="true"><pv-icon [name]="icon()" [size]="64" /></div>
         <h1 class="gradient-text">{{ title() }}</h1>
         <p>{{ description() }}</p>
-        <p class="tag">🚧 Under construction — coming in a future update.</p>
+        <p class="tag"><pv-icon name="construction" /> Under construction — coming in a future update.</p>
         <a class="btn btn-primary" routerLink="/pokedex">Explore the Pokédex</a>
       </div>
     </section>
@@ -31,5 +33,5 @@ import { RouterLink } from '@angular/router';
 export class ComingSoonComponent {
   readonly title = input('Coming soon');
   readonly description = input('This module is on the roadmap.');
-  readonly icon = input('✨');
+  readonly icon = input<IconName>('sparkles');
 }

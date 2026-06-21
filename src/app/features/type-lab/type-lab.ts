@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
+import { IconComponent } from '../../core/ui/icon/icon';
 import { titleCase, typeColorVar } from '../../core/ui/format';
 import {
   POKEMON_TYPES,
@@ -22,7 +23,7 @@ interface ProfileBucket {
 @Component({
   selector: 'pv-type-lab',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, PageHeaderComponent],
+  imports: [TypeBadgeComponent, PageHeaderComponent, IconComponent],
   templateUrl: './type-lab.html',
   styleUrl: './type-lab.scss',
 })

@@ -6,6 +6,7 @@ import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { WeatherOverlayComponent } from '../../core/ui/weather-overlay/weather-overlay';
 import { MoveButtonComponent } from '../../core/ui/move-button/move-button';
+import { IconComponent } from '../../core/ui/icon/icon';
 import { BattleFxComponent } from './pixi/battle-fx';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { titleCase } from '../../core/ui/format';
@@ -24,6 +25,7 @@ type Phase = 'setup' | 'loading' | 'fighting' | 'done';
     PageHeaderComponent,
     WeatherOverlayComponent,
     MoveButtonComponent,
+    IconComponent,
     BattleFxComponent,
   ],
   templateUrl: './battle.html',
@@ -186,7 +188,7 @@ export class BattleComponent {
           await sleep(700);
           break;
         case 'end':
-          this.append(ev.winner === 0 ? 'You won the battle! 🎉' : 'You were defeated…');
+          this.append(ev.winner === 0 ? 'You won the battle!' : 'You were defeated…');
           await sleep(300);
           break;
         default:

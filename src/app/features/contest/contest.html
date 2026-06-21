@@ -1,7 +1,7 @@
 <pv-page-header
   title="Contest Hall"
   subtitle="Blend berries into Poffins, polish a Pokémon's condition and dazzle the judges."
-  icon="🎀"
+  icon="sparkles"
 />
 
 @switch (svc.status()) {
@@ -13,7 +13,7 @@
 
   @case ('error') {
     <div class="state">
-      <p class="err">⚠️ {{ svc.error() }}</p>
+      <p class="err"><pv-icon name="triangle-alert" /> {{ svc.error() }}</p>
       <button type="button" class="btn" (click)="svc.retry()">Try again</button>
     </div>
   }
@@ -48,7 +48,7 @@
           <button type="submit" class="btn ghost">Swap</button>
         </form>
         @if (svc.searchError(); as err) {
-          <p class="msg err">⚠️ {{ err }}</p>
+          <p class="msg err"><pv-icon name="triangle-alert" /> {{ err }}</p>
         }
 
         <fieldset class="categories">
@@ -62,7 +62,7 @@
                 [style.--accent]="c.accent"
                 (click)="svc.setCategory(c.key)"
               >
-                <span class="cat-icon" aria-hidden="true">{{ c.icon }}</span>
+                <span class="cat-icon" aria-hidden="true"><pv-icon [name]="c.icon" /></span>
                 <span class="cat-label">{{ c.label }}</span>
               </button>
             }
@@ -73,7 +73,7 @@
         <div class="conditions">
           @for (c of categories; track c.key) {
             <div class="cond-row" [class.lead]="svc.category() === c.key">
-              <span class="cond-name">{{ c.icon }} {{ c.label }}</span>
+              <span class="cond-name"><pv-icon [name]="c.icon" /> {{ c.label }}</span>
               <div class="cond-bar">
                 <span
                   [style.--accent]="c.accent"
@@ -107,7 +107,7 @@
         <div class="mix-tray">
           @for (b of svc.mix(); track b.name) {
             <button type="button" class="chip" (click)="svc.toggleBerry(b)" title="Remove">
-              {{ b.name }} ✕
+              {{ b.name }} <pv-icon name="x" />
             </button>
           } @empty {
             <p class="muted">Pick up to four berries below. Their flavours feed the matching condition.</p>
@@ -151,7 +151,7 @@
       <section class="result" [class.win]="res.won">
         <h2>
           @if (res.won) {
-            🏆 {{ info(res.category).label }} Contest — you won!
+            <pv-icon name="trophy" /> {{ info(res.category).label }} Contest — you won!
           } @else {
             Ribbon out of reach — you placed #{{ res.playerRank }}.
           }

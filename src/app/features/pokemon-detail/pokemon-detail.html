@@ -6,7 +6,7 @@
   @if (store.loading()) {
     <pv-spinner label="Loading Pokémon…" />
   } @else if (store.error()) {
-    <div class="state glass"><p>⚠️ {{ store.error() }}</p></div>
+    <div class="state glass"><p><pv-icon name="triangle-alert" /> {{ store.error() }}</p></div>
   } @else if (s) {
     <div class="layout">
       <!-- Hero -->
@@ -15,7 +15,7 @@
           <span class="num">{{ padId(s.pokemon.id) }}</span>
           <div class="hero-actions">
             @if (s.pokemon.cry) {
-              <button class="icon-btn" type="button" (click)="playCry()" aria-label="Play cry">🔊</button>
+              <button class="icon-btn" type="button" (click)="playCry()" aria-label="Play cry"><pv-icon name="volume-2" /></button>
             }
             <button
               class="icon-btn"
@@ -24,7 +24,7 @@
               (click)="toggleShiny()"
               [attr.aria-pressed]="shiny()"
               aria-label="Toggle shiny"
-            >✨</button>
+            ><pv-icon name="sparkles" /></button>
           </div>
         </div>
 
@@ -86,9 +86,9 @@
             <li><span>Base happiness</span><b>{{ s.species.baseHappiness ?? '—' }}</b></li>
             @if (s.species.habitat) { <li><span>Habitat</span><b>{{ titleCase(s.species.habitat) }}</b></li> }
             <li><span>Color</span><b>{{ titleCase(s.species.color) }}</b></li>
-            @if (s.species.isLegendary) { <li class="flag">🌟 Legendary</li> }
-            @if (s.species.isMythical) { <li class="flag">✨ Mythical</li> }
-            @if (s.species.isBaby) { <li class="flag">🍼 Baby</li> }
+            @if (s.species.isLegendary) { <li class="flag"><pv-icon name="star" /> Legendary</li> }
+            @if (s.species.isMythical) { <li class="flag"><pv-icon name="sparkles" /> Mythical</li> }
+            @if (s.species.isBaby) { <li class="flag"><pv-icon name="baby" /> Baby</li> }
           </ul>
         </div>
 

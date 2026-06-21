@@ -1,4 +1,5 @@
 import type { PokemonType } from '../../utils/type-chart';
+import type { IconName } from '../icon/icons.data';
 
 /** The set of atmospheric backdrops a battle can take place in. */
 export type Weather = 'clear' | 'sun' | 'rain' | 'storm' | 'sand' | 'snow' | 'fog' | 'leaves';
@@ -6,7 +7,7 @@ export type Weather = 'clear' | 'sun' | 'rain' | 'storm' | 'sand' | 'snow' | 'fo
 export interface WeatherInfo {
   readonly id: Weather;
   readonly label: string;
-  readonly icon: string;
+  readonly icon: IconName;
 }
 
 /** Which atmosphere a given type evokes (drives the auto-picked weather). */
@@ -28,14 +29,14 @@ const TYPE_WEATHER: Partial<Record<PokemonType, Weather>> = {
 };
 
 export const WEATHER_INFO: Record<Weather, WeatherInfo> = {
-  clear: { id: 'clear', label: 'Clear skies', icon: '🌤️' },
-  sun: { id: 'sun', label: 'Harsh sunlight', icon: '☀️' },
-  rain: { id: 'rain', label: 'Rain', icon: '🌧️' },
-  storm: { id: 'storm', label: 'Thunderstorm', icon: '⛈️' },
-  sand: { id: 'sand', label: 'Sandstorm', icon: '🏜️' },
-  snow: { id: 'snow', label: 'Snow', icon: '❄️' },
-  fog: { id: 'fog', label: 'Fog', icon: '🌫️' },
-  leaves: { id: 'leaves', label: 'Windswept', icon: '🍃' },
+  clear: { id: 'clear', label: 'Clear skies', icon: 'cloud-sun' },
+  sun: { id: 'sun', label: 'Harsh sunlight', icon: 'sun' },
+  rain: { id: 'rain', label: 'Rain', icon: 'cloud-rain' },
+  storm: { id: 'storm', label: 'Thunderstorm', icon: 'cloud-lightning' },
+  sand: { id: 'sand', label: 'Sandstorm', icon: 'wind' },
+  snow: { id: 'snow', label: 'Snow', icon: 'snowflake' },
+  fog: { id: 'fog', label: 'Fog', icon: 'cloud-fog' },
+  leaves: { id: 'leaves', label: 'Windswept', icon: 'leaf' },
 };
 
 /** The weather a single type evokes, if any (used to honor a forced boost type). */

@@ -1,6 +1,6 @@
 <section class="type-lab">
   <pv-page-header
-    icon="🧪"
+    icon="flask-conical"
     title="Type Lab"
     subtitle="Master every matchup — chart, calculator and defensive coverage, all offline."
   />
@@ -12,7 +12,7 @@
       [attr.aria-selected]="tab() === 'matrix'"
       (click)="setTab('matrix')"
     >
-      <span aria-hidden="true">🗂️</span> Chart
+      <pv-icon name="table" /> Chart
     </button>
     <button
       role="tab"
@@ -20,7 +20,7 @@
       [attr.aria-selected]="tab() === 'calculator'"
       (click)="setTab('calculator')"
     >
-      <span aria-hidden="true">🧮</span> Calculator
+      <pv-icon name="calculator" /> Calculator
     </button>
     <button
       role="tab"
@@ -28,7 +28,7 @@
       [attr.aria-selected]="tab() === 'defender'"
       (click)="setTab('defender')"
     >
-      <span aria-hidden="true">🛡️</span> Coverage
+      <pv-icon name="shield" /> Coverage
     </button>
   </nav>
 

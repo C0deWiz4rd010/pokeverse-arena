@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TypeBadgeComponent } from '../type-badge/type-badge';
+import { IconComponent } from '../icon/icon';
+import type { IconName } from '../icon/icons.data';
 import { titleCase, typeColorVar } from '../format';
 import type { BattleMove, DamageClass } from '../../../game/engine';
 import { effectivenessRuled, type BattleRules } from '../../../game/engine/rules';
@@ -11,10 +13,10 @@ interface EffInfo {
   readonly label: string;
 }
 
-const CAT_META: Record<DamageClass, { icon: string; label: string }> = {
-  physical: { icon: '💥', label: 'Physical' },
-  special: { icon: '✨', label: 'Special' },
-  status: { icon: '🌀', label: 'Status' },
+const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
+  physical: { icon: 'sword', label: 'Physical' },
+  special: { icon: 'sparkles', label: 'Special' },
+  status: { icon: 'wand-sparkles', label: 'Status' },
 };
 
 /**
@@ -26,7 +28,7 @@ const CAT_META: Record<DamageClass, { icon: string; label: string }> = {
 @Component({
   selector: 'pv-move-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent],
+  imports: [TypeBadgeComponent, IconComponent],
   template: `
     <button
       class="mv"
@@ -40,14 +42,16 @@ const CAT_META: Record<DamageClass, { icon: string; label: string }> = {
 
       <span class="mv-head">
         <span class="mv-name">{{ label() }}</span>
-        <span class="mv-cat" [attr.data-cat]="move().damageClass" [title]="cat().label">{{ cat().icon }}</span>
+        <span class="mv-cat" [attr.data-cat]="move().damageClass" [title]="cat().label">
+          <pv-icon [name]="cat().icon" />
+        </span>
       </span>
 
       <span class="mv-foot">
         <pv-type-badge [type]="move().type" />
         <span class="mv-stats">
-          <span class="stat" title="Power">⚔ {{ move().power || '—' }}</span>
-          <span class="stat" title="Accuracy">🎯 {{ accLabel() }}</span>
+          <span class="stat" title="Power"><pv-icon name="sword" /> {{ move().power || '—' }}</span>
+          <span class="stat" title="Accuracy"><pv-icon name="target" /> {{ accLabel() }}</span>
         </span>
       </span>
 
@@ -57,7 +61,7 @@ const CAT_META: Record<DamageClass, { icon: string; label: string }> = {
 
       <span class="tip" role="tooltip">
         <span class="tip-head">
-          <span class="tip-icon" aria-hidden="true">{{ cat().icon }}</span>
+          <span class="tip-icon" aria-hidden="true"><pv-icon [name]="cat().icon" /></span>
           <span class="tip-titles">
             <span class="tip-title">{{ label() }}</span>
             <span class="tip-sub">{{ titleCase(move().type) }} · {{ cat().label }}</span>

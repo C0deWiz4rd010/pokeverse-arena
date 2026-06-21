@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { WEATHER_INFO, type Weather } from './weather';
+import { IconComponent } from '../icon/icon';
 
 /**
  * Self-contained atmospheric backdrop for battle arenas. Drop it as the first
@@ -13,6 +14,7 @@ import { WEATHER_INFO, type Weather } from './weather';
 @Component({
   selector: 'pv-weather-overlay',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IconComponent],
   host: { '[attr.data-weather]': 'weather()' },
   template: `
     <div class="weather" aria-hidden="true">
@@ -53,13 +55,13 @@ import { WEATHER_INFO, type Weather } from './weather';
         }
         @case ('leaves') {
           <div class="leaves">
-            @for (l of leaves; track l) { <span class="leaf" [style.--i]="l">🍃</span> }
+            @for (l of leaves; track l) { <span class="leaf" [style.--i]="l"><pv-icon name="leaf" /></span> }
           </div>
         }
       }
     </div>
     @if (showBadge() && weather() !== 'clear') {
-      <span class="weather-badge" [title]="info().label">{{ info().icon }} {{ info().label }}</span>
+      <span class="weather-badge" [title]="info().label"><pv-icon [name]="info().icon" /> {{ info().label }}</span>
     }
   `,
   styleUrl: './weather-overlay.scss',

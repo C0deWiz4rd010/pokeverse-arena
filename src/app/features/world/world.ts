@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { WorldService } from './world.service';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
+import { IconComponent } from '../../core/ui/icon/icon';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { regionDexCount, type Region } from '../../game/world/regions';
 
 @Component({
   selector: 'pv-world',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, PageHeaderComponent, SpinnerComponent],
+  imports: [RouterLink, PageHeaderComponent, SpinnerComponent, IconComponent],
   templateUrl: './world.html',
   styleUrl: './world.scss',
 })

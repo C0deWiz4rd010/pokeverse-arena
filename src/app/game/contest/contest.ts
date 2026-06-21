@@ -1,4 +1,5 @@
 import { SeededRng } from '../../core/utils/rng';
+import type { IconName } from '../../core/ui/icon/icons.data';
 
 /**
  * Contest Hall logic — pure, deterministic and framework-free so it can be unit
@@ -17,16 +18,16 @@ export interface CategoryInfo {
   readonly key: ContestCategory;
   readonly label: string;
   readonly flavor: Flavor;
-  readonly icon: string;
+  readonly icon: IconName;
   readonly accent: string;
 }
 
 export const CONTEST_CATEGORIES: readonly CategoryInfo[] = [
-  { key: 'cool', label: 'Cool', flavor: 'spicy', icon: '🔥', accent: '#ff6b6b' },
-  { key: 'beauty', label: 'Beauty', flavor: 'dry', icon: '💧', accent: '#4dabf7' },
-  { key: 'cute', label: 'Cute', flavor: 'sweet', icon: '🍬', accent: '#f783ac' },
-  { key: 'smart', label: 'Smart', flavor: 'bitter', icon: '🧠', accent: '#a78bfa' },
-  { key: 'tough', label: 'Tough', flavor: 'sour', icon: '🛡️', accent: '#82c91e' },
+  { key: 'cool', label: 'Cool', flavor: 'spicy', icon: 'flame', accent: '#ff6b6b' },
+  { key: 'beauty', label: 'Beauty', flavor: 'dry', icon: 'droplet', accent: '#4dabf7' },
+  { key: 'cute', label: 'Cute', flavor: 'sweet', icon: 'candy', accent: '#f783ac' },
+  { key: 'smart', label: 'Smart', flavor: 'bitter', icon: 'brain', accent: '#a78bfa' },
+  { key: 'tough', label: 'Tough', flavor: 'sour', icon: 'shield', accent: '#82c91e' },
 ];
 
 /** A berry and the potency of each of its five flavours (0 when absent). */

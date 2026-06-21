@@ -5,6 +5,8 @@
  * a Pokémon to discover the world it calls home.
  */
 
+import type { IconName } from '../../core/ui/icon/icons.data';
+
 export interface Region {
   /** URL-safe slug, also the PokeAPI generation id source. */
   readonly id: string;
@@ -18,7 +20,7 @@ export interface Region {
   readonly dexStart: number;
   readonly dexEnd: number;
   /** Map emblem. */
-  readonly icon: string;
+  readonly icon: IconName;
   /** Themed accent colour (hex). */
   readonly accent: string;
   /** One-line evocative hook. */
@@ -37,7 +39,7 @@ export const REGIONS: readonly Region[] = [
     games: 'Red · Blue · Yellow',
     dexStart: 1,
     dexEnd: 151,
-    icon: '🗻',
+    icon: 'mountain-snow',
     accent: '#ff6b6b',
     tagline: 'Where every legend began.',
     blurb:
@@ -51,7 +53,7 @@ export const REGIONS: readonly Region[] = [
     games: 'Gold · Silver · Crystal',
     dexStart: 152,
     dexEnd: 251,
-    icon: '🎏',
+    icon: 'fish',
     accent: '#f4d35e',
     tagline: 'Tradition, towers and quiet magic.',
     blurb:
@@ -65,7 +67,7 @@ export const REGIONS: readonly Region[] = [
     games: 'Ruby · Sapphire · Emerald',
     dexStart: 252,
     dexEnd: 386,
-    icon: '🌊',
+    icon: 'waves',
     accent: '#4dd0e1',
     tagline: 'Land and sea in perfect balance.',
     blurb:
@@ -79,7 +81,7 @@ export const REGIONS: readonly Region[] = [
     games: 'Diamond · Pearl · Platinum',
     dexStart: 387,
     dexEnd: 493,
-    icon: '🏔️',
+    icon: 'mountain',
     accent: '#9d8df1',
     tagline: 'Myths older than time itself.',
     blurb:
@@ -93,7 +95,7 @@ export const REGIONS: readonly Region[] = [
     games: 'Black · White · B2 · W2',
     dexStart: 494,
     dexEnd: 649,
-    icon: '🌆',
+    icon: 'building-2',
     accent: '#7986cb',
     tagline: 'A modern world of black and white.',
     blurb:
@@ -107,7 +109,7 @@ export const REGIONS: readonly Region[] = [
     games: 'X · Y',
     dexStart: 650,
     dexEnd: 721,
-    icon: '🗼',
+    icon: 'landmark',
     accent: '#ec407a',
     tagline: 'Beauty, fashion and Mega power.',
     blurb:
@@ -121,7 +123,7 @@ export const REGIONS: readonly Region[] = [
     games: 'Sun · Moon · US · UM',
     dexStart: 722,
     dexEnd: 809,
-    icon: '🏝️',
+    icon: 'tree-palm',
     accent: '#ffb74d',
     tagline: 'Island trials under endless sun.',
     blurb:
@@ -135,7 +137,7 @@ export const REGIONS: readonly Region[] = [
     games: 'Sword · Shield',
     dexStart: 810,
     dexEnd: 905,
-    icon: '🏟️',
+    icon: 'castle',
     accent: '#4db6ac',
     tagline: 'Stadiums roar with Dynamax.',
     blurb:
@@ -149,7 +151,7 @@ export const REGIONS: readonly Region[] = [
     games: 'Scarlet · Violet',
     dexStart: 906,
     dexEnd: 1025,
-    icon: '🌅',
+    icon: 'sunrise',
     accent: '#f06292',
     tagline: 'An open world to roam at will.',
     blurb:

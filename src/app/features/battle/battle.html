@@ -1,6 +1,6 @@
 <section class="battle">
   <pv-page-header
-    icon="⚔️"
+    icon="swords"
     title="Battle Arena"
     subtitle="Seeded, type-accurate skirmishes. Pick a fighter or take on a random challenger."
   />
@@ -24,8 +24,8 @@
             </datalist>
           </label>
           <div class="setup-actions">
-            <button class="btn" type="button" (click)="start()">⚔️ Fight</button>
-            <button class="btn ghost" type="button" (click)="surpriseMe()">🎲 Surprise me</button>
+            <button class="btn" type="button" (click)="start()"><pv-icon name="swords" /> Fight</button>
+            <button class="btn ghost" type="button" (click)="surpriseMe()"><pv-icon name="dices" /> Surprise me</button>
           </div>
           @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
           <p class="hint">Both sides fight at level 50 with their strongest level-up moves.</p>
@@ -110,17 +110,23 @@
 
           @if (phase() === 'done') {
             <div class="result glass" [class.win]="outcomeWon()">
-              <h2>{{ outcomeWon() ? 'Victory! 🏆' : 'Defeat 💢' }}</h2>
+              <h2>
+                @if (outcomeWon()) {
+                  Victory! <pv-icon name="trophy" />
+                } @else {
+                  Defeat <pv-icon name="heart-crack" />
+                }
+              </h2>
               <div class="result-actions">
-                <button class="btn" type="button" (click)="rematch()">↻ Rematch</button>
-                <button class="btn ghost" type="button" (click)="newBattle()">⚔️ New battle</button>
+                <button class="btn" type="button" (click)="rematch()"><pv-icon name="rotate-ccw" /> Rematch</button>
+                <button class="btn ghost" type="button" (click)="newBattle()"><pv-icon name="swords" /> New battle</button>
               </div>
             </div>
           }
         </div>
 
         <aside class="log glass" aria-live="polite">
-          <h3 class="log-title">📜 Battle Log</h3>
+          <h3 class="log-title"><pv-icon name="scroll-text" /> Battle Log</h3>
           <div class="log-lines">
             @for (line of log(); track $index) {
               <p>{{ line }}</p>

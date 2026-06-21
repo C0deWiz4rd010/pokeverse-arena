@@ -6,6 +6,7 @@
  * awards a unique badge. Collect all eighteen to become Arena Champion.
  */
 import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
+import type { IconName } from '../../core/ui/icon/icons.data';
 
 export interface GymLeader {
   /** The single type this leader specialises in. */
@@ -16,32 +17,32 @@ export interface GymLeader {
   readonly title: string;
   /** Badge awarded for defeating this leader. */
   readonly badge: string;
-  /** Emoji shown for the badge / gym. */
-  readonly icon: string;
+  /** Icon shown for the badge / gym. */
+  readonly icon: IconName;
   /** A short in-character taunt shown on the leader's card. */
   readonly blurb: string;
 }
 
 /** Per-type flavour: [name, title, badge, icon, blurb]. */
-const FLAVOUR: Record<PokemonType, readonly [string, string, string, string, string]> = {
-  normal: ['Cyrus', 'Pure Tactician', 'Balance Badge', '⚪', 'No gimmicks — just flawless fundamentals.'],
-  fire: ['Pyra', 'Blaze Warden', 'Ember Badge', '🔥', 'Step in and you will be reduced to ash.'],
-  water: ['Marina', 'Tidecaller', 'Cascade Badge', '💧', 'The current always wins in the end.'],
-  electric: ['Volt', 'Storm Conductor', 'Thunder Badge', '⚡', 'Feel the charge before the strike.'],
-  grass: ['Fern', 'Verdant Sage', 'Bloom Badge', '🌿', 'Patience grows the strongest roots.'],
-  ice: ['Glace', 'Frost Monarch', 'Glacier Badge', '❄️', 'I will freeze your momentum solid.'],
-  fighting: ['Bruno', 'Iron Fist', 'Fist Badge', '🥊', 'Show me the resolve in your knuckles.'],
-  poison: ['Venoma', 'Toxic Maven', 'Venom Badge', '☠️', 'The longer you last, the worse it gets.'],
-  ground: ['Terra', 'Quake Breaker', 'Earth Badge', '⛰️', 'The ground itself answers to me.'],
-  flying: ['Skye', 'Galewing', 'Feather Badge', '🪶', 'You cannot hit what rides the wind.'],
-  psychic: ['Mesmer', 'Mind Seer', 'Psyche Badge', '🔮', 'I have already seen how this ends.'],
-  bug: ['Chitin', 'Swarm Keeper', 'Hive Badge', '🐛', 'Underestimate the swarm at your peril.'],
-  rock: ['Boulder', 'Stone Wall', 'Boulder Badge', '🪨', 'Break through me — if you can.'],
-  ghost: ['Mortis', 'Phantom Host', 'Spectre Badge', '👻', 'Fear is the first thing you will lose.'],
-  dragon: ['Draken', 'Wyrm Lord', 'Drake Badge', '🐉', 'Few are worthy to face true power.'],
-  dark: ['Umbra', 'Night Stalker', 'Shadow Badge', '🌑', 'In the dark, I never miss.'],
-  steel: ['Forge', 'Steel Vanguard', 'Alloy Badge', '⚙️', 'My defence will outlast your rage.'],
-  fairy: ['Lumi', 'Charm Weaver', 'Charm Badge', '🧚', 'Such a shame to crush something so bold.'],
+const FLAVOUR: Record<PokemonType, readonly [string, string, string, IconName, string]> = {
+  normal: ['Cyrus', 'Pure Tactician', 'Balance Badge', 'circle', 'No gimmicks — just flawless fundamentals.'],
+  fire: ['Pyra', 'Blaze Warden', 'Ember Badge', 'flame', 'Step in and you will be reduced to ash.'],
+  water: ['Marina', 'Tidecaller', 'Cascade Badge', 'droplet', 'The current always wins in the end.'],
+  electric: ['Volt', 'Storm Conductor', 'Thunder Badge', 'zap', 'Feel the charge before the strike.'],
+  grass: ['Fern', 'Verdant Sage', 'Bloom Badge', 'leaf', 'Patience grows the strongest roots.'],
+  ice: ['Glace', 'Frost Monarch', 'Glacier Badge', 'snowflake', 'I will freeze your momentum solid.'],
+  fighting: ['Bruno', 'Iron Fist', 'Fist Badge', 'dumbbell', 'Show me the resolve in your knuckles.'],
+  poison: ['Venoma', 'Toxic Maven', 'Venom Badge', 'skull', 'The longer you last, the worse it gets.'],
+  ground: ['Terra', 'Quake Breaker', 'Earth Badge', 'mountain', 'The ground itself answers to me.'],
+  flying: ['Skye', 'Galewing', 'Feather Badge', 'feather', 'You cannot hit what rides the wind.'],
+  psychic: ['Mesmer', 'Mind Seer', 'Psyche Badge', 'brain', 'I have already seen how this ends.'],
+  bug: ['Chitin', 'Swarm Keeper', 'Hive Badge', 'bug', 'Underestimate the swarm at your peril.'],
+  rock: ['Boulder', 'Stone Wall', 'Boulder Badge', 'gem', 'Break through me — if you can.'],
+  ghost: ['Mortis', 'Phantom Host', 'Spectre Badge', 'ghost', 'Fear is the first thing you will lose.'],
+  dragon: ['Draken', 'Wyrm Lord', 'Drake Badge', 'flame', 'Few are worthy to face true power.'],
+  dark: ['Umbra', 'Night Stalker', 'Shadow Badge', 'moon', 'In the dark, I never miss.'],
+  steel: ['Forge', 'Steel Vanguard', 'Alloy Badge', 'cog', 'My defence will outlast your rage.'],
+  fairy: ['Lumi', 'Charm Weaver', 'Charm Badge', 'sparkles', 'Such a shame to crush something so bold.'],
 };
 
 /** The full roster of gym leaders, one per type, in canonical type order. */

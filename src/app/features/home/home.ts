@@ -8,10 +8,12 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { IconComponent } from '../../core/ui/icon/icon';
+import type { IconName } from '../../core/ui/icon/icons.data';
 
 interface FeatureCard {
   path: string;
-  icon: string;
+  icon: IconName;
   title: string;
   text: string;
 }
@@ -19,7 +21,7 @@ interface FeatureCard {
 @Component({
   selector: 'pv-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, IconComponent],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -29,14 +31,14 @@ export class HomeComponent implements OnDestroy {
   private dispose: (() => void) | null = null;
 
   protected readonly features: FeatureCard[] = [
-    { path: '/pokedex', icon: '📕', title: 'Interactive Pokédex', text: 'Search, filter, compare. Stats, moves, abilities & full evolution trees.' },
-    { path: '/type-lab', icon: '🧪', title: 'Type Lab', text: 'Interactive type chart and a team weakness analyzer.' },
-    { path: '/team-builder', icon: '🛠️', title: 'Team Builder', text: 'Craft teams of six with natures, abilities and legal moves.' },
-    { path: '/battle', icon: '⚔️', title: 'Battle Engine', text: 'Deterministic, seeded turn-based battles with a PixiJS arena.' },
-    { path: '/arena', icon: '🏟️', title: 'Arena', text: 'Take on type-themed gym leaders and earn badges.' },
-    { path: '/tournaments', icon: '🏆', title: 'Tournaments', text: 'Single-elimination brackets — auto-sim or play it out.' },
-    { path: '/world', icon: '🗺️', title: 'World Explorer', text: 'Roam every region and find where each Pokémon lives.' },
-    { path: '/contest', icon: '🎀', title: 'Contest Hall', text: 'Blend berries into Poffins and dazzle the contest judges.' },
+    { path: '/pokedex', icon: 'book', title: 'Interactive Pokédex', text: 'Search, filter, compare. Stats, moves, abilities & full evolution trees.' },
+    { path: '/type-lab', icon: 'flask-conical', title: 'Type Lab', text: 'Interactive type chart and a team weakness analyzer.' },
+    { path: '/team-builder', icon: 'wrench', title: 'Team Builder', text: 'Craft teams of six with natures, abilities and legal moves.' },
+    { path: '/battle', icon: 'swords', title: 'Battle Engine', text: 'Deterministic, seeded turn-based battles with a PixiJS arena.' },
+    { path: '/arena', icon: 'castle', title: 'Arena', text: 'Take on type-themed gym leaders and earn badges.' },
+    { path: '/tournaments', icon: 'trophy', title: 'Tournaments', text: 'Single-elimination brackets — auto-sim or play it out.' },
+    { path: '/world', icon: 'map', title: 'World Explorer', text: 'Roam every region and find where each Pokémon lives.' },
+    { path: '/contest', icon: 'sparkles', title: 'Contest Hall', text: 'Blend berries into Poffins and dazzle the contest judges.' },
   ];
 
   constructor() {

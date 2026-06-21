@@ -36,11 +36,11 @@
 /* ---- shared type picker grid ---- */
 .grid-types {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.4rem;
 }
-@include up(sm) { .grid-types { grid-template-columns: repeat(3, 1fr); } }
-@include up(md) { .grid-types { grid-template-columns: repeat(6, 1fr); } }
+@include up(sm) { .grid-types { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@include up(md) { .grid-types { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 .t-btn {
   padding: 0.5rem 0.4rem;
   border-radius: var(--radius-sm);

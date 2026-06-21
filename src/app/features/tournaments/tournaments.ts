@@ -5,6 +5,7 @@ import { TournamentMatchComponent, type MatchOutcome } from './tournament-match/
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
+import { IconComponent } from '../../core/ui/icon/icon';
 import { titleCase } from '../../core/ui/format';
 import type { Battler } from '../../game/engine';
 import {
@@ -24,6 +25,7 @@ import {
     PageHeaderComponent,
     SpinnerComponent,
     TypeBadgeComponent,
+    IconComponent,
   ],
   templateUrl: './tournaments.html',
   styleUrl: './tournaments.scss',

@@ -75,8 +75,8 @@ export class TournamentMatchComponent {
   /** A short banner describing any special rule in force (inverse / weather). */
   protected readonly ruleBanner = computed(() => {
     const rules = this.setup().rules;
-    if (rules?.inverse) return '🔄 Inverse battle — the type chart is flipped!';
-    if (rules?.weatherBoostType) return `⛈️ ${titleCase(rules.weatherBoostType)}-type moves are boosted 1.5×!`;
+    if (rules?.inverse) return 'Inverse battle — the type chart is flipped!';
+    if (rules?.weatherBoostType) return `${titleCase(rules.weatherBoostType)}-type moves are boosted 1.5×!`;
     return null;
   });
 
@@ -187,7 +187,7 @@ export class TournamentMatchComponent {
     const won = this.ib() >= this.setup().foeTeam.length;
     this.playerWon.set(won);
     this.done.set(true);
-    this.append(won ? 'Match won! 🏆' : 'You were knocked out…');
+    this.append(won ? 'Match won!' : 'You were knocked out…');
   }
 
   private async playEvents(events: BattleEvent[]): Promise<void> {

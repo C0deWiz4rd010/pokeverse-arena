@@ -14,6 +14,7 @@ import { EvolutionTreeComponent } from './evolution-tree';
 import { StatBarComponent } from '../../core/ui/stat-bar/stat-bar';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
+import { IconComponent } from '../../core/ui/icon/icon';
 import { kgToLbs, metersToFeet, padId, titleCase } from '../../core/ui/format';
 import type { LearnableMove } from '../../core/models/pokemon.model';
 
@@ -28,6 +29,7 @@ type MoveTab = 'level-up' | 'machine' | 'egg' | 'tutor';
     StatBarComponent,
     TypeBadgeComponent,
     SpinnerComponent,
+    IconComponent,
   ],
   templateUrl: './pokemon-detail.html',
   styleUrl: './pokemon-detail.scss',

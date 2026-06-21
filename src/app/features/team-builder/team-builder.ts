@@ -4,6 +4,7 @@ import { PokedexService } from '../pokedex/pokedex.service';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
+import { IconComponent } from '../../core/ui/icon/icon';
 import { titleCase, typeColorVar } from '../../core/ui/format';
 import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import { NATURES, natureByName, natureSummary } from '../../core/utils/natures';
@@ -23,7 +24,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 @Component({
   selector: 'pv-team-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, SpinnerComponent, PageHeaderComponent],
+  imports: [TypeBadgeComponent, SpinnerComponent, PageHeaderComponent, IconComponent],
   templateUrl: './team-builder.html',
   styleUrl: './team-builder.scss',
 })

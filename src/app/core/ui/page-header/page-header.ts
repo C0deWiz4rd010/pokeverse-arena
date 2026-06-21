@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { IconComponent } from '../icon/icon';
+import type { IconName } from '../icon/icons.data';
 
 /**
  * Compact page header used across feature pages. The glowing icon chip sits
@@ -8,11 +10,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 @Component({
   selector: 'pv-page-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IconComponent],
   template: `
     <header class="ph">
       <div class="lead">
-        @if (icon()) {
-          <span class="chip" aria-hidden="true">{{ icon() }}</span>
+        @if (icon(); as ic) {
+          <span class="chip" aria-hidden="true"><pv-icon [name]="ic" /></span>
         }
         <h1 class="gradient-text">{{ title() }}</h1>
       </div>
@@ -111,5 +114,5 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 export class PageHeaderComponent {
   readonly title = input.required<string>();
   readonly subtitle = input<string>();
-  readonly icon = input<string>();
+  readonly icon = input<IconName>();
 }

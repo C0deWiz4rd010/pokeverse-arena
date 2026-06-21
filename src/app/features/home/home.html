@@ -1,6 +1,6 @@
 <section class="hero container">
   <div class="hero-copy">
-    <span class="eyebrow">⚡ Gotta build 'em all</span>
+    <span class="eyebrow"><pv-icon name="zap" /> Gotta build 'em all</span>
     <h1>
       Welcome to <span class="gradient-text">PokéVerse Arena</span>
     </h1>
@@ -11,7 +11,7 @@
     </p>
     <div class="cta">
       <a class="btn btn-primary" routerLink="/pokedex">Open the Pokédex</a>
-      <a class="btn" routerLink="/battle">Start a Battle ⚔️</a>
+      <a class="btn" routerLink="/battle">Start a Battle <pv-icon name="swords" /></a>
     </div>
   </div>
 
@@ -26,7 +26,7 @@
   <div class="grid">
     @for (f of features; track f.path) {
       <a class="glass feature" [routerLink]="f.path">
-        <span class="f-icon" aria-hidden="true">{{ f.icon }}</span>
+        <span class="f-icon" aria-hidden="true"><pv-icon [name]="f.icon" /></span>
         <h3>{{ f.title }}</h3>
         <p>{{ f.text }}</p>
         <span class="go">Explore →</span>
