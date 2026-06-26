@@ -138,6 +138,11 @@ export function abilityById(id: AbilityId | undefined): Ability | undefined {
   return id ? BY_ID.get(id) : undefined;
 }
 
+/** Type guard: is this slug one of the abilities the engine models? */
+export function isAbilityId(slug: string): slug is AbilityId {
+  return BY_ID.has(slug as AbilityId);
+}
+
 export function abilityName(id: AbilityId | undefined): string {
   return abilityById(id)?.name ?? '';
 }

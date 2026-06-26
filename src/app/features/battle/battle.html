@@ -50,6 +50,16 @@
             <!-- GPU effects layer (lazy PixiJS; no-op if unavailable) -->
             <pv-battle-fx />
 
+            <!-- Active field conditions (weather / terrain) -->
+            <div class="field-overlay">
+              <pv-field-banner
+                [weather]="engineWeather()"
+                [terrain]="engineTerrain()"
+                [weatherTurns]="weatherTurns()"
+                [terrainTurns]="terrainTurns()"
+              />
+            </div>
+
 
             <!-- Opponent -->
             @if (opponent(); as o) {
@@ -59,10 +69,19 @@
                   <div class="row">
                     <strong>{{ titleCase(o.name) }}</strong>
                     <span class="lv">Lv{{ o.level }}</span>
+                    @if (oppStatus() !== 'none') { <pv-status-badge [status]="oppStatus()" /> }
                   </div>
                   <div class="types">
                     @for (t of o.types; track t) { <pv-type-badge [type]="t" /> }
                   </div>
+                  @if (oppAbility()) { <span class="ability">{{ oppAbility() }}</span> }
+                  @if (oppStageChips().length) {
+                    <div class="stages">
+                      @for (c of oppStageChips(); track c.label) {
+                        <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span>
+                      }
+                    </div>
+                  }
                   <div class="hpbar">
                     <span class="fill" [class.low]="oppHpPct() <= 25" [class.mid]="oppHpPct() > 25 && oppHpPct() <= 50" [style.width.%]="oppHpPct()"></span>
                     <span class="kp">{{ oppHp() }} / {{ oppMaxHp() }} <small>KP</small></span>
@@ -81,10 +100,19 @@
                   <div class="row">
                     <strong>{{ titleCase(p.name) }}</strong>
                     <span class="lv">Lv{{ p.level }}</span>
+                    @if (playerStatus() !== 'none') { <pv-status-badge [status]="playerStatus()" /> }
                   </div>
                   <div class="types">
                     @for (t of p.types; track t) { <pv-type-badge [type]="t" /> }
                   </div>
+                  @if (playerAbility()) { <span class="ability">{{ playerAbility() }}</span> }
+                  @if (playerStageChips().length) {
+                    <div class="stages">
+                      @for (c of playerStageChips(); track c.label) {
+                        <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span>
+                      }
+                    </div>
+                  }
                   <div class="hpbar">
                     <span class="fill" [class.low]="playerHpPct() <= 25" [class.mid]="playerHpPct() > 25 && playerHpPct() <= 50" [style.width.%]="playerHpPct()"></span>
                     <span class="kp">{{ playerHp() }} / {{ playerMaxHp() }} <small>KP</small></span>

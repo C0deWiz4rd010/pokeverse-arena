@@ -241,3 +241,42 @@
   }
   .log-lines { max-height: none; flex: 1; }
 }
+
+/* ---- field conditions + status / stages HUD (deep engine) ---- */
+.field-overlay {
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
+}
+.info .ability {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 0.08rem 0.4rem;
+  margin-top: 0.15rem;
+}
+.info .stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+.info .stage {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border-radius: 5px;
+  padding: 0.04rem 0.32rem;
+}
+.info .stage.up { color: #062; background: color-mix(in srgb, #34d399 35%, transparent); }
+.info .stage.down { color: #fff; background: color-mix(in srgb, #f87171 40%, transparent); }
+.info .row { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }

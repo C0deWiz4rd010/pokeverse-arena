@@ -4,7 +4,24 @@ import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { MoveDto, PokemonDto } from '../../core/dto/pokeapi.dto';
 import { isPokemonType, type PokemonType } from '../../core/utils/type-chart';
 import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
-import type { Battler, BattleMove, DamageClass } from '../../game/engine';
+import {
+  isAbilityId,
+  type AbilityId,
+  type Battler,
+  type BattleMove,
+  type DamageClass,
+  type SecondaryEffect,
+  type StatusCondition,
+} from '../../game/engine';
+
+/** Map PokéAPI move ailment slugs onto the engine's status conditions. */
+const AILMENT: Record<string, StatusCondition> = {
+  paralysis: 'paralysis',
+  sleep: 'sleep',
+  freeze: 'freeze',
+  burn: 'burn',
+  poison: 'poison',
+};
 
 /** Number of distinct level-up moves to consider before filtering to damaging ones. */
 const MOVE_CANDIDATES = 14;
@@ -54,8 +71,18 @@ export class BattleService {
       types: types.length ? types : ['normal'],
       stats,
       moves,
+      ability: this.pickAbility(dto),
       sprite: this.battleSprite(dto, 'front'),
     };
+  }
+
+  /** First ability slot (non-hidden preferred) the engine actually models. */
+  private pickAbility(dto: PokemonDto): AbilityId | undefined {
+    const slots = [...dto.abilities].sort(
+      (a, b) => Number(a.is_hidden) - Number(b.is_hidden) || a.slot - b.slot,
+    );
+    for (const s of slots) if (isAbilityId(s.ability.name)) return s.ability.name;
+    return undefined;
   }
 
   /** Base-stat total (BST) — used to gauge a Pokémon's raw power tier. */
@@ -112,16 +139,39 @@ export class BattleService {
 
   private toMove(dto: MoveDto): BattleMove {
     const type = dto.type.name;
-    const damageClass = (dto.damage_class?.name ?? 'physical') as DamageClass;
+    const rawClass = (dto.damage_class?.name ?? 'physical') as DamageClass;
+    const damageClass: DamageClass = rawClass === 'status' ? 'physical' : rawClass;
+    const meta = dto.meta;
+
+    // Secondary on-hit rider: a status ailment, else a flinch chance.
+    let secondary: SecondaryEffect | undefined;
+    const status = meta ? AILMENT[meta.ailment?.name ?? ''] : undefined;
+    if (status && meta && meta.ailment_chance > 0) {
+      secondary = { chance: meta.ailment_chance, status };
+    } else if (meta && meta.flinch_chance > 0) {
+      secondary = { chance: meta.flinch_chance, flinch: true };
+    }
+
+    const drainPct = meta?.drain ?? 0;
+    const multiHit =
+      meta && meta.min_hits && meta.max_hits ? ([meta.min_hits, meta.max_hits] as const) : undefined;
+
     return {
       name: dto.name,
       type: (isPokemonType(type) ? type : 'normal') as PokemonType,
       power: dto.power ?? 0,
       // API `accuracy: null` means the move never misses → 0 in the engine.
       accuracy: dto.accuracy ?? 0,
-      damageClass: damageClass === 'status' ? 'physical' : damageClass,
+      damageClass,
       priority: dto.priority,
       pp: dto.pp ?? undefined,
+      secondary,
+      drain: drainPct > 0 ? drainPct / 100 : undefined,
+      recoil: drainPct < 0 ? -drainPct / 100 : undefined,
+      multiHit,
+      critStage: meta?.crit_rate || undefined,
+      // We don't capture move flags from the API, so approximate contact by class.
+      flags: damageClass === 'physical' ? { contact: true } : undefined,
     };
   }
 }
