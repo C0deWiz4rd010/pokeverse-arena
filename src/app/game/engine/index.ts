@@ -7,5 +7,6 @@ export * from './hazards';
 export * from './abilities';
 export * from './items';
 export * from './damage';
+export * from './ai';
 export * from './rules';
 export { Battle } from './battle';

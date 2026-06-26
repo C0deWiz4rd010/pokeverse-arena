@@ -102,8 +102,8 @@ export interface Volatiles {
   protect: boolean;
   /** Index of the move a Choice item / locking effect has locked in (or null). */
   lockedMove: number | null;
-  /** Whether Life-Orb-style recoil applied this turn (engine bookkeeping). */
-  chargeUsed?: boolean;
+  /** Flash Fire is active: the holder's Fire moves are boosted. */
+  flashFire?: boolean;
 }
 
 export function freshVolatiles(): Volatiles {
