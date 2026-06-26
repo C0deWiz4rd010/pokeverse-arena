@@ -11,14 +11,17 @@
 import { SeededRng } from '../../core/utils/rng';
 import { resolveDamage, CRIT_CHANCE, MIN_ROLL, MAX_ROLL, moveEffectiveness, stabFor } from './damage';
 import type { BattleRules } from './rules';
-import type {
-  Battler,
-  BattleEvent,
-  BattleMove,
-  BattleSide,
-  BattleState,
-  SideIndex,
+import {
+  freshField,
+  freshVolatiles,
+  type Battler,
+  type BattleEvent,
+  type BattleMove,
+  type BattleSide,
+  type BattleState,
+  type SideIndex,
 } from './battle-types';
+import { freshStages } from './stat-stages';
 
 interface Action {
   side: SideIndex;
@@ -40,6 +43,7 @@ export class Battle {
     this.rules = rules;
     this.state = {
       sides: [makeSide(player), makeSide(opponent)],
+      field: freshField(),
       turn: 0,
       finished: false,
       winner: null,
@@ -183,5 +187,11 @@ function makeSide(battler: Battler): BattleSide {
     currentHp: maxHp,
     maxHp,
     pp: battler.moves.map((m) => m.pp ?? Infinity),
+    status: 'none',
+    sleepTurns: 0,
+    toxicCounter: 0,
+    stages: freshStages(),
+    volatiles: freshVolatiles(),
+    itemUsed: false,
   };
 }
