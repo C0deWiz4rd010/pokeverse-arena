@@ -2,3 +2,7 @@ export * from './types';
 export * from './modes';
 export * from './simulate';
 export * from './bracket';
+export * from './format';
+export * from './standings';
+export * from './round-robin';
+export * from './history';

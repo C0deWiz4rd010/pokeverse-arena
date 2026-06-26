@@ -12,6 +12,8 @@ import {
   ROUND_LABEL,
   ROUND_ORDER,
   TOURNAMENT_MODES,
+  TOURNAMENT_FORMATS,
+  type BracketFormat,
   type BracketMatch,
   type ModeId,
 } from '../../game/tournament';
@@ -34,7 +36,11 @@ export class TournamentsComponent {
   protected readonly svc = inject(TournamentService);
   protected readonly titleCase = titleCase;
   protected readonly modes = TOURNAMENT_MODES;
+  protected readonly formats = TOURNAMENT_FORMATS;
   protected readonly roundLabel = ROUND_LABEL;
+
+  protected readonly selectedFormat = signal<BracketFormat>('single-elim');
+  protected readonly isLeague = computed(() => this.svc.format() !== 'single-elim');
 
   protected readonly inMatch = signal(false);
   protected readonly draftPicks = signal<Battler[]>([]);
@@ -66,8 +72,12 @@ export class TournamentsComponent {
 
   /* --------------------------------------------------------------- actions */
 
+  protected setFormat(format: BracketFormat): void {
+    this.selectedFormat.set(format);
+  }
+
   protected start(mode: ModeId): void {
-    void this.svc.startMode(mode);
+    void this.svc.startMode(mode, this.selectedFormat());
   }
 
   protected toggleDraft(mon: Battler): void {

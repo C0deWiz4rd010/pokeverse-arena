@@ -10,6 +10,25 @@
       @if (svc.error(); as err) {
         <p class="error" role="alert">{{ err }}</p>
       }
+
+      <div class="format-picker" role="radiogroup" aria-label="Tournament format">
+        @for (f of formats; track f.id) {
+          <button
+            class="format-card"
+            type="button"
+            role="radio"
+            [attr.aria-checked]="selectedFormat() === f.id"
+            [class.on]="selectedFormat() === f.id"
+            (click)="setFormat(f.id)"
+          >
+            <span class="fmt-head"><pv-icon [name]="f.icon" /> {{ f.name }}</span>
+            <span class="fmt-tag">{{ f.tagline }}</span>
+            <span class="fmt-desc">{{ f.description }}</span>
+          </button>
+        }
+      </div>
+
+      <h3 class="section-h">Choose a mode</h3>
       <div class="modes">
         @for (m of modes; track m.id) {
           <button class="mode-card" type="button" (click)="start(m.id)">
@@ -20,6 +39,21 @@
           </button>
         }
       </div>
+
+      @if (svc.history().length) {
+        <section class="history">
+          <h3 class="section-h">Recent runs</h3>
+          <ul class="history-list">
+            @for (h of svc.history(); track $index) {
+              <li [class.won]="h.playerWon">
+                <span class="h-place">#{{ h.placement }}</span>
+                <span class="h-mode">{{ h.modeName }} · {{ h.formatName }}</span>
+                <span class="h-prize">+{{ h.prize }} ₽</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
     }
 
     <!-- ───────────────────────────── loading ───────────────────────────── -->
@@ -80,7 +114,7 @@
         </div>
       } @else if (svc.currentMatchSetup(); as setup) {
         <div class="cta">
-          <span class="cta-round">{{ roundLabel[setup.round] }}</span>
+          <span class="cta-round">{{ isLeague() ? 'Next match' : roundLabel[setup.round] }}</span>
           <div class="cta-foe">
             <img class="ava" [src]="setup.foe.avatar" [alt]="setup.foe.name" loading="lazy" />
             <div class="cta-foe-meta">
@@ -97,6 +131,7 @@
         </div>
       }
 
+      @if (!isLeague()) {
       <!-- Desktop converging tree -->
       <div class="tree" aria-label="Tournament bracket">
         <div class="side left">
@@ -143,6 +178,29 @@
           </div>
         }
       </div>
+      } @else {
+        <!-- League standings table -->
+        <div class="standings" aria-label="Standings">
+          <div class="st-row st-head">
+            <span class="st-rank">#</span>
+            <span class="st-name">Trainer</span>
+            <span class="st-num">W</span>
+            <span class="st-num">L</span>
+            <span class="st-num">Pts</span>
+            <span class="st-num">±KO</span>
+          </div>
+          @for (s of svc.rankedStandings(); track s.trainerId; let i = $index) {
+            <div class="st-row" [class.you]="s.isPlayer">
+              <span class="st-rank">{{ i + 1 }}</span>
+              <span class="st-name">{{ s.isPlayer ? 'You' : s.name }}</span>
+              <span class="st-num">{{ s.wins }}</span>
+              <span class="st-num">{{ s.losses }}</span>
+              <span class="st-num strong">{{ s.wins * 3 }}</span>
+              <span class="st-num">{{ s.koFor - s.koAgainst }}</span>
+            </div>
+          }
+        </div>
+      }
     }
   }
 </section>
