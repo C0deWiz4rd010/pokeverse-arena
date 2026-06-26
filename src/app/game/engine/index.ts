@@ -10,3 +10,4 @@ export * from './damage';
 export * from './ai';
 export * from './rules';
 export { Battle } from './battle';
+export { TeamBattle, type TeamAction, type TeamBattleState } from './team-battle';
