@@ -295,3 +295,32 @@
   .crit-burst { animation: none; opacity: 1; }
   .hpbar .fill { transition: none; }
 }
+
+/* ---- deep-engine HUD: field conditions, status, stat stages ---- */
+.arena { position: relative; }
+.field-overlay {
+  position: absolute;
+  top: 0.4rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
+}
+.meta .ability {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 0.05rem 0.36rem;
+  margin-top: 0.12rem;
+}
+.meta .stages { display: flex; flex-wrap: wrap; gap: 0.2rem; margin-top: 0.2rem; }
+.meta .stage { font-size: 0.6rem; font-weight: 800; border-radius: 5px; padding: 0.03rem 0.28rem; }
+.meta .stage.up { color: #062; background: color-mix(in srgb, #34d399 35%, transparent); }
+.meta .stage.down { color: #fff; background: color-mix(in srgb, #f87171 40%, transparent); }
+.name-row { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }

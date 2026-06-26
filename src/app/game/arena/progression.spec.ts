@@ -1,0 +1,62 @@
+import { describe, expect, it } from 'vitest';
+import { LEADER_LADDER, leaderLevel, leaderTier } from './gym-leaders';
+import { arenaProgress, buildLadder, recommendedNext } from './gym-progression';
+import { CHAMPION, GAUNTLET, GAUNTLET_UNLOCK_BADGES, gauntletUnlocked } from './elite-four';
+import type { PokemonType } from '../../core/utils/type-chart';
+
+describe('gym ladder', () => {
+  it('orders 18 leaders by ascending order with sane level/tier curves', () => {
+    expect(LEADER_LADDER).toHaveLength(18);
+    for (let i = 1; i < LEADER_LADDER.length; i++) {
+      expect(LEADER_LADDER[i].order).toBeGreaterThan(LEADER_LADDER[i - 1].order);
+    }
+    expect(leaderLevel(1)).toBeLessThan(leaderLevel(18));
+    expect(leaderTier(1)).toBe('basic');
+    expect(leaderTier(18)).toBe('elite');
+  });
+
+  it('gives every leader a designed three-Pokémon team', () => {
+    for (const l of LEADER_LADDER) {
+      expect(l.team.length).toBe(3);
+      expect(l.team.every((m) => typeof m.species === 'string' && m.species.length > 0)).toBe(true);
+    }
+  });
+
+  it('recommends the lowest-order unbeaten leader', () => {
+    const none = new Set<PokemonType>();
+    expect(recommendedNext(none)?.type).toBe(LEADER_LADDER[0].type);
+    const first = new Set<PokemonType>([LEADER_LADDER[0].type]);
+    expect(recommendedNext(first)?.type).toBe(LEADER_LADDER[1].type);
+  });
+
+  it('flags cleared and next entries on the ladder', () => {
+    const badges = new Set<PokemonType>([LEADER_LADDER[0].type]);
+    const ladder = buildLadder(badges);
+    expect(ladder[0].cleared).toBe(true);
+    expect(ladder[1].next).toBe(true);
+  });
+});
+
+describe('champion gauntlet', () => {
+  it('opens only after enough badges', () => {
+    expect(gauntletUnlocked(new Set())).toBe(false);
+    const eight = new Set<PokemonType>(['fire', 'water', 'grass', 'electric', 'ice', 'rock', 'ground', 'bug']);
+    expect(eight.size).toBe(GAUNTLET_UNLOCK_BADGES);
+    expect(gauntletUnlocked(eight)).toBe(true);
+  });
+
+  it('has four Elites and one Champion at the end', () => {
+    expect(GAUNTLET).toHaveLength(5);
+    expect(GAUNTLET.filter((t) => t.champion)).toHaveLength(1);
+    expect(CHAMPION.champion).toBe(true);
+    expect(CHAMPION.team.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('reports progress toward the gauntlet', () => {
+    const p = arenaProgress(new Set<PokemonType>(['fire', 'water']));
+    expect(p.earned).toBe(2);
+    expect(p.total).toBe(18);
+    expect(p.toGauntlet).toBe(GAUNTLET_UNLOCK_BADGES - 2);
+    expect(p.gauntletOpen).toBe(false);
+  });
+});

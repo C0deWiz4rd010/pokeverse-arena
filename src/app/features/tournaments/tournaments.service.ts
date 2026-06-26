@@ -4,7 +4,7 @@ import type { PokemonDto } from '../../core/dto/pokeapi.dto';
 import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
 import { isPokemonType, POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import { SeededRng } from '../../core/utils/rng';
-import type { Battler, BattleMove, BattleRules } from '../../game/engine';
+import type { AiTier, Battler, BattleMove, BattleRules } from '../../game/engine';
 import {
   buildBracket,
   levelForRound,
@@ -35,6 +35,8 @@ export interface PlayerMatchSetup {
   readonly rules?: BattleRules;
   readonly playerStartHp?: number[];
   readonly foeStartHp?: number[];
+  /** AI difficulty the foe plays at (defaults to 'strong'). */
+  readonly aiTier?: AiTier;
 }
 
 const DEX_MAX = 1025;

@@ -8,11 +8,39 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Battle, type Battler, type BattleEvent, type SideIndex } from '../../../game/engine';
+import {
+  Battle,
+  abilityName,
+  freshStages,
+  BOOSTABLE_STATS,
+  type Battler,
+  type BattleEvent,
+  type BoostableStat,
+  type SideIndex,
+  type Stages,
+  type StatusCondition,
+  type Terrain,
+  type Weather as EngineWeather,
+} from '../../../game/engine';
 import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
 import { WeatherOverlayComponent } from '../../../core/ui/weather-overlay/weather-overlay';
+import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge';
+import { FieldBannerComponent } from '../../../core/ui/field-banner/field-banner';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { BattleFxComponent } from '../../battle/pixi/battle-fx';
+
+interface StageChip {
+  readonly label: string;
+  readonly value: number;
+}
+
+const STAGE_SHORT: Record<BoostableStat, string> = {
+  attack: 'Atk', defense: 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', speed: 'Spe', accuracy: 'Acc', evasion: 'Eva',
+};
+
+function stageChips(stages: Stages): StageChip[] {
+  return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({ label: STAGE_SHORT[s], value: stages[s] }));
+}
 import { pickWeather, weatherForType, type Weather } from '../../../core/ui/weather-overlay/weather';
 import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';
@@ -35,7 +63,7 @@ export interface MatchOutcome {
 @Component({
   selector: 'pv-tournament-match',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, WeatherOverlayComponent, MoveButtonComponent, BattleFxComponent],
+  imports: [TypeBadgeComponent, WeatherOverlayComponent, StatusBadgeComponent, FieldBannerComponent, MoveButtonComponent, BattleFxComponent],
   templateUrl: './tournament-match.html',
   styleUrl: './tournament-match.scss',
 })
@@ -44,6 +72,7 @@ export class TournamentMatchComponent {
   readonly finished = output<MatchOutcome>();
 
   protected readonly titleCase = titleCase;
+  protected readonly abilityName = abilityName;
 
   private readonly hpA = signal<number[]>([]);
   private readonly hpB = signal<number[]>([]);
@@ -64,6 +93,20 @@ export class TournamentMatchComponent {
   protected readonly critSide = signal<SideIndex | null>(null);
   protected readonly done = signal(false);
   protected readonly playerWon = signal(false);
+
+  protected readonly pStatus = signal<StatusCondition>('none');
+  protected readonly fStatus = signal<StatusCondition>('none');
+  protected readonly pStages = signal<Stages>(freshStages());
+  protected readonly fStages = signal<Stages>(freshStages());
+  protected readonly engWeather = signal<EngineWeather>('none');
+  protected readonly engTerrain = signal<Terrain>('none');
+  protected readonly wTurns = signal(0);
+  protected readonly tTurns = signal(0);
+
+  protected readonly pStageChips = computed(() => stageChips(this.pStages()));
+  protected readonly fStageChips = computed(() => stageChips(this.fStages()));
+  protected readonly playerAbility = computed(() => abilityName(this.playerActive()?.ability));
+  protected readonly foeAbility = computed(() => abilityName(this.foeActive()?.ability));
 
   protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
   protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
@@ -120,6 +163,7 @@ export class TournamentMatchComponent {
     const events = this.battle.takeTurn(index);
     await this.playEvents(events);
     this.persistActiveHp();
+    this.syncState();
 
     if (this.battle.state.finished) {
       if (this.battle.state.winner === 0) this.advanceFoe();
@@ -155,7 +199,7 @@ export class TournamentMatchComponent {
     const s = this.setup();
     const a = s.playerTeam[this.ia()];
     const b = s.foeTeam[this.ib()];
-    this.battle = new Battle(a, b, `${s.match.id}-d${this.duel}`, s.rules);
+    this.battle = new Battle(a, b, `${s.match.id}-d${this.duel}`, s.rules, s.aiTier ?? 'strong');
     this.battle.state.sides[0].currentHp = clamp(this.hpA()[this.ia()], this.battle.state.sides[0].maxHp);
     this.battle.state.sides[1].currentHp = clamp(this.hpB()[this.ib()], this.battle.state.sides[1].maxHp);
 
@@ -167,6 +211,21 @@ export class TournamentMatchComponent {
     this.fHp.set(this.battle.opponent.currentHp);
     this.append(`Go, ${titleCase(a.name)}!`);
     this.append(`${s.foe.name} sent out ${titleCase(b.name)}!`);
+    this.syncState();
+  }
+
+  /** Pull authoritative status/stages/field state from the engine. */
+  private syncState(): void {
+    if (!this.battle) return;
+    this.pStatus.set(this.battle.player.status);
+    this.fStatus.set(this.battle.opponent.status);
+    this.pStages.set({ ...this.battle.player.stages });
+    this.fStages.set({ ...this.battle.opponent.stages });
+    const f = this.battle.state.field;
+    this.engWeather.set(f.weather);
+    this.engTerrain.set(f.terrain);
+    this.wTurns.set(f.weatherTurns);
+    this.tTurns.set(f.terrainTurns);
   }
 
   private persistActiveHp(): void {
@@ -222,6 +281,28 @@ export class TournamentMatchComponent {
           this.critSide.set(null);
           break;
         }
+        case 'heal':
+          if (ev.side === 0) this.pHp.set(ev.remainingHp);
+          else this.fHp.set(ev.remainingHp);
+          if (ev.text) this.append(ev.text);
+          await sleep(340);
+          break;
+        case 'status-set':
+        case 'cure':
+        case 'weather':
+        case 'terrain':
+        case 'hazard':
+        case 'ability':
+        case 'item':
+        case 'flinch':
+        case 'status':
+          if (ev.text) this.append(ev.text);
+          await sleep(320);
+          break;
+        case 'stage-change':
+          if (ev.text) this.append(ev.text);
+          await sleep(280);
+          break;
         case 'faint':
           this.append(`${titleCase(ev.name)} fainted!`);
           await sleep(650);

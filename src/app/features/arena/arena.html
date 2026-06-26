@@ -3,7 +3,22 @@
     @if (svc.setup(); as setup) {
       <div class="match-wrap">
         <button type="button" class="forfeit" (click)="svc.abandon()">‹ Leave gym</button>
-        <pv-tournament-match [setup]="setup" (finished)="svc.finish($event)" />
+        @if (svc.activeLeader(); as l) {
+          <p class="leader-line">“{{ l.dialogue.intro }}”</p>
+        }
+        <pv-tournament-match [setup]="setup" (finished)="onGymFinished($event)" />
+      </div>
+    }
+  }
+
+  @case ('gauntlet') {
+    @if (svc.gauntletSetup(); as setup) {
+      <div class="match-wrap">
+        <button type="button" class="forfeit" (click)="svc.abandonGauntlet()">‹ Forfeit gauntlet</button>
+        @if (svc.gauntletView(); as g) {
+          <p class="leader-line gauntlet"><strong>{{ g.stageLabel }} ({{ g.index }}/{{ g.total }})</strong> — {{ g.foeName }} · No healing between matches!</p>
+        }
+        <pv-tournament-match [setup]="setup" (finished)="onGauntletFinished($event)" />
       </div>
     }
   }
@@ -13,11 +28,8 @@
     <div class="state">
       <pv-spinner label="Approaching the gym…" />
       <p class="muted">
-        @if (svc.activeLeader(); as l) {
-          {{ l.name }} is choosing a team of {{ titleCase(l.type) }}-types…
-        } @else {
-          Preparing the challenge…
-        }
+        @if (svc.activeLeader(); as l) { {{ l.name }} is preparing a team of {{ titleCase(l.type) }}-types… }
+        @else { Preparing the challenge… }
       </p>
     </div>
   }
@@ -31,16 +43,16 @@
   }
 
   @default {
-    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="castle" />
+    <pv-page-header title="Arena" subtitle="Climb the gym ladder, then face the Champion Gauntlet." icon="castle" />
 
     <header class="progress" [class.champ]="svc.isChampion()">
       <div class="progress-text">
         @if (svc.isChampion()) {
-          <strong><pv-icon name="trophy" /> Arena Champion!</strong>
-          <span class="muted">Every badge earned — you have mastered all {{ svc.total() }} types.</span>
+          <strong><pv-icon name="crown" /> Arena Champion</strong>
+          <span class="muted">You conquered the gauntlet. {{ svc.earnedCount() }}/{{ svc.total() }} badges · {{ svc.coins() }} ₽</span>
         } @else {
           <strong>{{ svc.earnedCount() }} / {{ svc.total() }} badges</strong>
-          <span class="muted">Defeat a leader to claim their badge. Your Team Builder roster is sent into battle.</span>
+          <span class="muted">{{ svc.coins() }} ₽ earned · Your Team Builder roster is sent into battle.</span>
         }
       </div>
       <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="svc.earnedCount()" [attr.aria-valuemax]="svc.total()">
@@ -48,39 +60,60 @@
       </div>
     </header>
 
-    @if (svc.lastResult(); as res) {
-      <p class="toast" [class.win]="res.won" [class.loss]="!res.won">
-        @if (res.won) {
-          <pv-icon [name]="res.leader.icon" /> You defeated {{ res.leader.name }} and earned the {{ res.leader.badge }}!
+    <!-- Champion Gauntlet panel -->
+    <section class="gauntlet-panel" [class.open]="svc.gauntletOpen()">
+      <div class="g-info">
+        <strong><pv-icon name="crown" /> Champion Gauntlet</strong>
+        @if (svc.gauntletOpen()) {
+          <span class="muted">Elite Four + Champion, back-to-back. No healing between matches.</span>
         } @else {
-          {{ res.leader.name }} stood firm. Train up and challenge the {{ titleCase(res.leader.type) }} gym again.
+          <span class="muted">Earn {{ svc.progress().toGauntlet }} more badge(s) to unlock the gauntlet.</span>
         }
+      </div>
+      <button type="button" class="btn" [disabled]="!svc.gauntletOpen()" (click)="startGauntlet()">
+        {{ svc.isChampion() ? 'Re-run gauntlet' : 'Enter gauntlet' }} ›
+      </button>
+    </section>
+
+    @if (svc.gauntletResult(); as r) {
+      <p class="toast" [class.win]="r === 'won'" [class.loss]="r === 'lost'">
+        @if (r === 'won') { <pv-icon name="crown" /> You bested the Elite Four and the Champion — you are the Arena Champion! }
+        @else { The gauntlet bested you this time. Heal up and try again. }
       </p>
     }
 
-    <ul class="grid">
-      @for (l of svc.leaders; track l.type) {
-        <li class="card" [class.owned]="svc.hasBadge(l.type)" [style.--type]="'var(--type-' + l.type + ')'">
-          <div class="badge-icon" [class.lit]="svc.hasBadge(l.type)" [attr.title]="l.badge"><pv-icon [name]="l.icon" /></div>
+    @if (svc.lastResult(); as res) {
+      <p class="toast" [class.win]="res.won" [class.loss]="!res.won">
+        @if (res.won) { <pv-icon [name]="res.leader.icon" /> You defeated {{ res.leader.name }} — {{ res.leader.badge }} earned! +{{ res.coins }} ₽ }
+        @else { {{ res.leader.name }} stood firm. Train up and challenge the {{ titleCase(res.leader.type) }} gym again. }
+      </p>
+    }
+
+    <ol class="ladder">
+      @for (e of svc.ladder(); track e.leader.type) {
+        <li class="card" [class.owned]="e.cleared" [class.next]="e.next" [style.--type]="'var(--type-' + e.leader.type + ')'">
+          <div class="rank">{{ e.leader.order }}</div>
+          <div class="badge-icon" [class.lit]="e.cleared" [attr.title]="e.leader.badge"><pv-icon [name]="e.leader.icon" /></div>
           <div class="info">
             <div class="who">
-              <strong class="name">{{ l.name }}</strong>
-              <pv-type-badge [type]="l.type" />
+              <strong class="name">{{ e.leader.name }}</strong>
+              <pv-type-badge [type]="e.leader.type" />
+              @if (e.next) { <span class="next-tag">Next up</span> }
             </div>
-            <span class="title">{{ l.title }}</span>
-            <p class="blurb">“{{ l.blurb }}”</p>
+            <span class="title">{{ e.leader.title }}</span>
+            <p class="blurb">“{{ e.leader.blurb }}”</p>
           </div>
           <div class="action">
-            @if (svc.hasBadge(l.type)) {
-              <span class="earned"><pv-icon name="check" /> {{ l.badge }}</span>
-              <button type="button" class="btn ghost" (click)="challenge(l)">Rematch</button>
+            @if (e.cleared) {
+              <span class="earned"><pv-icon name="check" /> {{ e.leader.badge }}</span>
+              <button type="button" class="btn ghost" (click)="challenge(e.leader)">Rematch</button>
             } @else {
-              <button type="button" class="btn" (click)="challenge(l)">Challenge ›</button>
+              <button type="button" class="btn" (click)="challenge(e.leader)">Challenge ›</button>
             }
           </div>
         </li>
       }
-    </ul>
+    </ol>
 
     @if (svc.earnedCount() > 0) {
       <div class="reset-row">

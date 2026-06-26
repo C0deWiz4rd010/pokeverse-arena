@@ -1,103 +1,109 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { PokeApiClient } from '../../core/api/pokeapi.client';
-import type { PokemonDto } from '../../core/dto/pokeapi.dto';
-import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
 import { isPokemonType, type PokemonType } from '../../core/utils/type-chart';
-import { SeededRng } from '../../core/utils/rng';
-import type { Battler, BattleMove } from '../../game/engine';
+import type { Battler } from '../../game/engine';
 import type { BracketMatch, Trainer } from '../../game/tournament';
-import { GYM_LEADERS, type GymLeader } from '../../game/arena/gym-leaders';
+import {
+  LEADER_LADDER,
+  leaderLevel,
+  leaderTier,
+  type GymLeader,
+  type LeaderMon,
+} from '../../game/arena/gym-leaders';
+import { arenaProgress, buildLadder } from '../../game/arena/gym-progression';
+import { CHAMPION, GAUNTLET, gauntletUnlocked, type EliteTrainer } from '../../game/arena/elite-four';
 import { BattleService } from '../battle/battle.service';
 import { TeamBuilderService } from '../team-builder/team-builder.service';
 import type { PlayerMatchSetup } from '../tournaments/tournaments.service';
 import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
 
-type Status = 'hub' | 'loading' | 'battle' | 'error';
+type Status = 'hub' | 'loading' | 'battle' | 'gauntlet' | 'error';
 
 const DEX_MAX = 1025;
-const GYM_LEVEL = 50;
 const TEAM_SIZE = 3;
+const GAUNTLET_LEVEL = 75;
 const BADGE_KEY = 'arena:badges';
-
-/** A leader's themed team is drawn from the strongest of a sampled candidate pool. */
-const CANDIDATE_POOL = 12;
-
-function titleCase(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-/** Type-accurate synthetic move set (mirrors the tournament CPU builder). */
-function synthMoves(types: PokemonType[]): BattleMove[] {
-  const moves: BattleMove[] = types.map((ty, i) => ({
-    name: `${titleCase(ty)} ${i === 0 ? 'Blast' : 'Strike'}`,
-    type: ty,
-    power: 85,
-    accuracy: 100,
-    damageClass: i % 2 === 0 ? 'physical' : 'special',
-  }));
-  moves.push({ name: 'Tackle', type: 'normal', power: 50, accuracy: 100, damageClass: 'physical' });
-  return moves;
-}
+const CHAMP_KEY = 'arena:champion';
+const COINS_KEY = 'arena:coins';
 
 /** Deterministic gym-leader portrait via the DiceBear avatar library. */
-function leaderAvatar(seed: string): string {
+function leaderAvatar(seed: string, accent = false): string {
   const params = new URLSearchParams({
     seed,
     radius: '50',
     backgroundType: 'gradientLinear',
-    backgroundColor: 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c8f7c5',
+    backgroundColor: accent ? 'ffd166,ffb703,fb8500' : 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c8f7c5',
   });
   return `https://api.dicebear.com/9.x/adventurer/svg?${params.toString()}`;
 }
 
-function idFromUrl(url: string): number | null {
-  const m = url.match(/\/pokemon\/(\d+)\/?$/);
-  return m ? Number(m[1]) : null;
+/** Live state of an in-progress Champion Gauntlet run. */
+interface GauntletRun {
+  readonly trainers: readonly EliteTrainer[];
+  index: number;
+  playerHp: number[];
+}
+
+export interface GauntletView {
+  readonly stageLabel: string;
+  readonly index: number;
+  readonly total: number;
+  readonly foeName: string;
 }
 
 /**
- * Arena hub state: a roster of type-themed gym leaders, the player's badge
- * progress (persisted), and the wiring to launch a 3-v-3 challenge match.
+ * Arena hub: a designed gym ladder (one leader per type, scaling level + AI),
+ * persisted badge progress, a Champion Gauntlet (Elite Four + Champion, no heal
+ * between matches), and the wiring to launch each challenge through the shared
+ * 3-v-3 match component.
  */
 @Injectable({ providedIn: 'root' })
 export class ArenaService {
-  private readonly api = inject(PokeApiClient);
   private readonly battle = inject(BattleService);
   private readonly roster = inject(TeamBuilderService);
 
-  readonly leaders = GYM_LEADERS;
+  readonly leaders = LEADER_LADDER;
 
   readonly status = signal<Status>('hub');
   readonly error = signal<string | null>(null);
   readonly setup = signal<PlayerMatchSetup | null>(null);
   readonly activeLeader = signal<GymLeader | null>(null);
-  readonly lastResult = signal<{ leader: GymLeader; won: boolean } | null>(null);
+  readonly lastResult = signal<{ leader: GymLeader; won: boolean; coins: number } | null>(null);
 
-  /** Types whose badge the player has earned. */
   readonly badges = signal<ReadonlySet<PokemonType>>(this.restoreBadges());
+  readonly isChampion = signal<boolean>(localStorage.getItem(CHAMP_KEY) === '1');
+  readonly coins = signal<number>(this.restoreCoins());
 
   readonly earnedCount = computed(() => this.badges().size);
   readonly total = computed(() => this.leaders.length);
-  readonly isChampion = computed(() => this.earnedCount() === this.total());
+  readonly ladder = computed(() => buildLadder(this.badges()));
+  readonly progress = computed(() => arenaProgress(this.badges()));
+  readonly gauntletOpen = computed(() => gauntletUnlocked(this.badges()));
+
+  /** Gauntlet run state (null when not running). */
+  private run: GauntletRun | null = null;
+  readonly gauntletSetup = signal<PlayerMatchSetup | null>(null);
+  readonly gauntletView = signal<GauntletView | null>(null);
+  readonly gauntletResult = signal<'won' | 'lost' | null>(null);
+  private gauntletPlayerTeam: Battler[] = [];
 
   hasBadge(type: PokemonType): boolean {
     return this.badges().has(type);
   }
 
-  /** Build both teams and drop the player into a challenge match. */
+  /* ---------------------------------------------------------- single gym */
+
   async challenge(leader: GymLeader): Promise<void> {
     this.status.set('loading');
     this.error.set(null);
     this.lastResult.set(null);
     this.activeLeader.set(leader);
     try {
+      const level = leaderLevel(leader.order);
       const [foeTeam, playerTeam] = await Promise.all([
-        this.buildLeaderTeam(leader.type),
-        this.buildPlayerTeam(),
+        this.buildLeaderTeam(leader, level),
+        this.buildPlayerTeam(level),
       ]);
-      if (!foeTeam.length || !playerTeam.length) {
-        throw new Error('Could not assemble a team for this challenge.');
-      }
+      if (!foeTeam.length || !playerTeam.length) throw new Error('Could not assemble a team for this challenge.');
       const foe: Trainer = {
         id: `leader-${leader.type}`,
         name: leader.name,
@@ -105,24 +111,16 @@ export class ArenaService {
         avatar: leaderAvatar(`${leader.name}-${leader.type}`),
         team: foeTeam,
       };
-      const player: Trainer = {
-        id: 'player',
-        name: 'You',
-        title: 'Challenger',
-        avatar: leaderAvatar('Champion-Ace'),
-        team: playerTeam,
-        isPlayer: true,
-      };
-      const match: BracketMatch = {
-        id: `gym-${leader.type}`,
+      const player = this.playerTrainer(playerTeam);
+      this.setup.set({
+        match: this.dummyMatch(`gym-${leader.type}`, player, foe),
         round: 'final',
-        slot: 0,
-        a: player,
-        b: foe,
-        winner: null,
-        played: false,
-      };
-      this.setup.set({ match, round: 'final', player, foe, playerTeam, foeTeam });
+        player,
+        foe,
+        playerTeam,
+        foeTeam,
+        aiTier: leaderTier(leader.order),
+      });
       this.status.set('battle');
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Something went wrong. Try again.');
@@ -131,24 +129,28 @@ export class ArenaService {
     }
   }
 
-  /** Handle a finished match: award the badge on a win, return to the hub. */
   finish(outcome: MatchOutcome): void {
     const leader = this.activeLeader();
+    let reward = 0;
     if (leader) {
-      this.lastResult.set({ leader, won: outcome.playerWon });
-      if (outcome.playerWon && !this.badges().has(leader.type)) {
-        const next = new Set(this.badges());
-        next.add(leader.type);
-        this.badges.set(next);
-        this.persistBadges(next);
+      const firstClear = outcome.playerWon && !this.badges().has(leader.type);
+      if (outcome.playerWon) {
+        reward = leader.order * 10 + (firstClear ? 40 : 0);
+        this.addCoins(reward);
+        if (firstClear) {
+          const next = new Set(this.badges());
+          next.add(leader.type);
+          this.badges.set(next);
+          this.persistBadges(next);
+        }
       }
+      this.lastResult.set({ leader, won: outcome.playerWon, coins: reward });
     }
     this.setup.set(null);
     this.activeLeader.set(null);
     this.status.set('hub');
   }
 
-  /** Abandon an in-progress challenge and return to the hub. */
   abandon(): void {
     this.setup.set(null);
     this.activeLeader.set(null);
@@ -156,74 +158,164 @@ export class ArenaService {
     this.status.set('hub');
   }
 
-  /** Wipe all earned badges (with confirmation handled by the UI). */
+  /* --------------------------------------------------------- the gauntlet */
+
+  async startGauntlet(): Promise<void> {
+    if (!this.gauntletOpen()) return;
+    this.status.set('loading');
+    this.error.set(null);
+    this.gauntletResult.set(null);
+    try {
+      this.gauntletPlayerTeam = await this.buildPlayerTeam(GAUNTLET_LEVEL);
+      if (!this.gauntletPlayerTeam.length) throw new Error('Assemble a team in the Team Builder first.');
+      this.run = { trainers: GAUNTLET, index: 0, playerHp: this.gauntletPlayerTeam.map((m) => m.stats.hp) };
+      await this.loadGauntletMatch();
+      this.status.set('gauntlet');
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Could not start the gauntlet.');
+      this.status.set('error');
+    }
+  }
+
+  async finishGauntletMatch(outcome: MatchOutcome): Promise<void> {
+    const run = this.run;
+    if (!run) return;
+    if (!outcome.playerWon) {
+      this.gauntletResult.set('lost');
+      this.endGauntlet();
+      return;
+    }
+    run.playerHp = outcome.playerFinalHp;
+    run.index += 1;
+    this.addCoins(60);
+    if (run.index >= run.trainers.length) {
+      // Champion defeated.
+      this.addCoins(300);
+      this.isChampion.set(true);
+      localStorage.setItem(CHAMP_KEY, '1');
+      this.gauntletResult.set('won');
+      this.endGauntlet();
+      return;
+    }
+    this.status.set('loading');
+    await this.loadGauntletMatch();
+    this.status.set('gauntlet');
+  }
+
+  abandonGauntlet(): void {
+    this.endGauntlet();
+  }
+
+  private endGauntlet(): void {
+    this.run = null;
+    this.gauntletSetup.set(null);
+    this.gauntletView.set(null);
+    this.status.set('hub');
+  }
+
+  private async loadGauntletMatch(): Promise<void> {
+    const run = this.run!;
+    const trainer = run.trainers[run.index];
+    const foeTeam = await this.buildEliteTeam(trainer);
+    const player = this.playerTrainer(this.gauntletPlayerTeam, true);
+    const foe: Trainer = {
+      id: trainer.id,
+      name: trainer.name,
+      title: trainer.title,
+      avatar: leaderAvatar(`${trainer.name}-${trainer.id}`, trainer.champion),
+      team: foeTeam,
+    };
+    this.gauntletSetup.set({
+      match: this.dummyMatch(`gauntlet-${trainer.id}`, player, foe),
+      round: 'final',
+      player,
+      foe,
+      playerTeam: this.gauntletPlayerTeam,
+      foeTeam,
+      aiTier: 'elite',
+      playerStartHp: run.playerHp.slice(),
+    });
+    this.gauntletView.set({
+      stageLabel: trainer.champion ? 'Champion' : `Elite ${run.index + 1}`,
+      index: run.index + 1,
+      total: run.trainers.length,
+      foeName: `${trainer.name}, ${trainer.title}`,
+    });
+  }
+
+  /* ------------------------------------------------------------- rewards */
+
   resetProgress(): void {
     this.badges.set(new Set());
     this.persistBadges(new Set());
+    this.isChampion.set(false);
+    localStorage.removeItem(CHAMP_KEY);
     this.lastResult.set(null);
   }
 
-  /* ----------------------------------------------------------- team building */
-
-  /** The leader fields the three strongest mons of a sampled same-type pool. */
-  private async buildLeaderTeam(type: PokemonType): Promise<Battler[]> {
-    const dto = await this.api.type(type);
-    const pool = dto.pokemon
-      .map((p) => idFromUrl(p.pokemon.url))
-      .filter((id): id is number => id !== null && id <= DEX_MAX);
-    if (!pool.length) return [];
-
-    const rng = new SeededRng(`gym-${type}`);
-    const ids = rng.shuffle(pool).slice(0, CANDIDATE_POOL);
-    const dtos = await this.fetchDtos(ids);
-    dtos.sort((a, b) => this.battle.totalBaseStats(b) - this.battle.totalBaseStats(a));
-    return dtos.slice(0, TEAM_SIZE).map((d) => this.buildLight(d));
+  private addCoins(n: number): void {
+    if (n <= 0) return;
+    const next = this.coins() + n;
+    this.coins.set(next);
+    try {
+      localStorage.setItem(COINS_KEY, String(next));
+    } catch {
+      /* storage unavailable */
+    }
   }
 
-  /**
-   * The player brings their Team Builder roster (first three) when available,
-   * otherwise a fair random trio so anyone can jump straight in.
-   */
-  private async buildPlayerTeam(): Promise<Battler[]> {
+  /* ----------------------------------------------------------- team build */
+
+  private async buildLeaderTeam(leader: GymLeader, level: number): Promise<Battler[]> {
+    return this.buildLoadout(leader.team, level);
+  }
+
+  private async buildEliteTeam(trainer: EliteTrainer): Promise<Battler[]> {
+    return this.buildLoadout(trainer.team, trainer.level);
+  }
+
+  /** Build a designed team: real movesets from the API, with set abilities/items. */
+  private async buildLoadout(team: readonly LeaderMon[], level: number): Promise<Battler[]> {
+    const built = await Promise.all(
+      team.map(async (mon): Promise<Battler | null> => {
+        try {
+          const b = await this.battle.buildBattler(mon.species, level);
+          return { ...b, ability: mon.ability ?? b.ability, item: mon.item };
+        } catch {
+          return null;
+        }
+      }),
+    );
+    return built.filter((b): b is Battler => b !== null);
+  }
+
+  /** Player brings their Team Builder roster (first three) or a fair random trio. */
+  private async buildPlayerTeam(level: number): Promise<Battler[]> {
     const saved = this.roster.team().slice(0, TEAM_SIZE);
     if (saved.length) {
-      return Promise.all(saved.map((m) => this.battle.buildBattler(m.id, GYM_LEVEL)));
+      return Promise.all(saved.map((m) => this.battle.buildBattler(m.id, level)));
     }
     const ids = new Set<number>();
     while (ids.size < TEAM_SIZE) ids.add(1 + Math.floor(Math.random() * DEX_MAX));
-    return Promise.all([...ids].map((id) => this.battle.buildBattler(id, GYM_LEVEL)));
+    return Promise.all([...ids].map((id) => this.battle.buildBattler(id, level)));
   }
 
-  private async fetchDtos(ids: number[]): Promise<PokemonDto[]> {
-    const res = await Promise.all(ids.map((id) => this.api.pokemon(id).catch(() => null)));
-    return res.filter((d): d is PokemonDto => !!d);
-  }
-
-  private buildLight(dto: PokemonDto): Battler {
-    const types = dto.types
-      .slice()
-      .sort((a, b) => a.slot - b.slot)
-      .map((t) => t.type.name)
-      .filter(isPokemonType);
-    const t = types.length ? types : (['normal'] as PokemonType[]);
+  private playerTrainer(team: Battler[], champion = false): Trainer {
     return {
-      id: dto.id,
-      name: dto.name,
-      level: GYM_LEVEL,
-      types: t,
-      stats: quickStats(this.baseStats(dto), GYM_LEVEL),
-      moves: synthMoves(t),
-      sprite: this.battle.battleSprite(dto, 'front'),
+      id: 'player',
+      name: 'You',
+      title: 'Challenger',
+      avatar: leaderAvatar('Champion-Ace', champion),
+      team,
+      isPlayer: true,
     };
   }
 
-  private baseStats(dto: PokemonDto): Record<StatKey, number> {
-    const stats = {} as Record<StatKey, number>;
-    for (const s of dto.stats) stats[s.stat.name as StatKey] = s.base_stat;
-    return stats;
+  private dummyMatch(id: string, player: Trainer, foe: Trainer): BracketMatch {
+    return { id, round: 'final', slot: 0, a: player, b: foe, winner: null, played: false };
   }
 
-  /* ------------------------------------------------------------- persistence */
+  /* ------------------------------------------------------------ persistence */
 
   private restoreBadges(): ReadonlySet<PokemonType> {
     try {
@@ -243,5 +335,10 @@ export class ArenaService {
     } catch {
       /* storage unavailable — progress simply won't persist */
     }
+  }
+
+  private restoreCoins(): number {
+    const n = Number(localStorage.getItem(COINS_KEY));
+    return Number.isFinite(n) && n > 0 ? n : 0;
   }
 }

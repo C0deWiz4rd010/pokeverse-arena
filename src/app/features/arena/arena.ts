@@ -7,6 +7,7 @@ import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { TournamentMatchComponent } from '../tournaments/tournament-match/tournament-match';
 import { titleCase } from '../../core/ui/format';
 import type { GymLeader } from '../../game/arena/gym-leaders';
+import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
 
 @Component({
   selector: 'pv-arena',
@@ -21,5 +22,17 @@ export class ArenaComponent {
 
   protected challenge(leader: GymLeader): void {
     void this.svc.challenge(leader);
+  }
+
+  protected startGauntlet(): void {
+    void this.svc.startGauntlet();
+  }
+
+  protected onGymFinished(outcome: MatchOutcome): void {
+    this.svc.finish(outcome);
+  }
+
+  protected onGauntletFinished(outcome: MatchOutcome): void {
+    void this.svc.finishGauntletMatch(outcome);
   }
 }

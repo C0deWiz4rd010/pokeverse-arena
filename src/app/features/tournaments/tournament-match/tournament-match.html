@@ -19,6 +19,10 @@
     <pv-weather-overlay [weather]="weather()" />
     <pv-battle-fx />
 
+    <div class="field-overlay">
+      <pv-field-banner [weather]="engWeather()" [terrain]="engTerrain()" [weatherTurns]="wTurns()" [terrainTurns]="tTurns()" />
+    </div>
+
     <!-- Foe (top-right) -->
     <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1" [class.crit]="critSide() === 1">
       @if (critSide() === 1) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
@@ -27,11 +31,18 @@
           <div class="name-row">
             <span class="name">{{ titleCase(foe.name) }}</span>
             <span class="lvl">Lv{{ foe.level }}</span>
+            @if (fStatus() !== 'none') { <pv-status-badge [status]="fStatus()" /> }
           </div>
           <div class="hpbar"><span class="fill" [class.low]="fHpPct() < 30" [style.width.%]="fHpPct()"></span><span class="kp">{{ fHp() }} / {{ fMax() }} <small>KP</small></span></div>
           <div class="types">
             @for (t of foe.types; track t) { <pv-type-badge [type]="t" /> }
           </div>
+          @if (foeAbility()) { <span class="ability">{{ foeAbility() }}</span> }
+          @if (fStageChips().length) {
+            <div class="stages">
+              @for (c of fStageChips(); track c.label) { <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span> }
+            </div>
+          }
         </div>
         <img class="sprite" [src]="foe.sprite" [alt]="foe.name" loading="lazy" />
       }
@@ -46,11 +57,18 @@
           <div class="name-row">
             <span class="name">{{ titleCase(me.name) }}</span>
             <span class="lvl">Lv{{ me.level }}</span>
+            @if (pStatus() !== 'none') { <pv-status-badge [status]="pStatus()" /> }
           </div>
           <div class="hpbar"><span class="fill" [class.low]="pHpPct() < 30" [style.width.%]="pHpPct()"></span><span class="kp">{{ pHp() }} / {{ pMax() }} <small>KP</small></span></div>
           <div class="types">
             @for (t of me.types; track t) { <pv-type-badge [type]="t" /> }
           </div>
+          @if (playerAbility()) { <span class="ability">{{ playerAbility() }}</span> }
+          @if (pStageChips().length) {
+            <div class="stages">
+              @for (c of pStageChips(); track c.label) { <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span> }
+            </div>
+          }
         </div>
       }
     </div>
