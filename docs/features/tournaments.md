@@ -104,3 +104,11 @@ covers sweeps, determinism, intra-match HP persistence and seeded HP carry;
 `bracket.spec.ts` covers seeding, immutable advancement, round-by-round
 readiness, the player match and crowning a champion — 15 tests, part of the green
 suite (59 total).
+
+## Deep overhaul (v2)
+
+Beyond the seeded knockout bracket, tournaments now run **league formats** —
+**Round-Robin** and **Swiss** — decided on a live **standings table** (wins, KO
+differential). Fields are **power-seeded**, runs award **prizes**, and a persisted
+**history** records each result. The shared match component shows the full deep
+HUD. See [../plan.md](../plan.md) phase 5.

@@ -49,3 +49,11 @@ rivals.
 - The mix is capped at four berries; unpicked berries disable once the mix is
   full.
 - All transitions are disabled under `prefers-reduced-motion`.
+
+## Deep overhaul (v2)
+
+Contests are now a **multi-round performance**: four appeal turns with a **combo**
+carry (the previous round's top performer) and **jamming** (the leader takes a
+comeback penalty), plus a **rank ladder** (Normal → Super → Hyper → Master) where
+rivals scale and a win promotes you. Rank persists. See [../plan.md](../plan.md)
+phase 8.

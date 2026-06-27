@@ -52,3 +52,12 @@ it survives reloads.
 - Loading / error states for the async team build; mobile-first SCSS with
   `@include up(...)`; reduced-motion respected.
 - Pure leader data in `game/arena`; feature logic in `features/arena`.
+
+## Deep overhaul (v2)
+
+Each of the 18 leaders now fields a **designed signature team** (specific species
+with thematic abilities + held items + roles), sits on a **difficulty ladder**
+(scaling level + AI tier), and has dialogue. A **Champion Gauntlet** (Elite Four +
+Champion) unlocks at 8 badges and is fought back-to-back with no healing between
+matches. Wins award coins + badges + the Champion title, all surfaced in the
+Trainer Profile. See [../plan.md](../plan.md) phase 4.

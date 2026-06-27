@@ -57,3 +57,9 @@ columns.
 
 `natures.spec.ts` covers the nature table + helpers; `type-chart.spec.ts` covers
 `analyzeTeamTypes`. 27 tests passing overall.
+
+## Deep overhaul (v2)
+
+The team rater now explains *why*: it surfaces **stacked shared weaknesses** (and
+whether anything resists them), **offensive coverage gaps**, and concrete
+**suggestions** — shown under the power meters. See [../plan.md](../plan.md) phase 8.

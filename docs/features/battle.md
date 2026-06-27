@@ -85,3 +85,15 @@ weather animations and hit feedback are disabled under `prefers-reduced-motion`.
 `damage.spec.ts` and `battle.spec.ts` cover determinism, speed/priority ordering,
 immunity, STAB/crit/super-effective scaling, KO → winner, no-ops after a battle
 ends, AI move selection and PP tracking — 17 tests, part of the green suite.
+
+## Deep overhaul (v2)
+
+The engine is now a full main-series turn loop: **status conditions** (burn/
+poison/toxic/paralysis/sleep/freeze with residuals + move gates), **stat stages**
+(−6..+6), **abilities** (~34, e.g. Intimidate/Levitate/Drought/Blaze/Sturdy),
+**held items** (Leftovers/Life Orb/Choice/Focus Sash/berries/orbs/rocks),
+**in-battle weather & terrain**, **entry hazards**, **secondary effects**,
+**multi-hit/drain/recoil**, and a **tiered AI** (`basic|strong|elite`). Wild
+Pokémon get a real ability and move secondaries mapped from the PokéAPI; the UI
+shows status badges, stat-stage chips, the field banner and ability/item chips.
+See [../plan.md](../plan.md) phases 0–3.

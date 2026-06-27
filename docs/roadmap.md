@@ -24,6 +24,9 @@ updated as work progresses. Detailed per-feature documentation lives in
 | 15 | Landing 3D hero (Three.js, lazy) | ✅ done |
 | 16 | PWA, polish, a11y, mobile-first | ✅ done |
 | 17 | GitHub Pages deployment | ✅ done |
+| 18 | Deep Systems Overhaul: engine (status/stages/abilities/items/weather/terrain/hazards/switching), Arena ladder + Gauntlet, Tournament formats + standings, Ascension Spire (new), Profile backbone, Contest/World/Team deepening | ✅ done |
+
+See [plan.md](plan.md) for the phase-by-phase breakdown of milestone 18.
 
 ## Git workflow
 - Default integration branch: **`develop`**.

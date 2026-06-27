@@ -5,16 +5,16 @@
 
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
-| 0 | Engine data model & registries (status, stages, weather, terrain, abilities, items) | ⏳ |
-| 1 | Turn-engine rewrite + tiered AI | ⏳ |
-| 2 | Mid-battle switching in 3v3 | ⏳ |
-| 3 | Battle feature UI (expose depth) | ⏳ |
-| 4 | Arena build-out (designed leaders, ladder, Elite Four, rewards) | ⏳ |
-| 5 | Tournament build-out (formats, seeding, standings, prizes) | ⏳ |
-| 6 | New system: Ascension Spire (roguelike) | ⏳ |
-| 7 | Progression backbone (core/storage + profile) | ⏳ |
-| 8 | Contest, World, Team deepening | ⏳ |
-| 9 | Docs, tests, polish, ship | ⏳ |
+| 0 | Engine data model & registries (status, stages, weather, terrain, abilities, items) | ✅ |
+| 1 | Turn-engine rewrite + tiered AI | ✅ |
+| 2 | Mid-battle switching in 3v3 | ✅ |
+| 3 | Battle feature UI (expose depth) | ✅ |
+| 4 | Arena build-out (designed leaders, ladder, Elite Four, rewards) | ✅ |
+| 5 | Tournament build-out (formats, seeding, standings, prizes) | ✅ |
+| 6 | New system: Ascension Spire (roguelike) | ✅ |
+| 7 | Progression backbone (core/storage + profile) | ✅ |
+| 8 | Contest, World, Team deepening | ✅ |
+| 9 | Docs, tests, polish, ship | ✅ |
 
 ## Context
 

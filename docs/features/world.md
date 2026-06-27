@@ -52,3 +52,10 @@ name or number to reveal the world it calls home.
   `prefers-reduced-motion`.
 - Region accents are passed as a `--accent` custom property per card, keeping the
   themed gradients and glows data-driven.
+
+## Deep overhaul (v2)
+
+The World gained an **Expedition** catch-loop: seeded wild encounters drawn from a
+region's native dex, rarity-based level bands + catch rates, three balls, and a
+**personal dex** that persists and drives per-region completion %. See
+[../plan.md](../plan.md) phase 8.

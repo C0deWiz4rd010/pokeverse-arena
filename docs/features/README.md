@@ -22,8 +22,21 @@ For the high-level plan and milestone status, see
 | 8 | Battle engine + UI (seeded combat, animated arena, weather) | [battle.md](battle.md) | ✅ |
 | 9 | Tournaments (10 modes, visual bracket, 3-v-3 matches) | [tournaments.md](tournaments.md) | ✅ |
 | 10 | Arena (type-themed gym leaders, badges) | [arena.md](arena.md) | ✅ |
-| 11 | World Explorer (regions, native dex, home finder) | [world.md](world.md) | ✅ |
-| 12 | Contest Hall (berry Poffins, contest scoring) | [contest.md](contest.md) | ✅ |
+| 11 | World Explorer (regions, native dex, home finder, **expeditions**) | [world.md](world.md) | ✅ |
+| 12 | Contest Hall (berry Poffins, **multi-round appeals + ranks**) | [contest.md](contest.md) | ✅ |
+| 13 | Ascension Spire (seeded roguelike climb) | [spire.md](spire.md) | ✅ |
+| 14 | Trainer Profile (progression backbone, achievements) | [profile.md](profile.md) | ✅ |
+
+## Deep Systems Overhaul (v2)
+
+A ground-up deepening of the shared battle engine and every system that runs on
+it. The engine now models **status conditions, stat stages, abilities, held
+items, in-battle weather & terrain, entry hazards, secondary move effects,
+multi-hit/drain/recoil and real switching** — all pure, seeded and unit-tested.
+Battle, Arena, Tournaments and the new Spire inherit that depth; Arena gained a
+designed gym ladder + Champion Gauntlet, Tournaments gained formats (round-robin
+/ Swiss) + standings + prizes, and a Trainer Profile ties all progress together.
+See [../plan.md](../plan.md).
 
 ## Cross-cutting docs
 
