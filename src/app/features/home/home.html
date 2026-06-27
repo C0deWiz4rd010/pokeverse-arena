@@ -13,6 +13,17 @@
       <a class="btn btn-primary" routerLink="/pokedex">Open the Pokédex</a>
       <a class="btn" routerLink="/battle">Start a Battle <pv-icon name="swords" /></a>
     </div>
+
+    <div class="dash" aria-label="Your progress">
+      <span class="dash-rank">{{ rank() }} Trainer</span>
+      <div class="dash-chips">
+        @for (c of stats(); track c.label) {
+          <span class="dash-chip" [title]="c.label">
+            <pv-icon [name]="c.icon" /> <strong>{{ c.value }}</strong> <small>{{ c.label }}</small>
+          </span>
+        }
+      </div>
+    </div>
   </div>
 
   <div class="hero-visual" [class.ready]="heroReady()">
@@ -24,8 +35,16 @@
 <section class="container features">
   <h2 class="section-title">Everything inside</h2>
   <div class="grid">
-    @for (f of features; track f.path) {
-      <a class="glass feature" [routerLink]="f.path">
+    @for (f of features; track f.path; let i = $index) {
+      <a
+        class="glass feature"
+        [routerLink]="f.path"
+        [style.--accent]="f.accent"
+        [style.animation-delay]="(i * 45) + 'ms'"
+        (pointermove)="onCardMove($event)"
+        (pointerleave)="onCardLeave($event)"
+      >
+        <span class="sheen" aria-hidden="true"></span>
         <span class="f-icon" aria-hidden="true"><pv-icon [name]="f.icon" /></span>
         <h3>{{ f.title }}</h3>
         <p>{{ f.text }}</p>

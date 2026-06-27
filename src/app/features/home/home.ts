@@ -4,11 +4,14 @@ import {
   ElementRef,
   OnDestroy,
   afterNextRender,
+  computed,
+  inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../core/ui/icon/icon';
+import { ProfileService } from '../profile/profile.service';
 import type { IconName } from '../../core/ui/icon/icons.data';
 
 interface FeatureCard {
@@ -16,7 +19,17 @@ interface FeatureCard {
   icon: IconName;
   title: string;
   text: string;
+  accent: string;
 }
+
+interface StatChip {
+  icon: IconName;
+  label: string;
+  value: string;
+}
+
+const REDUCED_MOTION =
+  typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 @Component({
   selector: 'pv-home',
@@ -26,30 +39,64 @@ interface FeatureCard {
   styleUrl: './home.scss',
 })
 export class HomeComponent implements OnDestroy {
+  private readonly profile = inject(ProfileService);
+
   private readonly heroCanvas = viewChild<ElementRef<HTMLCanvasElement>>('hero');
   protected readonly heroReady = signal(false);
   private dispose: (() => void) | null = null;
 
   protected readonly features: FeatureCard[] = [
-    { path: '/pokedex', icon: 'book', title: 'Interactive Pokédex', text: 'Search, filter, compare. Stats, moves, abilities & full evolution trees.' },
-    { path: '/type-lab', icon: 'flask-conical', title: 'Type Lab', text: 'Interactive type chart and a team weakness analyzer.' },
-    { path: '/team-builder', icon: 'wrench', title: 'Team Builder', text: 'Craft teams of six with natures, abilities and legal moves.' },
-    { path: '/battle', icon: 'swords', title: 'Battle Engine', text: 'Deterministic, seeded turn-based battles with a PixiJS arena.' },
-    { path: '/arena', icon: 'castle', title: 'Arena', text: 'Take on type-themed gym leaders and earn badges.' },
-    { path: '/tournaments', icon: 'trophy', title: 'Tournaments', text: 'Single-elimination brackets — auto-sim or play it out.' },
-    { path: '/world', icon: 'map', title: 'World Explorer', text: 'Roam every region and find where each Pokémon lives.' },
-    { path: '/contest', icon: 'sparkles', title: 'Contest Hall', text: 'Blend berries into Poffins and dazzle the contest judges.' },
+    { path: '/pokedex', icon: 'book', title: 'Interactive Pokédex', text: 'Type-themed cards, quick-view, shiny mode, compare tray & a living dex to fill.', accent: 'var(--accent)' },
+    { path: '/type-lab', icon: 'flask-conical', title: 'Type Lab', text: 'A pinnable chart, calculator and a full team-coverage analyzer.', accent: 'var(--type-psychic)' },
+    { path: '/team-builder', icon: 'wrench', title: 'Team Builder', text: 'Build six, tune natures & moves, and read coverage, speed tiers and ratings.', accent: 'var(--type-fighting)' },
+    { path: '/battle', icon: 'swords', title: 'Battle Engine', text: 'Deterministic turns with status, weather, abilities, items — and a PixiJS arena.', accent: 'var(--type-fire)' },
+    { path: '/arena', icon: 'castle', title: 'Arena', text: 'Climb a designed gym ladder, then face the Champion Gauntlet for badges.', accent: 'var(--type-rock)' },
+    { path: '/tournaments', icon: 'trophy', title: 'Tournaments', text: 'Single-elim, round-robin & Swiss formats with seeding, standings and prizes.', accent: 'var(--accent-3)' },
+    { path: '/spire', icon: 'mountain', title: 'Ascension Spire', text: 'A seeded roguelike climb — relics, shops, bosses and meta-progression.', accent: 'var(--type-dragon)' },
+    { path: '/world', icon: 'map', title: 'World Explorer', text: 'Roam regions, fill a per-region dex through animated catch expeditions.', accent: 'var(--type-grass)' },
+    { path: '/contest', icon: 'sparkles', title: 'Contest Hall', text: 'A live appeal mini-game with combos, jamming, ranks and ribbons.', accent: 'var(--type-fairy)' },
+    { path: '/profile', icon: 'crown', title: 'Trainer Profile', text: 'Your rank, records and achievements across every mode, in one place.', accent: 'var(--accent-2)' },
   ];
 
+  /** A compact "trainer dashboard" of live progress drawn from every system. */
+  protected readonly stats = computed<StatChip[]>(() => {
+    const s = this.profile.state();
+    return [
+      { icon: 'shield', label: 'Badges', value: `${s.badges}/${s.totalBadges}` },
+      { icon: 'trophy', label: 'Cups', value: `${s.tournamentWins}` },
+      { icon: 'mountain', label: 'Best depth', value: `${s.bestDepth}` },
+      { icon: 'star', label: 'Achievements', value: `${this.profile.unlocked()}` },
+      { icon: 'gem', label: 'Coins', value: `${s.coins}` },
+    ];
+  });
+  protected readonly rank = this.profile.rank;
+
   constructor() {
-    // Only attempt the heavy 3D hero in the browser, after first render, and
-    // never when the user prefers reduced motion.
+    this.profile.refresh();
     afterNextRender(() => {
-      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       const canvas = this.heroCanvas()?.nativeElement;
-      if (reduced || !canvas) return;
+      if (REDUCED_MOTION || !canvas) return;
       void this.initHero(canvas);
     });
+  }
+
+  /** Cursor-driven sheen + tilt on a feature card (skipped for reduced motion). */
+  protected onCardMove(event: PointerEvent): void {
+    if (REDUCED_MOTION) return;
+    const el = event.currentTarget as HTMLElement;
+    const r = el.getBoundingClientRect();
+    const px = (event.clientX - r.left) / r.width;
+    const py = (event.clientY - r.top) / r.height;
+    el.style.setProperty('--mx', `${px * 100}%`);
+    el.style.setProperty('--my', `${py * 100}%`);
+    el.style.setProperty('--rx', `${(0.5 - py) * 8}deg`);
+    el.style.setProperty('--ry', `${(px - 0.5) * 8}deg`);
+  }
+
+  protected onCardLeave(event: PointerEvent): void {
+    const el = event.currentTarget as HTMLElement;
+    el.style.setProperty('--rx', '0deg');
+    el.style.setProperty('--ry', '0deg');
   }
 
   private async initHero(canvas: HTMLCanvasElement): Promise<void> {
@@ -58,7 +105,6 @@ export class HomeComponent implements OnDestroy {
       this.dispose = createHeroScene(canvas);
       this.heroReady.set(true);
     } catch {
-      // WebGL unavailable — the static fallback poster stays visible.
       this.heroReady.set(false);
     }
   }

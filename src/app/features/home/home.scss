@@ -106,3 +106,67 @@
 .feature h3 { margin: 0.6rem 0 0.3rem; }
 .feature p { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 0.8rem; }
 .go { color: var(--accent); font-weight: 700; font-size: 0.85rem; }
+
+/* ============================ Home v2 ============================ */
+
+/* animated gradient title */
+.hero-copy .gradient-text { background-size: 220% auto; animation: title-shimmer 5s linear infinite; }
+.eyebrow { animation: rise 0.5s ease both; }
+.hero-copy h1, .lead, .cta { animation: rise 0.5s ease both; }
+.lead { animation-delay: 0.05s; }
+.cta { animation-delay: 0.1s; }
+
+/* trainer dashboard */
+.dash { margin-top: 1.4rem; animation: rise 0.5s ease 0.15s both; }
+.dash-rank {
+  display: inline-block; margin-bottom: 0.5rem;
+  padding: 0.2rem 0.7rem; border-radius: 999px; font-weight: 800; font-size: 0.8rem;
+  color: #0b0a1f; background: linear-gradient(135deg, var(--accent-3), #ffe39a);
+}
+.dash-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; }
+@include up(lg) { .dash-chips { justify-content: flex-start; } }
+.dash-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.3rem 0.6rem; border-radius: var(--radius-sm);
+  background: var(--glass); border: 1px solid var(--glass-border);
+  font-size: 0.78rem; color: var(--text-dim);
+}
+.dash-chip strong { color: var(--text); font-variant-numeric: tabular-nums; }
+.dash-chip small { color: var(--text-faint); }
+
+/* type-themed, tilting feature cards */
+.feature {
+  --accent: var(--accent);
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  border: 1px solid var(--glass-border);
+  background:
+    radial-gradient(120% 80% at 50% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 65%),
+    var(--glass);
+  transition: transform 0.12s ease, border-color 0.18s ease, box-shadow 0.2s ease;
+  animation: card-in 0.45s ease both;
+}
+.feature:hover {
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-5px);
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.feature .sheen {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s ease;
+  background: radial-gradient(220px 220px at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%);
+}
+.feature:hover .sheen { opacity: 0.85; }
+.feature .f-icon { color: var(--accent); }
+.feature .go { color: var(--accent); }
+
+@keyframes title-shimmer { to { background-position: 220% center; } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes card-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: perspective(700px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy .gradient-text, .eyebrow, .hero-copy h1, .lead, .cta, .dash, .feature { animation: none; }
+  .feature { transform: none; }
+  .feature:hover { transform: translateY(-4px); }
+}

@@ -29,3 +29,14 @@ The landing page — the first impression and the only place Three.js is used.
 
 On mobile the layout is a single centered column with the 3D visual ordered
 first; at `lg` it becomes a two-column hero with copy beside the canvas.
+
+## Home v2
+
+- **Trainer dashboard** in the hero — live progress chips (rank, badges, cup wins,
+  best Spire depth, achievements, coins) aggregated from every system via
+  `ProfileService`.
+- **Complete, refreshed feature grid** (now includes Ascension Spire & Trainer
+  Profile) with **type-themed cards** that tilt to the cursor, sweep a sheen and
+  stagger in.
+- Animated gradient title + entrance motion; the 3D hero and reduced-motion
+  fallback are unchanged.
