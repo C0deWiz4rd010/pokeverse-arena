@@ -75,6 +75,29 @@ export class PokedexService {
   /** All Pokémon names, for autocomplete/datalist consumers (e.g. Team Builder). */
   readonly names = computed(() => this.index().map((e) => e.name));
 
+  readonly favCount = computed(() => this.favorites().size);
+  readonly caughtCount = computed(() => {
+    const ids = this.index();
+    const set = this.caught();
+    return ids.reduce((n, e) => n + (set.has(e.id) ? 1 : 0), 0);
+  });
+
+  /** Per-generation totals + caught/favourite counts for the progress HUD. */
+  readonly genProgress = computed(() => {
+    const idx = this.index();
+    const caught = this.caught();
+    const fav = this.favorites();
+    return GENERATIONS.map((gen) => {
+      const inGen = idx.filter((e) => e.gen === gen);
+      return {
+        gen,
+        total: inGen.length,
+        caught: inGen.reduce((n, e) => n + (caught.has(e.id) ? 1 : 0), 0),
+        fav: inGen.reduce((n, e) => n + (fav.has(e.id) ? 1 : 0), 0),
+      };
+    });
+  });
+
   /* ----------------------------------------------------------- loading */
 
   async ensureLoaded(): Promise<void> {

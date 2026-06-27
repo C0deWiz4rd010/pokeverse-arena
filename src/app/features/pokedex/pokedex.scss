@@ -165,3 +165,38 @@
   gap: 1rem;
   place-items: center;
 }
+
+/* ---------------------------------------------------------------- dex HUD */
+.dex-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.8rem;
+}
+.hud-stats { display: flex; gap: 1.2rem; }
+.hud-stat { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; color: var(--text-dim); }
+.hud-stat strong { font-size: 1.05rem; color: var(--text); font-variant-numeric: tabular-nums; }
+.hud-stat.fav { color: #ff8fb6; }
+.hud-stat.caught { color: #7fe6a6; }
+.gen-pips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.pip {
+  display: grid;
+  gap: 0.15rem;
+  width: 2.6rem;
+  padding: 0.25rem 0.3rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.pip:hover { color: var(--text); border-color: var(--accent); }
+.pip.on { color: #0b0a1f; background: var(--accent); border-color: var(--accent); }
+.pip-g { font-size: 0.66rem; font-weight: 800; text-align: center; }
+.pip-bar { height: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
+.pip-fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #5be08a, #6ce0ff); transition: width 0.5s ease; }
+.pip.on .pip-fill { background: #0b0a1f; }

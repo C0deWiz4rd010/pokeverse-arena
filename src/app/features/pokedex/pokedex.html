@@ -5,6 +5,29 @@
     [subtitle]="store.total() + ' of ' + store.count() + ' Pokémon · search, filter and dive in.'"
   />
 
+  <div class="dex-hud glass">
+    <div class="hud-stats">
+      <div class="hud-stat fav"><pv-icon name="heart" /> <strong>{{ store.favCount() }}</strong> <span>Favorites</span></div>
+      <div class="hud-stat caught"><pv-icon name="check" /> <strong>{{ store.caughtCount() }}</strong> <span>Caught</span></div>
+    </div>
+    @if (store.enriched()) {
+      <div class="gen-pips">
+        @for (g of store.genProgress(); track g.gen) {
+          <button
+            type="button"
+            class="pip"
+            [class.on]="store.generationFilter() === g.gen"
+            [title]="'Gen ' + g.gen + ' — ' + g.caught + '/' + g.total + ' caught, ' + g.fav + ' ♥'"
+            (click)="store.setGeneration(store.generationFilter() === g.gen ? null : g.gen)"
+          >
+            <span class="pip-g">G{{ g.gen }}</span>
+            <span class="pip-bar"><span class="pip-fill" [style.width.%]="g.total ? (g.caught / g.total) * 100 : 0"></span></span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
   <div class="controls glass">
     <label class="search">
       <span class="sr-only">Search Pokémon</span>

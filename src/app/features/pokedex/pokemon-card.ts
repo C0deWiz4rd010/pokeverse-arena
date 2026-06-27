@@ -40,6 +40,7 @@ export interface QuickviewRequest {
       [style.--t2]="t2()"
       [style.animation-delay]="delay()"
       [style.transform]="transform()"
+      [attr.data-id]="entry().id"
       [routerLink]="['/pokemon', entry().id]"
       (pointermove)="onMove($event)"
       (pointerleave)="onLeave()"

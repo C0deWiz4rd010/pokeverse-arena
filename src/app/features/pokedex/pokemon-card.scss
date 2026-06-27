@@ -185,3 +185,10 @@
 .card.list .types { order: 2; }
 .card.list .info { bottom: 50%; transform: translateY(50%); }
 .card.list:hover .info { transform: translateY(50%); }
+
+/* ---- keyboard focus ring ---- */
+.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-color: color-mix(in srgb, var(--t1) 70%, transparent);
+}

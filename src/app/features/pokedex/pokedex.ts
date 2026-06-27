@@ -53,6 +53,7 @@ const VIEWS: { id: DexView; label: string; glyph: string }[] = [
   styleUrl: './pokedex.scss',
   host: {
     '(document:keydown.escape)': 'closeQuickview()',
+    '(document:keydown)': 'onKey($event)',
     '(window:scroll)': 'closeQuickview()',
   },
 })
@@ -118,6 +119,53 @@ export class PokedexComponent {
 
   protected closeQuickview(): void {
     this.quickview.set(null);
+  }
+
+  /* ------------------------------------------------------- keyboard nav */
+
+  protected onKey(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    const typing = /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName);
+    if (event.key === '/' && !typing) {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>('.search input')?.focus();
+      return;
+    }
+    if (typing || event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.key === 's') {
+      this.store.toggleShiny();
+      return;
+    }
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('.grid .card'));
+    if (!cards.length) return;
+    const current = (document.activeElement as HTMLElement | null)?.closest('.card') as HTMLElement | null;
+    const i = current ? cards.indexOf(current) : -1;
+    if (event.key === 'f' && current) {
+      const id = Number(current.dataset['id']);
+      if (id) this.store.toggleFavorite(id);
+      return;
+    }
+    const cols = this.columns(cards);
+    let next = i;
+    switch (event.key) {
+      case 'ArrowRight': next = i + 1; break;
+      case 'ArrowLeft': next = i - 1; break;
+      case 'ArrowDown': next = i + cols; break;
+      case 'ArrowUp': next = i - cols; break;
+      default: return;
+    }
+    event.preventDefault();
+    if (i === -1) next = 0;
+    cards[Math.max(0, Math.min(cards.length - 1, next))]?.focus();
+  }
+
+  /** How many cards sit in the first row (for up/down arrow steps). */
+  private columns(cards: HTMLElement[]): number {
+    if (cards.length < 2) return 1;
+    const top = cards[0].offsetTop;
+    let c = 1;
+    while (c < cards.length && cards[c].offsetTop === top) c++;
+    return c;
   }
 
   /* ----------------------------------------------------------- url sync */
