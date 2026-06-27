@@ -34,6 +34,8 @@ export interface QuickviewRequest {
       [class.loaded]="loaded()"
       [class.hover]="hovering()"
       [class.fav]="favorite()"
+      [class.compact]="layout() === 'compact'"
+      [class.list]="layout() === 'list'"
       [style.--t1]="t1()"
       [style.--t2]="t2()"
       [style.animation-delay]="delay()"
@@ -49,7 +51,16 @@ export interface QuickviewRequest {
         <span class="num">{{ id() }}</span>
         <span class="badges">
           @if (caught()) { <span class="dot caught" title="Caught in the World"><pv-icon name="check" /></span> }
-          @if (favorite()) { <span class="dot fav" title="Favorite"><pv-icon name="heart" /></span> }
+          <button
+            class="fav-btn"
+            type="button"
+            [class.on]="favorite()"
+            [attr.aria-pressed]="favorite()"
+            aria-label="Toggle favorite"
+            (click)="onFav($event)"
+          >
+            <pv-icon name="heart" />
+          </button>
         </span>
       </div>
 
@@ -87,9 +98,11 @@ export class PokemonCardComponent {
   readonly entry = input.required<PokedexEntry>();
   readonly index = input<number>(0);
   readonly shiny = input<boolean>(false);
+  readonly layout = input<'gallery' | 'compact' | 'list'>('gallery');
   readonly favorite = input<boolean>(false);
   readonly caught = input<boolean>(false);
   readonly quickview = output<QuickviewRequest>();
+  readonly favoriteToggle = output<number>();
 
   protected readonly loaded = signal(false);
   protected readonly hovering = signal(false);
@@ -141,6 +154,12 @@ export class PokemonCardComponent {
     event.stopPropagation();
     const card = (event.currentTarget as HTMLElement).closest('.card') as HTMLElement;
     this.quickview.emit({ entry: this.entry(), rect: card.getBoundingClientRect() });
+  }
+
+  protected onFav(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.favoriteToggle.emit(this.entry().id);
   }
 
   protected onError(event: Event): void {

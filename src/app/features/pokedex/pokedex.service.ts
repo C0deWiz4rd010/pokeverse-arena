@@ -2,83 +2,95 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { POKEAPI_BASE, idFromUrl, officialArtwork } from '../../core/api/pokeapi-endpoints';
 import { SaveService } from '../../core/storage/save.service';
-import type { NamedApiResourceList, GenerationDto, TypeDto } from '../../core/dto/pokeapi.dto';
+import type { NamedApiResourceList, GenerationDto } from '../../core/dto/pokeapi.dto';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
 import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
+import {
+  applyDexFilters,
+  asSort,
+  asView,
+  sortDex,
+  type DexSort,
+  type DexView,
+  type TypeMode,
+} from './pokedex-filter';
 
 const PAGE_SIZE = 48;
 const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 /**
- * Pokedex state container.
- *
- * Loads a lightweight name+id index once (a single request) so search and
- * type/generation filtering happen instantly on the client. Artwork is derived
- * from the id via the sprite CDN, so the grid needs no per-Pokemon fetches.
+ * Pokédex state container. Loads a lightweight id+name index once, enriches it
+ * with types + generation (one batch of cached calls), then runs all search,
+ * multi-type/generation filtering, sorting and favourites **client-side** over the
+ * in-memory index. Artwork is derived from the id, so the grid needs no per-card
+ * fetches.
  */
 @Injectable({ providedIn: 'root' })
 export class PokedexService {
   private readonly api = inject(PokeApiClient);
   private readonly save = inject(SaveService);
 
-  /** Global shiny mode for the grid + quick-view. */
-  readonly shiny = signal<boolean>(this.save.read('pokedex:shiny', false));
-
-  /** Full index of default-form Pokemon (id + name). */
   private readonly index = signal<PokedexEntry[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  /** True once every entry has its types + generation (one-time enrichment). */
   readonly enriched = signal(false);
   private enriching = false;
 
+  /* ----- view state ----- */
   readonly query = signal('');
-  readonly typeFilter = signal<PokemonType | null>(null);
+  readonly typeFilters = signal<ReadonlySet<PokemonType>>(new Set());
+  readonly typeMode = signal<TypeMode>('or');
   readonly generationFilter = signal<number | null>(null);
+  readonly sort = signal<DexSort>(asSort(this.save.read('pokedex:sort', 'id')));
+  readonly view = signal<DexView>(asView(this.save.read('pokedex:view', 'gallery')));
+  readonly shiny = signal<boolean>(this.save.read('pokedex:shiny', false));
+  readonly favOnly = signal(false);
+  readonly favorites = signal<ReadonlySet<number>>(new Set(this.save.read<number[]>('pokedex:favorites', [])));
+  /** Caught species mirrored (read-only) from the World expedition system. */
+  readonly caught = signal<ReadonlySet<number>>(new Set(this.save.readLegacy<number[]>('world:caught', [])));
+  private readonly shuffleSeed = signal(0);
   private readonly visibleCount = signal(PAGE_SIZE);
 
-  /** Names allowed by the active type/generation filters (null = no filter). */
-  private readonly typeNames = signal<Set<string> | null>(null);
-  private readonly genNames = signal<Set<string> | null>(null);
-
-  /** Entries matching every active filter + search query. */
+  /** Entries matching every active filter, then sorted. */
   readonly filtered = computed<PokedexEntry[]>(() => {
-    const q = this.query().trim().toLowerCase();
-    const types = this.typeNames();
-    const gens = this.genNames();
-    return this.index().filter((e) => {
-      if (types && !types.has(e.name)) return false;
-      if (gens && !gens.has(e.name)) return false;
-      if (!q) return true;
-      return e.name.includes(q) || String(e.id) === q || `#${e.id}` === q;
+    const list = applyDexFilters(this.index(), {
+      query: this.query(),
+      types: [...this.typeFilters()],
+      typeMode: this.typeMode(),
+      gen: this.generationFilter(),
+      favOnly: this.favOnly(),
+      favorites: this.favorites(),
     });
+    return sortDex(list, this.sort(), this.favorites(), this.shuffleSeed());
   });
 
   readonly visible = computed(() => this.filtered().slice(0, this.visibleCount()));
   readonly total = computed(() => this.filtered().length);
+  readonly count = computed(() => this.index().length);
   readonly hasMore = computed(() => this.visibleCount() < this.total());
+  readonly activeFilterCount = computed(
+    () => this.typeFilters().size + (this.generationFilter() ? 1 : 0) + (this.favOnly() ? 1 : 0) + (this.query() ? 1 : 0),
+  );
 
   /** All Pokémon names, for autocomplete/datalist consumers (e.g. Team Builder). */
   readonly names = computed(() => this.index().map((e) => e.name));
+
+  /* ----------------------------------------------------------- loading */
 
   async ensureLoaded(): Promise<void> {
     if (this.index().length || this.loading()) return;
     this.loading.set(true);
     this.error.set(null);
     try {
-      const list = await this.api.get<NamedApiResourceList>(
-        `${POKEAPI_BASE}/pokemon?limit=100000&offset=0`,
-      );
+      const list = await this.api.get<NamedApiResourceList>(`${POKEAPI_BASE}/pokemon?limit=100000&offset=0`);
       const entries = list.results
         .map((r) => {
           const id = idFromUrl(r.url);
           return { id, name: r.name, artwork: officialArtwork(id), types: [], gen: 0 } as PokedexEntry;
         })
-        // Hide alt-forms with very large ids to keep the grid to the main dex.
         .filter((e) => e.id <= 10000)
         .sort((a, b) => a.id - b.id);
       this.index.set(entries);
-      // Fill in types + generation in the background (one batch of cached calls).
       void this.enrichIndex();
     } catch {
       this.error.set('Could not load the Pokédex. Check your connection and retry.');
@@ -87,12 +99,7 @@ export class PokedexService {
     }
   }
 
-  /**
-   * One-time enrichment: fetch the 18 type lists + 9 generation lists (cache-first)
-   * and stamp every entry with its `types` and `gen`. Costs ~27 small cached calls
-   * total — never per-Pokémon — and unlocks type badges, theming and client-side
-   * type filtering across all 1025 entries.
-   */
+  /** One-time enrichment: stamp every entry with `types` + `gen` (cache-first). */
   async enrichIndex(): Promise<void> {
     if (this.enriched() || this.enriching || !this.index().length) return;
     this.enriching = true;
@@ -129,15 +136,53 @@ export class PokedexService {
       );
       this.enriched.set(true);
     } catch {
-      // Non-fatal: the grid still works without type badges; allow a later retry.
+      /* non-fatal — grid still works without type badges */
     } finally {
       this.enriching = false;
     }
   }
 
+  /* ----------------------------------------------------------- controls */
+
   setQuery(value: string): void {
     this.query.set(value);
     this.resetPaging();
+  }
+
+  toggleType(type: PokemonType): void {
+    const next = new Set(this.typeFilters());
+    if (next.has(type)) next.delete(type);
+    else next.add(type);
+    this.typeFilters.set(next);
+    this.resetPaging();
+  }
+
+  setTypeMode(mode: TypeMode): void {
+    this.typeMode.set(mode);
+    this.resetPaging();
+  }
+
+  setGeneration(gen: number | null): void {
+    this.generationFilter.set(gen);
+    this.resetPaging();
+  }
+
+  setSort(sort: DexSort): void {
+    if (sort === 'random') this.shuffleSeed.update((s) => s + 1);
+    this.sort.set(sort);
+    this.save.write('pokedex:sort', sort);
+    this.resetPaging();
+  }
+
+  reshuffle(): void {
+    this.shuffleSeed.update((s) => s + 1);
+    this.sort.set('random');
+    this.resetPaging();
+  }
+
+  setView(view: DexView): void {
+    this.view.set(view);
+    this.save.write('pokedex:view', view);
   }
 
   toggleShiny(): void {
@@ -146,38 +191,36 @@ export class PokedexService {
     this.save.write('pokedex:shiny', next);
   }
 
+  toggleFavOnly(): void {
+    this.favOnly.update((v) => !v);
+    this.resetPaging();
+  }
+
+  toggleFavorite(id: number): void {
+    const next = new Set(this.favorites());
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    this.favorites.set(next);
+    this.save.write('pokedex:favorites', [...next]);
+  }
+
+  isFavorite(id: number): boolean {
+    return this.favorites().has(id);
+  }
+
+  isCaught(id: number): boolean {
+    return this.caught().has(id);
+  }
+
   loadMore(): void {
     this.visibleCount.update((c) => c + PAGE_SIZE);
   }
 
-  async setTypeFilter(type: PokemonType | null): Promise<void> {
-    this.typeFilter.set(type);
-    this.resetPaging();
-    if (!type) {
-      this.typeNames.set(null);
-      return;
-    }
-    const dto = await this.api.get<TypeDto>(`${POKEAPI_BASE}/type/${type}`);
-    this.typeNames.set(new Set(dto.pokemon.map((p) => p.pokemon.name)));
-  }
-
-  async setGenerationFilter(gen: number | null): Promise<void> {
-    this.generationFilter.set(gen);
-    this.resetPaging();
-    if (!gen) {
-      this.genNames.set(null);
-      return;
-    }
-    const dto = await this.api.get<GenerationDto>(`${POKEAPI_BASE}/generation/${gen}`);
-    this.genNames.set(new Set(dto.pokemon_species.map((s) => s.name)));
-  }
-
-  async clearFilters(): Promise<void> {
+  clearFilters(): void {
     this.query.set('');
-    this.typeFilter.set(null);
+    this.typeFilters.set(new Set());
     this.generationFilter.set(null);
-    this.typeNames.set(null);
-    this.genNames.set(null);
+    this.favOnly.set(false);
     this.resetPaging();
   }
 

@@ -2,64 +2,87 @@
   <pv-page-header
     icon="book"
     title="Pokédex"
-    [subtitle]="store.total() + ' Pokémon · search, filter and dive in.'"
+    [subtitle]="store.total() + ' of ' + store.count() + ' Pokémon · search, filter and dive in.'"
   />
 
   <div class="controls glass">
     <label class="search">
       <span class="sr-only">Search Pokémon</span>
+      <pv-icon name="search" />
       <input
         type="search"
         inputmode="search"
-        placeholder="Search by name or #number…"
+        placeholder="Name, #number, #1-151 or a type…"
+        [value]="store.query()"
         (input)="onSearch($event)"
       />
     </label>
 
-    <select class="gen" (change)="onGeneration($event)" aria-label="Filter by generation">
-      <option value="">All generations</option>
+    <select class="sel gen" (change)="onGeneration($event)" aria-label="Filter by generation" [disabled]="!store.enriched()">
+      <option value="">All gens</option>
       @for (g of generations; track g) {
-        <option [value]="g" [selected]="store.generationFilter() === g">Generation {{ g }}</option>
+        <option [value]="g" [selected]="store.generationFilter() === g">Gen {{ g }}</option>
       }
     </select>
 
-    <button
-      class="btn toggle"
-      type="button"
-      [class.on]="store.shiny()"
-      [attr.aria-pressed]="store.shiny()"
-      title="Shiny mode"
-      (click)="store.toggleShiny()"
-    >
+    <select class="sel sort" (change)="onSort($event)" aria-label="Sort">
+      @for (s of sorts; track s.id) {
+        <option [value]="s.id" [selected]="store.sort() === s.id">{{ s.label }}</option>
+      }
+    </select>
+
+    <button class="btn toggle" type="button" [class.on]="store.shiny()" [attr.aria-pressed]="store.shiny()" title="Shiny mode" (click)="store.toggleShiny()">
       <pv-icon name="sparkles" /> Shiny
     </button>
-
-    <button
-      class="btn toggle icon-only"
-      type="button"
-      [class.on]="!cry.muted()"
-      [attr.aria-pressed]="!cry.muted()"
-      [title]="cry.muted() ? 'Unmute cries' : 'Mute cries'"
-      (click)="cry.toggleMute()"
-    >
+    <button class="btn toggle icon-only" type="button" [class.on]="!cry.muted()" [title]="cry.muted() ? 'Unmute cries' : 'Mute cries'" (click)="cry.toggleMute()">
       <pv-icon name="volume-2" />
     </button>
-
-    <button class="btn clear" type="button" (click)="clear()">Reset</button>
   </div>
 
-  <div class="types" role="group" aria-label="Filter by type">
-    @for (t of types; track t) {
-      <button
-        type="button"
-        class="type-chip"
-        [class.active]="store.typeFilter() === t"
-        [style.--c]="'var(--type-' + t + ')'"
-        (click)="onType(t)"
-      >
-        {{ titleCase(t) }}
+  <div class="types-row">
+    <div class="types" role="group" aria-label="Filter by type">
+      @for (t of types; track t) {
+        <button
+          type="button"
+          class="type-chip"
+          [class.active]="store.typeFilters().has(t)"
+          [style.--c]="'var(--type-' + t + ')'"
+          [disabled]="!store.enriched()"
+          (click)="toggleType(t)"
+        >
+          {{ titleCase(t) }}
+        </button>
+      }
+    </div>
+    <div class="type-tools">
+      @if (store.typeFilters().size > 1) {
+        <button class="seg" type="button">
+          <span [class.on]="store.typeMode() === 'or'" (click)="store.setTypeMode('or')">Any</span>
+          <span [class.on]="store.typeMode() === 'and'" (click)="store.setTypeMode('and')">All</span>
+        </button>
+      }
+      <button class="btn toggle fav-filter" type="button" [class.on]="store.favOnly()" (click)="store.toggleFavOnly()" title="Favorites only">
+        <pv-icon name="heart" /> {{ store.favorites().size }}
       </button>
-    }
+      @if (store.activeFilterCount() > 0) {
+        <button class="btn clear" type="button" (click)="clear()">Reset</button>
+      }
+    </div>
+  </div>
+
+  @if (!store.enriched() && store.count() > 0) {
+    <p class="hint"><pv-icon name="sparkles" /> Loading types & generations…</p>
+  }
+
+  <div class="toolbar">
+    <span class="result-count">{{ store.total() }} result{{ store.total() === 1 ? '' : 's' }}</span>
+    <div class="views" role="group" aria-label="View mode">
+      @for (v of views; track v.id) {
+        <button type="button" class="view-btn" [class.on]="store.view() === v.id" [title]="v.label" (click)="setView(v.id)">
+          <span class="glyph" aria-hidden="true">{{ v.glyph }}</span>
+        </button>
+      }
+    </div>
   </div>
 
   @if (store.loading() && store.total() === 0) {
@@ -74,9 +97,18 @@
       <button class="btn btn-primary" type="button" (click)="clear()">Clear filters</button>
     </div>
   } @else {
-    <div class="grid">
+    <div class="grid" [class.gallery]="store.view() === 'gallery'" [class.compact]="store.view() === 'compact'" [class.list]="store.view() === 'list'">
       @for (entry of store.visible(); track entry.id; let i = $index) {
-        <pv-pokemon-card [entry]="entry" [index]="i" [shiny]="store.shiny()" (quickview)="openQuickview($event)" />
+        <pv-pokemon-card
+          [entry]="entry"
+          [index]="i"
+          [shiny]="store.shiny()"
+          [layout]="store.view()"
+          [favorite]="store.isFavorite(entry.id)"
+          [caught]="store.isCaught(entry.id)"
+          (quickview)="openQuickview($event)"
+          (favoriteToggle)="onFavorite($event)"
+        />
       }
     </div>
     <div #sentinel class="sentinel" aria-hidden="true"></div>
