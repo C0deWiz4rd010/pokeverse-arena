@@ -12,6 +12,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PokedexService } from './pokedex.service';
 import { PokemonCardComponent, type QuickviewRequest } from './pokemon-card';
 import { PokemonQuickviewComponent } from './pokemon-quickview';
+import { PokemonCompareComponent } from './pokemon-compare';
+import { WhosThatComponent } from './whos-that';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
@@ -45,6 +47,8 @@ const VIEWS: { id: DexView; label: string; glyph: string }[] = [
   imports: [
     PokemonCardComponent,
     PokemonQuickviewComponent,
+    PokemonCompareComponent,
+    WhosThatComponent,
     SpinnerComponent,
     PageHeaderComponent,
     IconComponent,
@@ -70,6 +74,8 @@ export class PokedexComponent {
   protected readonly titleCase = titleCase;
 
   protected readonly quickview = signal<QuickviewRequest | null>(null);
+  protected readonly showCompare = signal(false);
+  protected readonly showGame = signal(false);
   private restored = false;
 
   private readonly sentinel = viewChild<ElementRef<HTMLElement>>('sentinel');
@@ -105,6 +111,31 @@ export class PokedexComponent {
 
   protected onFavorite(id: number): void {
     this.store.toggleFavorite(id);
+  }
+
+  protected onCompareToggle(id: number): void {
+    this.store.toggleCompare(id);
+  }
+
+  protected openCompare(): void {
+    if (this.store.canCompare()) this.showCompare.set(true);
+  }
+
+  protected closeCompare(): void {
+    this.showCompare.set(false);
+  }
+
+  protected removeCompare(id: number): void {
+    this.store.toggleCompare(id);
+    if (!this.store.canCompare()) this.showCompare.set(false);
+  }
+
+  protected openGame(): void {
+    this.showGame.set(true);
+  }
+
+  protected closeGame(): void {
+    this.showGame.set(false);
   }
 
   protected clear(): void {

@@ -40,3 +40,35 @@ Browse all ~1025 Pokémon with instant search and filtering.
 
 Controls stack vertically with full-width inputs on mobile; the grid scales from
 `minmax(108px, …)` up to denser columns at larger breakpoints.
+
+## Living Dex overhaul (v2)
+
+A deep interactivity + motion pass over the Pokédex.
+
+- **Type-aware index.** A one-time enrichment fetches the 18 type lists + 9
+  generation lists (cache-first, ~27 calls total — never per-Pokémon) and stamps
+  every entry with `types` + `gen`, unlocking type badges, theming and instant
+  client-side filtering.
+- **Reborn cards.** Dual-type gradient + glow, type badges, skeleton shimmer, a
+  staggered entrance, a cursor-following sheen and a 3D pointer tilt; shiny-aware
+  art that cross-fades to the animated Showdown sprite on hover.
+- **Quick-view popover.** An info button opens an anchored, animated card with
+  lazy, memoized stats / BST / abilities / flavour and a cry button.
+- **Shiny mode & cries.** Persisted ✨ toggle; a shared single-`Audio` CryService
+  (URLs by id) with a mute toggle.
+- **Filtering & search.** Multi-select types with Any/All (OR/AND), search by
+  name / #id / #range / type, sort (#, name, gen, type, favorites, shuffle) and
+  Gallery / Compact / List view modes — all pure + tested in `pokedex-filter.ts`.
+- **Favourites & caught.** Per-card heart (persisted), favorites-only filter, and
+  ✓ caught markers mirrored from the World expedition dex.
+- **Progress HUD.** Favorites + caught counts and per-generation pips (click to
+  filter a generation).
+- **Compare tray.** Select up to 4 → a sticky tray → a side-by-side overlay with
+  best-stat highlights, BST and a per-Pokémon weakness row.
+- **Keyboard UX.** `/` search, arrow-key grid navigation, `f` favourite, `s`
+  shiny.
+- **Shareable URL state** and a **"Who's That Pokémon?"** silhouette mini-game.
+
+All animations honour `prefers-reduced-motion`. New files: `pokedex-filter.ts`,
+`pokedex-detail.service.ts`, `pokemon-quickview`, `pokemon-compare`, `whos-that`,
+and `core/audio/cry.service.ts`.

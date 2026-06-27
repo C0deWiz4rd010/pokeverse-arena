@@ -17,6 +17,7 @@ import {
 
 const PAGE_SIZE = 48;
 const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const COMPARE_MAX = 4;
 
 /**
  * Pokédex state container. Loads a lightweight id+name index once, enriches it
@@ -51,6 +52,11 @@ export class PokedexService {
   private readonly shuffleSeed = signal(0);
   private readonly visibleCount = signal(PAGE_SIZE);
 
+  /** Up to {@link COMPARE_MAX} entries selected for side-by-side comparison. */
+  readonly compare = signal<ReadonlySet<number>>(new Set());
+  readonly compareIds = computed(() => [...this.compare()]);
+  readonly canCompare = computed(() => this.compare().size >= 2);
+
   /** Entries matching every active filter, then sorted. */
   readonly filtered = computed<PokedexEntry[]>(() => {
     const list = applyDexFilters(this.index(), {
@@ -74,6 +80,8 @@ export class PokedexService {
 
   /** All Pokémon names, for autocomplete/datalist consumers (e.g. Team Builder). */
   readonly names = computed(() => this.index().map((e) => e.name));
+  /** The full enriched index (read-only) — used by the mini-game. */
+  readonly entries = computed(() => this.index());
 
   readonly favCount = computed(() => this.favorites().size);
   readonly caughtCount = computed(() => {
@@ -233,6 +241,25 @@ export class PokedexService {
 
   isCaught(id: number): boolean {
     return this.caught().has(id);
+  }
+
+  toggleCompare(id: number): void {
+    const next = new Set(this.compare());
+    if (next.has(id)) next.delete(id);
+    else if (next.size < COMPARE_MAX) next.add(id);
+    this.compare.set(next);
+  }
+
+  clearCompare(): void {
+    this.compare.set(new Set());
+  }
+
+  inCompare(id: number): boolean {
+    return this.compare().has(id);
+  }
+
+  entryById(id: number): PokedexEntry | undefined {
+    return this.index().find((e) => e.id === id);
   }
 
   loadMore(): void {

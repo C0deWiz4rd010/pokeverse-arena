@@ -91,6 +91,14 @@ export interface QuickviewRequest {
       <button class="info" type="button" aria-label="Quick view" (click)="onInfo($event)">
         <pv-icon name="search" />
       </button>
+      <button
+        class="compare-btn"
+        type="button"
+        [class.on]="inCompare()"
+        aria-label="Add to compare"
+        title="Compare"
+        (click)="onCompare($event)"
+      >⇄</button>
     </a>
   `,
   styleUrl: './pokemon-card.scss',
@@ -102,8 +110,10 @@ export class PokemonCardComponent {
   readonly layout = input<'gallery' | 'compact' | 'list'>('gallery');
   readonly favorite = input<boolean>(false);
   readonly caught = input<boolean>(false);
+  readonly inCompare = input<boolean>(false);
   readonly quickview = output<QuickviewRequest>();
   readonly favoriteToggle = output<number>();
+  readonly compareToggle = output<number>();
 
   protected readonly loaded = signal(false);
   protected readonly hovering = signal(false);
@@ -161,6 +171,12 @@ export class PokemonCardComponent {
     event.preventDefault();
     event.stopPropagation();
     this.favoriteToggle.emit(this.entry().id);
+  }
+
+  protected onCompare(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.compareToggle.emit(this.entry().id);
   }
 
   protected onError(event: Event): void {

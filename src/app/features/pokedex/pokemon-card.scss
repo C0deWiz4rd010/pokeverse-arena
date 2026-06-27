@@ -192,3 +192,34 @@
   outline-offset: 3px;
   border-color: color-mix(in srgb, var(--t1) 70%, transparent);
 }
+
+/* ---- compare button (mirror of info, bottom-left) ---- */
+.compare-btn {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+.card:hover .compare-btn,
+.card:focus-within .compare-btn,
+.compare-btn.on { opacity: 1; transform: none; }
+.compare-btn:hover { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 60%, transparent); }
+.compare-btn.on { color: #0b0a1f; background: var(--accent-2); border-color: var(--accent-2); }
+.card.list .compare-btn { bottom: 0.5rem; left: auto; right: 2.6rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .compare-btn { opacity: 1; transform: none; transition: none; }
+}

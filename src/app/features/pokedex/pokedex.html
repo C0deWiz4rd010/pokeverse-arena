@@ -98,7 +98,12 @@
   }
 
   <div class="toolbar">
-    <span class="result-count">{{ store.total() }} result{{ store.total() === 1 ? '' : 's' }}</span>
+    <div class="tb-left">
+      <span class="result-count">{{ store.total() }} result{{ store.total() === 1 ? '' : 's' }}</span>
+      <button class="btn ghost game-btn" type="button" (click)="openGame()" [disabled]="store.count() < 3">
+        <pv-icon name="sparkles" /> Who’s That?
+      </button>
+    </div>
     <div class="views" role="group" aria-label="View mode">
       @for (v of views; track v.id) {
         <button type="button" class="view-btn" [class.on]="store.view() === v.id" [title]="v.label" (click)="setView(v.id)">
@@ -129,8 +134,10 @@
           [layout]="store.view()"
           [favorite]="store.isFavorite(entry.id)"
           [caught]="store.isCaught(entry.id)"
+          [inCompare]="store.inCompare(entry.id)"
           (quickview)="openQuickview($event)"
           (favoriteToggle)="onFavorite($event)"
+          (compareToggle)="onCompareToggle($event)"
         />
       }
     </div>
@@ -150,4 +157,36 @@
       (close)="closeQuickview()"
     />
   }
+
+  @if (showCompare()) {
+    <pv-pokemon-compare
+      [ids]="store.compareIds()"
+      [shiny]="store.shiny()"
+      (close)="closeCompare()"
+      (removeId)="removeCompare($event)"
+    />
+  }
+
+  @if (showGame()) {
+    <pv-whos-that [pool]="store.entries()" (close)="closeGame()" />
+  }
 </section>
+
+@if (store.compare().size > 0) {
+  <div class="compare-tray">
+    <div class="tray-mons">
+      @for (id of store.compareIds(); track id) {
+        @if (store.entryById(id); as e) {
+          <button class="tray-mon" type="button" (click)="removeCompare(id)" [title]="'Remove ' + titleCase(e.name)">
+            <img [src]="e.artwork" [alt]="e.name" loading="lazy" />
+            <span class="rm-x">×</span>
+          </button>
+        }
+      }
+    </div>
+    <div class="tray-actions">
+      <button class="btn" type="button" [disabled]="!store.canCompare()" (click)="openCompare()">Compare ({{ store.compare().size }})</button>
+      <button class="btn ghost" type="button" (click)="store.clearCompare()">Clear</button>
+    </div>
+  </div>
+}

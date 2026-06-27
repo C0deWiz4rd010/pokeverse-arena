@@ -200,3 +200,71 @@
 .pip-bar { height: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
 .pip-fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #5be08a, #6ce0ff); transition: width 0.5s ease; }
 .pip.on .pip-fill { background: #0b0a1f; }
+
+/* ---------------------------------------------------------------- toolbar extras */
+.tb-left { display: flex; align-items: center; gap: 0.7rem; }
+.btn.ghost {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+.btn.ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+.game-btn { font-size: 0.82rem; padding: 0.35rem 0.7rem; }
+
+/* ---------------------------------------------------------------- compare tray */
+.compare-tray {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--surface, #12132a) 85%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  animation: tray-up 0.25s ease;
+}
+.tray-mons { display: flex; gap: 0.3rem; }
+.tray-mon {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  padding: 0;
+}
+.tray-mon img { width: 100%; height: 100%; object-fit: contain; }
+.tray-mon .rm-x {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 1.1rem;
+  height: 1.1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.tray-mon:hover .rm-x { opacity: 1; }
+.tray-actions { display: flex; gap: 0.4rem; }
+.tray-actions .btn { padding: 0.4rem 0.85rem; }
+
+@keyframes tray-up { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .compare-tray { animation: none; } }
