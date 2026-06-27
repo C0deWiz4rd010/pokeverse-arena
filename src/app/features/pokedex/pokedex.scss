@@ -263,8 +263,8 @@
   transition: opacity 0.15s ease;
 }
 .tray-mon:hover .rm-x { opacity: 1; }
-.tray-actions { display: flex; gap: 0.4rem; }
-.tray-actions .btn { padding: 0.4rem 0.85rem; }
+.tray-actions { display: flex; gap: 0.55rem; flex-wrap: wrap; }
+.tray-actions .btn { padding: 0.45rem 0.95rem; }
 
 @keyframes tray-up { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .compare-tray { animation: none; } }

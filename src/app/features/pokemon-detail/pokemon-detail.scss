@@ -56,7 +56,7 @@
 @include up(lg) { .hero { position: sticky; top: calc(var(--header-h) + 1rem); } }
 .hero-top { display: flex; justify-content: space-between; align-items: center; }
 .num { color: var(--text-faint); font-weight: 800; font-variant-numeric: tabular-nums; }
-.hero-actions { display: flex; gap: 0.4rem; }
+.hero-actions { display: flex; gap: 0.55rem; flex-wrap: wrap; }
 .icon-btn {
   display: grid;
   place-items: center;
@@ -105,7 +105,7 @@
   transform: rotate(calc(var(--i) * 45deg)) translateY(-10px);
   transform-origin: center;
 }
-.sprite-controls { display: flex; justify-content: center; gap: 0.4rem; margin-top: 0.2rem; }
+.sprite-controls { display: flex; justify-content: center; gap: 0.55rem; margin-top: 0.4rem; flex-wrap: wrap; }
 .seg-btn {
   appearance: none;
   cursor: pointer;
@@ -233,7 +233,7 @@
 .evo-scroll pv-evolution-tree { display: block; width: fit-content; min-width: 100%; margin-inline: auto; }
 
 /* ---- moves ---- */
-.tabs { display: flex; gap: 0.4rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
+.tabs { display: flex; gap: 0.55rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
 .tab {
   padding: 0.4rem 0.9rem; border-radius: 999px; cursor: pointer;
   border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.04);

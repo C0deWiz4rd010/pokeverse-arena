@@ -68,8 +68,11 @@
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.6rem 1.1rem;
+  min-height: 2.5rem; /* 40px — comfortable touch target */
+  line-height: 1.1;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -108,3 +111,23 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* ============================================================
+   Global UX baseline — spacing, touch targets & focus clarity
+   ============================================================ */
+
+/* A single, consistent keyboard-focus ring everywhere (a11y).
+   Mouse clicks don't trigger :focus-visible, so it stays clean. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Comfortable, consistent rhythm for the shared text controls
+   (kept off icon buttons / chips / range / checkbox to avoid distortion). */
+input:not([type='range']):not([type='checkbox']):not([type='radio']):not([type='color']),
+textarea {
+  min-height: 2.5rem;
+}
+textarea { min-height: 4.5rem; }
