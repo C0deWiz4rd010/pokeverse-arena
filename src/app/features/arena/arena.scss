@@ -326,3 +326,171 @@
     transition: none;
   }
 }
+
+/* ============================ Arena v2 — gym experience ==================== */
+
+/* ---- badge case ---- */
+.badge-case {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem;
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--glass-border);
+}
+@media (max-width: 560px) { .badge-case { grid-template-columns: repeat(6, 1fr); } }
+.case-slot {
+  --type: var(--accent);
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 1rem;
+  color: color-mix(in srgb, var(--type) 80%, #fff);
+  background: color-mix(in srgb, var(--type) 14%, #0b0a1f);
+  border: 1.5px solid color-mix(in srgb, var(--type) 40%, transparent);
+  filter: grayscale(0.85) opacity(0.4);
+  transition: filter 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+.case-slot.lit {
+  filter: none;
+  transform: translateZ(0);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--type) 60%, transparent);
+  animation: badge-pop 0.4s ease;
+}
+
+/* ---- ladder extras: field chip + per-card stars ---- */
+.field-chip {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.08rem 0.4rem;
+  border-radius: 5px;
+  color: color-mix(in srgb, var(--type) 88%, #fff);
+  background: color-mix(in srgb, var(--type) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--type) 35%, transparent);
+}
+.card-stars { display: inline-flex; gap: 0.1rem; margin-top: 0.2rem; }
+.star {
+  color: rgba(255, 255, 255, 0.22);
+  display: inline-grid;
+  place-items: center;
+}
+.star.on { color: #ffcb45; filter: drop-shadow(0 0 4px rgba(255, 203, 69, 0.6)); }
+.star.sm { font-size: 0.7rem; }
+
+/* ---- VS splash ---- */
+.vs-splash {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: 1.4rem 1rem 2rem;
+  text-align: center;
+  animation: fade-up 0.35s ease;
+  --type: var(--accent);
+}
+.vs-stage {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 760px;
+}
+.vs-side { display: grid; justify-items: center; gap: 0.3rem; }
+.vs-avatar {
+  width: 96px; height: 96px; border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--type) 60%, transparent);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--type) 35%, transparent);
+  overflow: hidden;
+  animation: slide-in-left 0.45s ease;
+}
+.vs-avatar.you { border-color: color-mix(in srgb, var(--accent-2) 65%, transparent); box-shadow: 0 0 26px color-mix(in srgb, var(--accent-2) 35%, transparent); animation: slide-in-right 0.45s ease; }
+.vs-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.vs-name { font-size: 1.2rem; }
+.vs-title { font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+.vs-tag { font-size: 0.72rem; font-weight: 800; color: #ffcb45; }
+.vs-team { display: flex; gap: 0.2rem; margin-top: 0.3rem; }
+.vs-mon { width: 44px; height: 44px; object-fit: contain; }
+.vs-bolt {
+  display: grid; place-items: center;
+  font-weight: 900; font-style: italic;
+}
+.vs-bolt span {
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, var(--type), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--type) 50%, transparent));
+  animation: vs-pop 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) 0.2s both;
+}
+.vs-quote { max-width: 560px; font-style: italic; color: var(--text-dim); }
+.vs-meta { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; font-size: 0.82rem; }
+.vs-field, .vs-boost { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-dim); }
+.vs-field { color: color-mix(in srgb, var(--type) 85%, #fff); }
+.btn.big { font-size: 1.05rem; padding: 0.7rem 1.6rem; animation: pulse-soft 1.8s ease-in-out infinite; }
+
+/* ---- reward screen ---- */
+.reward-screen {
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  animation: fade-up 0.35s ease;
+  --type: var(--accent);
+}
+.reward-screen h2 { font-size: 1.6rem; }
+.reward-medal {
+  display: grid; place-items: center;
+  width: 84px; height: 84px; border-radius: 50%;
+  font-size: 2.2rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid var(--glass-border);
+  color: var(--text-dim);
+}
+.reward-medal.lit { color: color-mix(in srgb, var(--type) 85%, #fff); border-color: color-mix(in srgb, var(--type) 55%, transparent); }
+.badge-award { position: relative; display: grid; place-items: center; width: 140px; height: 140px; }
+.badge-burst {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, color-mix(in srgb, var(--type) 70%, transparent), transparent 30%, color-mix(in srgb, var(--type) 70%, transparent) 60%, transparent 75%);
+  filter: blur(2px);
+  animation: spin 6s linear infinite;
+}
+.badge-medal {
+  position: relative;
+  display: grid; place-items: center;
+  width: 92px; height: 92px; border-radius: 50%;
+  font-size: 2.6rem;
+  color: #0b0a1f;
+  background: radial-gradient(circle at 35% 30%, #fff, color-mix(in srgb, var(--type) 70%, #fff) 55%, color-mix(in srgb, var(--type) 90%, #000));
+  box-shadow: 0 0 30px color-mix(in srgb, var(--type) 60%, transparent);
+  animation: badge-drop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.star-row { display: inline-flex; gap: 0.35rem; }
+.star-row .star { font-size: 1.5rem; }
+.star-row .star.on { animation: star-pop 0.4s ease both; }
+.star-row .star.on:nth-child(2) { animation-delay: 0.12s; }
+.star-row .star.on:nth-child(3) { animation-delay: 0.24s; }
+.reward-coins { font-weight: 800; color: var(--accent-2); display: inline-flex; align-items: center; gap: 0.35rem; }
+.reward-line { font-style: italic; color: var(--text-dim); max-width: 460px; }
+.reward-unlock { font-weight: 700; color: var(--accent-3); display: inline-flex; align-items: center; gap: 0.4rem; }
+
+/* ---- keyframes ---- */
+@keyframes badge-pop { from { transform: scale(0.6); } to { transform: scale(1); } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes slide-in-left { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes slide-in-right { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes vs-pop { from { opacity: 0; transform: scale(0.3) rotate(-8deg); } to { opacity: 1; transform: none; } }
+@keyframes badge-drop { from { opacity: 0; transform: translateY(-40px) scale(0.5); } to { opacity: 1; transform: none; } }
+@keyframes star-pop { from { opacity: 0; transform: scale(0.2) rotate(-30deg); } to { opacity: 1; transform: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse-soft { 0%, 100% { transform: none; } 50% { transform: translateY(-2px); box-shadow: 0 8px 22px color-mix(in srgb, var(--type, var(--accent)) 30%, transparent); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .vs-splash, .reward-screen, .vs-avatar, .vs-bolt span, .badge-medal, .badge-burst,
+  .star-row .star.on, .btn.big, .case-slot.lit { animation: none; }
+}

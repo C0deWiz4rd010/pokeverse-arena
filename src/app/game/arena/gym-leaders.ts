@@ -11,7 +11,7 @@
  */
 import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import type { IconName } from '../../core/ui/icon/icons.data';
-import type { AbilityId, AiTier, ItemId } from '../engine';
+import type { AbilityId, AiTier, ItemId, Terrain, Weather } from '../engine';
 
 /** One member of a leader's signature team. */
 export interface LeaderMon {
@@ -22,8 +22,16 @@ export interface LeaderMon {
 
 export interface LeaderDialogue {
   readonly intro: string;
+  /** Taunt when the leader sends out their ace (final Pokémon). */
+  readonly ace: string;
   readonly victory: string;
   readonly defeat: string;
+}
+
+/** A persistent battlefield condition the gym imposes from the first turn. */
+export interface GymField {
+  readonly weather?: Weather;
+  readonly terrain?: Terrain;
 }
 
 export interface GymLeader {
@@ -37,6 +45,8 @@ export interface GymLeader {
   readonly order: number;
   /** The leader's three signature Pokémon (ace last). */
   readonly team: readonly LeaderMon[];
+  /** A persistent weather/terrain the gym battle opens in (atmosphere + mechanics). */
+  readonly gymField?: GymField;
   readonly dialogue: LeaderDialogue;
 }
 
@@ -163,9 +173,45 @@ const TEAMS: Record<PokemonType, readonly LeaderMon[]> = {
   ],
 };
 
-function dialogueFor(name: string, title: string, blurb: string): LeaderDialogue {
+/** The atmosphere each gym battle opens in — set from turn one. */
+const GYM_FIELD: Partial<Record<PokemonType, GymField>> = {
+  fire: { weather: 'sun' },
+  water: { weather: 'rain' },
+  rock: { weather: 'sand' },
+  ground: { weather: 'sand' },
+  ice: { weather: 'snow' },
+  electric: { terrain: 'electric' },
+  grass: { terrain: 'grassy' },
+  psychic: { terrain: 'psychic' },
+  fairy: { terrain: 'misty' },
+};
+
+/** A leader's taunt as their ace (final Pokémon) takes the field. */
+const ACE_LINE: Record<PokemonType, string> = {
+  normal: 'Now we duel without a safety net. Show me everything.',
+  fire: 'This is the inferno at my core — burn or be burned!',
+  water: 'The tide turns. Let me show you the depths.',
+  electric: 'One million volts — can your reflexes keep up?',
+  grass: 'My roots run deepest here. Witness full bloom.',
+  ice: 'The temperature drops. Your hope freezes with it.',
+  fighting: 'No more warming up. Feel a true fighting spirit!',
+  poison: 'The venom has spread. Now it finishes the job.',
+  ground: 'The earth splits open. There is nowhere to stand.',
+  flying: 'Up here, in my sky, you have already lost.',
+  psychic: 'I foresaw this moment. And your defeat within it.',
+  bug: 'The swarm converges. You are surrounded.',
+  rock: 'My final wall. Shatter it or be ground to dust.',
+  ghost: 'Now you face the thing the shadows feared.',
+  dragon: 'Kneel before a true wyrm. This is real power.',
+  dark: 'The light is gone. Now you are truly alone.',
+  steel: 'Tempered, folded, unbreakable. Try to bend me.',
+  fairy: 'Such a pity. I did so adore your stubbornness.',
+};
+
+function dialogueFor(type: PokemonType, name: string, title: string, blurb: string): LeaderDialogue {
   return {
     intro: `${name}, the ${title}: "${blurb}"`,
+    ace: `${name}: "${ACE_LINE[type]}"`,
     victory: `${name}: "Come back when you have truly trained."`,
     defeat: `${name}: "Impressive. The badge is yours — you earned it."`,
   };
@@ -174,7 +220,18 @@ function dialogueFor(name: string, title: string, blurb: string): LeaderDialogue
 /** The full roster of gym leaders, one per type, in canonical type order. */
 export const GYM_LEADERS: readonly GymLeader[] = POKEMON_TYPES.map((type) => {
   const [name, title, badge, icon, blurb] = FLAVOUR[type];
-  return { type, name, title, badge, icon, blurb, order: ORDER[type], team: TEAMS[type], dialogue: dialogueFor(name, title, blurb) } satisfies GymLeader;
+  return {
+    type,
+    name,
+    title,
+    badge,
+    icon,
+    blurb,
+    order: ORDER[type],
+    team: TEAMS[type],
+    gymField: GYM_FIELD[type],
+    dialogue: dialogueFor(type, name, title, blurb),
+  } satisfies GymLeader;
 });
 
 /** Leaders sorted by the recommended ladder order. */

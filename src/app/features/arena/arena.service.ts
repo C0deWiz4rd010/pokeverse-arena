@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { isPokemonType, type PokemonType } from '../../core/utils/type-chart';
+import type { StatKey } from '../../core/utils/stat-calculator';
 import type { Battler } from '../../game/engine';
 import type { BracketMatch, Trainer } from '../../game/tournament';
 import {
@@ -9,21 +10,29 @@ import {
   type GymLeader,
   type LeaderMon,
 } from '../../game/arena/gym-leaders';
-import { arenaProgress, buildLadder } from '../../game/arena/gym-progression';
+import {
+  arenaProgress,
+  badgeBoostSummary,
+  badgeStatMultipliers,
+  buildLadder,
+  starsFor,
+} from '../../game/arena/gym-progression';
 import { CHAMPION, GAUNTLET, gauntletUnlocked, type EliteTrainer } from '../../game/arena/elite-four';
 import { BattleService } from '../battle/battle.service';
 import { TeamBuilderService } from '../team-builder/team-builder.service';
 import type { PlayerMatchSetup } from '../tournaments/tournaments.service';
 import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
 
-type Status = 'hub' | 'loading' | 'battle' | 'gauntlet' | 'error';
+type Status = 'hub' | 'loading' | 'intro' | 'battle' | 'reward' | 'gauntlet' | 'error';
 
 const DEX_MAX = 1025;
 const TEAM_SIZE = 3;
 const GAUNTLET_LEVEL = 75;
+const REMATCH_BONUS_LEVEL = 12;
 const BADGE_KEY = 'arena:badges';
 const CHAMP_KEY = 'arena:champion';
 const COINS_KEY = 'arena:coins';
+const STARS_KEY = 'arena:stars';
 
 /** Deterministic gym-leader portrait via the DiceBear avatar library. */
 function leaderAvatar(seed: string, accent = false): string {
@@ -36,7 +45,6 @@ function leaderAvatar(seed: string, accent = false): string {
   return `https://api.dicebear.com/9.x/adventurer/svg?${params.toString()}`;
 }
 
-/** Live state of an in-progress Champion Gauntlet run. */
 interface GauntletRun {
   readonly trainers: readonly EliteTrainer[];
   index: number;
@@ -50,11 +58,31 @@ export interface GauntletView {
   readonly foeName: string;
 }
 
+/** The pre-battle "VS" splash context. */
+export interface IntroView {
+  readonly leader: GymLeader;
+  readonly level: number;
+  readonly rematch: boolean;
+  readonly foeTeam: Battler[];
+  readonly playerTeam: Battler[];
+  readonly boostSummary: string;
+}
+
+/** The post-battle reward summary. */
+export interface ArenaReward {
+  readonly leader: GymLeader;
+  readonly won: boolean;
+  readonly stars: 0 | 1 | 2 | 3;
+  readonly bestStars: number;
+  readonly coins: number;
+  readonly firstClear: boolean;
+  readonly gauntletJustUnlocked: boolean;
+}
+
 /**
- * Arena hub: a designed gym ladder (one leader per type, scaling level + AI),
- * persisted badge progress, a Champion Gauntlet (Elite Four + Champion, no heal
- * between matches), and the wiring to launch each challenge through the shared
- * 3-v-3 match component.
+ * Arena hub: a designed gym ladder with thematic battlefields, badge boosts, star
+ * ratings, a pre-battle VS splash, a reward sequence, rematches, and a Champion
+ * Gauntlet. Battles run through the shared deep-engine match component.
  */
 @Injectable({ providedIn: 'root' })
 export class ArenaService {
@@ -67,20 +95,24 @@ export class ArenaService {
   readonly error = signal<string | null>(null);
   readonly setup = signal<PlayerMatchSetup | null>(null);
   readonly activeLeader = signal<GymLeader | null>(null);
-  readonly lastResult = signal<{ leader: GymLeader; won: boolean; coins: number } | null>(null);
+  readonly intro = signal<IntroView | null>(null);
+  readonly reward = signal<ArenaReward | null>(null);
 
   readonly badges = signal<ReadonlySet<PokemonType>>(this.restoreBadges());
   readonly isChampion = signal<boolean>(localStorage.getItem(CHAMP_KEY) === '1');
   readonly coins = signal<number>(this.restoreCoins());
+  readonly stars = signal<Readonly<Record<string, number>>>(this.restoreStars());
 
   readonly earnedCount = computed(() => this.badges().size);
   readonly total = computed(() => this.leaders.length);
   readonly ladder = computed(() => buildLadder(this.badges()));
   readonly progress = computed(() => arenaProgress(this.badges()));
   readonly gauntletOpen = computed(() => gauntletUnlocked(this.badges()));
+  readonly boostSummary = computed(() => badgeBoostSummary(this.badges()));
+  readonly totalStars = computed(() => Object.values(this.stars()).reduce((a, b) => a + b, 0));
 
-  /** Gauntlet run state (null when not running). */
   private run: GauntletRun | null = null;
+  private isRematch = false;
   readonly gauntletSetup = signal<PlayerMatchSetup | null>(null);
   readonly gauntletView = signal<GauntletView | null>(null);
   readonly gauntletResult = signal<'won' | 'lost' | null>(null);
@@ -90,38 +122,48 @@ export class ArenaService {
     return this.badges().has(type);
   }
 
+  starsFor(type: PokemonType): number {
+    return this.stars()[type] ?? 0;
+  }
+
   /* ---------------------------------------------------------- single gym */
 
-  async challenge(leader: GymLeader): Promise<void> {
+  /** Prepare a challenge and show the VS splash (does not start the battle yet). */
+  async challenge(leader: GymLeader, rematch = false): Promise<void> {
     this.status.set('loading');
     this.error.set(null);
-    this.lastResult.set(null);
+    this.reward.set(null);
+    this.isRematch = rematch;
     this.activeLeader.set(leader);
     try {
-      const level = leaderLevel(leader.order);
-      const [foeTeam, playerTeam] = await Promise.all([
-        this.buildLeaderTeam(leader, level),
+      const level = leaderLevel(leader.order) + (rematch ? REMATCH_BONUS_LEVEL : 0);
+      const [foeTeam, rawPlayerTeam] = await Promise.all([
+        this.buildLeaderTeam(leader, level, rematch),
         this.buildPlayerTeam(level),
       ]);
-      if (!foeTeam.length || !playerTeam.length) throw new Error('Could not assemble a team for this challenge.');
+      if (!foeTeam.length || !rawPlayerTeam.length) throw new Error('Could not assemble a team for this challenge.');
+      const playerTeam = this.applyBadgeBoosts(rawPlayerTeam);
+
       const foe: Trainer = {
         id: `leader-${leader.type}`,
         name: leader.name,
         title: leader.title,
-        avatar: leaderAvatar(`${leader.name}-${leader.type}`),
+        avatar: leaderAvatar(`${leader.name}-${leader.type}`, rematch),
         team: foeTeam,
       };
       const player = this.playerTrainer(playerTeam);
       this.setup.set({
-        match: this.dummyMatch(`gym-${leader.type}`, player, foe),
+        match: this.dummyMatch(`gym-${leader.type}${rematch ? '-r' : ''}`, player, foe),
         round: 'final',
         player,
         foe,
         playerTeam,
         foeTeam,
-        aiTier: leaderTier(leader.order),
+        aiTier: rematch ? 'elite' : leaderTier(leader.order),
+        field: leader.gymField,
       });
-      this.status.set('battle');
+      this.intro.set({ leader, level, rematch, foeTeam, playerTeam, boostSummary: this.boostSummary() });
+      this.status.set('intro');
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Something went wrong. Try again.');
       this.status.set('error');
@@ -129,30 +171,64 @@ export class ArenaService {
     }
   }
 
+  rematch(leader: GymLeader): void {
+    void this.challenge(leader, true);
+  }
+
+  /** Commit the VS splash → enter the battle. */
+  beginBattle(): void {
+    if (this.setup()) this.status.set('battle');
+  }
+
   finish(outcome: MatchOutcome): void {
     const leader = this.activeLeader();
-    let reward = 0;
-    if (leader) {
-      const firstClear = outcome.playerWon && !this.badges().has(leader.type);
-      if (outcome.playerWon) {
-        reward = leader.order * 10 + (firstClear ? 40 : 0);
-        this.addCoins(reward);
-        if (firstClear) {
-          const next = new Set(this.badges());
-          next.add(leader.type);
-          this.badges.set(next);
-          this.persistBadges(next);
-        }
-      }
-      this.lastResult.set({ leader, won: outcome.playerWon, coins: reward });
+    if (!leader) {
+      this.status.set('hub');
+      return;
     }
+    const survivors = outcome.playerFinalHp.filter((hp) => hp > 0).length;
+    const teamSize = this.setup()?.playerTeam.length ?? TEAM_SIZE;
+    const stars = outcome.playerWon ? starsFor(survivors, teamSize) : 0;
+    const firstClear = outcome.playerWon && !this.badges().has(leader.type);
+    const before = this.gauntletOpen();
+
+    let coins = 0;
+    if (outcome.playerWon) {
+      coins = leader.order * 10 + (firstClear ? 40 : 0) + stars * 8 + (this.isRematch ? 30 : 0);
+      this.addCoins(coins);
+      if (firstClear) {
+        const next = new Set(this.badges());
+        next.add(leader.type);
+        this.badges.set(next);
+        this.persistBadges(next);
+      }
+      this.recordStars(leader.type, stars);
+    }
+
+    this.reward.set({
+      leader,
+      won: outcome.playerWon,
+      stars,
+      bestStars: this.starsFor(leader.type),
+      coins,
+      firstClear,
+      gauntletJustUnlocked: !before && this.gauntletOpen(),
+    });
     this.setup.set(null);
+    this.intro.set(null);
+    this.status.set('reward');
+  }
+
+  /** Dismiss the reward screen back to the hub. */
+  closeReward(): void {
+    this.reward.set(null);
     this.activeLeader.set(null);
     this.status.set('hub');
   }
 
   abandon(): void {
     this.setup.set(null);
+    this.intro.set(null);
     this.activeLeader.set(null);
     this.error.set(null);
     this.status.set('hub');
@@ -166,7 +242,7 @@ export class ArenaService {
     this.error.set(null);
     this.gauntletResult.set(null);
     try {
-      this.gauntletPlayerTeam = await this.buildPlayerTeam(GAUNTLET_LEVEL);
+      this.gauntletPlayerTeam = this.applyBadgeBoosts(await this.buildPlayerTeam(GAUNTLET_LEVEL));
       if (!this.gauntletPlayerTeam.length) throw new Error('Assemble a team in the Team Builder first.');
       this.run = { trainers: GAUNTLET, index: 0, playerHp: this.gauntletPlayerTeam.map((m) => m.stats.hp) };
       await this.loadGauntletMatch();
@@ -189,7 +265,6 @@ export class ArenaService {
     run.index += 1;
     this.addCoins(60);
     if (run.index >= run.trainers.length) {
-      // Champion defeated.
       this.addCoins(300);
       this.isChampion.set(true);
       localStorage.setItem(CHAMP_KEY, '1');
@@ -249,8 +324,10 @@ export class ArenaService {
     this.badges.set(new Set());
     this.persistBadges(new Set());
     this.isChampion.set(false);
+    this.stars.set({});
     localStorage.removeItem(CHAMP_KEY);
-    this.lastResult.set(null);
+    localStorage.removeItem(STARS_KEY);
+    this.reward.set(null);
   }
 
   private addCoins(n: number): void {
@@ -264,17 +341,37 @@ export class ArenaService {
     }
   }
 
+  private recordStars(type: PokemonType, stars: number): void {
+    if (stars <= (this.stars()[type] ?? 0)) return;
+    const next = { ...this.stars(), [type]: stars };
+    this.stars.set(next);
+    try {
+      localStorage.setItem(STARS_KEY, JSON.stringify(next));
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
   /* ----------------------------------------------------------- team build */
 
-  private async buildLeaderTeam(leader: GymLeader, level: number): Promise<Battler[]> {
-    return this.buildLoadout(leader.team, level);
+  private applyBadgeBoosts(team: Battler[]): Battler[] {
+    const mult = badgeStatMultipliers(this.badges());
+    return team.map((mon) => {
+      const stats = { ...mon.stats };
+      for (const key of Object.keys(stats) as StatKey[]) stats[key] = Math.round(stats[key] * mult[key]);
+      return { ...mon, stats };
+    });
+  }
+
+  private async buildLeaderTeam(leader: GymLeader, level: number, rematch: boolean): Promise<Battler[]> {
+    const team = rematch ? [...leader.team, leader.team[leader.team.length - 1]] : leader.team;
+    return this.buildLoadout(team, level);
   }
 
   private async buildEliteTeam(trainer: EliteTrainer): Promise<Battler[]> {
     return this.buildLoadout(trainer.team, trainer.level);
   }
 
-  /** Build a designed team: real movesets from the API, with set abilities/items. */
   private async buildLoadout(team: readonly LeaderMon[], level: number): Promise<Battler[]> {
     const built = await Promise.all(
       team.map(async (mon): Promise<Battler | null> => {
@@ -289,7 +386,6 @@ export class ArenaService {
     return built.filter((b): b is Battler => b !== null);
   }
 
-  /** Player brings their Team Builder roster (first three) or a fair random trio. */
   private async buildPlayerTeam(level: number): Promise<Battler[]> {
     const saved = this.roster.team().slice(0, TEAM_SIZE);
     if (saved.length) {
@@ -333,12 +429,21 @@ export class ArenaService {
     try {
       localStorage.setItem(BADGE_KEY, JSON.stringify([...badges]));
     } catch {
-      /* storage unavailable — progress simply won't persist */
+      /* storage unavailable */
     }
   }
 
   private restoreCoins(): number {
     const n = Number(localStorage.getItem(COINS_KEY));
     return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+
+  private restoreStars(): Record<string, number> {
+    try {
+      const raw = localStorage.getItem(STARS_KEY);
+      return raw ? (JSON.parse(raw) as Record<string, number>) : {};
+    } catch {
+      return {};
+    }
   }
 }

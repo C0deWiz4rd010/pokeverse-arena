@@ -1,4 +1,58 @@
 @switch (svc.status()) {
+  <!-- ─────────────────────────── VS splash ─────────────────────────── -->
+  @case ('intro') {
+    @if (svc.intro(); as g) {
+      <div class="vs-splash" [style.--type]="'var(--type-' + g.leader.type + ')'">
+        <button type="button" class="forfeit" (click)="svc.abandon()">‹ Back</button>
+
+        <div class="vs-stage">
+          <div class="vs-side foe-side">
+            <div class="vs-avatar"><img [src]="svc.setup()?.foe?.avatar" [alt]="g.leader.name" /></div>
+            <strong class="vs-name">{{ g.leader.name }}</strong>
+            <span class="vs-title">{{ g.leader.title }}</span>
+            <pv-type-badge [type]="g.leader.type" />
+            @if (g.rematch) { <span class="vs-tag">Rematch · Lv{{ g.level }}</span> }
+            <div class="vs-team">
+              @for (m of g.foeTeam; track $index) {
+                <img class="vs-mon" [src]="m.sprite" [alt]="m.name" [title]="titleCase(m.name)" loading="lazy" />
+              }
+            </div>
+          </div>
+
+          <div class="vs-bolt" aria-hidden="true"><span>VS</span></div>
+
+          <div class="vs-side you-side">
+            <div class="vs-avatar you"><img [src]="svc.setup()?.player?.avatar" alt="You" /></div>
+            <strong class="vs-name">You</strong>
+            <span class="vs-title">Challenger</span>
+            <div class="vs-team">
+              @for (m of g.playerTeam; track $index) {
+                <img class="vs-mon" [src]="m.sprite" [alt]="m.name" [title]="titleCase(m.name)" loading="lazy" />
+              }
+            </div>
+          </div>
+        </div>
+
+        <p class="vs-quote">“{{ g.leader.dialogue.intro }}”</p>
+
+        <div class="vs-meta">
+          @if (g.leader.gymField; as f) {
+            <span class="vs-field">
+              <pv-icon name="sparkles" />
+              Field:
+              @if (f.weather) { {{ titleCase(f.weather) }} }
+              @if (f.terrain) { {{ titleCase(f.terrain) }} terrain }
+            </span>
+          }
+          <span class="vs-boost"><pv-icon name="shield-check" /> {{ g.boostSummary }}</span>
+        </div>
+
+        <button type="button" class="btn big" (click)="begin()"><pv-icon name="swords" /> Battle!</button>
+      </div>
+    }
+  }
+
+  <!-- ─────────────────────────── battle ─────────────────────────── -->
   @case ('battle') {
     @if (svc.setup(); as setup) {
       <div class="match-wrap">
@@ -11,6 +65,42 @@
     }
   }
 
+  <!-- ─────────────────────────── reward ─────────────────────────── -->
+  @case ('reward') {
+    @if (svc.reward(); as r) {
+      <div class="reward-screen" [class.win]="r.won" [style.--type]="'var(--type-' + r.leader.type + ')'">
+        @if (r.won) {
+          @if (r.firstClear) {
+            <div class="badge-award">
+              <span class="badge-burst" aria-hidden="true"></span>
+              <span class="badge-medal"><pv-icon [name]="r.leader.icon" /></span>
+            </div>
+            <h2>{{ r.leader.badge }} earned!</h2>
+          } @else {
+            <span class="reward-medal lit"><pv-icon [name]="r.leader.icon" /></span>
+            <h2>Gym cleared again!</h2>
+          }
+          <div class="star-row" [attr.aria-label]="r.stars + ' of 3 stars'">
+            @for (on of stars(r.stars); track $index) {
+              <span class="star" [class.on]="on"><pv-icon name="star" /></span>
+            }
+          </div>
+          <p class="reward-line">“{{ r.leader.dialogue.defeat }}”</p>
+          <p class="reward-coins"><pv-icon name="gem" /> +{{ r.coins }} ₽</p>
+          @if (r.gauntletJustUnlocked) {
+            <p class="reward-unlock"><pv-icon name="crown" /> The Champion Gauntlet is now open!</p>
+          }
+        } @else {
+          <span class="reward-medal"><pv-icon name="heart-crack" /></span>
+          <h2>Defeated…</h2>
+          <p class="reward-line">“{{ r.leader.dialogue.victory }}”</p>
+        }
+        <button type="button" class="btn" (click)="svc.closeReward()">Continue</button>
+      </div>
+    }
+  }
+
+  <!-- ─────────────────────────── gauntlet ─────────────────────────── -->
   @case ('gauntlet') {
     @if (svc.gauntletSetup(); as setup) {
       <div class="match-wrap">
@@ -24,7 +114,7 @@
   }
 
   @case ('loading') {
-    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="castle" />
+    <pv-page-header title="Arena" subtitle="Climb the gym ladder, then face the Champion Gauntlet." icon="castle" />
     <div class="state">
       <pv-spinner label="Approaching the gym…" />
       <p class="muted">
@@ -35,13 +125,14 @@
   }
 
   @case ('error') {
-    <pv-page-header title="Arena" subtitle="Challenge type-themed gym leaders and earn badges." icon="castle" />
+    <pv-page-header title="Arena" subtitle="Climb the gym ladder, then face the Champion Gauntlet." icon="castle" />
     <div class="state">
       <p class="err"><pv-icon name="triangle-alert" /> {{ svc.error() }}</p>
       <button type="button" class="btn" (click)="svc.abandon()">Back to the hub</button>
     </div>
   }
 
+  <!-- ─────────────────────────── hub ─────────────────────────── -->
   @default {
     <pv-page-header title="Arena" subtitle="Climb the gym ladder, then face the Champion Gauntlet." icon="castle" />
 
@@ -49,10 +140,10 @@
       <div class="progress-text">
         @if (svc.isChampion()) {
           <strong><pv-icon name="crown" /> Arena Champion</strong>
-          <span class="muted">You conquered the gauntlet. {{ svc.earnedCount() }}/{{ svc.total() }} badges · {{ svc.coins() }} ₽</span>
+          <span class="muted">{{ svc.earnedCount() }}/{{ svc.total() }} badges · {{ svc.totalStars() }}★ · {{ svc.coins() }} ₽</span>
         } @else {
           <strong>{{ svc.earnedCount() }} / {{ svc.total() }} badges</strong>
-          <span class="muted">{{ svc.coins() }} ₽ earned · Your Team Builder roster is sent into battle.</span>
+          <span class="muted">{{ svc.totalStars() }}★ collected · {{ svc.coins() }} ₽ · Boosts: {{ svc.boostSummary() }}</span>
         }
       </div>
       <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="svc.earnedCount()" [attr.aria-valuemax]="svc.total()">
@@ -60,7 +151,16 @@
       </div>
     </header>
 
-    <!-- Champion Gauntlet panel -->
+    <!-- Badge case -->
+    <section class="badge-case" aria-label="Badge case">
+      @for (e of svc.ladder(); track e.leader.type) {
+        <span class="case-slot" [class.lit]="e.cleared" [style.--type]="'var(--type-' + e.leader.type + ')'" [title]="e.leader.badge">
+          <pv-icon [name]="e.leader.icon" />
+        </span>
+      }
+    </section>
+
+    <!-- Champion Gauntlet -->
     <section class="gauntlet-panel" [class.open]="svc.gauntletOpen()">
       <div class="g-info">
         <strong><pv-icon name="crown" /> Champion Gauntlet</strong>
@@ -82,13 +182,7 @@
       </p>
     }
 
-    @if (svc.lastResult(); as res) {
-      <p class="toast" [class.win]="res.won" [class.loss]="!res.won">
-        @if (res.won) { <pv-icon [name]="res.leader.icon" /> You defeated {{ res.leader.name }} — {{ res.leader.badge }} earned! +{{ res.coins }} ₽ }
-        @else { {{ res.leader.name }} stood firm. Train up and challenge the {{ titleCase(res.leader.type) }} gym again. }
-      </p>
-    }
-
+    <!-- Ladder track -->
     <ol class="ladder">
       @for (e of svc.ladder(); track e.leader.type) {
         <li class="card" [class.owned]="e.cleared" [class.next]="e.next" [style.--type]="'var(--type-' + e.leader.type + ')'">
@@ -99,14 +193,24 @@
               <strong class="name">{{ e.leader.name }}</strong>
               <pv-type-badge [type]="e.leader.type" />
               @if (e.next) { <span class="next-tag">Next up</span> }
+              @if (e.leader.gymField; as f) {
+                <span class="field-chip">{{ f.weather ? titleCase(f.weather) : (f.terrain ? titleCase(f.terrain) : '') }}</span>
+              }
             </div>
             <span class="title">{{ e.leader.title }}</span>
             <p class="blurb">“{{ e.leader.blurb }}”</p>
+            @if (e.cleared) {
+              <span class="card-stars">
+                @for (on of stars(svc.starsFor(e.leader.type)); track $index) {
+                  <span class="star sm" [class.on]="on"><pv-icon name="star" /></span>
+                }
+              </span>
+            }
           </div>
           <div class="action">
             @if (e.cleared) {
               <span class="earned"><pv-icon name="check" /> {{ e.leader.badge }}</span>
-              <button type="button" class="btn ghost" (click)="challenge(e.leader)">Rematch</button>
+              <button type="button" class="btn ghost" (click)="rematch(e.leader)">Rematch</button>
             } @else {
               <button type="button" class="btn" (click)="challenge(e.leader)">Challenge ›</button>
             }

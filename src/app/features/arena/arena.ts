@@ -20,8 +20,21 @@ export class ArenaComponent {
   protected readonly svc = inject(ArenaService);
   protected readonly titleCase = titleCase;
 
+  /** [filled, empty] pip helpers for a 3-star rating. */
+  protected stars(n: number): boolean[] {
+    return [n >= 1, n >= 2, n >= 3];
+  }
+
   protected challenge(leader: GymLeader): void {
     void this.svc.challenge(leader);
+  }
+
+  protected rematch(leader: GymLeader): void {
+    this.svc.rematch(leader);
+  }
+
+  protected begin(): void {
+    this.svc.beginBattle();
   }
 
   protected startGauntlet(): void {

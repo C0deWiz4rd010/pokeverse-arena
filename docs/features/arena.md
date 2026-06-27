@@ -61,3 +61,30 @@ with thematic abilities + held items + roles), sits on a **difficulty ladder**
 Champion) unlocks at 8 badges and is fought back-to-back with no healing between
 matches. Wins award coins + badges + the Champion title, all surfaced in the
 Trainer Profile. See [../plan.md](../plan.md) phase 4.
+
+## Gym Experience (v2.1)
+
+A focused pass turning the Arena into a full gym-challenge loop:
+
+- **VS splash** before every battle — leader portrait, title, dialogue, both team
+  previews, the gym's battlefield and your active badge boosts, with a dramatic
+  "Battle!" launch.
+- **Thematic battlefields** — each elemental gym opens in a persistent
+  weather/terrain (Fire→Sun, Water→Rain, Rock/Ground→Sand, Ice→Snow,
+  Electric/Grass/Psychic/Fairy→terrain), applied from turn one so the mechanics
+  match the theme.
+- **Badge boosts** — every earned badge permanently empowers a mapped stat on your
+  team in gym battles (mirrors the games), summarised in the hub.
+- **Star ratings** — 3★ for a flawless clear (no faints), 2★ / 1★ otherwise;
+  best stars persist per gym and total in the header.
+- **Reward sequence** — an animated badge award (radiant burst + medal drop),
+  star-pop, coin payout (scaled by order/stars/first-clear), and a gauntlet-unlock
+  callout, instead of dropping straight back to the hub.
+- **Rematches** — cleared leaders return at higher level + elite AI with a fourth
+  Pokémon for extra coins.
+- **Hub polish** — a glowing **badge case**, a numbered **ladder track** with
+  type-themed cards, field chips and per-gym star ribbons. All animations honour
+  `prefers-reduced-motion`.
+
+The shared match component gained an optional `field` (persistent gym weather/
+terrain) so the atmosphere is real, not cosmetic.

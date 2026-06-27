@@ -203,6 +203,18 @@ export class TournamentMatchComponent {
     this.battle.state.sides[0].currentHp = clamp(this.hpA()[this.ia()], this.battle.state.sides[0].maxHp);
     this.battle.state.sides[1].currentHp = clamp(this.hpB()[this.ib()], this.battle.state.sides[1].maxHp);
 
+    // Gym fields: open the battle in a persistent weather/terrain from turn one.
+    if (s.field) {
+      if (s.field.weather) {
+        this.battle.state.field.weather = s.field.weather;
+        this.battle.state.field.weatherTurns = 999;
+      }
+      if (s.field.terrain) {
+        this.battle.state.field.terrain = s.field.terrain;
+        this.battle.state.field.terrainTurns = 999;
+      }
+    }
+
     this.playerActive.set(a);
     this.foeActive.set(b);
     this.pMax.set(this.battle.state.sides[0].maxHp);

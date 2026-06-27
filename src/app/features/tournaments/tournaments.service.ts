@@ -4,7 +4,7 @@ import type { PokemonDto } from '../../core/dto/pokeapi.dto';
 import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
 import { isPokemonType, POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import { SeededRng } from '../../core/utils/rng';
-import type { AiTier, Battler, BattleMove, BattleRules } from '../../game/engine';
+import type { AiTier, Battler, BattleMove, BattleRules, Terrain, Weather } from '../../game/engine';
 import {
   buildBracket,
   levelForRound,
@@ -53,6 +53,10 @@ export interface PlayerMatchSetup {
   readonly foeStartHp?: number[];
   /** AI difficulty the foe plays at (defaults to 'strong'). */
   readonly aiTier?: AiTier;
+  /** A persistent battlefield condition imposed from the first turn (gym fields). */
+  readonly field?: { readonly weather?: Weather; readonly terrain?: Terrain };
+  /** Accent colour for a themed match frame (hex/css). */
+  readonly accent?: string;
 }
 
 /** In-progress league (round-robin / swiss) run state. */

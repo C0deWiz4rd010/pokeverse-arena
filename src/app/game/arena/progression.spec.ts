@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { LEADER_LADDER, leaderLevel, leaderTier } from './gym-leaders';
-import { arenaProgress, buildLadder, recommendedNext } from './gym-progression';
+import { GYM_LEADERS, LEADER_LADDER, leaderLevel, leaderTier } from './gym-leaders';
+import {
+  BADGE_STAT,
+  arenaProgress,
+  badgeBoostSummary,
+  badgeStatMultipliers,
+  buildLadder,
+  recommendedNext,
+  starsFor,
+} from './gym-progression';
 import { CHAMPION, GAUNTLET, GAUNTLET_UNLOCK_BADGES, gauntletUnlocked } from './elite-four';
 import type { PokemonType } from '../../core/utils/type-chart';
 
@@ -58,5 +66,44 @@ describe('champion gauntlet', () => {
     expect(p.total).toBe(18);
     expect(p.toGauntlet).toBe(GAUNTLET_UNLOCK_BADGES - 2);
     expect(p.gauntletOpen).toBe(false);
+  });
+});
+
+describe('badge boosts', () => {
+  it('boosts the mapped stat per earned badge', () => {
+    const mult = badgeStatMultipliers(new Set<PokemonType>(['fighting'])); // → attack
+    expect(mult.attack).toBeCloseTo(1.04);
+    expect(mult.speed).toBe(1);
+  });
+
+  it('stacks badges that share a stat', () => {
+    // fighting/ground/dragon/dark all map to attack.
+    const mult = badgeStatMultipliers(new Set<PokemonType>(['fighting', 'ground', 'dragon']));
+    expect(mult.attack).toBeCloseTo(1.12);
+  });
+
+  it('summarises active boosts and maps a stat for every type', () => {
+    expect(badgeBoostSummary(new Set())).toMatch(/no badge/i);
+    expect(badgeBoostSummary(new Set<PokemonType>(['fire']))).toMatch(/SpA/);
+    for (const l of GYM_LEADERS) expect(BADGE_STAT[l.type]).toBeTruthy();
+  });
+});
+
+describe('star ratings', () => {
+  it('awards 3 for a flawless clear, fewer for losses', () => {
+    expect(starsFor(3, 3)).toBe(3);
+    expect(starsFor(2, 3)).toBe(2);
+    expect(starsFor(1, 3)).toBe(1);
+    expect(starsFor(0, 3)).toBe(0);
+  });
+});
+
+describe('gym fields & dialogue', () => {
+  it('themes elemental gyms with a battlefield and every leader has an ace taunt', () => {
+    const fire = GYM_LEADERS.find((l) => l.type === 'fire')!;
+    expect(fire.gymField?.weather).toBe('sun');
+    const electric = GYM_LEADERS.find((l) => l.type === 'electric')!;
+    expect(electric.gymField?.terrain).toBe('electric');
+    for (const l of GYM_LEADERS) expect(l.dialogue.ace.length).toBeGreaterThan(0);
   });
 });
