@@ -1,0 +1,142 @@
+.card {
+  --t1: var(--accent);
+  --t2: var(--accent-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.8rem 0.7rem 0.7rem;
+  position: relative;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background:
+    radial-gradient(120% 90% at 50% -10%, color-mix(in srgb, var(--t1) 26%, transparent), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--t2) 12%, transparent), transparent 60%),
+    var(--glass);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: border-color 0.18s ease, box-shadow 0.2s ease, transform 0.12s ease;
+  animation: card-in 0.4s ease both;
+  text-decoration: none;
+  color: var(--text);
+}
+.card.hover {
+  border-color: color-mix(in srgb, var(--t1) 70%, transparent);
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--t1) 28%, transparent);
+}
+.card.fav { border-color: color-mix(in srgb, #ff6b9d 45%, var(--glass-border)); }
+
+.sheen {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    200px 200px at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, var(--t1) 30%, transparent),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.card.hover .sheen { opacity: 0.8; }
+
+.top {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  padding: 0 0.7rem;
+  pointer-events: none;
+}
+.num {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: color-mix(in srgb, var(--t1) 60%, var(--text-faint));
+  font-variant-numeric: tabular-nums;
+}
+.badges { display: inline-flex; gap: 0.25rem; }
+.dot {
+  display: grid;
+  place-items: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  font-size: 0.62rem;
+}
+.dot.caught { color: #0b0a1f; background: #5be08a; }
+.dot.fav { color: #fff; background: #ff6b9d; }
+
+.art {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  margin-top: 0.4rem;
+}
+.skeleton {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0.05) 30%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+.art img {
+  position: absolute;
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.45));
+}
+.art .still {
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.card.loaded .art .still { opacity: 1; transform: none; }
+.card.hover .art .still { opacity: 0; }
+.card.hover .art .still { transform: translateZ(30px) scale(1.06); }
+.art .anim {
+  image-rendering: pixelated;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.05s;
+}
+.card.hover .art .anim { opacity: 1; }
+
+.name { font-weight: 700; font-size: 0.92rem; text-align: center; }
+.types { display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: center; }
+.types ::ng-deep .badge { padding: 0.12rem 0.45rem; font-size: 0.64rem; }
+
+.info {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text-dim);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+.card:hover .info,
+.card:focus-within .info { opacity: 1; transform: none; }
+.info:hover { color: var(--t1); border-color: color-mix(in srgb, var(--t1) 60%, transparent); }
+
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes card-in { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .art img, .skeleton, .info { animation: none; transition: none; }
+  .card.loaded .art .still { opacity: 1; transform: none; }
+  .info { opacity: 1; transform: none; }
+}

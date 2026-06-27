@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { POKEAPI_BASE, idFromUrl, officialArtwork } from '../../core/api/pokeapi-endpoints';
+import { SaveService } from '../../core/storage/save.service';
 import type { NamedApiResourceList, GenerationDto, TypeDto } from '../../core/dto/pokeapi.dto';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
 import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
@@ -18,6 +19,10 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 @Injectable({ providedIn: 'root' })
 export class PokedexService {
   private readonly api = inject(PokeApiClient);
+  private readonly save = inject(SaveService);
+
+  /** Global shiny mode for the grid + quick-view. */
+  readonly shiny = signal<boolean>(this.save.read('pokedex:shiny', false));
 
   /** Full index of default-form Pokemon (id + name). */
   private readonly index = signal<PokedexEntry[]>([]);
@@ -133,6 +138,12 @@ export class PokedexService {
   setQuery(value: string): void {
     this.query.set(value);
     this.resetPaging();
+  }
+
+  toggleShiny(): void {
+    const next = !this.shiny();
+    this.shiny.set(next);
+    this.save.write('pokedex:shiny', next);
   }
 
   loadMore(): void {

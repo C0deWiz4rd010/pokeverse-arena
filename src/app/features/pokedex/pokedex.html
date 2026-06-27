@@ -23,6 +23,28 @@
       }
     </select>
 
+    <button
+      class="btn toggle"
+      type="button"
+      [class.on]="store.shiny()"
+      [attr.aria-pressed]="store.shiny()"
+      title="Shiny mode"
+      (click)="store.toggleShiny()"
+    >
+      <pv-icon name="sparkles" /> Shiny
+    </button>
+
+    <button
+      class="btn toggle icon-only"
+      type="button"
+      [class.on]="!cry.muted()"
+      [attr.aria-pressed]="!cry.muted()"
+      [title]="cry.muted() ? 'Unmute cries' : 'Mute cries'"
+      (click)="cry.toggleMute()"
+    >
+      <pv-icon name="volume-2" />
+    </button>
+
     <button class="btn clear" type="button" (click)="clear()">Reset</button>
   </div>
 
@@ -54,7 +76,7 @@
   } @else {
     <div class="grid">
       @for (entry of store.visible(); track entry.id; let i = $index) {
-        <pv-pokemon-card [entry]="entry" [index]="i" />
+        <pv-pokemon-card [entry]="entry" [index]="i" [shiny]="store.shiny()" (quickview)="openQuickview($event)" />
       }
     </div>
     <div #sentinel class="sentinel" aria-hidden="true"></div>
@@ -63,5 +85,14 @@
         <button class="btn" type="button" (click)="store.loadMore()">Load more</button>
       </div>
     }
+  }
+
+  @if (quickview(); as qv) {
+    <pv-pokemon-quickview
+      [entry]="qv.entry"
+      [rect]="qv.rect"
+      [shiny]="store.shiny()"
+      (close)="closeQuickview()"
+    />
   }
 </section>

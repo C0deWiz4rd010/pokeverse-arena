@@ -47,3 +47,14 @@ export function officialArtwork(id: number, shiny = false): string {
   const dir = shiny ? 'other/official-artwork/shiny' : 'other/official-artwork';
   return `${SPRITE_BASE}/pokemon/${dir}/${id}.png`;
 }
+
+/** Animated Showdown sprite (GIF) for a Pokemon id — lively, but not all exist. */
+export function animatedSprite(id: number, shiny = false): string {
+  const dir = shiny ? 'other/showdown/shiny' : 'other/showdown';
+  return `${SPRITE_BASE}/pokemon/${dir}/${id}.gif`;
+}
+
+/** Pokémon cry (latest) CDN URL, derived by id — no API request needed. */
+export function cryUrl(id: number): string {
+  return `https://raw.githubusercontent.com/PokeAPI/cries/master/cries/pokemon/latest/${id}.ogg`;
+}

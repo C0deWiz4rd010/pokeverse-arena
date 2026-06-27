@@ -1,0 +1,127 @@
+:host {
+  --t1: var(--accent);
+  --t2: var(--accent-2);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(4, 6, 16, 0.35);
+  backdrop-filter: blur(2px);
+  animation: qv-fade 0.18s ease;
+}
+
+.panel {
+  position: fixed;
+  z-index: 61;
+  width: 300px;
+  max-height: min(86vh, 360px);
+  overflow-y: auto;
+  padding: 0.9rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--t1) 55%, var(--glass-border));
+  background:
+    radial-gradient(120% 80% at 50% -10%, color-mix(in srgb, var(--t1) 26%, transparent), transparent 65%),
+    var(--surface, #12132a);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 28px color-mix(in srgb, var(--t1) 22%, transparent);
+  transform-origin: top left;
+  animation: qv-pop 0.22s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+
+.x {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.x:hover { color: var(--text); }
+
+.qv-head { display: flex; gap: 0.7rem; align-items: center; }
+.qv-art {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--t1) 28%, transparent), transparent 70%);
+}
+.qv-art img { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
+.skel {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0.05) 30%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0.05) 70%);
+  background-size: 200% 100%;
+  animation: qv-shimmer 1.1s linear infinite;
+}
+.qv-id { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.num { font-size: 0.72rem; font-weight: 800; color: color-mix(in srgb, var(--t1) 70%, var(--text-faint)); font-variant-numeric: tabular-nums; }
+.qv-name { font-size: 1.15rem; }
+.genus { font-size: 0.74rem; color: var(--text-dim); }
+.qv-types { display: flex; gap: 0.25rem; flex-wrap: wrap; margin-top: 0.2rem; }
+
+.qv-actions { display: flex; gap: 0.5rem; margin: 0.7rem 0 0.5rem; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+}
+.chip.on { color: var(--t1); border-color: color-mix(in srgb, var(--t1) 60%, transparent); }
+.chip.primary {
+  background: color-mix(in srgb, var(--t1) 26%, #0b0a1f);
+  border-color: color-mix(in srgb, var(--t1) 55%, transparent);
+}
+
+.flavor { margin: 0.2rem 0 0.6rem; font-size: 0.82rem; color: var(--text-dim); }
+
+.stats { display: grid; gap: 0.22rem; }
+.stat { display: grid; grid-template-columns: 2.2rem 2rem 1fr; align-items: center; gap: 0.4rem; }
+.s-label { font-size: 0.72rem; color: var(--text-dim); }
+.s-val { font-size: 0.78rem; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.s-track { height: 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.s-fill { display: block; height: 100%; border-radius: 999px; animation: qv-grow 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.bst { display: flex; justify-content: space-between; margin-top: 0.35rem; font-size: 0.82rem; }
+.bst strong { color: var(--t1); }
+
+.meta { display: grid; gap: 0.1rem; margin-top: 0.6rem; font-size: 0.76rem; color: var(--text-dim); }
+.abilities { text-transform: capitalize; }
+
+.qv-skel { display: grid; gap: 0.4rem; margin-top: 0.6rem; }
+.bar-skel {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0.05) 30%, rgba(255, 255, 255, 0.14) 50%, rgba(255, 255, 255, 0.05) 70%);
+  background-size: 200% 100%;
+  animation: qv-shimmer 1.1s linear infinite;
+}
+.qv-err { color: #ff8a8a; font-size: 0.85rem; }
+
+@keyframes qv-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes qv-pop { from { opacity: 0; transform: scale(0.9) translateY(-6px); } to { opacity: 1; transform: none; } }
+@keyframes qv-shimmer { to { background-position: -200% 0; } }
+@keyframes qv-grow { from { width: 0 !important; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop, .panel, .skel, .s-fill, .bar-skel { animation: none; }
+}
