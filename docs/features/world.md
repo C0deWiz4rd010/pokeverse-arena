@@ -59,3 +59,17 @@ The World gained an **Expedition** catch-loop: seeded wild encounters drawn from
 region's native dex, rarity-based level bands + catch rates, three balls, and a
 **personal dex** that persists and drives per-region completion %. See
 [../plan.md](../plan.md) phase 8.
+
+## World v2
+
+A living-map overhaul.
+
+- **World Dex HUD** + **per-region progress rings** on the overview: each region
+  card shows a conic completion ring and caught/total, with a staggered entrance.
+- **Region banner** gains a completion bar; the native **dex grid shows uncaught
+  species as silhouettes** that light up (with a ✓) once registered.
+- **Animated expedition**: throwing a ball now wobbles with suspense, a catch
+  fires a sparkle burst, encounters play the Pokémon's cry, and rarity is
+  colour-coded.
+
+All motion respects `prefers-reduced-motion`.

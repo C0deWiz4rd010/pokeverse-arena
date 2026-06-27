@@ -3,8 +3,10 @@ import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { SPRITE_BASE, idFromUrl } from '../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../core/ui/format';
 import { SaveService } from '../../core/storage/save.service';
+import { CryService } from '../../core/audio/cry.service';
 import {
   REGIONS,
+  regionDexCount,
   regionForDex,
   type Region,
 } from '../../game/world/regions';
@@ -58,6 +60,7 @@ function spriteFor(dex: number): string {
 export class WorldService {
   private readonly api = inject(PokeApiClient);
   private readonly save = inject(SaveService);
+  private readonly cry = inject(CryService);
 
   readonly regions = REGIONS;
   readonly balls = BALLS;
@@ -83,6 +86,24 @@ export class WorldService {
     return r ? regionCompletion(this.caught(), r) : 0;
   });
 
+  /** Ball-throw suspense flag (drives the wiggle animation). */
+  readonly throwing = signal(false);
+
+  /** Per-region registration progress for the overview grid. */
+  readonly regionProgress = computed(() => {
+    const caught = this.caught();
+    return REGIONS.map((region) => ({
+      region,
+      caught: regionCaught(caught, region),
+      total: regionDexCount(region),
+      pct: regionCompletion(caught, region),
+    }));
+  });
+
+  /** Total species registered across the whole world. */
+  readonly worldCaught = computed(() => this.caught().size);
+  readonly worldTotal = 1025;
+
   isCaught(dex: number): boolean {
     return this.caught().has(dex);
   }
@@ -106,23 +127,30 @@ export class WorldService {
       caught: false,
     });
     this.expeditionToast.set(null);
+    this.cry.play(enc.dex, 0.35);
   }
 
-  /** Throw the selected ball at the current encounter. */
+  /** Throw the selected ball — a short wiggle of suspense, then the result. */
   throwBall(): void {
     const enc = this.encounter();
-    if (!enc || enc.caught) return;
+    if (!enc || enc.caught || this.throwing()) return;
     const success = attemptCatch(enc, this.ball(), Math.random());
-    if (success) {
-      const next = new Set(this.caught());
-      next.add(enc.dex);
-      this.caught.set(next);
-      this.save.write('world:caught', [...next]);
-      this.encounter.set({ ...enc, caught: true });
-      this.expeditionToast.set(`Gotcha! ${enc.displayName} was registered to your dex.`);
-    } else {
-      this.expeditionToast.set(`Oh no! ${enc.displayName} broke free!`);
-    }
+    this.throwing.set(true);
+    this.expeditionToast.set(null);
+    setTimeout(() => {
+      this.throwing.set(false);
+      if (success) {
+        const next = new Set(this.caught());
+        next.add(enc.dex);
+        this.caught.set(next);
+        this.save.write('world:caught', [...next]);
+        this.encounter.set({ ...enc, caught: true });
+        this.expeditionToast.set(`Gotcha! ${enc.displayName} was registered to your dex.`);
+        this.cry.play(enc.dex, 0.4);
+      } else {
+        this.expeditionToast.set(`Oh no! ${enc.displayName} broke free!`);
+      }
+    }, 850);
   }
 
   fleeEncounter(): void {

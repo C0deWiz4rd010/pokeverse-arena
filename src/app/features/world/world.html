@@ -67,6 +67,10 @@
             </div>
           </div>
           <p class="blurb">{{ region.blurb }}</p>
+          <div class="region-prog">
+            <div class="rp-track"><span class="rp-fill" [style.width.%]="svc.regionCompletion()"></span></div>
+            <span class="rp-num">{{ svc.regionCaughtCount() }} / {{ svc.count() }} caught · {{ svc.regionCompletion() }}%</span>
+          </div>
         </header>
 
         <!-- Expedition: roam for wild Pokémon and register them -->
@@ -85,16 +89,23 @@
           </div>
 
           @if (svc.encounter(); as enc) {
-            <div class="encounter" [class.caught]="enc.caught">
-              <img [src]="enc.sprite" [alt]="enc.displayName" width="80" height="80" />
+            <div class="encounter" [class.caught]="enc.caught" [class.throwing]="svc.throwing()" [class]="'rarity-' + enc.rarity">
+              <div class="enc-sprite">
+                @if (enc.caught) {
+                  <span class="catch-burst" aria-hidden="true">@for (i of [1,2,3,4,5,6]; track i) { <span class="cb" [style.--i]="i">✦</span> }</span>
+                }
+                <img [src]="enc.sprite" [class.wiggle]="svc.throwing()" [alt]="enc.displayName" width="80" height="80" />
+              </div>
               <div class="enc-info">
                 <strong>{{ enc.displayName }}</strong>
-                <span class="enc-meta">Lv{{ enc.level }} · {{ enc.rarity }} · catch {{ enc.chancePct }}%</span>
+                <span class="enc-meta"><span class="rarity-dot"></span> Lv{{ enc.level }} · {{ enc.rarity }} · catch {{ enc.chancePct }}%</span>
                 <div class="enc-actions">
                   @if (!enc.caught) {
-                    <button type="button" class="btn" (click)="svc.throwBall()">Throw {{ svc.balls[svc.ball()].label }}</button>
-                    <button type="button" class="ghost" (click)="svc.roam()">Next</button>
-                    <button type="button" class="ghost" (click)="svc.fleeEncounter()">Leave</button>
+                    <button type="button" class="btn" [disabled]="svc.throwing()" (click)="svc.throwBall()">
+                      {{ svc.throwing() ? 'Wobble…' : 'Throw ' + svc.balls[svc.ball()].label }}
+                    </button>
+                    <button type="button" class="ghost" [disabled]="svc.throwing()" (click)="svc.roam()">Next</button>
+                    <button type="button" class="ghost" [disabled]="svc.throwing()" (click)="svc.fleeEncounter()">Leave</button>
                   } @else {
                     <button type="button" class="btn" (click)="svc.roam()">Roam again ›</button>
                   }
@@ -111,6 +122,7 @@
               class="mon"
               [class.spotlight]="svc.sighting()?.dex === m.dex"
               [class.caught]="svc.isCaught(m.dex)"
+              [class.uncaught]="!svc.isCaught(m.dex)"
               [style.--accent]="region.accent"
             >
               <a [routerLink]="['/pokemon', m.dex]" [title]="m.name">
@@ -128,20 +140,29 @@
   }
 
   @default {
+    <div class="world-hud glass">
+      <span class="wh-label"><pv-icon name="book" /> World Dex</span>
+      <div class="wh-bar"><span class="wh-fill" [style.width.%]="(svc.worldCaught() / svc.worldTotal) * 100"></span></div>
+      <span class="wh-num">{{ svc.worldCaught() }} / {{ svc.worldTotal }} registered</span>
+    </div>
+
     <ul class="region-grid">
-      @for (r of svc.regions; track r.id) {
-        <li class="region-card" [style.--accent]="r.accent">
-          <button type="button" (click)="select(r)">
-            <span class="emblem" aria-hidden="true"><pv-icon [name]="r.icon" /></span>
+      @for (rp of svc.regionProgress(); track rp.region.id; let i = $index) {
+        <li class="region-card" [style.--accent]="rp.region.accent" [style.animation-delay]="(i * 40) + 'ms'">
+          <button type="button" (click)="select(rp.region)">
+            <span class="ring" [style.--pct]="rp.pct" aria-hidden="true">
+              <span class="emblem"><pv-icon [name]="rp.region.icon" /></span>
+            </span>
             <span class="head">
-              <strong class="name">{{ r.name }}</strong>
-              <span class="gen">Gen {{ r.generation }}</span>
+              <strong class="name">{{ rp.region.name }}</strong>
+              <span class="gen">Gen {{ rp.region.generation }}</span>
             </span>
-            <span class="tagline">{{ r.tagline }}</span>
+            <span class="tagline">{{ rp.region.tagline }}</span>
             <span class="foot">
-              <span class="landmark"><pv-icon name="map-pin" /> {{ r.landmark }}</span>
-              <span class="num">{{ dexCount(r) }} Pokémon</span>
+              <span class="landmark"><pv-icon name="map-pin" /> {{ rp.region.landmark }}</span>
+              <span class="num">{{ rp.caught }} / {{ rp.total }}</span>
             </span>
+            @if (rp.pct > 0) { <span class="pct-tag" [class.done]="rp.pct === 100">{{ rp.pct }}%</span> }
           </button>
         </li>
       }
