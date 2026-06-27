@@ -60,12 +60,56 @@ export function unlockedCount(state: ProfileState): number {
   return ACHIEVEMENTS.reduce((n, a) => n + (a.test(state) ? 1 : 0), 0);
 }
 
+/** Ordered rank tiers and the minimum progression score to reach each. */
+export interface RankTier {
+  readonly name: string;
+  readonly min: number;
+}
+export const RANK_TIERS: readonly RankTier[] = [
+  { name: 'Rookie', min: 0 },
+  { name: 'Adept', min: 3 },
+  { name: 'Veteran', min: 8 },
+  { name: 'Elite', min: 16 },
+  { name: 'Legend', min: 25 },
+];
+
+/** Weighted progression score that drives the rank ladder. */
+export function progressScore(state: ProfileState): number {
+  return state.badges + state.tournamentWins * 2 + state.spireClears * 3 + (state.arenaChampion ? 5 : 0);
+}
+
 /** A simple rank title derived from total progression, used for flavour. */
 export function rankFor(state: ProfileState): string {
-  const score = state.badges + state.tournamentWins * 2 + state.spireClears * 3 + (state.arenaChampion ? 5 : 0);
-  if (score >= 25) return 'Legend';
-  if (score >= 16) return 'Elite';
-  if (score >= 8) return 'Veteran';
-  if (score >= 3) return 'Adept';
-  return 'Rookie';
+  const score = progressScore(state);
+  let rank = RANK_TIERS[0].name;
+  for (const tier of RANK_TIERS) if (score >= tier.min) rank = tier.name;
+  return rank;
+}
+
+export interface RankProgress {
+  readonly rank: string;
+  /** Next tier's name, or null when already at the top. */
+  readonly next: string | null;
+  readonly score: number;
+  /** Score floor of the current tier and ceiling (next tier's min, or null). */
+  readonly floor: number;
+  readonly ceil: number | null;
+  /** Points still needed to reach the next tier (0 when maxed). */
+  readonly toNext: number;
+  /** Progress through the current tier toward the next, 0–100. */
+  readonly pct: number;
+}
+
+/** Rich rank state: current tier, the next one, and progress toward it. */
+export function rankProgress(state: ProfileState): RankProgress {
+  const score = progressScore(state);
+  let i = 0;
+  for (let t = 0; t < RANK_TIERS.length; t++) if (score >= RANK_TIERS[t].min) i = t;
+  const current = RANK_TIERS[i];
+  const next = i < RANK_TIERS.length - 1 ? RANK_TIERS[i + 1] : null;
+  const floor = current.min;
+  const ceil = next ? next.min : null;
+  const toNext = next ? Math.max(0, next.min - score) : 0;
+  const pct = next ? Math.min(100, Math.round(((score - floor) / (next.min - floor)) * 100)) : 100;
+  return { rank: current.name, next: next?.name ?? null, score, floor, ceil, toNext, pct };
 }

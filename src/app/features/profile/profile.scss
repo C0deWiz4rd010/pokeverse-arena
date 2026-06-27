@@ -2,53 +2,146 @@
 
 :host { display: block; width: min(1000px, 100%); margin-inline: auto; padding-bottom: 3rem; }
 
-.h { margin: 1.4rem 0 0.7rem; font-size: 1rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+.h { margin: 1.6rem 0 0.8rem; font-size: 1rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
 
+/* ---------------------------------------------------------------- ID card */
 .id-card {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
-  padding: 1.1rem 1.2rem; border-radius: var(--radius);
-  background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%), var(--glass);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1rem 1.2rem;
+  padding: 1.2rem 1.3rem;
+  border-radius: var(--radius);
+  background:
+    radial-gradient(140% 120% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 55%),
+    var(--glass);
   border: 1px solid var(--glass-border);
 }
-.id-name { display: flex; align-items: center; gap: 0.7rem; }
+@include up(sm) { .id-card { grid-template-columns: auto 1fr auto; } }
+
+.id-avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  font-size: 1.8rem;
+  color: #0b0a1f;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent-2) 35%, transparent);
+}
+.id-avatar[data-rank='Legend'] { background: linear-gradient(135deg, var(--accent-3), var(--danger)); }
+.id-avatar[data-rank='Elite'] { background: linear-gradient(135deg, var(--accent-2), var(--accent)); }
+
+.id-main { min-width: 0; display: grid; gap: 0.4rem; }
+.id-name { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
 .id-name strong { font-size: 1.5rem; }
 .id-title { color: var(--accent-2); font-weight: 600; }
 .id-edit { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 .id-edit input {
   padding: 0.45rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);
-  background: rgba(0,0,0,0.25); color: var(--text); font: inherit;
+  background: rgba(0, 0, 0, 0.25); color: var(--text); font: inherit;
 }
-.id-rank { display: grid; justify-items: end; gap: 0.2rem; }
+
+.rank-line { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; margin-top: 0.2rem; }
 .rank-badge {
-  font-weight: 800; font-size: 1.1rem; padding: 0.2rem 0.8rem; border-radius: 999px;
+  font-weight: 800; font-size: 1rem; padding: 0.2rem 0.8rem; border-radius: 999px;
   color: #0b0a1f; background: linear-gradient(135deg, var(--accent-3), var(--accent-2));
 }
-.rank-sub { font-size: 0.78rem; color: var(--text-dim); }
+.rank-next { font-size: 0.78rem; color: var(--text-dim); }
+.rank-next.maxed { color: var(--accent-3); font-weight: 600; }
+.rank-bar {
+  height: 7px; border-radius: 999px; overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+}
+.rank-fill {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
 
+/* completion ring */
+.id-ring { position: relative; width: 92px; height: 92px; justify-self: center; }
+.id-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 3.5; }
+.ring-prog {
+  fill: none; stroke: var(--accent-3);
+  stroke-width: 3.5; stroke-linecap: round;
+  transition: stroke-dasharray 0.7s cubic-bezier(0.2, 0.8, 0.3, 1);
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent-3) 60%, transparent));
+}
+.ring-label {
+  position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1;
+}
+.ring-label strong { font-size: 1.1rem; }
+.ring-label span { font-size: 0.66rem; color: var(--text-dim); }
+
+/* ---------------------------------------------------------------- mastery */
+.mastery { display: grid; gap: 0.7rem; }
+@include up(sm) { .mastery { grid-template-columns: 1fr 1fr; gap: 0.7rem 1.2rem; } }
+.bar-row { display: flex; align-items: center; gap: 0.7rem; }
+.bar-icon {
+  display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0;
+  border-radius: 10px; color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 14%, transparent);
+}
+.bar-body { flex: 1; min-width: 0; display: grid; gap: 0.3rem; }
+.bar-top { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.8rem; }
+.bar-label { color: var(--text-dim); }
+.bar-text { font-weight: 700; }
+.bar-track { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.bar-fill {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.7s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* ---------------------------------------------------------------- records */
 .records { display: grid; gap: 0.7rem; grid-template-columns: repeat(2, 1fr); }
 @include up(sm) { .records { grid-template-columns: repeat(4, 1fr); } }
 .record {
-  display: grid; justify-items: center; gap: 0.15rem; padding: 0.8rem 0.5rem; text-align: center;
+  display: grid; justify-items: center; gap: 0.2rem; padding: 0.9rem 0.5rem; text-align: center;
   background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius);
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
+.record:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 40%, var(--glass-border)); }
 .rec-icon { font-size: 1.3rem; color: var(--accent-2); }
 .rec-val { font-weight: 800; font-size: 1.1rem; }
 .rec-label { font-size: 0.72rem; color: var(--text-dim); }
 
+/* ------------------------------------------------------------ achievements */
+.ach-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.7rem; }
+.ach-head .h { margin-bottom: 0.4rem; }
+.ach-count {
+  font-size: 0.8rem; font-weight: 700; color: var(--accent-3);
+  padding: 0.15rem 0.6rem; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-3) 14%, transparent);
+}
 .achievements { display: grid; gap: 0.6rem; grid-template-columns: 1fr; }
 @include up(sm) { .achievements { grid-template-columns: repeat(2, 1fr); } }
 .ach {
-  display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 0.9rem;
+  display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 0.95rem;
   background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius);
-  opacity: 0.55; filter: grayscale(0.6);
+  opacity: 0.55; filter: grayscale(0.6); transition: opacity 0.2s ease, transform 0.15s ease;
 }
-.ach.on { opacity: 1; filter: none; border-color: color-mix(in srgb, var(--accent-3) 45%, var(--glass-border)); }
-.ach-icon { font-size: 1.4rem; }
-.ach-text { display: flex; flex-direction: column; }
+.ach.on {
+  opacity: 1; filter: none;
+  border-color: color-mix(in srgb, var(--accent-3) 45%, var(--glass-border));
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent-3) 10%, transparent), transparent 60%), var(--glass);
+}
+.ach.on:hover { transform: translateY(-2px); }
+.ach-icon {
+  display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0;
+  font-size: 1.3rem; border-radius: 12px;
+  background: color-mix(in srgb, var(--accent-3) 12%, transparent);
+}
+.ach-text { display: flex; flex-direction: column; min-width: 0; }
 .ach-text strong { font-size: 0.95rem; }
 .ach-text span { font-size: 0.78rem; color: var(--text-dim); }
-.ach-check { margin-left: auto; color: var(--accent-3); }
+.ach-check { margin-left: auto; color: var(--accent-3); flex-shrink: 0; }
+.ach-lock { margin-left: auto; color: var(--text-faint); flex-shrink: 0; }
 
+/* ---------------------------------------------------------------- controls */
 .btn {
   appearance: none; cursor: pointer; font: inherit; font-weight: 600;
   border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
@@ -60,3 +153,8 @@
   cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.82rem;
 }
 .link:hover { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rank-fill, .bar-fill, .ring-prog { transition: none; }
+  .record:hover, .ach.on:hover { transform: none; }
+}

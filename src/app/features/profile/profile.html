@@ -2,6 +2,10 @@
   <pv-page-header icon="crown" title="Trainer Profile" subtitle="Your journey across every arena, cup and climb." />
 
   <header class="id-card">
+    <div class="id-avatar" [attr.data-rank]="svc.rank()">
+      <pv-icon name="crown" />
+    </div>
+
     <div class="id-main">
       @if (editing()) {
         <div class="id-edit">
@@ -16,12 +20,49 @@
         </div>
         <span class="id-title">{{ svc.identity().title }}</span>
       }
+
+      <div class="rank-line">
+        <span class="rank-badge">{{ svc.rank() }}</span>
+        @if (svc.progress(); as p) {
+          @if (p.next) {
+            <span class="rank-next">{{ p.toNext }} pts to {{ p.next }}</span>
+          } @else {
+            <span class="rank-next maxed">Max rank reached</span>
+          }
+        }
+      </div>
+      @if (svc.progress(); as p) {
+        <div class="rank-bar" [attr.aria-label]="'Rank progress ' + p.pct + '%'">
+          <span class="rank-fill" [style.width.%]="p.pct"></span>
+        </div>
+      }
     </div>
-    <div class="id-rank">
-      <span class="rank-badge">{{ svc.rank() }}</span>
-      <span class="rank-sub">{{ svc.unlocked() }} achievements</span>
+
+    <div class="id-ring" role="img" [attr.aria-label]="svc.completion() + '% of achievements unlocked'">
+      <svg viewBox="0 0 40 40">
+        <circle class="ring-track" cx="20" cy="20" r="15.915" />
+        <circle class="ring-prog" cx="20" cy="20" r="15.915"
+          [style.stroke-dasharray]="svc.completion() + ' 100'" />
+      </svg>
+      <div class="ring-label">
+        <strong>{{ svc.completion() }}%</strong>
+        <span>{{ svc.unlocked() }}/{{ svc.totalAchievements }}</span>
+      </div>
     </div>
   </header>
+
+  <h3 class="h">Mastery</h3>
+  <div class="mastery">
+    @for (m of mastery(); track m.label) {
+      <div class="bar-row">
+        <span class="bar-icon"><pv-icon [name]="m.icon" /></span>
+        <div class="bar-body">
+          <div class="bar-top"><span class="bar-label">{{ m.label }}</span><span class="bar-text">{{ m.text }}</span></div>
+          <div class="bar-track"><span class="bar-fill" [style.width.%]="m.pct"></span></div>
+        </div>
+      </div>
+    }
+  </div>
 
   <h3 class="h">Records</h3>
   <div class="records">
@@ -34,16 +75,23 @@
     }
   </div>
 
-  <h3 class="h">Achievements</h3>
+  <div class="ach-head">
+    <h3 class="h">Achievements</h3>
+    <span class="ach-count">{{ svc.unlocked() }} / {{ svc.totalAchievements }}</span>
+  </div>
   <div class="achievements">
-    @for (a of svc.achievements(); track a.achievement.id) {
+    @for (a of sortedAchievements(); track a.achievement.id) {
       <div class="ach" [class.on]="a.unlocked">
         <span class="ach-icon"><pv-icon [name]="a.achievement.icon" /></span>
         <div class="ach-text">
           <strong>{{ a.achievement.name }}</strong>
           <span>{{ a.achievement.desc }}</span>
         </div>
-        @if (a.unlocked) { <span class="ach-check"><pv-icon name="check" /></span> }
+        @if (a.unlocked) {
+          <span class="ach-check"><pv-icon name="check" /></span>
+        } @else {
+          <span class="ach-lock"><pv-icon name="circle" /></span>
+        }
       </div>
     }
   </div>

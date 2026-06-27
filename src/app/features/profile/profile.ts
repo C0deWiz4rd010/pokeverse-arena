@@ -31,8 +31,26 @@ export class ProfileComponent {
       { icon: 'mountain-snow' as const, label: 'Spire clears', value: `${s.spireClears}` },
       { icon: 'star' as const, label: 'Ascension tier', value: `${s.ascension}` },
       { icon: 'gem' as const, label: 'Coins banked', value: `${s.coins} ₽` },
+      { icon: 'clipboard-list' as const, label: 'Tournament runs', value: `${s.tournamentRuns}` },
     ];
   });
+
+  /** Per-system mastery bars (value / max → percentage). */
+  protected readonly mastery = computed(() => {
+    const s = this.svc.state();
+    const winRate = s.tournamentRuns ? Math.round((s.tournamentWins / s.tournamentRuns) * 100) : 0;
+    return [
+      { icon: 'shield' as const, label: 'Gym badges', text: `${s.badges}/${s.totalBadges}`, pct: s.totalBadges ? Math.round((s.badges / s.totalBadges) * 100) : 0 },
+      { icon: 'mountain' as const, label: 'Spire depth', text: `floor ${s.bestDepth}`, pct: Math.min(100, Math.round((s.bestDepth / 12) * 100)) },
+      { icon: 'star' as const, label: 'Ascension', text: `tier ${s.ascension}`, pct: Math.min(100, Math.round((s.ascension / 5) * 100)) },
+      { icon: 'trophy' as const, label: 'Cup win rate', text: s.tournamentRuns ? `${winRate}%` : '—', pct: winRate },
+    ];
+  });
+
+  /** Achievements with unlocked ones first. */
+  protected readonly sortedAchievements = computed(() =>
+    [...this.svc.achievements()].sort((a, b) => Number(b.unlocked) - Number(a.unlocked)),
+  );
 
   protected startEdit(): void {
     this.nameDraft.set(this.svc.identity().name);
