@@ -28,7 +28,15 @@
       [attr.aria-selected]="tab() === 'defender'"
       (click)="setTab('defender')"
     >
-      <pv-icon name="shield" /> Coverage
+      <pv-icon name="shield" /> Defender
+    </button>
+    <button
+      role="tab"
+      [class.active]="tab() === 'team'"
+      [attr.aria-selected]="tab() === 'team'"
+      (click)="setTab('team')"
+    >
+      <pv-icon name="wrench" /> Team
     </button>
   </nav>
 
@@ -110,8 +118,21 @@
           <span class="chip m1">1× Neutral</span>
           <span class="chip m05">½× Resist</span>
           <span class="chip m0">0× Immune</span>
-          <span class="hint">Rows attack · columns defend</span>
+          <span class="hint">Rows attack · columns defend · click to pin</span>
+          @if (hasPins) { <button class="clear-pins" type="button" (click)="clearPins()">Clear pins ✕</button> }
         </div>
+
+        @if (readout(); as r) {
+          @for (k of [r.atk + r.def]; track k) {
+            <div class="readout" [class]="cellClass(r.mult)">
+              <pv-type-badge [type]="r.atk" />
+              <span class="arrow" aria-hidden="true">→</span>
+              <pv-type-badge [type]="r.def" />
+              <span class="ro-mult">{{ formatMult(r.mult) }}</span>
+              <span class="ro-label">{{ r.label }}</span>
+            </div>
+          }
+        }
         <div class="matrix-scroll" role="region" aria-label="Type effectiveness chart" tabindex="0">
           <table class="matrix">
             <thead>
@@ -121,10 +142,12 @@
                   <th
                     scope="col"
                     class="col-head"
-                    [class.hi]="hoverDefender() === def"
+                    [class.hi]="activeDef() === def"
+                    [class.pinned]="pinnedDefender() === def"
                     [style.--c]="typeColorVar(def)"
                     (mouseenter)="hoverDefender.set(def)"
                     (mouseleave)="hoverDefender.set(null)"
+                    (click)="pinDefender(def)"
                   >
                     <span>{{ titleCase(def).slice(0, 3) }}</span>
                   </th>
@@ -133,13 +156,15 @@
             </thead>
             <tbody>
               @for (atk of types; track atk) {
-                <tr [class.hi]="hoverAttacker() === atk">
+                <tr [class.hi]="activeAtk() === atk">
                   <th
                     scope="row"
                     class="row-head"
+                    [class.pinned]="pinnedAttacker() === atk"
                     [style.--c]="typeColorVar(atk)"
                     (mouseenter)="hoverAttacker.set(atk)"
                     (mouseleave)="hoverAttacker.set(null)"
+                    (click)="pinAttacker(atk)"
                   >
                     {{ titleCase(atk) }}
                   </th>
@@ -147,9 +172,11 @@
                     <td
                       class="cell"
                       [class]="cellClass(cellMult(atk, def))"
-                      [class.cross]="hoverAttacker() === atk || hoverDefender() === def"
+                      [class.cross]="activeAtk() === atk || activeDef() === def"
+                      [class.both]="activeAtk() === atk && activeDef() === def"
                       (mouseenter)="hoverAttacker.set(atk); hoverDefender.set(def)"
                       (mouseleave)="hoverAttacker.set(null); hoverDefender.set(null)"
+                      (click)="pinCell(atk, def)"
                       [attr.title]="titleCase(atk) + ' → ' + titleCase(def) + ': ' + formatMult(cellMult(atk, def))"
                     >
                       @if (cellMult(atk, def) !== 1) {
@@ -210,7 +237,9 @@
               <span class="muted">select a defender</span>
             }
           </div>
-          <div class="big">{{ formatMult(calcResult().mult) }}</div>
+          @for (k of [calcResult().mult]; track k) {
+            <div class="big pop">{{ formatMult(calcResult().mult) }}</div>
+          }
           <div class="verdict">{{ calcResult().label }}</div>
           @if (calcBreakdown().length === 2) {
             <div class="breakdown">
@@ -218,6 +247,25 @@
                 <span>{{ titleCase(b.type) }}: {{ formatMult(b.mult) }}</span>
               }
             </div>
+          }
+        </div>
+
+        <div class="calc-offense">
+          <h2><pv-type-badge [type]="calcAttacker()" /> coverage</h2>
+          @if (calcOffense().length) {
+            <div class="buckets">
+              @for (bucket of calcOffense(); track bucket.multiplier) {
+                <div class="bucket glass" [class]="cellClass(bucket.multiplier)">
+                  <div class="bucket-head">
+                    <span class="b-mult">{{ formatMult(bucket.multiplier) }}</span>
+                    <span class="b-label">{{ bucket.label }}</span>
+                  </div>
+                  <div class="b-types">@for (t of bucket.types; track t) { <pv-type-badge [type]="t" /> }</div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="muted">Deals neutral damage to every type.</p>
           }
         </div>
       </div>
@@ -267,6 +315,78 @@
           </div>
         } @else if (defenderTypes().length) {
           <p class="muted center">Perfectly neutral — no weaknesses or resistances.</p>
+        }
+      </div>
+    }
+
+    @case ('team') {
+      <div class="panel team">
+        <div class="calc-pick">
+          <h2>Build a team <small>add up to 6 typings</small></h2>
+          <div class="team-roster">
+            @for (m of teamMembers(); track $index) {
+              <button class="member" type="button" (click)="removeMember($index)" title="Remove">
+                @for (t of m.types; track t) { <pv-type-badge [type]="t" /> }
+                <span class="rm">✕</span>
+              </button>
+            } @empty {
+              <span class="muted">No members yet — assemble one below.</span>
+            }
+            @if (teamMembers().length) { <button class="chip clear" type="button" (click)="clearTeam()">Clear team</button> }
+          </div>
+
+          <div class="builder">
+            <div class="build-chosen">
+              @for (t of build(); track t) { <pv-type-badge [type]="t" /> }
+              @if (!build().length) { <span class="muted small">tap 1–2 types…</span> }
+            </div>
+            <button class="btn add" type="button" [disabled]="!build().length || teamMembers().length >= 6" (click)="addMember()">+ Add member</button>
+          </div>
+          <div class="grid-types">
+            @for (t of types; track t) {
+              <button class="t-btn" [class.on]="build().includes(t)" [style.--c]="typeColorVar(t)" (click)="toggleBuild(t)">{{ titleCase(t) }}</button>
+            }
+          </div>
+        </div>
+
+        @if (teamMembers().length) {
+          <div class="team-summary glass" [attr.data-grade]="teamScore().grade">
+            <div class="grade">{{ teamScore().grade }}</div>
+            <div class="score-body">
+              <strong>Coverage score {{ teamScore().score }}/100</strong>
+              <span class="muted">
+                {{ teamScore().uncovered }} unanswered weakness(es) · {{ teamScore().gaps }} offensive gap(s)
+              </span>
+            </div>
+          </div>
+
+          <h3 class="sec">Defensive heatmap <small>weak / resist per attacking type</small></h3>
+          <div class="heatmap">
+            @for (row of teamDefense(); track row.type) {
+              <div class="hm-cell" [class.danger]="row.uncovered" [class.safe]="row.resist > row.weak && row.weak === 0">
+                <pv-type-badge [type]="row.type" />
+                <span class="hm-nums">
+                  <span class="w" [class.hot]="row.weak > 0">{{ row.weak }}</span>
+                  /
+                  <span class="r">{{ row.resist }}</span>
+                </span>
+              </div>
+            }
+          </div>
+
+          <h3 class="sec">Offensive coverage <small>super-effective STAB</small></h3>
+          <div class="cov-row">
+            <div class="cov covered">
+              <span class="cov-h">Covered ({{ teamOffense().covered.length }})</span>
+              <div class="b-types">@for (t of teamOffense().covered; track t) { <pv-type-badge [type]="t" /> }</div>
+            </div>
+            @if (teamOffense().gaps.length) {
+              <div class="cov gaps">
+                <span class="cov-h">Gaps ({{ teamOffense().gaps.length }})</span>
+                <div class="b-types">@for (t of teamOffense().gaps; track t) { <pv-type-badge [type]="t" /> }</div>
+              </div>
+            }
+          </div>
         }
       </div>
     }

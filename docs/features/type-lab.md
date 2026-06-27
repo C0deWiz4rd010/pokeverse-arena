@@ -43,3 +43,19 @@ Three tools behind a tab switch:
 
 The type-picker grid scales from 2 columns up to 6; the matrix is wrapped in a
 horizontally scrollable region with sticky type labels.
+
+## Type Lab v2
+
+A complete pass adding analysis depth and interactivity.
+
+- **Team coverage analyzer (new tab).** Assemble up to six typings and get a
+  defensive **heatmap** (weak/resist tally per attacking type, unanswered
+  weaknesses flagged red), an **offensive coverage** split (super-effective STAB
+  vs gaps) and a graded coverage score. Reuses `analyzeTeamTypes` +
+  `offensiveCoverage` (new, unit-tested in `type-chart`).
+- **Interactive matrix.** Click any row/column/cell to **pin** the highlight; a
+  big live **readout** shows the pinned/hovered matchup (multiplier + verdict),
+  with a clear-pins control.
+- **Calculator coverage strip.** The chosen attacking type now lists everything it
+  hits ×2 / ×½ / ×0, and the result multiplier pops on change.
+- Motion polish throughout; honours `prefers-reduced-motion`.

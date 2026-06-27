@@ -134,6 +134,26 @@ export interface TeamTypeAnalysis {
   readonly uncovered: PokemonType[];
 }
 
+export interface OffensiveCoverage {
+  /** Defending types at least one member can hit super-effectively (STAB). */
+  readonly covered: PokemonType[];
+  /** Defending types no member's STAB hits for ≥2× — offensive blind spots. */
+  readonly gaps: PokemonType[];
+}
+
+/**
+ * Which defending types a team can / cannot threaten with super-effective STAB.
+ */
+export function offensiveCoverage(team: readonly TeamMemberTyping[]): OffensiveCoverage {
+  const covered: PokemonType[] = [];
+  const gaps: PokemonType[] = [];
+  for (const defender of POKEMON_TYPES) {
+    const hit = team.some((m) => m.types.some((atk) => singleEffectiveness(atk, defender) >= 2));
+    (hit ? covered : gaps).push(defender);
+  }
+  return { covered, gaps };
+}
+
 /**
  * Aggregates the defensive profiles of a whole team to surface shared
  * weaknesses and coverage gaps.

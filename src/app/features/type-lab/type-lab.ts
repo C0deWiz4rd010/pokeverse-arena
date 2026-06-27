@@ -5,15 +5,25 @@ import { IconComponent } from '../../core/ui/icon/icon';
 import { titleCase, typeColorVar } from '../../core/ui/format';
 import {
   POKEMON_TYPES,
+  analyzeTeamTypes,
   defensiveProfile,
   effectiveness,
   effectivenessLabel,
+  offensiveCoverage,
   offensiveProfile,
   singleEffectiveness,
   type PokemonType,
+  type TeamMemberTyping,
 } from '../../core/utils/type-chart';
 
-type Tab = 'matrix' | 'calculator' | 'defender';
+type Tab = 'matrix' | 'calculator' | 'defender' | 'team';
+
+interface TeamDefenseRow {
+  readonly type: PokemonType;
+  readonly weak: number;
+  readonly resist: number;
+  readonly uncovered: boolean;
+}
 
 interface ProfileBucket {
   readonly multiplier: number;
@@ -35,9 +45,23 @@ export class TypeLabComponent {
 
   protected readonly tab = signal<Tab>('matrix');
 
-  /** Matrix interaction: highlighted attacking row / defending column. */
+  /** Matrix interaction: highlighted (hover) and pinned (click) row / column. */
   protected readonly hoverAttacker = signal<PokemonType | null>(null);
   protected readonly hoverDefender = signal<PokemonType | null>(null);
+  protected readonly pinnedAttacker = signal<PokemonType | null>(null);
+  protected readonly pinnedDefender = signal<PokemonType | null>(null);
+
+  protected readonly activeAtk = computed(() => this.hoverAttacker() ?? this.pinnedAttacker());
+  protected readonly activeDef = computed(() => this.hoverDefender() ?? this.pinnedDefender());
+
+  /** Big live readout when both an attacker and defender are active. */
+  protected readonly readout = computed(() => {
+    const atk = this.activeAtk();
+    const def = this.activeDef();
+    if (!atk || !def) return null;
+    const mult = singleEffectiveness(atk, def);
+    return { atk, def, mult, label: this.offenseLabel(mult) };
+  });
 
   /** Chart explorer (mobile): the single type whose matchups are shown. */
   protected readonly focusType = signal<PokemonType>('fire');
@@ -63,6 +87,42 @@ export class TypeLabComponent {
       mult: singleEffectiveness(this.calcAttacker(), def),
     })),
   );
+
+  /** Calculator — what the chosen attacking type hits, grouped by multiplier. */
+  protected readonly calcOffense = computed<ProfileBucket[]>(() =>
+    this.bucketize(offensiveProfile(this.calcAttacker()), (m) => this.offenseLabel(m)),
+  );
+
+  /* ----- team coverage analyzer ----- */
+  protected readonly teamMembers = signal<TeamMemberTyping[]>([
+    { name: '', types: ['fire'] },
+    { name: '', types: ['water'] },
+    { name: '', types: ['grass'] },
+  ]);
+  /** The 1–2 types currently being assembled into a new member. */
+  protected readonly build = signal<PokemonType[]>([]);
+
+  protected readonly teamAnalysis = computed(() => analyzeTeamTypes(this.teamMembers()));
+  protected readonly teamOffense = computed(() => offensiveCoverage(this.teamMembers()));
+
+  /** Per-attacking-type defensive tally for the team heatmap. */
+  protected readonly teamDefense = computed<TeamDefenseRow[]>(() => {
+    const a = this.teamAnalysis();
+    return POKEMON_TYPES.map((type) => ({
+      type,
+      weak: a.weaknesses[type],
+      resist: a.resistances[type],
+      uncovered: a.weaknesses[type] > 0 && a.resistances[type] === 0,
+    }));
+  });
+
+  protected readonly teamScore = computed(() => {
+    const uncovered = this.teamAnalysis().uncovered.length;
+    const gaps = this.teamOffense().gaps.length;
+    const score = Math.max(0, 100 - uncovered * 9 - gaps * 4);
+    const grade = score >= 85 ? 'S' : score >= 70 ? 'A' : score >= 55 ? 'B' : score >= 40 ? 'C' : 'D';
+    return { score, grade, uncovered, gaps };
+  });
 
   /** Chart explorer — what the focused type does on offense, grouped by multiplier. */
   protected readonly focusOffense = computed<ProfileBucket[]>(() =>
@@ -105,6 +165,47 @@ export class TypeLabComponent {
 
   protected setFocusType(type: PokemonType): void {
     this.focusType.set(type);
+  }
+
+  /* ----- matrix pinning ----- */
+  protected pinAttacker(type: PokemonType): void {
+    this.pinnedAttacker.set(this.pinnedAttacker() === type ? null : type);
+  }
+  protected pinDefender(type: PokemonType): void {
+    this.pinnedDefender.set(this.pinnedDefender() === type ? null : type);
+  }
+  protected pinCell(atk: PokemonType, def: PokemonType): void {
+    const same = this.pinnedAttacker() === atk && this.pinnedDefender() === def;
+    this.pinnedAttacker.set(same ? null : atk);
+    this.pinnedDefender.set(same ? null : def);
+  }
+  protected clearPins(): void {
+    this.pinnedAttacker.set(null);
+    this.pinnedDefender.set(null);
+  }
+  protected get hasPins(): boolean {
+    return this.pinnedAttacker() !== null || this.pinnedDefender() !== null;
+  }
+
+  /* ----- team builder ----- */
+  protected toggleBuild(type: PokemonType): void {
+    const cur = this.build();
+    if (cur.includes(type)) this.build.set(cur.filter((t) => t !== type));
+    else if (cur.length < 2) this.build.set([...cur, type]);
+    else this.build.set([cur[1], type]);
+  }
+  protected addMember(): void {
+    const types = this.build();
+    if (!types.length || this.teamMembers().length >= 6) return;
+    this.teamMembers.update((m) => [...m, { name: '', types: [...types] }]);
+    this.build.set([]);
+  }
+  protected removeMember(index: number): void {
+    this.teamMembers.update((m) => m.filter((_, i) => i !== index));
+  }
+  protected clearTeam(): void {
+    this.teamMembers.set([]);
+    this.build.set([]);
   }
 
   protected cellMult(attacker: PokemonType, defender: PokemonType): number {

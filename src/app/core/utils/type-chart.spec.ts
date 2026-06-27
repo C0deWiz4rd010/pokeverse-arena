@@ -106,3 +106,24 @@ describe('groupDefenses', () => {
     expect(g.half).toHaveLength(0);
   });
 });
+
+import { offensiveCoverage } from './type-chart';
+
+describe('offensiveCoverage', () => {
+  it('splits defending types into covered vs gaps for a team', () => {
+    // Fire hits grass/ice/bug/steel; Water hits fire/ground/rock; together broad.
+    const team = [
+      { name: 'a', types: ['fire'] as const },
+      { name: 'b', types: ['water'] as const },
+    ];
+    const cov = offensiveCoverage(team);
+    expect(cov.covered).toEqual(expect.arrayContaining(['grass', 'ice', 'fire', 'rock']));
+    expect(cov.covered.length + cov.gaps.length).toBe(18);
+  });
+
+  it('a lone Normal type covers nothing super-effectively', () => {
+    const cov = offensiveCoverage([{ name: 'x', types: ['normal'] }]);
+    expect(cov.covered).toHaveLength(0);
+    expect(cov.gaps).toHaveLength(18);
+  });
+});
