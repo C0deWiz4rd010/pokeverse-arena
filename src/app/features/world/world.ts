@@ -5,6 +5,7 @@ import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { regionDexCount, type Region } from '../../game/world/regions';
+import type { BallId } from '../../game/world/encounters';
 
 @Component({
   selector: 'pv-world',
@@ -16,6 +17,7 @@ import { regionDexCount, type Region } from '../../game/world/regions';
 export class WorldComponent {
   protected readonly svc = inject(WorldService);
   protected readonly dexCount = regionDexCount;
+  protected readonly ballIds: BallId[] = ['poke', 'great', 'ultra'];
 
   /** Bound to the search box. */
   protected readonly query = signal('');

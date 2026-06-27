@@ -2,14 +2,19 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../core/ui/format';
+import { SaveService } from '../../core/storage/save.service';
 import {
   FLAVORS,
   MAX_MIX,
   mixConditions,
-  runContest,
+  nextRank,
+  rankInfo,
+  runAppealContest,
+  type AppealRound,
   type Berry,
   type ContestCategory,
   type ContestEntrant,
+  type ContestRank,
   type Flavor,
 } from '../../game/contest/contest';
 
@@ -24,9 +29,12 @@ export interface Performer {
 
 export interface ContestResult {
   readonly category: ContestCategory;
+  readonly rank: ContestRank;
   readonly ranking: ContestEntrant[];
   readonly playerRank: number;
   readonly won: boolean;
+  readonly promoted: boolean;
+  readonly rounds: AppealRound[];
 }
 
 const DEFAULT_DEX = 133; // Eevee — a contest darling.
@@ -38,9 +46,12 @@ const DEFAULT_DEX = 133; // Eevee — a contest darling.
 @Injectable({ providedIn: 'root' })
 export class ContestService {
   private readonly api = inject(PokeApiClient);
+  private readonly save = inject(SaveService);
 
   readonly status = signal<Status>('loading');
   readonly error = signal<string | null>(null);
+  readonly rank = signal<ContestRank>(this.save.read<ContestRank>('contest:rank', 'normal'));
+  readonly rankLabel = computed(() => rankInfo(this.rank()).label);
 
   readonly pantry = signal<readonly Berry[]>([]);
   readonly mix = signal<readonly Berry[]>([]);
@@ -121,17 +132,26 @@ export class ContestService {
     if (!performer || !this.mix().length) return;
     this.attempt += 1;
     const category = this.category();
-    const seed = `${performer.name}-${category}-${this.mix()
+    const rank = this.rank();
+    const seed = `${performer.name}-${category}-${rank}-${this.mix()
       .map((b) => b.name)
       .join(',')}-${this.attempt}`;
-    const outcome = runContest(
+    const outcome = runAppealContest(
       performer.name,
       this.conditions(),
       category,
       this.mix().length,
+      rank,
       seed,
     );
-    this.result.set({ category, ...outcome });
+    this.result.set({ category, rank, ...outcome });
+    if (outcome.promoted) {
+      const up = nextRank(rank);
+      if (up) {
+        this.rank.set(up);
+        this.save.write('contest:rank', up);
+      }
+    }
   }
 
   private async loadPerformer(idOrName: number | string): Promise<void> {

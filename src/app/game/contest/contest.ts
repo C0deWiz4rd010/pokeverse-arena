@@ -137,3 +137,113 @@ export function runContest(
   const playerRank = ranking.findIndex((e) => e.isPlayer) + 1;
   return { ranking, playerRank, won: playerRank === 1 };
 }
+
+/* ============================ multi-round appeals =========================== */
+
+export type ContestRank = 'normal' | 'super' | 'hyper' | 'master';
+
+export interface RankInfo {
+  readonly key: ContestRank;
+  readonly label: string;
+  /** Rival per-round appeal band [min, max] at this rank. */
+  readonly rivalBand: readonly [number, number];
+}
+
+export const CONTEST_RANKS: readonly RankInfo[] = [
+  { key: 'normal', label: 'Normal Rank', rivalBand: [30, 66] },
+  { key: 'super', label: 'Super Rank', rivalBand: [42, 80] },
+  { key: 'hyper', label: 'Hyper Rank', rivalBand: [56, 92] },
+  { key: 'master', label: 'Master Rank', rivalBand: [70, 104] },
+];
+
+export function rankInfo(rank: ContestRank): RankInfo {
+  return CONTEST_RANKS.find((r) => r.key === rank)!;
+}
+
+export function nextRank(rank: ContestRank): ContestRank | null {
+  const i = CONTEST_RANKS.findIndex((r) => r.key === rank);
+  return i >= 0 && i < CONTEST_RANKS.length - 1 ? CONTEST_RANKS[i + 1].key : null;
+}
+
+/** Number of appeal turns in a performance. */
+export const APPEAL_ROUNDS = 4;
+
+export interface RoundLine {
+  readonly name: string;
+  readonly isPlayer: boolean;
+  /** Appeal gained this round (after combo + jamming). */
+  readonly appeal: number;
+  /** Running total after this round. */
+  readonly total: number;
+  /** True when a combo bonus carried into this round. */
+  readonly combo: boolean;
+  /** True when this performer was jammed (frontrunner penalty) this round. */
+  readonly jammed: boolean;
+}
+
+export interface AppealRound {
+  readonly turn: number;
+  readonly lines: RoundLine[];
+}
+
+export interface AppealContestResult {
+  readonly rounds: AppealRound[];
+  readonly ranking: ContestEntrant[];
+  readonly playerRank: number;
+  readonly won: boolean;
+  readonly promoted: boolean;
+}
+
+/**
+ * A full multi-round contest performance. Each of {@link APPEAL_ROUNDS} turns
+ * every performer makes an appeal; the previous round's top performer carries a
+ * **combo** bonus into the next, and the current leader gets **jammed** (a small
+ * penalty) so the field can mount a comeback. Rivals scale with the contest rank.
+ * Winning at a non-Master rank promotes the player.
+ */
+export function runAppealContest(
+  playerName: string,
+  conditions: Conditions,
+  category: ContestCategory,
+  mixSize: number,
+  rank: ContestRank,
+  seed: number | string,
+): AppealContestResult {
+  const rng = new SeededRng(seed);
+  const rivals = rng.shuffle(RIVAL_NAMES).slice(0, 3);
+  const names = [playerName, ...rivals];
+  const isPlayer = names.map((_, i) => i === 0);
+  const [lo, hi] = rankInfo(rank).rivalBand;
+
+  const totals = names.map(() => 0);
+  let comboIndex = -1;
+  const rounds: AppealRound[] = [];
+
+  for (let t = 0; t < APPEAL_ROUNDS; t++) {
+    const leader = totals.indexOf(Math.max(...totals));
+    const lines: RoundLine[] = [];
+    const roundAppeal: number[] = [];
+
+    names.forEach((name, idx) => {
+      let appeal = idx === 0 ? appealScore(conditions, category, mixSize, rng) : rng.int(lo, hi);
+      const combo = idx === comboIndex;
+      if (combo) appeal += rng.int(5, 12);
+      const jammed = t > 0 && idx === leader;
+      if (jammed) appeal = Math.max(1, appeal - rng.int(3, 10));
+      totals[idx] += appeal;
+      roundAppeal.push(appeal);
+      lines.push({ name, isPlayer: isPlayer[idx], appeal, total: totals[idx], combo, jammed });
+    });
+
+    // The round's top appeal earns the combo carry into the next turn.
+    comboIndex = roundAppeal.indexOf(Math.max(...roundAppeal));
+    rounds.push({ turn: t + 1, lines });
+  }
+
+  const ranking = names
+    .map((name, i) => ({ name, score: totals[i], isPlayer: isPlayer[i] }))
+    .sort((a, b) => b.score - a.score || (a.isPlayer ? -1 : 1));
+  const playerRank = ranking.findIndex((e) => e.isPlayer) + 1;
+  const won = playerRank === 1;
+  return { rounds, ranking, playerRank, won, promoted: won && nextRank(rank) !== null };
+}

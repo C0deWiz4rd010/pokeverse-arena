@@ -176,6 +176,11 @@
                 <span class="m-track"><span class="m-fill def" [style.width.%]="(r.defense / 18) * 100"></span></span>
               </div>
             </div>
+            @if (r.suggestions.length) {
+              <ul class="rating-tips">
+                @for (tip of r.suggestions; track tip) { <li><pv-icon name="arrow-right" /> {{ tip }}</li> }
+              </ul>
+            }
           </div>
         </div>
       }

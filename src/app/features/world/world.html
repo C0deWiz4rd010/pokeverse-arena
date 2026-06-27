@@ -69,11 +69,48 @@
           <p class="blurb">{{ region.blurb }}</p>
         </header>
 
+        <!-- Expedition: roam for wild Pokémon and register them -->
+        <section class="expedition" [style.--accent]="region.accent">
+          <div class="exp-head">
+            <strong><pv-icon name="map-pin" /> Expedition</strong>
+            <span class="exp-prog">{{ svc.regionCaughtCount() }} / {{ svc.count() }} registered · {{ svc.regionCompletion() }}%</span>
+          </div>
+          <div class="exp-controls">
+            <div class="balls">
+              @for (b of ballIds; track b) {
+                <button type="button" class="ball" [class.on]="svc.ball() === b" (click)="svc.setBall(b)">{{ svc.balls[b].label }}</button>
+              }
+            </div>
+            <button type="button" class="btn" (click)="svc.roam()">Roam ›</button>
+          </div>
+
+          @if (svc.encounter(); as enc) {
+            <div class="encounter" [class.caught]="enc.caught">
+              <img [src]="enc.sprite" [alt]="enc.displayName" width="80" height="80" />
+              <div class="enc-info">
+                <strong>{{ enc.displayName }}</strong>
+                <span class="enc-meta">Lv{{ enc.level }} · {{ enc.rarity }} · catch {{ enc.chancePct }}%</span>
+                <div class="enc-actions">
+                  @if (!enc.caught) {
+                    <button type="button" class="btn" (click)="svc.throwBall()">Throw {{ svc.balls[svc.ball()].label }}</button>
+                    <button type="button" class="ghost" (click)="svc.roam()">Next</button>
+                    <button type="button" class="ghost" (click)="svc.fleeEncounter()">Leave</button>
+                  } @else {
+                    <button type="button" class="btn" (click)="svc.roam()">Roam again ›</button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+          @if (svc.expeditionToast(); as t) { <p class="exp-toast">{{ t }}</p> }
+        </section>
+
         <ul class="dex-grid">
           @for (m of svc.members(); track m.dex) {
             <li
               class="mon"
               [class.spotlight]="svc.sighting()?.dex === m.dex"
+              [class.caught]="svc.isCaught(m.dex)"
               [style.--accent]="region.accent"
             >
               <a [routerLink]="['/pokemon', m.dex]" [title]="m.name">

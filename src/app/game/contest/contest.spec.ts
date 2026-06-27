@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  APPEAL_ROUNDS,
   CONTEST_CATEGORIES,
+  CONTEST_RANKS,
   appealScore,
   categoryForFlavor,
   flavorForCategory,
   mixConditions,
+  nextRank,
+  runAppealContest,
   runContest,
   type Berry,
 } from './contest';
@@ -61,5 +65,33 @@ describe('contest', () => {
     expect(a.ranking).toHaveLength(4);
     expect(a.ranking[0].score).toBeGreaterThanOrEqual(a.ranking[3].score);
     expect(a.playerRank).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('multi-round appeals', () => {
+  const cond = mixConditions([berry('A', { spicy: 50 }), berry('B', { spicy: 50 })]);
+
+  it('runs four appeal rounds for a full field, deterministically', () => {
+    const a = runAppealContest('Star', cond, 'cool', 2, 'normal', 'seed');
+    const b = runAppealContest('Star', cond, 'cool', 2, 'normal', 'seed');
+    expect(a).toEqual(b);
+    expect(a.rounds).toHaveLength(APPEAL_ROUNDS);
+    expect(a.rounds[0].lines).toHaveLength(4);
+    expect(a.ranking).toHaveLength(4);
+    expect(a.playerRank).toBeGreaterThanOrEqual(1);
+  });
+
+  it('accumulates running totals across rounds', () => {
+    const r = runAppealContest('Star', cond, 'cool', 2, 'normal', 's2');
+    const playerLines = r.rounds.map((rd) => rd.lines.find((l) => l.isPlayer)!);
+    expect(playerLines[3].total).toBeGreaterThan(playerLines[0].total);
+  });
+
+  it('only promotes on a win below Master rank', () => {
+    expect(nextRank('master')).toBeNull();
+    expect(nextRank('normal')).toBe('super');
+    const master = runAppealContest('Star', cond, 'cool', 2, 'master', 's3');
+    expect(master.promoted).toBe(false); // never promote past master
+    expect(CONTEST_RANKS).toHaveLength(4);
   });
 });

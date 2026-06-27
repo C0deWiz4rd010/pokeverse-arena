@@ -156,6 +156,25 @@
             Ribbon out of reach — you placed #{{ res.playerRank }}.
           }
         </h2>
+        @if (res.promoted) {
+          <p class="promo"><pv-icon name="sparkles" /> Promoted! You advance to {{ svc.rankLabel() }}.</p>
+        }
+
+        <div class="rounds">
+          @for (r of res.rounds; track r.turn) {
+            <div class="round">
+              <span class="r-turn">Appeal {{ r.turn }}</span>
+              @for (l of r.lines; track l.name) {
+                <span class="r-line" [class.me]="l.isPlayer">
+                  +{{ l.appeal }}
+                  @if (l.combo) { <span class="tag combo" title="Combo bonus">▲</span> }
+                  @if (l.jammed) { <span class="tag jam" title="Jammed">✕</span> }
+                </span>
+              }
+            </div>
+          }
+        </div>
+
         <ol class="ranking">
           @for (e of res.ranking; track e.name; let i = $index) {
             <li [class.me]="e.isPlayer">

@@ -340,3 +340,34 @@
 @media (prefers-reduced-motion: reduce) {
   .btn, .cat, .berry, .cond-bar span { transition: none; }
 }
+
+/* ---- multi-round appeals ---- */
+.promo {
+  margin: 0.4rem 0 0.6rem;
+  font-weight: 700;
+  color: var(--accent-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.rounds {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.6rem 0;
+}
+.round {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.84rem;
+}
+.r-turn { font-weight: 700; color: var(--text-dim); min-width: 5.5rem; }
+.r-line { display: inline-flex; align-items: center; gap: 0.15rem; padding: 0.1rem 0.4rem; border-radius: 6px; }
+.r-line.me { background: color-mix(in srgb, var(--accent) 22%, transparent); font-weight: 700; }
+.tag { font-size: 0.7rem; }
+.tag.combo { color: #5be08a; }
+.tag.jam { color: #ff8a8a; }

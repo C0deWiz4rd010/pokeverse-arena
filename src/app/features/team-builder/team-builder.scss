@@ -306,3 +306,20 @@
   resize: vertical;
 }
 .import .btn { justify-self: start; }
+
+/* ---- analyzer suggestions ---- */
+.rating-tips {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.rating-tips li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.rating-tips li pv-icon { color: var(--accent-2); flex: none; }

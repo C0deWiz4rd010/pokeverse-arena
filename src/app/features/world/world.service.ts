@@ -2,11 +2,30 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { SPRITE_BASE, idFromUrl } from '../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../core/ui/format';
+import { SaveService } from '../../core/storage/save.service';
 import {
   REGIONS,
   regionForDex,
   type Region,
 } from '../../game/world/regions';
+import {
+  BALLS,
+  attemptCatch,
+  catchChance,
+  regionCaught,
+  regionCompletion,
+  rollEncounter,
+  type BallId,
+  type WildEncounter,
+} from '../../game/world/encounters';
+
+/** A wild encounter enriched with its display name + sprite. */
+export interface ActiveEncounter extends WildEncounter {
+  readonly displayName: string;
+  readonly sprite: string;
+  readonly chancePct: number;
+  caught: boolean;
+}
 
 type Status = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -38,13 +57,78 @@ function spriteFor(dex: number): string {
 @Injectable({ providedIn: 'root' })
 export class WorldService {
   private readonly api = inject(PokeApiClient);
+  private readonly save = inject(SaveService);
 
   readonly regions = REGIONS;
+  readonly balls = BALLS;
 
   readonly status = signal<Status>('idle');
   readonly error = signal<string | null>(null);
   readonly activeRegion = signal<Region | null>(null);
   readonly members = signal<readonly RegionMember[]>([]);
+
+  /* ----- expedition: wild encounters + a personal dex ----- */
+  readonly caught = signal<ReadonlySet<number>>(new Set(this.save.read<number[]>('world:caught', [])));
+  readonly ball = signal<BallId>('poke');
+  readonly encounter = signal<ActiveEncounter | null>(null);
+  readonly expeditionToast = signal<string | null>(null);
+  private roamStep = 0;
+
+  readonly regionCaughtCount = computed(() => {
+    const r = this.activeRegion();
+    return r ? regionCaught(this.caught(), r) : 0;
+  });
+  readonly regionCompletion = computed(() => {
+    const r = this.activeRegion();
+    return r ? regionCompletion(this.caught(), r) : 0;
+  });
+
+  isCaught(dex: number): boolean {
+    return this.caught().has(dex);
+  }
+
+  setBall(ball: BallId): void {
+    this.ball.set(ball);
+  }
+
+  /** Find the next wild Pokémon in the active region. */
+  roam(): void {
+    const region = this.activeRegion();
+    if (!region) return;
+    this.roamStep += 1;
+    const enc = rollEncounter(region, `${this.roamStep}-${Math.floor(Math.random() * 1e9)}`);
+    const member = this.members().find((m) => m.dex === enc.dex);
+    this.encounter.set({
+      ...enc,
+      displayName: member?.name ?? `#${enc.dex}`,
+      sprite: member?.sprite ?? `${SPRITE_BASE}/pokemon/${enc.dex}.png`,
+      chancePct: Math.round(catchChance(enc, this.ball()) * 100),
+      caught: false,
+    });
+    this.expeditionToast.set(null);
+  }
+
+  /** Throw the selected ball at the current encounter. */
+  throwBall(): void {
+    const enc = this.encounter();
+    if (!enc || enc.caught) return;
+    const success = attemptCatch(enc, this.ball(), Math.random());
+    if (success) {
+      const next = new Set(this.caught());
+      next.add(enc.dex);
+      this.caught.set(next);
+      this.save.write('world:caught', [...next]);
+      this.encounter.set({ ...enc, caught: true });
+      this.expeditionToast.set(`Gotcha! ${enc.displayName} was registered to your dex.`);
+    } else {
+      this.expeditionToast.set(`Oh no! ${enc.displayName} broke free!`);
+    }
+  }
+
+  fleeEncounter(): void {
+    this.encounter.set(null);
+    this.expeditionToast.set(null);
+  }
 
   /** A located Pokémon to highlight after a search. */
   readonly sighting = signal<Sighting | null>(null);
@@ -109,6 +193,8 @@ export class WorldService {
     this.status.set('idle');
     this.activeRegion.set(null);
     this.members.set([]);
+    this.encounter.set(null);
+    this.expeditionToast.set(null);
     this.clearSearch();
   }
 
