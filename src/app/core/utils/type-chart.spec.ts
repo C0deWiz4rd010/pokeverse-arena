@@ -84,3 +84,25 @@ describe('analyzeTeamTypes', () => {
   });
 });
 
+
+import { groupDefenses } from './type-chart';
+
+describe('groupDefenses', () => {
+  it('groups weaknesses, resistances and immunities for a dual type', () => {
+    // Charizard (fire/flying): ×4 rock, ×2 water/electric, ×0 ground, resists several.
+    const g = groupDefenses(['fire', 'flying']);
+    expect(g.x4).toContain('rock');
+    expect(g.x2).toEqual(expect.arrayContaining(['water', 'electric']));
+    expect(g.immune).toContain('ground');
+    expect(g.half.length + g.quarter.length).toBeGreaterThan(0);
+  });
+
+  it('omits neutral matchups', () => {
+    const g = groupDefenses(['normal']);
+    expect(g.immune).toContain('ghost');
+    expect(g.x2).toContain('fighting');
+    // Normal has no double weakness or resistance.
+    expect(g.x4).toHaveLength(0);
+    expect(g.half).toHaveLength(0);
+  });
+});

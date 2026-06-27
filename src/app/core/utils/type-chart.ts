@@ -75,6 +75,37 @@ export function defensiveProfile(
   return out;
 }
 
+export interface DefenseGroups {
+  /** ×4 double-weaknesses. */
+  readonly x4: PokemonType[];
+  /** ×2 weaknesses. */
+  readonly x2: PokemonType[];
+  /** ×½ resistances. */
+  readonly half: PokemonType[];
+  /** ×¼ double-resistances. */
+  readonly quarter: PokemonType[];
+  /** ×0 immunities. */
+  readonly immune: PokemonType[];
+}
+
+/**
+ * Group every attacking type by how hard it hits this (1–2 type) defender, for a
+ * "weaknesses / resistances / immunities" panel. Neutral (×1) types are omitted.
+ */
+export function groupDefenses(defenders: readonly PokemonType[]): DefenseGroups {
+  const profile = defensiveProfile(defenders);
+  const groups: DefenseGroups = { x4: [], x2: [], half: [], quarter: [], immune: [] };
+  for (const attacker of POKEMON_TYPES) {
+    const m = profile[attacker];
+    if (m === 0) groups.immune.push(attacker);
+    else if (m >= 4) groups.x4.push(attacker);
+    else if (m >= 2) groups.x2.push(attacker);
+    else if (m <= 0.25) groups.quarter.push(attacker);
+    else if (m < 1) groups.half.push(attacker);
+  }
+  return groups;
+}
+
 /**
  * Offensive profile of a single attacking type: the multiplier it deals to
  * each defending type. Useful for "what does this move hit hard?".

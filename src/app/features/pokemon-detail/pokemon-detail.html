@@ -1,7 +1,17 @@
 @let s = store.state();
 
-<section class="container detail">
-  <button class="btn back" type="button" (click)="goBack()">← Back</button>
+<section class="detail" [style.--accent]="accent()" [style.--accent2]="accent2()">
+  <div class="aurora" aria-hidden="true"></div>
+
+  <nav class="topnav">
+    <button class="nav-btn" type="button" (click)="goBack()">← Back</button>
+    @if (s) {
+      <div class="dexnav">
+        <button class="nav-btn" type="button" (click)="go(prevId())" title="Previous (←)">‹ #{{ prevId() }}</button>
+        <button class="nav-btn" type="button" (click)="go(nextId())" title="Next (→)">#{{ nextId() }} ›</button>
+      </div>
+    }
+  </nav>
 
   @if (store.loading()) {
     <pv-spinner label="Loading Pokémon…" />
@@ -9,118 +19,197 @@
     <div class="state glass"><p><pv-icon name="triangle-alert" /> {{ store.error() }}</p></div>
   } @else if (s) {
     <div class="layout">
-      <!-- Hero -->
-      <div class="hero glass" [style.--glow]="'var(--type-' + s.pokemon.types[0] + ')'">
+      <!-- ───────────────────────── HERO ───────────────────────── -->
+      <div class="hero glass">
         <div class="hero-top">
           <span class="num">{{ padId(s.pokemon.id) }}</span>
           <div class="hero-actions">
             @if (s.pokemon.cry) {
-              <button class="icon-btn" type="button" (click)="playCry()" aria-label="Play cry"><pv-icon name="volume-2" /></button>
+              <button class="icon-btn" type="button" (click)="playCry()" [class.pulse]="cry.playing() === s.pokemon.id" aria-label="Play cry"><pv-icon name="volume-2" /></button>
             }
-            <button
-              class="icon-btn"
-              type="button"
-              [class.on]="shiny()"
-              (click)="toggleShiny()"
-              [attr.aria-pressed]="shiny()"
-              aria-label="Toggle shiny"
-            ><pv-icon name="sparkles" /></button>
+            <button class="icon-btn fav" type="button" [class.on]="isFavorite()" (click)="toggleFavorite()" [attr.aria-pressed]="isFavorite()" aria-label="Favorite"><pv-icon name="heart" /></button>
+            <button class="icon-btn" type="button" [class.on]="shiny()" (click)="toggleShiny()" [attr.aria-pressed]="shiny()" aria-label="Shiny"><pv-icon name="sparkles" /></button>
           </div>
         </div>
 
-        <div class="art-wrap">
-          <img [src]="artwork()" [alt]="titleCase(s.pokemon.name)" />
+        <div class="art-stage">
+          <div class="art-ring" aria-hidden="true"></div>
+          @for (k of [sparkle()]; track k) {
+            @if (k > 0) {
+              <div class="sparkle-burst" aria-hidden="true">
+                @for (i of [1,2,3,4,5,6,7,8]; track i) { <span class="spk" [style.--i]="i">✦</span> }
+              </div>
+            }
+          }
+          <img class="sprite" [class.pixel]="animated()" [src]="spriteSrc()" [alt]="titleCase(s.pokemon.name)" (error)="onSpriteError($event)" />
+        </div>
+
+        <div class="sprite-controls">
+          @if (hasAnimated()) {
+            <button class="seg-btn" type="button" [class.on]="animated()" (click)="toggleAnimated()">{{ animated() ? 'Animated' : 'Static' }}</button>
+          }
+          <button class="seg-btn" type="button" [class.on]="back()" (click)="toggleBack()">{{ back() ? 'Back' : 'Front' }}</button>
         </div>
 
         <h1>{{ titleCase(s.pokemon.name) }}</h1>
         <p class="genus">{{ s.species.genus }}</p>
 
         <div class="types">
-          @for (t of s.pokemon.types; track t) {
-            <pv-type-badge [type]="t" />
-          }
+          @for (t of s.pokemon.types; track t) { <pv-type-badge [type]="t" /> }
         </div>
 
         <div class="meta">
           <div><span>Height</span><b>{{ s.pokemon.heightM }} m</b><small>{{ metersToFeet(s.pokemon.heightM) }}</small></div>
           <div><span>Weight</span><b>{{ s.pokemon.weightKg }} kg</b><small>{{ kgToLbs(s.pokemon.weightKg) }}</small></div>
-          <div><span>BST</span><b>{{ s.pokemon.baseStatTotal }}</b><small>base total</small></div>
+          <div><span>BST</span><b class="bst">{{ bstShown() }}</b><small>base total</small></div>
         </div>
 
-        @if (s.species.flavorText) {
-          <p class="flavor">“{{ s.species.flavorText }}”</p>
-        }
+        @if (s.species.flavorText) { <p class="flavor">“{{ s.species.flavorText }}”</p> }
+
+        <div class="quick-actions">
+          <button class="btn" type="button" [disabled]="teamFull() || addedToTeam()" (click)="addToTeam()">
+            <pv-icon name="wrench" /> {{ addedToTeam() ? 'Added!' : teamFull() ? 'Team full' : 'Add to team' }}
+          </button>
+          <a class="btn ghost" [href]="'#/battle'"><pv-icon name="swords" /> Battle</a>
+        </div>
       </div>
 
-      <!-- Details -->
+      <!-- ───────────────────────── INFO ───────────────────────── -->
       <div class="info">
-        <div class="card glass">
+        <!-- Type matchups -->
+        @if (matchups(); as m) {
+          <div class="card glass reveal">
+            <h2>Type matchups</h2>
+            <div class="matchups">
+              @if (m.x4.length) { <div class="mu x4"><span class="mu-x">×4</span><div class="mu-types">@for (t of m.x4; track t) { <pv-type-badge [type]="t" /> }</div></div> }
+              @if (m.x2.length) { <div class="mu x2"><span class="mu-x">×2</span><div class="mu-types">@for (t of m.x2; track t) { <pv-type-badge [type]="t" /> }</div></div> }
+              @if (m.half.length) { <div class="mu half"><span class="mu-x">×½</span><div class="mu-types">@for (t of m.half; track t) { <pv-type-badge [type]="t" /> }</div></div> }
+              @if (m.quarter.length) { <div class="mu quarter"><span class="mu-x">×¼</span><div class="mu-types">@for (t of m.quarter; track t) { <pv-type-badge [type]="t" /> }</div></div> }
+              @if (m.immune.length) { <div class="mu immune"><span class="mu-x">×0</span><div class="mu-types">@for (t of m.immune; track t) { <pv-type-badge [type]="t" /> }</div></div> }
+            </div>
+          </div>
+        }
+
+        <!-- Base stats -->
+        <div class="card glass reveal">
           <h2>Base stats</h2>
           <div class="stats-grid">
             <div class="bars">
               @for (st of statLabels; track st.key) {
-                <pv-stat-bar [label]="st.name" [value]="s.pokemon.stats[st.key]" />
+                <div class="stat-row" [class.best]="s.pokemon.stats[st.key] === bestStat()">
+                  <pv-stat-bar [label]="st.name" [value]="shownStats()[st.key]" />
+                </div>
               }
+              <div class="bst-meter">
+                <span>Base stat total</span>
+                <div class="bst-track"><span class="bst-fill" [style.width.%]="revealed() ? (s.pokemon.baseStatTotal / 720) * 100 : 0"></span></div>
+                <strong>{{ bstShown() }}</strong>
+              </div>
             </div>
-            <pv-stat-radar [stats]="s.pokemon.stats" />
+            <pv-stat-radar [stats]="shownStats()" />
           </div>
         </div>
 
-        <div class="card glass">
+        <!-- Abilities -->
+        <div class="card glass reveal">
           <h2>Abilities</h2>
           <div class="abilities">
             @for (a of s.pokemon.abilities; track a.name) {
-              <span class="ability" [class.hidden]="a.isHidden">
-                {{ titleCase(a.name) }}
-                @if (a.isHidden) { <em>Hidden</em> }
-              </span>
+              <div class="ability-wrap">
+                <button class="ability" type="button" [class.hidden]="a.isHidden" [class.open]="expandedAbility() === a.name" (click)="toggleAbility(a.name)">
+                  {{ titleCase(a.name) }}
+                  @if (a.isHidden) { <em>Hidden</em> }
+                  <pv-icon name="arrow-right" />
+                </button>
+                @if (expandedAbility() === a.name) {
+                  <p class="ability-effect">
+                    @if (abilityInfo()[a.name]; as info) { {{ info.shortEffect || info.effect }} }
+                    @else { Loading… }
+                  </p>
+                }
+              </div>
             }
           </div>
-
-          <h2 class="mt">Breeding &amp; profile</h2>
-          <ul class="profile">
-            <li><span>Generation</span><b>{{ titleCase(s.species.generation) }}</b></li>
-            <li><span>Egg groups</span><b>{{ s.species.eggGroups.length ? '' : '—' }}
-              @for (g of s.species.eggGroups; track g) { {{ titleCase(g) }} }</b></li>
-            <li><span>Capture rate</span><b>{{ s.species.captureRate }}</b></li>
-            <li><span>Base happiness</span><b>{{ s.species.baseHappiness ?? '—' }}</b></li>
-            @if (s.species.habitat) { <li><span>Habitat</span><b>{{ titleCase(s.species.habitat) }}</b></li> }
-            <li><span>Color</span><b>{{ titleCase(s.species.color) }}</b></li>
-            @if (s.species.isLegendary) { <li class="flag"><pv-icon name="star" /> Legendary</li> }
-            @if (s.species.isMythical) { <li class="flag"><pv-icon name="sparkles" /> Mythical</li> }
-            @if (s.species.isBaby) { <li class="flag"><pv-icon name="baby" /> Baby</li> }
-          </ul>
         </div>
 
-        <div class="card glass">
+        <!-- Profile -->
+        <div class="card glass reveal">
+          <h2>Profile</h2>
+          @if (gender(); as g) {
+            <div class="gender">
+              <span class="g-label male">♂ {{ g.male }}%</span>
+              <div class="g-bar"><span class="g-male" [style.width.%]="g.male"></span><span class="g-female" [style.width.%]="g.female"></span></div>
+              <span class="g-label female">{{ g.female }}% ♀</span>
+            </div>
+          } @else {
+            <p class="muted small">Genderless</p>
+          }
+
+          <div class="rate-row">
+            <span>Catch rate</span>
+            <div class="rate-track"><span class="rate-fill" [style.width.%]="revealed() ? (s.species.captureRate / 255) * 100 : 0"></span></div>
+            <strong>{{ s.species.captureRate }}</strong>
+          </div>
+          <div class="rate-row">
+            <span>Friendship</span>
+            <div class="rate-track"><span class="rate-fill warm" [style.width.%]="revealed() ? ((s.species.baseHappiness ?? 0) / 255) * 100 : 0"></span></div>
+            <strong>{{ s.species.baseHappiness ?? '—' }}</strong>
+          </div>
+
+          <ul class="profile">
+            <li><span>Generation</span><b>{{ titleCase(s.species.generation) }}</b></li>
+            <li><span>Egg groups</span><b>{{ s.species.eggGroups.length ? '' : '—' }}@for (eg of s.species.eggGroups; track eg) { {{ titleCase(eg) }} }</b></li>
+            <li><span>Color</span><b>{{ titleCase(s.species.color) }}</b></li>
+            @if (s.species.habitat) { <li><span>Habitat</span><b>{{ titleCase(s.species.habitat) }}</b></li> }
+          </ul>
+          <div class="flags">
+            @if (s.species.isLegendary) { <span class="flag legendary"><pv-icon name="star" /> Legendary</span> }
+            @if (s.species.isMythical) { <span class="flag mythical"><pv-icon name="sparkles" /> Mythical</span> }
+            @if (s.species.isBaby) { <span class="flag baby"><pv-icon name="baby" /> Baby</span> }
+          </div>
+        </div>
+
+        <!-- Evolution -->
+        <div class="card glass reveal">
           <h2>Evolution</h2>
           @if (s.evolution.children.length) {
-            <div class="evo-scroll">
-              <pv-evolution-tree [node]="s.evolution" />
-            </div>
+            <div class="evo-scroll"><pv-evolution-tree [node]="s.evolution" [currentId]="s.pokemon.id" /></div>
           } @else {
             <p class="muted">This Pokémon does not evolve.</p>
           }
         </div>
 
-        <div class="card glass">
+        <!-- Moves -->
+        <div class="card glass reveal">
           <h2>Moves</h2>
           <div class="tabs">
             @for (tab of moveTabs; track tab.id) {
-              <button
-                type="button"
-                class="tab"
-                [class.active]="moveTab() === tab.id"
-                (click)="moveTab.set(tab.id)"
-              >{{ tab.label }}</button>
+              <button type="button" class="tab" [class.active]="moveTab() === tab.id" (click)="moveTab.set(tab.id)">{{ tab.label }}</button>
             }
           </div>
           @if (visibleMoves().length) {
             <div class="moves">
-              @for (m of visibleMoves(); track m.name) {
-                <div class="move">
-                  @if (moveTab() === 'level-up') { <span class="lvl">Lv {{ m.levelLearnedAt }}</span> }
-                  <span class="mname">{{ titleCase(m.name) }}</span>
+              @for (mv of visibleMoves(); track mv.name) {
+                <div class="move-wrap">
+                  <button class="move" type="button" [class.open]="expandedMove() === mv.name" (click)="toggleMove(mv.name)">
+                    @if (moveTab() === 'level-up') { <span class="lvl">Lv {{ mv.levelLearnedAt }}</span> }
+                    <span class="mname">{{ titleCase(mv.name) }}</span>
+                    <pv-icon name="arrow-right" />
+                  </button>
+                  @if (expandedMove() === mv.name) {
+                    <div class="move-detail">
+                      @if (moveInfo()[mv.name]; as info) {
+                        <div class="md-head">
+                          <pv-type-badge [type]="info.type" />
+                          <span class="md-class">{{ info.damageClass }}</span>
+                          <span class="md-stat">PWR {{ info.power ?? '—' }}</span>
+                          <span class="md-stat">ACC {{ info.accuracy ?? '—' }}</span>
+                          <span class="md-stat">PP {{ info.pp ?? '—' }}</span>
+                        </div>
+                        @if (info.effect) { <p class="md-effect">{{ info.effect }}</p> }
+                      } @else { <p class="md-effect">Loading…</p> }
+                    </div>
+                  }
                 </div>
               }
             </div>
