@@ -28,6 +28,7 @@ export class App {
     { path: '/battle', label: 'Battle', icon: 'swords' },
     { path: '/arena', label: 'Arena', icon: 'castle' },
     { path: '/tournaments', label: 'Tournaments', icon: 'trophy' },
+    { path: '/spire', label: 'Spire', icon: 'mountain' },
     { path: '/world', label: 'World', icon: 'map' },
     { path: '/contest', label: 'Contest', icon: 'sparkles' },
   ];

@@ -46,6 +46,11 @@ export const routes: Routes = [
       import('./features/tournaments/tournaments').then((m) => m.TournamentsComponent),
   },
   {
+    path: 'spire',
+    title: 'Ascension Spire · PokéVerse Arena',
+    loadComponent: () => import('./features/spire/spire').then((m) => m.SpireComponent),
+  },
+  {
     path: 'world',
     title: 'World Explorer · PokéVerse Arena',
     loadComponent: () => import('./features/world/world').then((m) => m.WorldComponent),

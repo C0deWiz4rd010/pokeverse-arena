@@ -1,0 +1,141 @@
+<section class="spire">
+  <pv-page-header icon="mountain" title="Ascension Spire" subtitle="A seeded roguelike climb. Carry your wounds, draft relics, and reach the summit." />
+
+  @if (svc.error(); as err) { <p class="err" role="alert">{{ err }}</p> }
+
+  @switch (svc.phase()) {
+    <!-- ───────────── setup / draft ───────────── -->
+    @case ('setup') {
+      @if (svc.busy()) {
+        <div class="state"><pv-spinner label="Preparing the spire…" /></div>
+      } @else if (svc.draftPool().length) {
+        <h3 class="h">Draft your starting trio ({{ picks().length }}/3)</h3>
+        <div class="pool">
+          @for (mon of svc.draftPool(); track mon.id) {
+            <button class="pick" type="button" [class.on]="isPicked(mon)" (click)="togglePick(mon)">
+              <img [src]="mon.sprite" [alt]="mon.name" loading="lazy" />
+              <span class="pk-name">{{ titleCase(mon.name) }}</span>
+              <span class="pk-types">@for (t of mon.types; track t) { <pv-type-badge [type]="t" /> }</span>
+            </button>
+          }
+        </div>
+        <button class="btn" type="button" [disabled]="!canStart()" (click)="confirmStarters()">Begin the climb ›</button>
+      } @else {
+        <div class="intro">
+          <div class="meta-grid">
+            <div class="meta-stat"><strong>{{ svc.meta().bestDepth }}</strong><span>Best depth</span></div>
+            <div class="meta-stat"><strong>{{ svc.meta().clears }}</strong><span>Clears</span></div>
+            <div class="meta-stat"><strong>{{ svc.meta().ascension }}</strong><span>Ascension</span></div>
+            <div class="meta-stat"><strong>{{ svc.meta().bankedCoins }}</strong><span>Banked ₽</span></div>
+          </div>
+          <p class="muted">Climb {{ svc.totalFloors }} floors. HP carries between fights — there is no free healing. Pick your path, draft relics, and survive.</p>
+          <div class="intro-actions">
+            <button class="btn" type="button" (click)="newRun()"><pv-icon name="dices" /> New Run</button>
+            <button class="btn ghost" type="button" (click)="newDaily()"><pv-icon name="sparkles" /> Daily Run</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ───────────── battle ───────────── -->
+    @case ('battle') {
+      @if (svc.setup(); as setup) {
+        <div class="hud-line">Floor {{ svc.floor() }} / {{ svc.totalFloors }}</div>
+        <pv-tournament-match [setup]="setup" (finished)="onFinished($event)" />
+      } @else {
+        <div class="state"><pv-spinner label="The challenger approaches…" /></div>
+      }
+    }
+
+    <!-- ───────────── won / lost ───────────── -->
+    @case ('won') {
+      <div class="finale win">
+        <span class="crown"><pv-icon name="crown" /></span>
+        <h2>You reached the summit!</h2>
+        <p class="muted">The Ascension Spire is conquered. Ascension tier raised — the next climb will be harder.</p>
+        <button class="btn" type="button" (click)="svc.backToHub()">Return</button>
+      </div>
+    }
+    @case ('lost') {
+      <div class="finale loss">
+        <span class="crown"><pv-icon name="heart-crack" /></span>
+        <h2>You fell on floor {{ svc.floor() }}</h2>
+        <p class="muted">The climb ends here — but your records stand. Try a new run.</p>
+        <button class="btn" type="button" (click)="svc.backToHub()">Return</button>
+      </div>
+    }
+
+    <!-- ───────────── map / reward / shop (share the run HUD) ───────────── -->
+    @default {
+      <div class="run-hud">
+        <span class="hud-floor"><pv-icon name="mountain" /> Floor {{ svc.floor() }} / {{ svc.totalFloors }}</span>
+        <span class="hud-coins"><pv-icon name="gem" /> {{ svc.coins() }} ₽</span>
+        <button class="ghost small" type="button" (click)="svc.abandon()">Abandon</button>
+      </div>
+
+      <div class="party-bar">
+        @for (p of svc.partyView(); track p.mon.id; let i = $index) {
+          <div class="party-mon" [class.fainted]="p.hpPct <= 0">
+            <img [src]="p.mon.sprite" [alt]="p.mon.name" [title]="titleCase(p.mon.name)" loading="lazy" />
+            <span class="hp"><span class="fill" [class.low]="p.hpPct <= 30" [style.width.%]="p.hpPct"></span></span>
+          </div>
+        }
+      </div>
+
+      @if (svc.relicList().length) {
+        <div class="relic-bar">
+          @for (r of svc.relicList(); track r!.id) {
+            <span class="relic" [title]="r!.blurb"><pv-icon [name]="r!.icon" /> {{ r!.name }}</span>
+          }
+        </div>
+      }
+
+      @if (svc.toast(); as t) { <p class="toast">{{ t }}</p> }
+
+      @switch (svc.phase()) {
+        @case ('map') {
+          <h3 class="h">Choose your path</h3>
+          @if (svc.busy()) { <div class="state"><pv-spinner /></div> }
+          <div class="nodes">
+            @for (n of svc.choices(); track n.id) {
+              <button class="node" type="button" [class]="n.type" (click)="chooseNode(n)" [disabled]="svc.busy()">
+                <span class="node-icon"><pv-icon [name]="n.icon" /></span>
+                <span class="node-label">{{ n.label }}</span>
+                <span class="node-blurb">{{ n.blurb }}</span>
+                @if (n.foe; as foe) { <span class="node-foe">{{ foe.name }} · Lv{{ foe.level }}</span> }
+              </button>
+            }
+          </div>
+        }
+
+        @case ('reward') {
+          <h3 class="h">Pick a reward</h3>
+          <div class="rewards">
+            @for (r of svc.rewards(); track $index) {
+              <button class="reward" type="button" (click)="chooseReward(r)">
+                <span class="r-icon"><pv-icon [name]="r.icon" /></span>
+                <span class="r-label">{{ r.label }}</span>
+                <span class="r-blurb">{{ r.blurb }}</span>
+              </button>
+            }
+          </div>
+          <button class="ghost" type="button" (click)="svc.skipReward()">Skip reward</button>
+        }
+
+        @case ('shop') {
+          <h3 class="h">Shop</h3>
+          <div class="shop">
+            @for (e of svc.shop(); track $index) {
+              <button class="shop-item" type="button" [disabled]="svc.coins() < e.cost" (click)="buy(e)">
+                <span class="s-icon"><pv-icon [name]="e.icon" /></span>
+                <span class="s-label">{{ e.label }}</span>
+                <span class="s-cost">{{ e.cost }} ₽</span>
+              </button>
+            }
+          </div>
+          <button class="btn" type="button" (click)="svc.leaveShop()">Leave shop ›</button>
+        }
+      }
+    }
+  }
+</section>
