@@ -280,3 +280,24 @@
 .info .stage.up { color: #062; background: color-mix(in srgb, #34d399 35%, transparent); }
 .info .stage.down { color: #fff; background: color-mix(in srgb, #f87171 40%, transparent); }
 .info .row { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+
+/* ============================ Battle v2 — finale polish ===================== */
+.result { position: relative; overflow: hidden; animation: res-in 0.45s cubic-bezier(0.2, 1.3, 0.4, 1) both; }
+.result.win { box-shadow: 0 0 36px -8px var(--accent-3); }
+.result.win h2 { color: var(--accent-3); }
+.result.loss { animation: res-in 0.45s ease both, res-shake 0.5s ease 0.1s; }
+.result h2 pv-icon { animation: trophy-bob 2s ease-in-out infinite; display: inline-block; }
+.result .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.result .confetti .cf {
+  position: absolute; top: -12px; left: calc((var(--i) / 16) * 100%);
+  width: 8px; height: 12px; border-radius: 2px;
+  background: hsl(calc(var(--i) * 45) 90% 62%);
+  opacity: 0; animation: cf-fall 1.9s linear infinite; animation-delay: calc(var(--i) * 0.1s);
+}
+@keyframes res-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes res-shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+@keyframes trophy-bob { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-3px) rotate(4deg); } }
+@keyframes cf-fall { 0% { opacity: 0; transform: translateY(-10px) rotate(0); } 10% { opacity: 1; } 100% { opacity: 0; transform: translateY(320px) rotate(540deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .result, .result.loss, .result h2 pv-icon, .result .confetti .cf { animation: none; }
+}

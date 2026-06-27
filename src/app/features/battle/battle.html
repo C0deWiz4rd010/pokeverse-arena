@@ -137,7 +137,12 @@
           }
 
           @if (phase() === 'done') {
-            <div class="result glass" [class.win]="outcomeWon()">
+            <div class="result glass" [class.win]="outcomeWon()" [class.loss]="!outcomeWon()">
+              @if (outcomeWon()) {
+                <div class="confetti" aria-hidden="true">
+                  @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]; track i) { <span class="cf" [style.--i]="i"></span> }
+                </div>
+              }
               <h2>
                 @if (outcomeWon()) {
                   Victory! <pv-icon name="trophy" />
