@@ -63,3 +63,19 @@ columns.
 The team rater now explains *why*: it surfaces **stacked shared weaknesses** (and
 whether anything resists them), **offensive coverage gaps**, and concrete
 **suggestions** — shown under the power meters. See [../plan.md](../plan.md) phase 8.
+
+## Team Builder v2
+
+A visual, animated overhaul.
+
+- **Type-themed member cards** (dual-type gradient + glow) with a static→animated
+  sprite swap on hover and a staggered entrance.
+- **Animated stat bars** per member (value-coloured, with nature ▲/▼ markers)
+  replacing the plain number strip.
+- **Team profile card**: average stats as bars + a **speed-tier** list ordering the
+  roster fastest-first.
+- **Offensive coverage** alongside the defensive analysis: which types the team
+  hits super-effectively (`offensiveCoverage`) and the remaining gaps.
+- The team rating **score counts up** and the meters grow in.
+
+All motion respects `prefers-reduced-motion`.

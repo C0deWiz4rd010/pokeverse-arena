@@ -70,9 +70,16 @@
   } @else {
     <div class="roster">
       @for (member of store.team(); track member.uid) {
-        <article class="member glass">
+        <article
+          class="member glass"
+          [style.--t1]="typeColorVar(member.types[0])"
+          [style.--t2]="typeColorVar(member.types.length > 1 ? member.types[1] : member.types[0])"
+        >
           <header class="m-head">
-            <img [src]="member.artwork" [alt]="member.name" loading="lazy" />
+            <div class="m-art">
+              <img class="still" [src]="member.artwork" [alt]="member.name" loading="lazy" />
+              <img class="anim" [src]="animatedSprite(member.id)" alt="" aria-hidden="true" loading="lazy" />
+            </div>
             <div class="m-id">
               <input
                 class="nick"
@@ -119,9 +126,12 @@
 
           <div class="m-stats">
             @for (row of statsFor(member); track row.key) {
-              <div class="stat" [class]="natureMod(member, row.key)">
+              <div class="stat-row" [class]="natureMod(member, row.key)">
                 <span class="s-label">{{ row.label }}</span>
                 <span class="s-val">{{ row.value }}</span>
+                <span class="s-track"><span class="s-fill" [style.width.%]="statPct(row.value)" [style.background]="statColor(row.value)"></span></span>
+                @if (natureMod(member, row.key) === 'up') { <span class="nat up">▲</span> }
+                @else if (natureMod(member, row.key) === 'down') { <span class="nat down">▼</span> }
               </div>
             }
           </div>
@@ -153,6 +163,35 @@
       }
     </div>
 
+    <!-- Team profile: average stats + speed tier -->
+    <section class="profile-card glass">
+      <h2>Team profile</h2>
+      <div class="profile-grid">
+        <div class="averages">
+          <h3>Average stats</h3>
+          @for (row of teamAverages(); track row.key) {
+            <div class="avg-row">
+              <span class="a-label">{{ row.label }}</span>
+              <span class="a-val">{{ row.value }}</span>
+              <span class="a-track"><span class="a-fill" [style.width.%]="statPct(row.value)" [style.background]="statColor(row.value)"></span></span>
+            </div>
+          }
+        </div>
+        <div class="speed-tier">
+          <h3>Speed tier</h3>
+          <ol class="tier-list">
+            @for (s of speedTier(); track s.member.uid) {
+              <li>
+                <img [src]="s.member.artwork" [alt]="s.member.name" loading="lazy" />
+                <span class="t-name">{{ s.member.nickname || titleCase(s.member.name) }}</span>
+                <span class="t-speed">{{ s.speed }}</span>
+              </li>
+            }
+          </ol>
+        </div>
+      </div>
+    </section>
+
     <!-- Team-wide defensive analysis -->
     <section class="analysis glass">
       <h2>Defensive analysis</h2>
@@ -161,7 +200,7 @@
         <div class="rating" [attr.data-grade]="r.grade">
           <div class="grade" [attr.data-grade]="r.grade">
             <span class="g-letter">{{ r.grade }}</span>
-            <span class="g-score">{{ r.score }}</span>
+            <span class="g-score">{{ displayScore() }}</span>
           </div>
           <div class="rating-body">
             <strong class="rating-title">Team Power Rating</strong>
@@ -211,6 +250,25 @@
           }
         </ul>
       }
+
+      <h3>Offensive coverage</h3>
+      <div class="coverage">
+        <div class="cov covered">
+          <span class="cov-h"><pv-icon name="sword" /> Hit hard ({{ coverage().covered.length }})</span>
+          <div class="cov-chips">
+            @for (t of coverage().covered; track t) { <pv-type-badge [type]="t" /> }
+            @if (!coverage().covered.length) { <span class="muted">No super-effective STAB yet.</span> }
+          </div>
+        </div>
+        @if (coverage().gaps.length) {
+          <div class="cov gaps">
+            <span class="cov-h"><pv-icon name="triangle-alert" /> Gaps ({{ coverage().gaps.length }})</span>
+            <div class="cov-chips">
+              @for (t of coverage().gaps; track t) { <pv-type-badge [type]="t" /> }
+            </div>
+          </div>
+        }
+      </div>
     </section>
 
     <div class="toolbar">

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { TeamBuilderService, MAX_TEAM, MAX_MOVES, type TeamMember } from './team-builder.service';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
@@ -6,7 +13,8 @@ import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { titleCase, typeColorVar } from '../../core/ui/format';
-import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
+import { POKEMON_TYPES, offensiveCoverage, type PokemonType } from '../../core/utils/type-chart';
+import { animatedSprite } from '../../core/api/pokeapi-endpoints';
 import { NATURES, natureByName, natureSummary } from '../../core/utils/natures';
 import type { StatKey } from '../../core/utils/stat-calculator';
 
@@ -46,11 +54,42 @@ export class TeamBuilderComponent {
   protected readonly importText = signal('');
   protected readonly showImport = signal(false);
   protected readonly copied = signal(false);
+  protected readonly animatedSprite = animatedSprite;
 
   protected readonly names = this.pokedex.names;
 
   /** Attacking types at least one member is weak to and nobody resists. */
   protected readonly blindSpots = computed(() => this.store.analysis().uncovered);
+
+  /** Offensive coverage of the whole roster (super-effective STAB vs gaps). */
+  protected readonly coverage = computed(() =>
+    offensiveCoverage(this.store.team().map((m) => ({ name: m.name, types: m.types }))),
+  );
+
+  /** Average computed stat across the roster, for the team profile bars. */
+  protected readonly teamAverages = computed<{ key: StatKey; label: string; value: number }[]>(() => {
+    const stats = this.store.memberStats();
+    const members = this.store.team();
+    if (!members.length) return STAT_ROWS.map((r) => ({ ...r, value: 0 }));
+    return STAT_ROWS.map((r) => {
+      const sum = members.reduce((acc, m) => acc + (stats.get(m.uid)?.[r.key] ?? 0), 0);
+      return { ...r, value: Math.round(sum / members.length) };
+    });
+  });
+
+  /** Members ordered fastest-first — a quick speed-tier read. */
+  protected readonly speedTier = computed(() => {
+    const stats = this.store.memberStats();
+    return this.store
+      .team()
+      .map((m) => ({ member: m, speed: stats.get(m.uid)?.speed ?? 0 }))
+      .sort((a, b) => b.speed - a.speed);
+  });
+
+  /** Animated, eased count-up of the team rating score. */
+  protected readonly displayScore = signal(0);
+
+  private rafScore = 0;
 
   /** Sorted shared-weakness rows (most exposed first), only where count > 0. */
   protected readonly weaknessRows = computed(() => {
@@ -62,6 +101,32 @@ export class TeamBuilderComponent {
 
   constructor() {
     void this.pokedex.ensureLoaded();
+    // Ease the rating score toward its target whenever the roster changes.
+    effect(() => {
+      const target = this.store.rating().score;
+      cancelAnimationFrame(this.rafScore);
+      const from = this.displayScore();
+      const start = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / 500);
+        this.displayScore.set(Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3))));
+        if (t < 1) this.rafScore = requestAnimationFrame(tick);
+      };
+      this.rafScore = requestAnimationFrame(tick);
+    });
+  }
+
+  /** Colour a stat value the same way the stat bars do. */
+  protected statColor(v: number): string {
+    if (v >= 130) return 'linear-gradient(90deg,#56e39f,#6ce0ff)';
+    if (v >= 100) return 'linear-gradient(90deg,#9be36b,#56e39f)';
+    if (v >= 70) return 'linear-gradient(90deg,#ffd166,#9be36b)';
+    if (v >= 45) return 'linear-gradient(90deg,#ff9d55,#ffd166)';
+    return 'linear-gradient(90deg,#ff5d73,#ff9d55)';
+  }
+
+  protected statPct(v: number): number {
+    return Math.min(100, (v / 255) * 100);
   }
 
   protected onSubmit(event: Event): void {

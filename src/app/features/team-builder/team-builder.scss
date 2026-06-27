@@ -323,3 +323,77 @@
   color: var(--text-dim);
 }
 .rating-tips li pv-icon { color: var(--accent-2); flex: none; }
+
+/* ============================ Team Builder v2 ============================ */
+
+/* type-themed, animated member cards */
+.member {
+  --t1: var(--accent);
+  --t2: var(--accent-2);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--t1) 30%, var(--glass-border));
+  background:
+    radial-gradient(130% 60% at 12% 0%, color-mix(in srgb, var(--t1) 18%, transparent), transparent 60%),
+    linear-gradient(160deg, color-mix(in srgb, var(--t2) 10%, transparent), transparent 55%),
+    var(--glass);
+  animation: tb-rise 0.4s ease both;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.member:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--t1) 55%, transparent);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--t1) 22%, transparent);
+}
+
+/* sprite stage with animated hover swap */
+.m-art { position: relative; width: 64px; height: 64px; }
+.m-art img { position: absolute; inset: 0; width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
+.m-art .anim { image-rendering: pixelated; opacity: 0; transition: opacity 0.2s ease; }
+.member:hover .m-art .still { opacity: 0; }
+.member:hover .m-art .anim { opacity: 1; }
+
+/* computed stats as animated bars (overrides the old strip) */
+.m-stats { display: grid; grid-template-columns: 1fr; gap: 0.25rem; text-align: left; }
+.stat-row { display: grid; grid-template-columns: 2.1rem 2.2rem 1fr auto; align-items: center; gap: 0.4rem; }
+.stat-row .s-label { font-size: 0.7rem; color: var(--text-dim); }
+.stat-row .s-val { font-size: 0.82rem; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.stat-row .s-track { height: 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.stat-row .s-fill { display: block; height: 100%; border-radius: 999px; transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.stat-row .nat { font-size: 0.6rem; }
+.stat-row .nat.up { color: #34d399; }
+.stat-row .nat.down { color: #f87171; }
+
+/* team profile card: averages + speed tier */
+.profile-card { padding: 1.1rem; margin-bottom: 1rem; }
+.profile-card h2 { font-size: 1.15rem; margin-bottom: 0.7rem; }
+.profile-card h3 { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+.profile-grid { display: grid; gap: 1.2rem; }
+@include up(md) { .profile-grid { grid-template-columns: 1fr 1fr; } }
+.avg-row { display: grid; grid-template-columns: 2.2rem 2.4rem 1fr; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+.avg-row .a-label { font-size: 0.74rem; color: var(--text-dim); }
+.avg-row .a-val { font-size: 0.82rem; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.avg-row .a-track { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.avg-row .a-fill { display: block; height: 100%; border-radius: 999px; transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.tier-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; counter-reset: tier; }
+.tier-list li {
+  display: grid; grid-template-columns: auto 36px 1fr auto; align-items: center; gap: 0.5rem;
+  padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.04);
+}
+.tier-list li::before { counter-increment: tier; content: counter(tier); font-weight: 800; color: var(--accent-2); font-size: 0.78rem; }
+.tier-list img { width: 36px; height: 36px; object-fit: contain; }
+.tier-list .t-name { font-size: 0.82rem; text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tier-list .t-speed { font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+/* offensive coverage */
+.coverage { display: grid; gap: 0.8rem; margin-top: 0.5rem; }
+@include up(md) { .coverage { grid-template-columns: 1fr 1fr; } }
+.cov-h { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.4rem; }
+.cov.covered .cov-h { color: #7fe6a6; }
+.cov.gaps .cov-h { color: #ff9d9d; }
+.cov-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+@keyframes tb-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .member, .stat-row .s-fill, .avg-row .a-fill, .m-art .anim { animation: none; transition: none; }
+}
