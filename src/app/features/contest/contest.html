@@ -1,14 +1,12 @@
 <pv-page-header
   title="Contest Hall"
-  subtitle="Blend berries into Poffins, polish a Pokémon's condition and dazzle the judges."
+  subtitle="Blend berries into Poffins, then perform live — chain combos, dazzle the judges, win ribbons."
   icon="sparkles"
 />
 
 @switch (svc.status()) {
   @case ('loading') {
-    <div class="state">
-      <pv-spinner label="Stocking the berry pantry…" />
-    </div>
+    <div class="state"><pv-spinner label="Stocking the berry pantry…" /></div>
   }
 
   @case ('error') {
@@ -19,172 +17,196 @@
   }
 
   @case ('ready') {
-    <div class="stage-grid">
-      <!-- Performer + category -->
-      <section class="panel performer" [style.--accent]="info(svc.category()).accent">
-        <header class="panel-head">
-          <h2>On stage</h2>
-        </header>
-
-        @if (svc.performer(); as p) {
-          <div class="performer-card">
-            <img [src]="p.sprite" [alt]="p.name" width="120" height="120" />
-            <div class="who">
-              <strong>{{ p.name }}</strong>
-              <span class="dex">#{{ p.dex }}</span>
-            </div>
-          </div>
+    <!-- Rank + ribbon case -->
+    <div class="rank-bar">
+      <span class="rank-pill"><pv-icon name="star" /> {{ svc.rankLabel() }}</span>
+      <div class="ribbon-case" aria-label="Ribbons earned">
+        @for (c of categories; track c.key) {
+          <span class="ribbon" [class.earned]="svc.hasRibbon(c.key)" [style.--accent]="c.accent" [title]="c.label + (svc.hasRibbon(c.key) ? ' ribbon earned' : ' — not yet won')">
+            <pv-icon [name]="c.icon" />
+          </span>
         }
-
-        <form class="swap" (submit)="$event.preventDefault(); search()">
-          <input
-            type="search"
-            name="performer"
-            autocomplete="off"
-            placeholder="Swap performer (name or #)…"
-            [value]="query()"
-            (input)="query.set($any($event.target).value)"
-          />
-          <button type="submit" class="btn ghost">Swap</button>
-        </form>
-        @if (svc.searchError(); as err) {
-          <p class="msg err"><pv-icon name="triangle-alert" /> {{ err }}</p>
-        }
-
-        <fieldset class="categories">
-          <legend>Contest category</legend>
-          <div class="cat-row">
-            @for (c of categories; track c.key) {
-              <button
-                type="button"
-                class="cat"
-                [class.active]="svc.category() === c.key"
-                [style.--accent]="c.accent"
-                (click)="svc.setCategory(c.key)"
-              >
-                <span class="cat-icon" aria-hidden="true"><pv-icon [name]="c.icon" /></span>
-                <span class="cat-label">{{ c.label }}</span>
-              </button>
-            }
-          </div>
-        </fieldset>
-
-        <!-- Condition bars -->
-        <div class="conditions">
-          @for (c of categories; track c.key) {
-            <div class="cond-row" [class.lead]="svc.category() === c.key">
-              <span class="cond-name"><pv-icon [name]="c.icon" /> {{ c.label }}</span>
-              <div class="cond-bar">
-                <span
-                  [style.--accent]="c.accent"
-                  [style.width.%]="(svc.conditions()[c.key] / 80) * 100"
-                ></span>
-              </div>
-              <span class="cond-num">{{ svc.conditions()[c.key] }}</span>
-            </div>
-          }
-        </div>
-
-        <div class="enter-row">
-          <button
-            type="button"
-            class="btn enter"
-            [disabled]="!svc.canEnter()"
-            (click)="svc.enter()"
-          >
-            {{ svc.result() ? 'Perform again ↻' : 'Enter the ' + info(svc.category()).label + ' Contest ›' }}
-          </button>
-        </div>
-      </section>
-
-      <!-- Berry pantry / Poffin mix -->
-      <section class="panel pantry">
-        <header class="panel-head">
-          <h2>Poffin mix</h2>
-          <span class="mix-count">{{ svc.mix().length }} / 4</span>
-        </header>
-
-        <div class="mix-tray">
-          @for (b of svc.mix(); track b.name) {
-            <button type="button" class="chip" (click)="svc.toggleBerry(b)" title="Remove">
-              {{ b.name }} <pv-icon name="x" />
-            </button>
-          } @empty {
-            <p class="muted">Pick up to four berries below. Their flavours feed the matching condition.</p>
-          }
-          @if (svc.mix().length) {
-            <button type="button" class="chip clear" (click)="svc.clearMix()">Clear mix</button>
-          }
-        </div>
-
-        <p class="hint">
-          Highlighting <strong>{{ flavorForCategory(svc.category()) }}</strong> berries for
-          <strong>{{ info(svc.category()).label }}</strong>.
-        </p>
-
-        <ul class="berries">
-          @for (b of svc.pantry(); track b.name) {
-            <li>
-              <button
-                type="button"
-                class="berry"
-                [class.picked]="svc.inMix(b)"
-                [class.hot]="berryHighlight(b) > 0"
-                [disabled]="!svc.inMix(b) && svc.mixFull()"
-                (click)="svc.toggleBerry(b)"
-              >
-                <span class="berry-name">{{ b.name }}</span>
-                @if (berryHighlight(b) > 0) {
-                  <span class="berry-pot" [style.--accent]="info(svc.category()).accent">
-                    +{{ berryHighlight(b) }}
-                  </span>
-                }
-              </button>
-            </li>
-          }
-        </ul>
-      </section>
+      </div>
     </div>
 
-    <!-- Result -->
-    @if (svc.result(); as res) {
-      <section class="result" [class.win]="res.won">
-        <h2>
-          @if (res.won) {
-            <pv-icon name="trophy" /> {{ info(res.category).label }} Contest — you won!
-          } @else {
-            Ribbon out of reach — you placed #{{ res.playerRank }}.
-          }
-        </h2>
-        @if (res.promoted) {
-          <p class="promo"><pv-icon name="sparkles" /> Promoted! You advance to {{ svc.rankLabel() }}.</p>
-        }
+    @switch (svc.phase()) {
+      <!-- ───────────────────────── PREP ───────────────────────── -->
+      @case ('prep') {
+        <div class="stage-grid">
+          <section class="panel performer" [style.--accent]="info(svc.category()).accent">
+            <header class="panel-head"><h2>Backstage</h2></header>
 
-        <div class="rounds">
-          @for (r of res.rounds; track r.turn) {
-            <div class="round">
-              <span class="r-turn">Appeal {{ r.turn }}</span>
-              @for (l of r.lines; track l.name) {
-                <span class="r-line" [class.me]="l.isPlayer">
-                  +{{ l.appeal }}
-                  @if (l.combo) { <span class="tag combo" title="Combo bonus">▲</span> }
-                  @if (l.jammed) { <span class="tag jam" title="Jammed">✕</span> }
-                </span>
+            @if (svc.performer(); as p) {
+              <div class="performer-card">
+                <img [src]="p.sprite" [alt]="p.name" width="120" height="120" />
+                <div class="who"><strong>{{ p.name }}</strong><span class="dex">#{{ p.dex }}</span></div>
+              </div>
+            }
+
+            <form class="swap" (submit)="$event.preventDefault(); search()">
+              <input type="search" name="performer" autocomplete="off" placeholder="Swap performer (name or #)…" [value]="query()" (input)="query.set($any($event.target).value)" />
+              <button type="submit" class="btn ghost">Swap</button>
+            </form>
+            @if (svc.searchError(); as err) { <p class="msg err"><pv-icon name="triangle-alert" /> {{ err }}</p> }
+
+            <fieldset class="categories">
+              <legend>Contest theme</legend>
+              <div class="cat-row">
+                @for (c of categories; track c.key) {
+                  <button type="button" class="cat" [class.active]="svc.category() === c.key" [style.--accent]="c.accent" (click)="svc.setCategory(c.key)">
+                    <span class="cat-icon" aria-hidden="true"><pv-icon [name]="c.icon" /></span>
+                    <span class="cat-label">{{ c.label }}</span>
+                  </button>
+                }
+              </div>
+            </fieldset>
+
+            <div class="conditions">
+              @for (c of categories; track c.key) {
+                <div class="cond-row" [class.lead]="svc.category() === c.key">
+                  <span class="cond-name"><pv-icon [name]="c.icon" /> {{ c.label }}</span>
+                  <div class="cond-bar"><span [style.--accent]="c.accent" [style.width.%]="(svc.conditions()[c.key] / 80) * 100"></span></div>
+                  <span class="cond-num">{{ svc.conditions()[c.key] }}</span>
+                </div>
               }
             </div>
-          }
-        </div>
 
-        <ol class="ranking">
-          @for (e of res.ranking; track e.name; let i = $index) {
-            <li [class.me]="e.isPlayer">
-              <span class="place">{{ i + 1 }}</span>
-              <span class="entrant">{{ e.name }}{{ e.isPlayer ? ' (you)' : '' }}</span>
-              <span class="appeal">{{ e.score }}</span>
-            </li>
-          }
-        </ol>
-      </section>
+            <div class="enter-row">
+              <button type="button" class="btn enter" [disabled]="!svc.canEnter()" (click)="begin()">
+                <pv-icon name="sparkles" /> Take the stage ›
+              </button>
+            </div>
+          </section>
+
+          <section class="panel pantry">
+            <header class="panel-head"><h2>Poffin mix</h2><span class="mix-count">{{ svc.mix().length }} / 4</span></header>
+            <div class="mix-tray">
+              @for (b of svc.mix(); track b.name) {
+                <button type="button" class="chip" (click)="svc.toggleBerry(b)" title="Remove">{{ b.name }} <pv-icon name="x" /></button>
+              } @empty {
+                <p class="muted">Pick up to four berries below. Their flavours feed the matching condition.</p>
+              }
+              @if (svc.mix().length) { <button type="button" class="chip clear" (click)="svc.clearMix()">Clear mix</button> }
+            </div>
+            <p class="hint">Highlighting <strong>{{ flavorForCategory(svc.category()) }}</strong> berries for <strong>{{ info(svc.category()).label }}</strong>.</p>
+            <ul class="berries">
+              @for (b of svc.pantry(); track b.name) {
+                <li>
+                  <button type="button" class="berry" [class.picked]="svc.inMix(b)" [class.hot]="berryHighlight(b) > 0" [disabled]="!svc.inMix(b) && svc.mixFull()" (click)="svc.toggleBerry(b)">
+                    <span class="berry-name">{{ b.name }}</span>
+                    @if (berryHighlight(b) > 0) { <span class="berry-pot" [style.--accent]="info(svc.category()).accent">+{{ berryHighlight(b) }}</span> }
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+        </div>
+      }
+
+      <!-- ───────────────────────── STAGE ───────────────────────── -->
+      @case ('stage') {
+        @if (svc.performance(); as perf) {
+          <section class="show" [style.--accent]="info(svc.category()).accent">
+            <div class="show-top">
+              <span class="round-chip">Appeal {{ perf.finished ? svc.totalRounds : perf.round }} / {{ svc.totalRounds }}</span>
+              <div class="judge">
+                <span class="j-label you">You {{ svc.playerHearts() }}</span>
+                <div class="j-meter"><span class="j-fill" [style.width.%]="leadPct()"></span></div>
+                <span class="j-label foe">{{ svc.topRivalHearts() }} Rivals</span>
+              </div>
+            </div>
+
+            <div class="spotlight">
+              @if (svc.performer(); as p) {
+                <img class="perf-sprite" [src]="p.sprite" [alt]="p.name" />
+              }
+              <!-- floating hearts + outcome banner, re-created each round to replay the animation -->
+              @for (o of [svc.lastOutcome()]; track o?.round) {
+                @if (o) {
+                  <div class="hearts" aria-hidden="true">
+                    @for (h of [1,2,3,4,5]; track h) { <span class="heart" [style.--i]="h">♥</span> }
+                  </div>
+                  <div class="gain" [class.big]="o.total >= 60">
+                    +{{ o.total }} <small>hearts</small>
+                    @if (o.combo > 0) { <span class="tag combo">COMBO ×2!</span> }
+                    @if (o.jam) { <span class="tag jam">Startled rivals!</span> }
+                    @if (o.boredom > 0) { <span class="tag bored">−{{ o.boredom }} bored</span> }
+                  </div>
+                }
+              }
+            </div>
+
+            @if (svc.lastOutcome(); as o) {
+              <div class="breakdown">
+                <span>Base {{ o.base }}</span>
+                @if (o.condition > 0) { <span class="plus">+{{ o.condition }} condition</span> }
+                @if (o.theme > 0) { <span class="plus">+{{ o.theme }} on-theme</span> }
+                @if (o.combo > 0) { <span class="plus combo">+{{ o.combo }} combo</span> }
+                @if (o.showmanship > 0) { <span class="plus">+{{ o.showmanship }} flair</span> }
+              </div>
+            }
+
+            <div class="moves">
+              @for (c of categories; track c.key) {
+                <button
+                  type="button"
+                  class="move"
+                  [class.combo]="svc.comboHint(c.key)"
+                  [class.theme]="svc.category() === c.key"
+                  [style.--accent]="c.accent"
+                  (click)="appeal(c.key)"
+                >
+                  <span class="m-icon" aria-hidden="true"><pv-icon [name]="c.icon" /></span>
+                  <span class="m-name">{{ moveName(c.key) }}</span>
+                  <span class="m-cat">{{ c.label }}</span>
+                  @if (svc.comboHint(c.key)) { <span class="m-flag">Combo!</span> }
+                  @else if (svc.category() === c.key) { <span class="m-flag theme">On-theme</span> }
+                </button>
+              }
+            </div>
+            <p class="move-hint">Chain the next category in the cycle for a <strong>×2 combo</strong> — but repeating a category bores the crowd.</p>
+          </section>
+        }
+      }
+
+      <!-- ───────────────────────── RESULT ───────────────────────── -->
+      @case ('result') {
+        @if (svc.result(); as res) {
+          <section class="result" [class.win]="res.won" [style.--accent]="info(res.category).accent">
+            <h2>
+              @if (res.won) { <pv-icon name="trophy" /> {{ info(res.category).label }} Contest — you won! }
+              @else { Ribbon out of reach — you placed #{{ res.playerRank }}. }
+            </h2>
+            @if (res.won) { <p class="ribbon-won"><span class="ribbon earned big" [style.--accent]="info(res.category).accent"><pv-icon [name]="info(res.category).icon" /></span> {{ info(res.category).label }} Ribbon earned!</p> }
+            @if (res.promoted) { <p class="promo"><pv-icon name="sparkles" /> Promoted! You advance to {{ svc.rankLabel() }}.</p> }
+
+            <ol class="ranking">
+              @for (e of res.ranking; track e.name; let i = $index) {
+                <li [class.me]="e.isPlayer">
+                  <span class="place">{{ i + 1 }}</span>
+                  <span class="entrant">{{ e.name }}{{ e.isPlayer ? ' (you)' : '' }}</span>
+                  <span class="appeal">{{ e.score }} ♥</span>
+                </li>
+              }
+            </ol>
+
+            @if (svc.performance(); as perf) {
+              <div class="recap">
+                @for (o of perf.history; track o.round) {
+                  <span class="recap-round" [style.--accent]="info(o.category).accent">
+                    {{ o.round }}. {{ info(o.category).label }} +{{ o.total }}
+                    @if (o.combo > 0) { <span class="tag combo">×2</span> }
+                  </span>
+                }
+              </div>
+            }
+
+            <div class="result-actions">
+              <button type="button" class="btn" (click)="svc.backToPrep()">Perform again ↻</button>
+            </div>
+          </section>
+        }
+      }
     }
   }
 }

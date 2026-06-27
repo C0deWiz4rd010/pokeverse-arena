@@ -57,3 +57,28 @@ carry (the previous round's top performer) and **jamming** (the leader takes a
 comeback penalty), plus a **rank ladder** (Normal → Super → Hyper → Master) where
 rivals scale and a win promotes you. Rank persists. See [../plan.md](../plan.md)
 phase 8.
+
+## Live performance (v2.1)
+
+The contest is now an interactive, animated mini-game instead of an auto-run.
+
+- **Two acts.** *Backstage* keeps the berry/Poffin prep (condition bars, theme);
+  then **Take the stage** starts a live performance.
+- **Turn-by-turn appeals.** Each of four rounds you pick one of five appeal moves
+  (one per category). Scoring blends the move's base, your Poffin **conditions**,
+  an on-theme bonus and a little seeded flair.
+- **Combos & boredom.** Appeals form a cyclic chain (cool→beauty→cute→smart→
+  tough→cool); playing the next link **doubles** the appeal (×2 combo, highlighted
+  live), while repeating a category **bores the crowd** for a penalty — a real
+  risk/reward each turn. The "tough" move **startles rivals**, cutting their
+  appeal that round.
+- **Animated stage.** A swaying performer, floating hearts, a pop-in heart gain
+  with combo/jam/bored tags, and a live **judge meter** of your hearts vs the
+  rivals'.
+- **Ribbons & ranks.** Winning earns the category's **ribbon** (persisted, shown
+  in a ribbon case) and promotes you up the rank ladder
+  (Normal → Super → Hyper → Master); rivals scale with rank.
+
+Pure, seeded, unit-tested logic in `game/contest/performance.ts` (appeal moves,
+round resolution, combos/boredom/jam, ranking); the auto-run `runAppealContest`
+remains for tests/headless use. All animations honour `prefers-reduced-motion`.

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ContestService } from './contest.service';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
@@ -24,8 +24,20 @@ export class ContestComponent {
 
   protected readonly query = signal('');
 
+  /** Player vs top-rival hearts as a 0–100 lead bar for the judge meter. */
+  protected readonly leadPct = computed(() => {
+    const me = this.svc.playerHearts();
+    const foe = this.svc.topRivalHearts();
+    const total = me + foe;
+    return total > 0 ? (me / total) * 100 : 50;
+  });
+
   protected info(key: ContestCategory) {
     return this.categories.find((c) => c.key === key)!;
+  }
+
+  protected moveName(key: ContestCategory): string {
+    return this.svc.appealMoves[key].name;
   }
 
   protected search(): void {
@@ -36,5 +48,13 @@ export class ContestComponent {
   protected berryHighlight(berry: Berry): number {
     const flavor = flavorForCategory(this.svc.category());
     return berry.flavors[flavor];
+  }
+
+  protected begin(): void {
+    this.svc.beginPerformance();
+  }
+
+  protected appeal(key: ContestCategory): void {
+    this.svc.appeal(key);
   }
 }

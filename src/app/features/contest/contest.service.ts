@@ -9,16 +9,26 @@ import {
   mixConditions,
   nextRank,
   rankInfo,
-  runAppealContest,
-  type AppealRound,
   type Berry,
   type ContestCategory,
   type ContestEntrant,
   type ContestRank,
   type Flavor,
 } from '../../game/contest/contest';
+import {
+  APPEAL_MOVES,
+  PERFORMANCE_ROUNDS,
+  appeal as appealRound,
+  performanceRanking,
+  startPerformance,
+  wouldCombo,
+  type PerformanceState,
+  type RoundOutcome,
+} from '../../game/contest/performance';
 
 type Status = 'loading' | 'ready' | 'error';
+/** Where the player is in the contest flow. */
+export type ContestPhase = 'prep' | 'stage' | 'result';
 
 /** The Pokémon currently on stage. */
 export interface Performer {
@@ -34,7 +44,6 @@ export interface ContestResult {
   readonly playerRank: number;
   readonly won: boolean;
   readonly promoted: boolean;
-  readonly rounds: AppealRound[];
 }
 
 const DEFAULT_DEX = 133; // Eevee — a contest darling.
@@ -60,11 +69,35 @@ export class ContestService {
   readonly result = signal<ContestResult | null>(null);
   readonly searchError = signal<string | null>(null);
 
+  /* ----- interactive performance ----- */
+  readonly phase = signal<ContestPhase>('prep');
+  readonly performance = signal<PerformanceState | null>(null);
+  readonly lastOutcome = signal<RoundOutcome | null>(null);
+  readonly ribbons = signal<ReadonlySet<string>>(new Set(this.save.read<string[]>('contest:ribbons', [])));
+  readonly appealMoves = APPEAL_MOVES;
+  readonly totalRounds = PERFORMANCE_ROUNDS;
+
   private attempt = 0;
+  private seed = '';
 
   readonly conditions = computed(() => mixConditions(this.mix()));
   readonly mixFull = computed(() => this.mix().length >= MAX_MIX);
   readonly canEnter = computed(() => this.mix().length > 0 && this.performer() !== null);
+  /** Hearts the player has racked up so far this performance. */
+  readonly playerHearts = computed(() => this.performance()?.playerTotal ?? 0);
+  readonly topRivalHearts = computed(() => {
+    const p = this.performance();
+    return p ? Math.max(0, ...p.rivals.map((r) => r.total)) : 0;
+  });
+
+  /** Whether appealing in a category right now would land a combo. */
+  comboHint(category: ContestCategory): boolean {
+    return wouldCombo(this.performance()?.lastCategory ?? null, category);
+  }
+
+  hasRibbon(category: ContestCategory): boolean {
+    return this.ribbons().has(category);
+  }
 
   constructor() {
     void this.init();
@@ -96,7 +129,7 @@ export class ContestService {
     } else if (current.length < MAX_MIX) {
       this.mix.set([...current, berry]);
     }
-    this.result.set(null);
+    this.toPrep();
   }
 
   inMix(berry: Berry): boolean {
@@ -105,12 +138,12 @@ export class ContestService {
 
   clearMix(): void {
     this.mix.set([]);
-    this.result.set(null);
+    this.toPrep();
   }
 
   setCategory(category: ContestCategory): void {
     this.category.set(category);
-    this.result.set(null);
+    this.toPrep();
   }
 
   /** Swap the performer by name or dex number. */
@@ -120,38 +153,69 @@ export class ContestService {
     if (!term) return;
     try {
       await this.loadPerformer(term);
-      this.result.set(null);
+      this.toPrep();
     } catch {
       this.searchError.set(`No Pokémon called “${query.trim()}” could take the stage.`);
     }
   }
 
-  /** Run the contest with the current performer, mix and category. */
-  enter(): void {
+  /** Take the stage: start an interactive performance. */
+  beginPerformance(): void {
     const performer = this.performer();
     if (!performer || !this.mix().length) return;
     this.attempt += 1;
-    const category = this.category();
+    this.seed = `${performer.name}-${this.category()}-${this.rank()}-${this.mix().map((b) => b.name).join(',')}-${this.attempt}`;
+    this.performance.set(startPerformance(this.rank(), this.seed));
+    this.lastOutcome.set(null);
+    this.result.set(null);
+    this.phase.set('stage');
+  }
+
+  /** Play one appeal move; finalises the contest after the last round. */
+  appeal(category: ContestCategory): void {
+    const state = this.performance();
+    if (!state || state.finished) return;
+    const next = appealRound(state, category, this.conditions(), this.category(), this.rank(), this.seed);
+    this.performance.set(next);
+    this.lastOutcome.set(next.history[next.history.length - 1] ?? null);
+    if (next.finished) this.finalise(next);
+  }
+
+  /** Return to the prep bench (keeps mix, performer and rank). */
+  backToPrep(): void {
+    this.toPrep();
+  }
+
+  private finalise(state: PerformanceState): void {
+    const performer = this.performer();
     const rank = this.rank();
-    const seed = `${performer.name}-${category}-${rank}-${this.mix()
-      .map((b) => b.name)
-      .join(',')}-${this.attempt}`;
-    const outcome = runAppealContest(
-      performer.name,
-      this.conditions(),
-      category,
-      this.mix().length,
-      rank,
-      seed,
-    );
-    this.result.set({ category, rank, ...outcome });
-    if (outcome.promoted) {
+    const category = this.category();
+    const outcome = performanceRanking(state, performer?.name ?? 'You');
+    const promoted = outcome.won && nextRank(rank) !== null;
+    this.result.set({ category, rank, promoted, ...outcome });
+    this.phase.set('result');
+
+    if (outcome.won) {
+      // Award the category ribbon and (below Master) promote a rank.
+      if (!this.ribbons().has(category)) {
+        const next = new Set(this.ribbons());
+        next.add(category);
+        this.ribbons.set(next);
+        this.save.write('contest:ribbons', [...next]);
+      }
       const up = nextRank(rank);
       if (up) {
         this.rank.set(up);
         this.save.write('contest:rank', up);
       }
     }
+  }
+
+  private toPrep(): void {
+    this.phase.set('prep');
+    this.performance.set(null);
+    this.lastOutcome.set(null);
+    this.result.set(null);
   }
 
   private async loadPerformer(idOrName: number | string): Promise<void> {
