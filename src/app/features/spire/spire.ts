@@ -7,7 +7,7 @@ import { IconComponent } from '../../core/ui/icon/icon';
 import { TournamentMatchComponent, type MatchOutcome } from '../tournaments/tournament-match/tournament-match';
 import { titleCase } from '../../core/ui/format';
 import type { Battler } from '../../game/engine';
-import type { RewardOption, ShopEntry, SpireNode } from '../../game/spire';
+import { isBossFloor, type RewardOption, type ShopEntry, type SpireNode } from '../../game/spire';
 
 @Component({
   selector: 'pv-spire',
@@ -22,6 +22,15 @@ export class SpireComponent {
 
   protected readonly picks = signal<Battler[]>([]);
   protected readonly canStart = computed(() => this.picks().length === 3);
+
+  /** Visual climb track: one step per floor, flagging bosses and the current floor. */
+  protected readonly climb = computed(() => {
+    const cur = this.svc.floor();
+    return Array.from({ length: this.svc.totalFloors }, (_, i) => {
+      const n = i + 1;
+      return { n, boss: isBossFloor(n), done: n < cur, current: n === cur };
+    });
+  });
 
   protected newRun(): void {
     this.picks.set([]);

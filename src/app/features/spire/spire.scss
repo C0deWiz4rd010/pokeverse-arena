@@ -39,6 +39,28 @@
 .hud-coins { color: var(--accent-2); }
 .hud-line { font-weight: 700; margin-bottom: 0.5rem; }
 
+/* ---- climb track ---- */
+.climb { display: flex; align-items: center; gap: 3px; margin: 0.1rem 0 0.7rem; }
+.climb .step {
+  flex: 1; height: 8px; min-width: 6px; border-radius: 999px;
+  display: grid; place-items: center; font-size: 0.62rem; line-height: 1; color: transparent;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background 0.3s ease, height 0.2s ease;
+}
+.climb .step.done { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.climb .step.current {
+  background: var(--accent-3);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent-3) 60%, transparent);
+  animation: climb-pulse 1.4s ease-in-out infinite;
+}
+.climb .step.boss { height: 16px; color: var(--text-dim); }
+.climb .step.boss.done, .climb .step.boss.current { color: #0b0a1f; }
+
+@keyframes climb-pulse {
+  0%, 100% { box-shadow: 0 0 6px color-mix(in srgb, var(--accent-3) 45%, transparent); }
+  50% { box-shadow: 0 0 14px color-mix(in srgb, var(--accent-3) 75%, transparent); }
+}
+
 .party-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.4rem 0; }
 .party-mon { display: grid; gap: 0.2rem; width: 56px; }
 .party-mon.fainted { opacity: 0.4; filter: grayscale(1); }
@@ -101,5 +123,6 @@
 .ghost.small { padding: 0.3rem 0.7rem; font-size: 0.8rem; margin-left: auto; }
 
 @media (prefers-reduced-motion: reduce) {
-  .node, .reward, .shop-item, .pick, .btn, .party-mon .hp .fill { transition: none; }
+  .node, .reward, .shop-item, .pick, .btn, .party-mon .hp .fill, .climb .step { transition: none; }
+  .climb .step.current { animation: none; }
 }

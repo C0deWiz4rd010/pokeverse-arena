@@ -73,6 +73,15 @@
         <button class="ghost small" type="button" (click)="svc.abandon()">Abandon</button>
       </div>
 
+      <div class="climb" [attr.aria-label]="'Floor ' + svc.floor() + ' of ' + svc.totalFloors">
+        @for (s of climb(); track s.n) {
+          <span class="step" [class.done]="s.done" [class.current]="s.current" [class.boss]="s.boss"
+            [title]="(s.boss ? 'Boss · ' : '') + 'Floor ' + s.n">
+            @if (s.boss) { <pv-icon name="crown" /> }
+          </span>
+        }
+      </div>
+
       <div class="party-bar">
         @for (p of svc.partyView(); track p.mon.id; let i = $index) {
           <div class="party-mon" [class.fainted]="p.hpPct <= 0">
