@@ -10,11 +10,15 @@ import type {
 import type { PokemonType } from '../utils/type-chart';
 import type { StatKey } from '../utils/stat-calculator';
 
-/** Lightweight entry for the Pokedex grid. */
+/** Lightweight entry for the Pokedex grid (types/gen filled in by enrichment). */
 export interface PokedexEntry {
   id: number;
   name: string;
   artwork: string;
+  /** Filled in lazily by the one-time type-list enrichment ([] until then). */
+  types: PokemonType[];
+  /** Debut generation 1–9 (0 until enriched). */
+  gen: number;
 }
 
 export interface PokemonStats {

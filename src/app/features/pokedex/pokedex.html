@@ -53,8 +53,8 @@
     </div>
   } @else {
     <div class="grid">
-      @for (entry of store.visible(); track entry.id) {
-        <pv-pokemon-card [entry]="entry" />
+      @for (entry of store.visible(); track entry.id; let i = $index) {
+        <pv-pokemon-card [entry]="entry" [index]="i" />
       }
     </div>
     <div #sentinel class="sentinel" aria-hidden="true"></div>
