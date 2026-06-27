@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { isPokemonType, type PokemonType } from '../../core/utils/type-chart';
+import { typeColorVar } from '../../core/ui/format';
 import type { StatKey } from '../../core/utils/stat-calculator';
 import type { Battler } from '../../game/engine';
 import type { BracketMatch, Trainer } from '../../game/tournament';
@@ -161,6 +162,8 @@ export class ArenaService {
         foeTeam,
         aiTier: rematch ? 'elite' : leaderTier(leader.order),
         field: leader.gymField,
+        accent: typeColorVar(leader.type),
+        foeAce: leader.dialogue.ace,
       });
       this.intro.set({ leader, level, rematch, foeTeam, playerTeam, boostSummary: this.boostSummary() });
       this.status.set('intro');

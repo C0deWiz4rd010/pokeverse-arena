@@ -324,3 +324,35 @@
 .meta .stage.up { color: #062; background: color-mix(in srgb, #34d399 35%, transparent); }
 .meta .stage.down { color: #fff; background: color-mix(in srgb, #f87171 40%, transparent); }
 .name-row { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+
+/* ---- themed match frame (arena gyms) + ace quip banner ---- */
+.match.themed .arena {
+  border: 1px solid color-mix(in srgb, var(--match-accent, var(--accent)) 45%, transparent);
+  box-shadow: inset 0 0 50px color-mix(in srgb, var(--match-accent, var(--accent)) 14%, transparent),
+    0 0 22px color-mix(in srgb, var(--match-accent, var(--accent)) 18%, transparent);
+}
+.ace-quip {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  max-width: 88%;
+  text-align: center;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-style: italic;
+  color: #fff;
+  background: color-mix(in srgb, var(--match-accent, var(--accent)) 40%, rgba(0, 0, 0, 0.7));
+  border: 1px solid color-mix(in srgb, var(--match-accent, var(--accent)) 65%, transparent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  animation: ace-quip-in 0.4s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+@keyframes ace-quip-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ace-quip { animation: none; }
+}

@@ -1,4 +1,4 @@
-<div class="match" [class.is-done]="done()">
+<div class="match" [class.is-done]="done()" [class.themed]="!!setup().accent" [style.--match-accent]="setup().accent">
   @if (ruleBanner(); as banner) {
     <p class="rule-banner">{{ banner }}</p>
   }
@@ -22,6 +22,10 @@
     <div class="field-overlay">
       <pv-field-banner [weather]="engWeather()" [terrain]="engTerrain()" [weatherTurns]="wTurns()" [terrainTurns]="tTurns()" />
     </div>
+
+    @if (foeQuip(); as quip) {
+      <div class="ace-quip" role="status">{{ quip }}</div>
+    }
 
     <!-- Foe (top-right) -->
     <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1" [class.crit]="critSide() === 1">

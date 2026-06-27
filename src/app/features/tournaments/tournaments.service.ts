@@ -55,8 +55,10 @@ export interface PlayerMatchSetup {
   readonly aiTier?: AiTier;
   /** A persistent battlefield condition imposed from the first turn (gym fields). */
   readonly field?: { readonly weather?: Weather; readonly terrain?: Terrain };
-  /** Accent colour for a themed match frame (hex/css). */
+  /** Accent colour for a themed match frame (any CSS colour, incl. var(--…)). */
   readonly accent?: string;
+  /** A taunt shown as a banner when the foe sends out its final (ace) Pokémon. */
+  readonly foeAce?: string;
 }
 
 /** In-progress league (round-robin / swiss) run state. */

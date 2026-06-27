@@ -103,6 +103,10 @@ export class TournamentMatchComponent {
   protected readonly wTurns = signal(0);
   protected readonly tTurns = signal(0);
 
+  /** A dramatic banner shown when the foe sends out its ace (final Pokémon). */
+  protected readonly foeQuip = signal<string | null>(null);
+  private foeAceShown = false;
+
   protected readonly pStageChips = computed(() => stageChips(this.pStages()));
   protected readonly fStageChips = computed(() => stageChips(this.fStages()));
   protected readonly playerAbility = computed(() => abilityName(this.playerActive()?.ability));
@@ -187,6 +191,7 @@ export class TournamentMatchComponent {
   /* ---------------------------------------------------------------- engine */
 
   private begin(s: PlayerMatchSetup): void {
+    this.foeAceShown = false;
     this.hpA.set(s.playerTeam.map((m, i) => clamp(s.playerStartHp?.[i] ?? m.stats.hp, m.stats.hp)));
     this.hpB.set(s.foeTeam.map((m, i) => clamp(s.foeStartHp?.[i] ?? m.stats.hp, m.stats.hp)));
     this.ia.set(skipFainted(this.hpA(), 0));
@@ -224,6 +229,17 @@ export class TournamentMatchComponent {
     this.append(`Go, ${titleCase(a.name)}!`);
     this.append(`${s.foe.name} sent out ${titleCase(b.name)}!`);
     this.syncState();
+    this.maybeAceQuip(s);
+  }
+
+  /** Fire the leader's ace taunt when their final Pokémon takes the field. */
+  private maybeAceQuip(s: PlayerMatchSetup): void {
+    if (!s.foeAce || this.foeAceShown || s.foeTeam.length < 2) return;
+    if (this.ib() !== s.foeTeam.length - 1) return;
+    this.foeAceShown = true;
+    this.foeQuip.set(s.foeAce);
+    this.append(s.foeAce);
+    setTimeout(() => this.foeQuip.set(null), 3200);
   }
 
   /** Pull authoritative status/stages/field state from the engine. */
