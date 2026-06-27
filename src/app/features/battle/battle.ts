@@ -36,6 +36,12 @@ interface StageChip {
   readonly label: string;
   readonly value: number;
 }
+interface FloatNum {
+  readonly id: number;
+  readonly side: SideIndex;
+  readonly text: string;
+  readonly cls: string;
+}
 
 /** Engine weather → cosmetic overlay weather. */
 const OVERLAY_WEATHER: Record<EngineWeather, Weather> = {
@@ -111,6 +117,13 @@ export class BattleComponent {
   protected readonly flashSide = signal<SideIndex | null>(null);
   protected readonly critSide = signal<SideIndex | null>(null);
   protected readonly winner = signal<SideIndex | null>(null);
+  /** Send-out slide-in (per side) and the sprite currently fainting. */
+  protected readonly enterMine = signal(false);
+  protected readonly enterFoe = signal(false);
+  protected readonly faintSide = signal<SideIndex | null>(null);
+  /** Floating damage / heal numbers over a fighter. */
+  protected readonly floats = signal<FloatNum[]>([]);
+  private floatId = 0;
 
   /** Cosmetic backdrop: engine weather if set, else a type-evoked ambiance. */
   protected readonly weather = computed<Weather>(() => {
@@ -187,6 +200,10 @@ export class BattleComponent {
       `Go, ${titleCase(player.name)}!`,
       ...(this.weather() === 'clear' ? [] : [`${info.label}!`]),
     ]);
+    this.faintSide.set(null);
+    this.floats.set([]);
+    this.pulseEnter(0);
+    this.pulseEnter(1);
     this.phase.set('fighting');
   }
 
@@ -238,6 +255,9 @@ export class BattleComponent {
           this.flashSide.set(ev.side);
           this.shakeSide.set(ev.side);
           if (this.pendingMove) this.fx()?.impact(ev.side, this.pendingMove.type, ev.crit);
+          const before = ev.side === 0 ? this.playerHp() : this.oppHp();
+          const dealt = Math.max(0, before - ev.remainingHp);
+          if (dealt > 0) this.spawnFloat(ev.side, `-${dealt}`, this.dmgClass(ev.crit, ev.effectiveness));
           this.setHp(ev.side, ev.remainingHp);
           if (ev.crit) {
             this.critSide.set(ev.side);
@@ -251,11 +271,15 @@ export class BattleComponent {
           this.critSide.set(null);
           break;
         }
-        case 'heal':
+        case 'heal': {
+          const before = ev.side === 0 ? this.playerHp() : this.oppHp();
+          const gained = Math.max(0, ev.remainingHp - before);
+          if (gained > 0) this.spawnFloat(ev.side, `+${gained}`, 'heal');
           this.setHp(ev.side, ev.remainingHp);
           if (ev.text) this.append(ev.text);
           await sleep(380);
           break;
+        }
         case 'status-set':
         case 'cure':
         case 'weather':
@@ -274,7 +298,8 @@ export class BattleComponent {
           break;
         case 'faint':
           this.append(`${titleCase(ev.name)} fainted!`);
-          await sleep(680);
+          this.faintSide.set(ev.side);
+          await sleep(700);
           break;
         case 'end':
           this.append(ev.winner === 0 ? 'You won the battle!' : 'You were defeated…');
@@ -311,6 +336,30 @@ export class BattleComponent {
 
   private append(line: string): void {
     this.log.update((l) => [...l, line]);
+  }
+
+  /** Retrigger a side's send-out slide-in animation. */
+  private pulseEnter(side: SideIndex): void {
+    const sig = side === 0 ? this.enterMine : this.enterFoe;
+    sig.set(false);
+    queueMicrotask(() => {
+      sig.set(true);
+      setTimeout(() => sig.set(false), 520);
+    });
+  }
+
+  /** Spawn a floating damage/heal number that drifts up and fades. */
+  private spawnFloat(side: SideIndex, text: string, cls: string): void {
+    const id = ++this.floatId;
+    this.floats.update((f) => [...f, { id, side, text, cls }]);
+    setTimeout(() => this.floats.update((f) => f.filter((x) => x.id !== id)), 1100);
+  }
+
+  private dmgClass(crit: boolean, effectiveness: number): string {
+    if (crit) return 'crit';
+    if (effectiveness >= 2) return 'super';
+    if (effectiveness > 0 && effectiveness < 1) return 'resist';
+    return 'normal';
   }
 
   private moveType(side: SideIndex, name: string): PokemonType {

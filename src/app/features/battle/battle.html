@@ -87,14 +87,20 @@
                     <span class="kp">{{ oppHp() }} / {{ oppMaxHp() }} <small>KP</small></span>
                   </div>
                 </div>
-                <img class="sprite" [src]="o.sprite" [alt]="o.name" />
+                <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="o.sprite" [alt]="o.name" />
+                @for (f of floats(); track f.id) {
+                  @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
+                }
               </div>
             }
 
             <!-- Player -->
             @if (player(); as p) {
               <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0" [class.crit]="critSide() === 0" [class.fainted]="winner() === 1">
-                <img class="sprite" [src]="p.sprite" [alt]="p.name" />
+                <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="p.sprite" [alt]="p.name" />
+                @for (f of floats(); track f.id) {
+                  @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
+                }
                 @if (critSide() === 0) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
                 <div class="info glass">
                   <div class="row">

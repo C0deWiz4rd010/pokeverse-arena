@@ -48,15 +48,21 @@
             </div>
           }
         </div>
-        <img class="sprite" [src]="foe.sprite" [alt]="foe.name" loading="lazy" />
+        <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foe.sprite" [alt]="foe.name" loading="lazy" />
+      }
+      @for (f of floats(); track f.id) {
+        @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
       }
     </div>
 
     <!-- Player (bottom-left) -->
     <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0" [class.crit]="critSide() === 0">
       @if (critSide() === 0) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
+      @for (f of floats(); track f.id) {
+        @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
+      }
       @if (playerActive(); as me) {
-        <img class="sprite" [src]="me.sprite" [alt]="me.name" loading="lazy" />
+        <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="me.sprite" [alt]="me.name" loading="lazy" />
         <div class="meta">
           <div class="name-row">
             <span class="name">{{ titleCase(me.name) }}</span>

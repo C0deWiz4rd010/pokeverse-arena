@@ -54,6 +54,12 @@ interface MoveSlot {
   readonly pp: number;
   readonly maxPp: number | null;
 }
+interface FloatNum {
+  readonly id: number;
+  readonly side: SideIndex;
+  readonly text: string;
+  readonly cls: string;
+}
 
 export interface MatchOutcome {
   readonly playerWon: boolean;
@@ -120,6 +126,13 @@ export class TournamentMatchComponent {
   protected readonly shakeSide = signal<SideIndex | null>(null);
   protected readonly flashSide = signal<SideIndex | null>(null);
   protected readonly critSide = signal<SideIndex | null>(null);
+  /** Sprite currently sliding in (send-out), per side; and the one dropping (faint). */
+  protected readonly enterMine = signal(false);
+  protected readonly enterFoe = signal(false);
+  protected readonly faintSide = signal<SideIndex | null>(null);
+  /** Floating damage / heal numbers over a fighter. */
+  protected readonly floats = signal<FloatNum[]>([]);
+  private floatId = 0;
 
   protected readonly pStatus = signal<StatusCondition>('none');
   protected readonly fStatus = signal<StatusCondition>('none');
@@ -247,6 +260,8 @@ export class TournamentMatchComponent {
     });
     this.log.set([`${s.foe.name} wants to battle!`]);
     this.syncAll();
+    this.pulseEnter(0);
+    this.pulseEnter(1);
     this.append(`Go, ${titleCase(this.tb.active(0).battler.name)}!`);
     this.append(`${s.foe.name} sent out ${titleCase(this.tb.active(1).battler.name)}!`);
     this.maybeAceQuip();
@@ -352,6 +367,7 @@ export class TournamentMatchComponent {
       switch (ev.kind) {
         case 'switch':
           this.syncSide(ev.side);
+          this.pulseEnter(ev.side);
           this.append(ev.text);
           if (ev.side === 1) this.maybeAceQuip();
           await sleep(480);
@@ -371,6 +387,9 @@ export class TournamentMatchComponent {
           this.flashSide.set(ev.side);
           this.shakeSide.set(ev.side);
           if (this.pendingMove) this.fx()?.impact(ev.side, this.pendingMove.type, ev.crit);
+          const before = ev.side === 0 ? this.pHp() : this.fHp();
+          const dealt = Math.max(0, before - ev.remainingHp);
+          if (dealt > 0) this.spawnFloat(ev.side, `-${dealt}`, this.dmgClass(ev.crit, ev.effectiveness));
           if (ev.side === 0) this.pHp.set(ev.remainingHp);
           else this.fHp.set(ev.remainingHp);
           if (ev.crit) {
@@ -385,12 +404,16 @@ export class TournamentMatchComponent {
           this.critSide.set(null);
           break;
         }
-        case 'heal':
+        case 'heal': {
+          const before = ev.side === 0 ? this.pHp() : this.fHp();
+          const gained = Math.max(0, ev.remainingHp - before);
+          if (gained > 0) this.spawnFloat(ev.side, `+${gained}`, 'heal');
           if (ev.side === 0) this.pHp.set(ev.remainingHp);
           else this.fHp.set(ev.remainingHp);
           if (ev.text) this.append(ev.text);
           await sleep(330);
           break;
+        }
         case 'status-set':
         case 'cure':
         case 'weather':
@@ -409,7 +432,9 @@ export class TournamentMatchComponent {
           break;
         case 'faint':
           this.append(`${titleCase(ev.name)} fainted!`);
-          await sleep(620);
+          this.faintSide.set(ev.side);
+          await sleep(700);
+          this.faintSide.set(null);
           break;
         default:
           break;
@@ -451,6 +476,31 @@ export class TournamentMatchComponent {
 
   private append(line: string): void {
     this.log.update((l) => [...l, line]);
+  }
+
+  /** Retrigger a side's send-out slide-in animation. */
+  private pulseEnter(side: SideIndex): void {
+    const sig = side === 0 ? this.enterMine : this.enterFoe;
+    sig.set(false);
+    // Next microtask so the class is removed→added and the animation replays.
+    queueMicrotask(() => {
+      sig.set(true);
+      setTimeout(() => sig.set(false), 520);
+    });
+  }
+
+  /** Spawn a floating damage/heal number that drifts up and fades. */
+  private spawnFloat(side: SideIndex, text: string, cls: string): void {
+    const id = ++this.floatId;
+    this.floats.update((f) => [...f, { id, side, text, cls }]);
+    setTimeout(() => this.floats.update((f) => f.filter((x) => x.id !== id)), 1100);
+  }
+
+  private dmgClass(crit: boolean, effectiveness: number): string {
+    if (crit) return 'crit';
+    if (effectiveness >= 2) return 'super';
+    if (effectiveness > 0 && effectiveness < 1) return 'resist';
+    return 'normal';
   }
 
   private moveType(side: SideIndex, name: string): PokemonType {
