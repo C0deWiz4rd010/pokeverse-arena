@@ -112,3 +112,17 @@ Beyond the seeded knockout bracket, tournaments now run **league formats** —
 differential). Fields are **power-seeded**, runs award **prizes**, and a persisted
 **history** records each result. The shared match component shows the full deep
 HUD. See [../plan.md](../plan.md) phase 5.
+
+## Tournaments v2 — polish
+
+A visual/animation pass over the existing format engine.
+
+- **Champion finale**: a confetti burst, a bobbing crown and a glowing champion
+  portrait when you win the cup.
+- **Bracket** matches pop in; the player's live match pulses; eliminated slots dim
+  and the champion spot animates in.
+- **Standings** rows stagger in with 🥇🥈🥉 podium highlighting and a player-row
+  outline.
+- Animated lobby cards and a pulsing "Battle ›" call-to-action.
+
+All motion respects `prefers-reduced-motion`.

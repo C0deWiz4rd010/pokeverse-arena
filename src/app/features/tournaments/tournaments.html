@@ -104,6 +104,11 @@
         <pv-tournament-match [setup]="setup" (finished)="onFinished($event)" />
       } @else if (svc.status() === 'done' && svc.champion(); as champ) {
         <div class="finale" [class.you]="championIsPlayer()">
+          @if (championIsPlayer()) {
+            <div class="confetti" aria-hidden="true">
+              @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]; track i) { <span class="cf" [style.--i]="i"></span> }
+            </div>
+          }
           <span class="crown"><pv-icon name="crown" /></span>
           <img class="champ-ava" [src]="champ.avatar" [alt]="champ.name" />
           <p class="champ-name">
@@ -190,8 +195,8 @@
             <span class="st-num">±KO</span>
           </div>
           @for (s of svc.rankedStandings(); track s.trainerId; let i = $index) {
-            <div class="st-row" [class.you]="s.isPlayer">
-              <span class="st-rank">{{ i + 1 }}</span>
+            <div class="st-row" [class.you]="s.isPlayer" [class.podium]="i < 3" [attr.data-rank]="i + 1" [style.animation-delay]="(i * 35) + 'ms'">
+              <span class="st-rank">{{ i < 3 ? (i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉') : (i + 1) }}</span>
               <span class="st-name">{{ s.isPlayer ? 'You' : s.name }}</span>
               <span class="st-num">{{ s.wins }}</span>
               <span class="st-num">{{ s.losses }}</span>

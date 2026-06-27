@@ -413,3 +413,71 @@
 .history-list li.won { border-color: color-mix(in srgb, #5be08a 45%, transparent); }
 .history-list .h-place { font-weight: 800; color: var(--accent-2); }
 .history-list .h-prize { color: var(--text-dim); }
+
+/* ============================ Tournaments v2 — polish ===================== */
+
+/* ---- lobby card entrances ---- */
+.format-card, .mode-card { animation: t-rise 0.4s ease both; }
+.mode-card:hover, .format-card:hover { transform: translateY(-3px); }
+
+/* ---- bracket reveal + states ---- */
+.bmatch { animation: t-pop 0.35s ease both; }
+.bmatch.player { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+.bmatch.live { animation: t-pop 0.35s ease both, live-pulse 1.6s ease-in-out infinite; }
+.bmatch .slot.win { transition: background 0.4s ease, color 0.4s ease; }
+.bmatch .slot.out { opacity: 0.5; }
+.champ-spot.lit { animation: t-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.champ-spot.lit .crown { color: var(--accent-3); animation: crown-bob 2.4s ease-in-out infinite; }
+
+/* ---- call to action ---- */
+.cta .battle { animation: cta-pulse 1.8s ease-in-out infinite; }
+
+/* ---- standings ---- */
+.st-row { animation: t-rise 0.3s ease both; }
+.st-row.podium .st-rank { font-size: 1rem; }
+.st-row[data-rank='1'] { background: color-mix(in srgb, #ffd166 16%, transparent); }
+.st-row[data-rank='2'] { background: color-mix(in srgb, #cdd6e0 14%, transparent); }
+.st-row[data-rank='3'] { background: color-mix(in srgb, #e0a06b 14%, transparent); }
+.st-row.you { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent); }
+
+/* ---- champion finale celebration ---- */
+.finale { position: relative; overflow: hidden; }
+.finale .crown { display: inline-block; font-size: 2.4rem; }
+.finale.you .crown { color: var(--accent-3); animation: crown-bob 2s ease-in-out infinite; }
+.finale .champ-ava { animation: champ-in 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.finale.you .champ-ava { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-3) 60%, transparent), 0 0 30px color-mix(in srgb, var(--accent-3) 45%, transparent); }
+.finale .champ-name { animation: t-rise 0.5s ease 0.1s both; }
+.confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.confetti .cf {
+  position: absolute;
+  top: -12px;
+  left: calc((var(--i) / 18) * 100%);
+  width: 8px; height: 12px; border-radius: 2px;
+  background: hsl(calc(var(--i) * 40) 90% 62%);
+  opacity: 0;
+  animation: cf-fall 1.8s linear infinite;
+  animation-delay: calc(var(--i) * 0.09s);
+}
+
+/* ---- keyframes ---- */
+@keyframes t-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes t-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent); }
+  50% { box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 60%, transparent); }
+}
+@keyframes cta-pulse { 0%, 100% { transform: none; } 50% { transform: translateY(-2px); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 35%, transparent); } }
+@keyframes crown-bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-5px) rotate(3deg); } }
+@keyframes champ-in { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: none; } }
+@keyframes cf-fall {
+  0% { opacity: 0; transform: translateY(-10px) rotate(0); }
+  10% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(360px) rotate(540deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .format-card, .mode-card, .bmatch, .bmatch.live, .champ-spot.lit, .champ-spot.lit .crown,
+  .cta .battle, .st-row, .finale .crown, .finale .champ-ava, .finale .champ-name, .confetti .cf {
+    animation: none;
+  }
+}
