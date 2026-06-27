@@ -111,17 +111,33 @@ export class TeamBattle {
     teamA: readonly Battler[],
     teamB: readonly Battler[],
     seed: number | string = Date.now(),
-    opts: { rules?: BattleRules; aiTier?: AiTier; startHpA?: readonly number[]; startHpB?: readonly number[] } = {},
+    opts: {
+      rules?: BattleRules;
+      aiTier?: AiTier;
+      startHpA?: readonly number[];
+      startHpB?: readonly number[];
+      /** A persistent battlefield condition active from the first turn (gym fields). */
+      field?: { weather?: Weather; terrain?: Terrain };
+    } = {},
   ) {
     this.rng = new SeededRng(seed);
     this.rules = opts.rules;
     this.aiTier = opts.aiTier ?? 'strong';
     const a = teamA.map((m, i) => makeSide(m, opts.startHpA?.[i]));
     const b = teamB.map((m, i) => makeSide(m, opts.startHpB?.[i]));
+    const field = freshField();
+    if (opts.field?.weather) {
+      field.weather = opts.field.weather;
+      field.weatherTurns = 999;
+    }
+    if (opts.field?.terrain) {
+      field.terrain = opts.field.terrain;
+      field.terrainTurns = 999;
+    }
     this.state = {
       parties: [a, b],
       active: [firstLiving(a), firstLiving(b)],
-      field: freshField(),
+      field,
       turn: 0,
       finished: false,
       winner: null,

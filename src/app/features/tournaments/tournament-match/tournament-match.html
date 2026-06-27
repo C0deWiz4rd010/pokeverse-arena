@@ -80,10 +80,22 @@
 
   <!-- Team trays -->
   <div class="trays">
-    <div class="tray">
+    <div class="tray" [class.picking]="switchOpen() || awaitingSwitch()">
       <span class="tray-label">You</span>
       @for (m of playerTray(); track m.mon.id) {
-        <img class="ball" [class.active]="m.active" [class.fainted]="m.fainted" [src]="m.mon.sprite" [alt]="m.mon.name" [title]="titleCase(m.mon.name)" />
+        <button
+          type="button"
+          class="ball"
+          [class.active]="m.active"
+          [class.fainted]="m.fainted"
+          [class.switchable]="m.switchable"
+          [disabled]="!m.switchable"
+          [title]="m.switchable ? 'Send out ' + titleCase(m.mon.name) : titleCase(m.mon.name)"
+          (click)="onTraySelect(0, m.index)"
+        >
+          <img [src]="m.mon.sprite" [alt]="m.mon.name" />
+          <span class="ball-hp"><span class="bh" [style.width.%]="(m.hp / m.maxHp) * 100"></span></span>
+        </button>
       }
     </div>
     <div class="tray foe-tray">
@@ -96,17 +108,29 @@
 
   <!-- Controls / log -->
   @if (!done()) {
-    <div class="controls">
-      @for (mv of playerMoves(); track mv.name; let i = $index) {
-        <pv-move-button
-          [move]="mv"
-          [defenderTypes]="foeTypes()"
-          [rules]="rules()"
-          [disabled]="busy()"
-          (picked)="useMove(i)"
-        />
-      }
-    </div>
+    @if (awaitingSwitch()) {
+      <p class="switch-prompt"><strong>{{ titleCase(playerActive()?.name ?? '') }}</strong> fainted — pick a replacement from your team above.</p>
+    } @else {
+      <div class="controls" [class.dim]="switchOpen() || busy()">
+        @for (slot of moveSlots(); track slot.move.name; let i = $index) {
+          <div class="move-slot">
+            <pv-move-button
+              [move]="slot.move"
+              [defenderTypes]="foeTypes()"
+              [rules]="rules()"
+              [disabled]="busy() || slot.pp <= 0"
+              (picked)="useMove(i)"
+            />
+            @if (slot.maxPp !== null) { <span class="pp" [class.empty]="slot.pp <= 0">PP {{ slot.pp }}/{{ slot.maxPp }}</span> }
+          </div>
+        }
+      </div>
+      <div class="action-bar">
+        <button class="switch-btn" type="button" [class.on]="switchOpen()" [disabled]="busy() || !canSwitch()" (click)="toggleSwitch()">
+          <span class="sw-ico" aria-hidden="true">⇄</span> {{ switchOpen() ? 'Cancel switch' : 'Switch Pokémon' }}
+        </button>
+      </div>
+    }
   } @else {
     <div class="result" [class.win]="playerWon()">
       <p class="result-title">{{ playerWon() ? 'Victory!' : 'Defeated' }}</p>

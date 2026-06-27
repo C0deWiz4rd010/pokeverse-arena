@@ -9,16 +9,18 @@ import {
   viewChild,
 } from '@angular/core';
 import {
-  Battle,
+  TeamBattle,
   abilityName,
   freshStages,
   BOOSTABLE_STATS,
   type Battler,
   type BattleEvent,
+  type BattleMove,
   type BoostableStat,
   type SideIndex,
   type Stages,
   type StatusCondition,
+  type TeamAction,
   type Terrain,
   type Weather as EngineWeather,
 } from '../../../game/engine';
@@ -28,31 +30,29 @@ import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge
 import { FieldBannerComponent } from '../../../core/ui/field-banner/field-banner';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { BattleFxComponent } from '../../battle/pixi/battle-fx';
-
-interface StageChip {
-  readonly label: string;
-  readonly value: number;
-}
-
-const STAGE_SHORT: Record<BoostableStat, string> = {
-  attack: 'Atk', defense: 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', speed: 'Spe', accuracy: 'Acc', evasion: 'Eva',
-};
-
-function stageChips(stages: Stages): StageChip[] {
-  return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({ label: STAGE_SHORT[s], value: stages[s] }));
-}
 import { pickWeather, weatherForType, type Weather } from '../../../core/ui/weather-overlay/weather';
 import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';
 import type { PokemonType } from '../../../core/utils/type-chart';
 import type { PlayerMatchSetup } from '../tournaments.service';
 
+interface StageChip {
+  readonly label: string;
+  readonly value: number;
+}
 interface TrayMon {
   readonly mon: Battler;
   readonly hp: number;
   readonly maxHp: number;
   readonly active: boolean;
   readonly fainted: boolean;
+  readonly index: number;
+  readonly switchable: boolean;
+}
+interface MoveSlot {
+  readonly move: BattleMove;
+  readonly pp: number;
+  readonly maxPp: number | null;
 }
 
 export interface MatchOutcome {
@@ -60,6 +60,32 @@ export interface MatchOutcome {
   readonly playerFinalHp: number[];
 }
 
+const STAGE_SHORT: Record<BoostableStat, string> = {
+  attack: 'Atk', defense: 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', speed: 'Spe', accuracy: 'Acc', evasion: 'Eva',
+};
+const OVERLAY_WEATHER: Record<EngineWeather, Weather> = {
+  none: 'clear', sun: 'sun', rain: 'rain', sand: 'sand', hail: 'snow', snow: 'snow',
+};
+
+function stageChips(stages: Stages): StageChip[] {
+  return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({ label: STAGE_SHORT[s], value: stages[s] }));
+}
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+function effectivenessNote(mult: number): string | null {
+  if (mult === 0) return "It doesn't affect the foe…";
+  if (mult >= 2) return "It's super effective!";
+  if (mult > 0 && mult < 1) return "It's not very effective…";
+  return null;
+}
+
+/**
+ * Interactive 3-v-3 match on the party-aware {@link TeamBattle} engine: the
+ * player chooses a move **or a switch** each turn, the field (weather/terrain/
+ * hazards) persists across switches, and a forced switch is requested when the
+ * active Pokémon faints. Reused by Arena, Tournaments and the Spire.
+ */
 @Component({
   selector: 'pv-tournament-match',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -74,11 +100,7 @@ export class TournamentMatchComponent {
   protected readonly titleCase = titleCase;
   protected readonly abilityName = abilityName;
 
-  private readonly hpA = signal<number[]>([]);
-  private readonly hpB = signal<number[]>([]);
-  private readonly ia = signal(0);
-  private readonly ib = signal(0);
-
+  /** Active fighters + their live HP (animated). */
   protected readonly playerActive = signal<Battler | null>(null);
   protected readonly foeActive = signal<Battler | null>(null);
   protected readonly pHp = signal(0);
@@ -88,11 +110,16 @@ export class TournamentMatchComponent {
 
   protected readonly log = signal<string[]>([]);
   protected readonly busy = signal(false);
+  protected readonly done = signal(false);
+  protected readonly playerWon = signal(false);
+  /** True while the player must pick a replacement after a faint. */
+  protected readonly awaitingSwitch = signal(false);
+  /** Whether the switch tray is open (manual switch chooser). */
+  protected readonly switchOpen = signal(false);
+
   protected readonly shakeSide = signal<SideIndex | null>(null);
   protected readonly flashSide = signal<SideIndex | null>(null);
   protected readonly critSide = signal<SideIndex | null>(null);
-  protected readonly done = signal(false);
-  protected readonly playerWon = signal(false);
 
   protected readonly pStatus = signal<StatusCondition>('none');
   protected readonly fStatus = signal<StatusCondition>('none');
@@ -103,23 +130,38 @@ export class TournamentMatchComponent {
   protected readonly wTurns = signal(0);
   protected readonly tTurns = signal(0);
 
-  /** A dramatic banner shown when the foe sends out its ace (final Pokémon). */
   protected readonly foeQuip = signal<string | null>(null);
   private foeAceShown = false;
+
+  /** Bumped after every engine mutation so tray/move computeds refresh. */
+  private readonly version = signal(0);
 
   protected readonly pStageChips = computed(() => stageChips(this.pStages()));
   protected readonly fStageChips = computed(() => stageChips(this.fStages()));
   protected readonly playerAbility = computed(() => abilityName(this.playerActive()?.ability));
   protected readonly foeAbility = computed(() => abilityName(this.foeActive()?.ability));
-
   protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
   protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
-  protected readonly playerMoves = computed(() => this.playerActive()?.moves ?? []);
 
-  protected readonly playerTray = computed<TrayMon[]>(() => this.tray(this.setup().playerTeam, this.hpA(), this.ia()));
-  protected readonly foeTray = computed<TrayMon[]>(() => this.tray(this.setup().foeTeam, this.hpB(), this.ib()));
+  /** The active Pokémon's moves with remaining PP. */
+  protected readonly moveSlots = computed<MoveSlot[]>(() => {
+    this.version();
+    const side = this.tb?.active(0);
+    if (!side) return [];
+    return side.battler.moves.map((move, i) => ({
+      move,
+      pp: Number.isFinite(side.pp[i]) ? side.pp[i] : Infinity,
+      maxPp: move.pp ?? null,
+    }));
+  });
+  protected readonly canSwitch = computed(() => {
+    this.version();
+    return (this.tb?.benchedSwitches(0).length ?? 0) > 0;
+  });
 
-  /** A short banner describing any special rule in force (inverse / weather). */
+  protected readonly playerTray = computed<TrayMon[]>(() => this.tray(0));
+  protected readonly foeTray = computed<TrayMon[]>(() => this.tray(1));
+
   protected readonly ruleBanner = computed(() => {
     const rules = this.setup().rules;
     if (rules?.inverse) return 'Inverse battle — the type chart is flipped!';
@@ -127,13 +169,14 @@ export class TournamentMatchComponent {
     return null;
   });
 
-  /** Atmospheric weather for this match. Driven by the boosted type in Weather
-   *  mode, otherwise picked deterministically from the active fighters' types. */
+  /** Cosmetic backdrop: engine weather if set, else a type-evoked ambiance. */
   protected readonly weather = computed<Weather>(() => {
+    const w = this.engWeather();
+    if (w !== 'none') return OVERLAY_WEATHER[w];
     const boost = this.setup().rules?.weatherBoostType;
     if (boost) {
-      const w = weatherForType(boost);
-      if (w !== 'clear') return w;
+      const wf = weatherForType(boost);
+      if (wf !== 'clear') return wf;
     }
     const me = this.playerActive();
     const foe = this.foeActive();
@@ -145,10 +188,8 @@ export class TournamentMatchComponent {
   protected readonly rules = computed(() => this.setup().rules);
   protected readonly foeTypes = computed(() => this.foeActive()?.types);
 
-  private battle: Battle | null = null;
-  private duel = 0;
+  private tb: TeamBattle | null = null;
   private started = false;
-
   private readonly fx = viewChild(BattleFxComponent);
   private pendingMove: { side: SideIndex; type: PokemonType } | null = null;
 
@@ -161,125 +202,160 @@ export class TournamentMatchComponent {
     });
   }
 
-  protected async useMove(index: number): Promise<void> {
-    if (!this.battle || this.busy() || this.done()) return;
-    this.busy.set(true);
-    const events = this.battle.takeTurn(index);
-    await this.playEvents(events);
-    this.persistActiveHp();
-    this.syncState();
+  /* ----------------------------------------------------------- actions */
 
-    if (this.battle.state.finished) {
-      if (this.battle.state.winner === 0) this.advanceFoe();
-      else this.advancePlayer();
-      this.duel++;
-      const s = this.setup();
-      if (this.ia() >= s.playerTeam.length || this.ib() >= s.foeTeam.length) {
-        this.endMatch();
-      } else {
-        await sleep(550);
-        this.startDuel();
-      }
+  protected async useMove(index: number): Promise<void> {
+    if (!this.ready()) return;
+    this.switchOpen.set(false);
+    await this.resolveTurn({ type: 'move', index });
+  }
+
+  protected toggleSwitch(): void {
+    if (this.busy() || this.done()) return;
+    this.switchOpen.update((v) => !v);
+  }
+
+  protected async onTraySelect(side: SideIndex, index: number): Promise<void> {
+    if (side !== 0 || !this.tb) return;
+    if (!this.tb.benchedSwitches(0).includes(index)) return;
+    if (this.awaitingSwitch()) {
+      await this.doForcedSwitch(index);
+    } else if (this.ready()) {
+      this.switchOpen.set(false);
+      await this.resolveTurn({ type: 'switch', to: index });
+    }
+  }
+
+  protected continue(): void {
+    this.finished.emit({ playerWon: this.playerWon(), playerFinalHp: this.tb?.hp(0) ?? [] });
+  }
+
+  private ready(): boolean {
+    return !!this.tb && !this.busy() && !this.done() && !this.awaitingSwitch();
+  }
+
+  /* ----------------------------------------------------------- engine */
+
+  private begin(s: PlayerMatchSetup): void {
+    this.foeAceShown = false;
+    this.tb = new TeamBattle(s.playerTeam, s.foeTeam, s.match.id, {
+      rules: s.rules,
+      aiTier: s.aiTier ?? 'strong',
+      startHpA: s.playerStartHp,
+      startHpB: s.foeStartHp,
+      field: s.field,
+    });
+    this.log.set([`${s.foe.name} wants to battle!`]);
+    this.syncAll();
+    this.append(`Go, ${titleCase(this.tb.active(0).battler.name)}!`);
+    this.append(`${s.foe.name} sent out ${titleCase(this.tb.active(1).battler.name)}!`);
+    this.maybeAceQuip();
+  }
+
+  private async resolveTurn(playerAction: TeamAction): Promise<void> {
+    const tb = this.tb;
+    if (!tb) return;
+    this.busy.set(true);
+    const events = tb.takeTurn(playerAction, tb.chooseAction(1));
+    await this.playEvents(events);
+    this.syncAll();
+    await this.afterTurn();
+  }
+
+  /** Resolve forced switches and decide whether control returns to the player. */
+  private async afterTurn(): Promise<void> {
+    const tb = this.tb!;
+    if (tb.state.finished) return this.end();
+
+    if (tb.mustSwitch(1)) {
+      await sleep(350);
+      await this.playEvents(tb.autoForceSwitch(1));
+      this.syncAll();
+      if (tb.state.finished) return this.end();
+    }
+
+    if (tb.mustSwitch(0)) {
+      this.awaitingSwitch.set(true);
+      this.switchOpen.set(true);
+      this.append('Choose your next Pokémon!');
+      this.busy.set(false); // tray is interactive, moves stay locked
+      return;
     }
     this.busy.set(false);
   }
 
-  protected continue(): void {
-    this.finished.emit({ playerWon: this.playerWon(), playerFinalHp: this.hpA() });
-  }
-
-  /* ---------------------------------------------------------------- engine */
-
-  private begin(s: PlayerMatchSetup): void {
-    this.foeAceShown = false;
-    this.hpA.set(s.playerTeam.map((m, i) => clamp(s.playerStartHp?.[i] ?? m.stats.hp, m.stats.hp)));
-    this.hpB.set(s.foeTeam.map((m, i) => clamp(s.foeStartHp?.[i] ?? m.stats.hp, m.stats.hp)));
-    this.ia.set(skipFainted(this.hpA(), 0));
-    this.ib.set(skipFainted(this.hpB(), 0));
-    this.log.set([`${s.foe.name} wants to battle!`]);
-    this.startDuel();
-  }
-
-  private startDuel(): void {
-    const s = this.setup();
-    const a = s.playerTeam[this.ia()];
-    const b = s.foeTeam[this.ib()];
-    this.battle = new Battle(a, b, `${s.match.id}-d${this.duel}`, s.rules, s.aiTier ?? 'strong');
-    this.battle.state.sides[0].currentHp = clamp(this.hpA()[this.ia()], this.battle.state.sides[0].maxHp);
-    this.battle.state.sides[1].currentHp = clamp(this.hpB()[this.ib()], this.battle.state.sides[1].maxHp);
-
-    // Gym fields: open the battle in a persistent weather/terrain from turn one.
-    if (s.field) {
-      if (s.field.weather) {
-        this.battle.state.field.weather = s.field.weather;
-        this.battle.state.field.weatherTurns = 999;
-      }
-      if (s.field.terrain) {
-        this.battle.state.field.terrain = s.field.terrain;
-        this.battle.state.field.terrainTurns = 999;
-      }
+  private async doForcedSwitch(index: number): Promise<void> {
+    const tb = this.tb!;
+    this.awaitingSwitch.set(false);
+    this.switchOpen.set(false);
+    this.busy.set(true);
+    await this.playEvents(tb.forceSwitch(0, index));
+    this.syncAll();
+    // A hazard could KO the incoming Pokémon → ask again, or end the match.
+    if (tb.state.finished) return this.end();
+    if (tb.mustSwitch(0)) {
+      this.awaitingSwitch.set(true);
+      this.switchOpen.set(true);
+      this.append('Choose your next Pokémon!');
+      this.busy.set(false);
+      return;
     }
-
-    this.playerActive.set(a);
-    this.foeActive.set(b);
-    this.pMax.set(this.battle.state.sides[0].maxHp);
-    this.fMax.set(this.battle.state.sides[1].maxHp);
-    this.pHp.set(this.battle.player.currentHp);
-    this.fHp.set(this.battle.opponent.currentHp);
-    this.append(`Go, ${titleCase(a.name)}!`);
-    this.append(`${s.foe.name} sent out ${titleCase(b.name)}!`);
-    this.syncState();
-    this.maybeAceQuip(s);
+    this.busy.set(false);
   }
 
-  /** Fire the leader's ace taunt when their final Pokémon takes the field. */
-  private maybeAceQuip(s: PlayerMatchSetup): void {
-    if (!s.foeAce || this.foeAceShown || s.foeTeam.length < 2) return;
-    if (this.ib() !== s.foeTeam.length - 1) return;
+  private end(): void {
+    const tb = this.tb!;
+    this.playerWon.set(tb.state.winner === 0);
+    this.done.set(true);
+    this.busy.set(false);
+    this.append(this.playerWon() ? 'Match won!' : 'You were knocked out…');
+  }
+
+  /* ----------------------------------------------------------- sync + fx */
+
+  private syncAll(): void {
+    const tb = this.tb;
+    if (!tb) return;
+    const me = tb.active(0);
+    const foe = tb.active(1);
+    this.playerActive.set(me.battler);
+    this.foeActive.set(foe.battler);
+    this.pMax.set(me.maxHp);
+    this.fMax.set(foe.maxHp);
+    this.pHp.set(me.currentHp);
+    this.fHp.set(foe.currentHp);
+    this.pStatus.set(me.status);
+    this.fStatus.set(foe.status);
+    this.pStages.set({ ...me.stages });
+    this.fStages.set({ ...foe.stages });
+    const f = tb.state.field;
+    this.engWeather.set(f.weather);
+    this.engTerrain.set(f.terrain);
+    this.wTurns.set(f.weatherTurns);
+    this.tTurns.set(f.terrainTurns);
+    this.version.update((v) => v + 1);
+  }
+
+  private maybeAceQuip(): void {
+    const s = this.setup();
+    const tb = this.tb;
+    if (!tb || !s.foeAce || this.foeAceShown || s.foeTeam.length < 2) return;
+    if (tb.state.active[1] !== s.foeTeam.length - 1) return;
     this.foeAceShown = true;
     this.foeQuip.set(s.foeAce);
     this.append(s.foeAce);
     setTimeout(() => this.foeQuip.set(null), 3200);
   }
 
-  /** Pull authoritative status/stages/field state from the engine. */
-  private syncState(): void {
-    if (!this.battle) return;
-    this.pStatus.set(this.battle.player.status);
-    this.fStatus.set(this.battle.opponent.status);
-    this.pStages.set({ ...this.battle.player.stages });
-    this.fStages.set({ ...this.battle.opponent.stages });
-    const f = this.battle.state.field;
-    this.engWeather.set(f.weather);
-    this.engTerrain.set(f.terrain);
-    this.wTurns.set(f.weatherTurns);
-    this.tTurns.set(f.terrainTurns);
-  }
-
-  private persistActiveHp(): void {
-    if (!this.battle) return;
-    this.hpA.update((hp) => withAt(hp, this.ia(), this.battle!.player.currentHp));
-    this.hpB.update((hp) => withAt(hp, this.ib(), this.battle!.opponent.currentHp));
-  }
-
-  private advancePlayer(): void {
-    this.ia.set(skipFainted(this.hpA(), this.ia() + 1));
-  }
-
-  private advanceFoe(): void {
-    this.ib.set(skipFainted(this.hpB(), this.ib() + 1));
-  }
-
-  private endMatch(): void {
-    const won = this.ib() >= this.setup().foeTeam.length;
-    this.playerWon.set(won);
-    this.done.set(true);
-    this.append(won ? 'Match won!' : 'You were knocked out…');
-  }
-
   private async playEvents(events: BattleEvent[]): Promise<void> {
     for (const ev of events) {
       switch (ev.kind) {
+        case 'switch':
+          this.syncSide(ev.side);
+          this.append(ev.text);
+          if (ev.side === 1) this.maybeAceQuip();
+          await sleep(480);
+          break;
         case 'move':
           this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
           this.pendingMove = { side: ev.side, type: this.moveType(ev.side, ev.move) };
@@ -289,7 +365,7 @@ export class TournamentMatchComponent {
         case 'miss':
           this.append(`${titleCase(ev.attacker)}'s attack missed!`);
           this.pendingMove = null;
-          await sleep(450);
+          await sleep(440);
           break;
         case 'damage': {
           this.flashSide.set(ev.side);
@@ -313,7 +389,7 @@ export class TournamentMatchComponent {
           if (ev.side === 0) this.pHp.set(ev.remainingHp);
           else this.fHp.set(ev.remainingHp);
           if (ev.text) this.append(ev.text);
-          await sleep(340);
+          await sleep(330);
           break;
         case 'status-set':
         case 'cure':
@@ -325,15 +401,15 @@ export class TournamentMatchComponent {
         case 'flinch':
         case 'status':
           if (ev.text) this.append(ev.text);
-          await sleep(320);
+          await sleep(300);
           break;
         case 'stage-change':
           if (ev.text) this.append(ev.text);
-          await sleep(280);
+          await sleep(260);
           break;
         case 'faint':
           this.append(`${titleCase(ev.name)} fainted!`);
-          await sleep(650);
+          await sleep(620);
           break;
         default:
           break;
@@ -341,49 +417,44 @@ export class TournamentMatchComponent {
     }
   }
 
-  private tray(team: Battler[], hp: number[], active: number): TrayMon[] {
-    return team.map((mon, i) => {
-      const current = hp[i] ?? mon.stats.hp;
-      return { mon, hp: current, maxHp: mon.stats.hp, active: i === active, fainted: current <= 0 };
-    });
+  /** Update one side's active sprite + HP mid-animation (after a switch). */
+  private syncSide(side: SideIndex): void {
+    const s = this.tb?.active(side);
+    if (!s) return;
+    if (side === 0) {
+      this.playerActive.set(s.battler);
+      this.pMax.set(s.maxHp);
+      this.pHp.set(s.currentHp);
+    } else {
+      this.foeActive.set(s.battler);
+      this.fMax.set(s.maxHp);
+      this.fHp.set(s.currentHp);
+    }
+    this.version.update((v) => v + 1);
+  }
+
+  private tray(side: SideIndex): TrayMon[] {
+    this.version();
+    const tb = this.tb;
+    if (!tb) return [];
+    const benched = side === 0 ? tb.benchedSwitches(0) : [];
+    return tb.state.parties[side].map((s, i) => ({
+      mon: s.battler,
+      hp: s.currentHp,
+      maxHp: s.maxHp,
+      active: i === tb.state.active[side],
+      fainted: s.currentHp <= 0,
+      index: i,
+      switchable: side === 0 && benched.includes(i) && (this.switchOpen() || this.awaitingSwitch()),
+    }));
   }
 
   private append(line: string): void {
     this.log.update((l) => [...l, line]);
   }
 
-  /** Resolve a move's type by name from the active fighter on the given side. */
   private moveType(side: SideIndex, name: string): PokemonType {
     const battler = side === 0 ? this.playerActive() : this.foeActive();
-    const move = battler?.moves.find((m) => m.name === name);
-    return move?.type ?? 'normal';
+    return battler?.moves.find((m) => m.name === name)?.type ?? 'normal';
   }
-}
-
-function withAt(arr: number[], i: number, value: number): number[] {
-  const copy = [...arr];
-  copy[i] = value;
-  return copy;
-}
-
-function clamp(hp: number, maxHp: number): number {
-  if (!Number.isFinite(hp)) return maxHp;
-  return Math.max(0, Math.min(hp, maxHp));
-}
-
-function skipFainted(hp: number[], from: number): number {
-  let i = from;
-  while (i < hp.length && hp[i] <= 0) i++;
-  return i;
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function effectivenessNote(mult: number): string | null {
-  if (mult === 0) return "It doesn't affect the foe…";
-  if (mult >= 2) return "It's super effective!";
-  if (mult > 0 && mult < 1) return "It's not very effective…";
-  return null;
 }

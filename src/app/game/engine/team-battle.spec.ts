@@ -82,6 +82,14 @@ describe('TeamBattle', () => {
     expect(tb.active(1).stages.attack).toBe(-1);
   });
 
+  it('opens in a configured gym field (weather/terrain)', () => {
+    const tb = new TeamBattle([mk({ name: 'A' })], [mk({ name: 'B' })], 'field', {
+      field: { weather: 'rain', terrain: 'grassy' },
+    });
+    expect(tb.state.field.weather).toBe('rain');
+    expect(tb.state.field.terrain).toBe('grassy');
+  });
+
   it('keeps weather on the field across a switch', () => {
     const teamA = [mk({ name: 'Sun', ability: 'drought', stats: { ...mk({}).stats, speed: 200 } }), mk({ name: 'Bench' })];
     const teamB = [mk({ name: 'Foe', moves: [weak], stats: { ...mk({}).stats, speed: 1 } })];

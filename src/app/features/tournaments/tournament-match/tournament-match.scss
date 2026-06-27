@@ -356,3 +356,64 @@
 @media (prefers-reduced-motion: reduce) {
   .ace-quip { animation: none; }
 }
+
+/* ============================ interactive switching ===================== */
+/* .ball is now a button (player tray) — reset and restyle. */
+.tray .ball {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: default;
+  appearance: none;
+}
+.tray .ball img { width: 30px; height: 30px; object-fit: contain; }
+.ball .ball-hp {
+  position: absolute;
+  left: 4px; right: 4px; bottom: 2px;
+  height: 3px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+.ball .ball-hp .bh { display: block; height: 100%; background: linear-gradient(90deg, #ff6b6b, #5be08a); }
+.ball.switchable {
+  cursor: pointer;
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  animation: ball-call 1.3s ease-in-out infinite;
+}
+.ball.switchable:hover { transform: scale(1.18); border-color: var(--accent); }
+.ball:disabled { cursor: default; }
+.tray.picking { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); border-radius: 999px; }
+
+/* move slots: PP under each button + dim while busy/switching */
+.move-slot { display: grid; gap: 0.15rem; }
+.move-slot .pp { font-size: 0.62rem; color: var(--text-dim); text-align: center; font-variant-numeric: tabular-nums; }
+.move-slot .pp.empty { color: #ff8a8a; }
+.controls.dim { opacity: 0.55; pointer-events: none; transition: opacity 0.2s ease; }
+
+/* action bar + switch button */
+.action-bar { display: flex; justify-content: center; margin-top: 0.6rem; }
+.switch-btn {
+  appearance: none; cursor: pointer; font: inherit; font-weight: 700; font-size: 0.85rem;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1.1rem; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--glass-border));
+  background: color-mix(in srgb, var(--accent-2) 16%, transparent);
+  color: var(--text);
+}
+.switch-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-2) 28%, transparent); }
+.switch-btn.on { background: var(--accent-2); color: #0b0a1f; }
+.switch-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.switch-btn .sw-ico { font-size: 1rem; }
+.switch-prompt {
+  text-align: center; padding: 0.7rem; border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  font-size: 0.9rem;
+}
+
+@keyframes ball-call {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) { .ball.switchable { animation: none; } }
