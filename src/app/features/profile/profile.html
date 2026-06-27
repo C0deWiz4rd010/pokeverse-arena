@@ -1,0 +1,50 @@
+<section class="profile">
+  <pv-page-header icon="crown" title="Trainer Profile" subtitle="Your journey across every arena, cup and climb." />
+
+  <header class="id-card">
+    <div class="id-main">
+      @if (editing()) {
+        <div class="id-edit">
+          <input type="text" [value]="nameDraft()" (input)="setName($event)" placeholder="Name" maxlength="20" />
+          <input type="text" [value]="titleDraft()" (input)="setTitle($event)" placeholder="Title" maxlength="28" />
+          <button class="btn" type="button" (click)="saveEdit()">Save</button>
+        </div>
+      } @else {
+        <div class="id-name">
+          <strong>{{ svc.identity().name }}</strong>
+          <button class="link" type="button" (click)="startEdit()"><pv-icon name="pencil" /> Edit</button>
+        </div>
+        <span class="id-title">{{ svc.identity().title }}</span>
+      }
+    </div>
+    <div class="id-rank">
+      <span class="rank-badge">{{ svc.rank() }}</span>
+      <span class="rank-sub">{{ svc.unlocked() }} achievements</span>
+    </div>
+  </header>
+
+  <h3 class="h">Records</h3>
+  <div class="records">
+    @for (r of records(); track r.label) {
+      <div class="record">
+        <span class="rec-icon"><pv-icon [name]="r.icon" /></span>
+        <span class="rec-val">{{ r.value }}</span>
+        <span class="rec-label">{{ r.label }}</span>
+      </div>
+    }
+  </div>
+
+  <h3 class="h">Achievements</h3>
+  <div class="achievements">
+    @for (a of svc.achievements(); track a.achievement.id) {
+      <div class="ach" [class.on]="a.unlocked">
+        <span class="ach-icon"><pv-icon [name]="a.achievement.icon" /></span>
+        <div class="ach-text">
+          <strong>{{ a.achievement.name }}</strong>
+          <span>{{ a.achievement.desc }}</span>
+        </div>
+        @if (a.unlocked) { <span class="ach-check"><pv-icon name="check" /></span> }
+      </div>
+    }
+  </div>
+</section>
