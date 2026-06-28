@@ -102,6 +102,18 @@
 .pr-hp .bar { width: 70px; height: 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
 .pr-hp .bar .fill { display: block; height: 100%; background: linear-gradient(90deg, #36e27a, #8df0a8); }
 
+.rb-bag { display: grid; gap: 0.45rem; max-height: 220px; overflow-y: auto; }
+.bag-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.7rem;
+  appearance: none; cursor: pointer; font: inherit; text-align: left;
+  padding: 0.55rem 0.8rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border); background: var(--surface); color: var(--text);
+}
+.bag-row:hover:not(:disabled) { border-color: var(--accent); }
+.bag-row:disabled { opacity: 0.6; cursor: not-allowed; }
+.bi-name { font-weight: 700; }
+.bi-count { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
 .rb-result { display: grid; gap: 0.6rem; justify-items: center; text-align: center; padding: 0.4rem; }
 .rb-gains { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.2rem; font-size: 0.9rem; }
 

@@ -29,6 +29,9 @@ export const HOME_TOWN: MapDef = {
   warps: [
     // Player's house door → back into the bedroom.
     { x: 3, y: 3, to: 'player-home', toX: 3, toY: 5, toFacing: 'up' },
+    // Pokémon Center (bottom-left building) and Poké Mart (bottom-right building).
+    { x: 3, y: 8, to: 'center', toX: 4, toY: 4, toFacing: 'up' },
+    { x: 12, y: 8, to: 'mart', toX: 4, toY: 4, toFacing: 'up' },
   ],
   signs: [{ x: 6, y: 4, text: 'VERDANT TOWN — where every journey begins.' }],
   npcs: [],

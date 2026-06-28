@@ -56,6 +56,18 @@
         }
         <button class="cmd back" type="button" (click)="backToMain()">‹ Back</button>
       </div>
+    } @else if (menu() === 'bag') {
+      <div class="rb-bag">
+        @for (it of bagSlots(); track it.id) {
+          <button class="bag-row" type="button" [disabled]="busy()" (click)="useBagItem(it.id)">
+            <span class="bi-name">{{ it.name }}</span>
+            <span class="bi-count">×{{ it.count }}</span>
+          </button>
+        } @empty {
+          <p class="rb-prompt">Your Bag is empty.</p>
+        }
+        <button class="cmd back" type="button" (click)="backToMain()">‹ Back</button>
+      </div>
     } @else if (menu() === 'pokemon') {
       <div class="rb-party">
         @if (forcedSwitch()) { <p class="rb-prompt">Your Pokémon fainted — send out another!</p> }
@@ -71,8 +83,8 @@
       <div class="rb-cmd">
         <button class="cmd" type="button" [disabled]="busy()" (click)="openFight()">Fight</button>
         <button class="cmd" type="button" [disabled]="busy() || switchList().length < 2" (click)="openPokemon()">Pokémon</button>
-        <button class="cmd dim" type="button" disabled title="Coming in the next update">Bag</button>
-        <button class="cmd" type="button" [disabled]="busy()" (click)="run()">Run</button>
+        <button class="cmd" type="button" [disabled]="busy() || !bagSlots().length" (click)="openBag()">Bag</button>
+        <button class="cmd" type="button" [disabled]="busy() || !isWild()" (click)="run()">Run</button>
       </div>
     }
   }

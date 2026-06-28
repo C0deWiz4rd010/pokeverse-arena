@@ -24,14 +24,18 @@ import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
 import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { titleCase } from '../../../core/ui/format';
+import { SeededRng } from '../../../core/utils/rng';
 import { applyXp, xpYield } from '../../../game/rpg/xp';
-import { firstAlive } from '../../../game/rpg/party';
-import type { PartyMon } from '../../../game/rpg/rpg-types';
+import { firstAlive, makePartyMon } from '../../../game/rpg/party';
+import { attemptCatch, type RpgBallId } from '../../../game/rpg/catch';
+import { ITEMS, isBall } from '../../../game/rpg/items-catalog';
+import type { ItemId, PartyMon } from '../../../game/rpg/rpg-types';
 
 type LogTone = 'crit' | 'super' | 'resist' | 'faint' | 'win' | 'switch';
 interface LogLine { readonly text: string; readonly tone?: LogTone; }
 interface MoveSlot { readonly move: BattleMove; readonly pp: number; readonly maxPp: number | null; }
-type Menu = 'main' | 'fight' | 'pokemon' | 'done';
+interface BagSlot { readonly id: ItemId; readonly name: string; readonly count: number; readonly ball: boolean; }
+type Menu = 'main' | 'fight' | 'pokemon' | 'bag' | 'done';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -78,8 +82,10 @@ export class RpgBattleComponent {
   private readonly version = signal(0);
   private tb: TeamBattle | null = null;
   private foeBaseExp = 64;
-  private playerLevels: number[] = []; // per party index, level at battle start
+  private foeCatchRate = 120;
   private started = false;
+  /** Wild battles allow catching/running; trainer battles (P5) won't. */
+  protected readonly isWild = signal(true);
 
   protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
   protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
@@ -95,6 +101,13 @@ export class RpgBattleComponent {
       maxPp: move.pp ?? null,
     }));
   });
+  protected readonly bagSlots = computed<BagSlot[]>(() => {
+    const bag = this.svc.bag();
+    return (Object.keys(bag) as ItemId[])
+      .filter((id) => (bag[id] ?? 0) > 0 && ITEMS[id]?.usableInBattle)
+      .map((id) => ({ id, name: ITEMS[id].name, count: bag[id] ?? 0, ball: isBall(id) }));
+  });
+
   protected readonly switchList = computed(() => {
     this.version();
     const tb = this.tb;
@@ -145,12 +158,12 @@ export class RpgBattleComponent {
     try {
       const dto = await this.api.pokemon(setup.foeSpecies);
       this.foeBaseExp = dto.base_experience ?? 64;
+      this.foeCatchRate = setup.foeCatchRate;
       const foe = await this.battleSvc.buildBattlerFromDto(dto, setup.foeLevel);
       this.svc.markSeen(foe.id);
       this.foeLevel.set(setup.foeLevel);
 
       const playerBattlers = await Promise.all(party.map((m) => this.battleSvc.buildBattler(m.species, m.level)));
-      this.playerLevels = party.map((m) => m.level);
       const startHpA = party.map((m) => m.currentHp);
 
       this.tb = new TeamBattle(playerBattlers, [foe], `rpg-${Date.now()}`, {
@@ -175,7 +188,89 @@ export class RpgBattleComponent {
 
   protected openFight(): void { this.menu.set('fight'); }
   protected openPokemon(): void { this.menu.set('pokemon'); }
+  protected openBag(): void { this.menu.set('bag'); }
   protected backToMain(): void { if (!this.forcedSwitch()) this.menu.set('main'); }
+
+  /** Use a bag item in battle: a ball attempts a catch, others heal/cure the active. */
+  protected async useBagItem(id: ItemId): Promise<void> {
+    if (this.busy() || this.done()) return;
+    if (isBall(id)) {
+      await this.throwBall(id as RpgBallId);
+      return;
+    }
+    const tb = this.tb;
+    const def = ITEMS[id];
+    if (!tb) return;
+    const me = tb.active(0);
+    if (def.revive) {
+      this.svc.showToast('Save Revives for fainted Pokémon.');
+      return;
+    }
+    if (def.heal !== undefined) {
+      if (me.currentHp >= me.maxHp) { this.svc.showToast('HP is already full.'); return; }
+      me.currentHp = Math.min(me.maxHp, me.currentHp + (def.heal === Infinity ? me.maxHp : def.heal));
+    } else if (def.cure) {
+      if (me.status === 'none' || (def.cure !== 'all' && me.status !== def.cure)) {
+        this.svc.showToast('It would have no effect.');
+        return;
+      }
+      me.status = 'none';
+    } else {
+      this.svc.showToast('You cannot use that now.');
+      return;
+    }
+    this.svc.consumeItem(id);
+    this.menu.set('main');
+    this.busy.set(true);
+    this.append(`You used a ${def.name}.`);
+    this.syncAll();
+    await sleep(420);
+    await this.passTurn();
+  }
+
+  private async throwBall(ball: RpgBallId): Promise<void> {
+    const tb = this.tb;
+    if (!tb || !this.isWild()) return;
+    if (!this.svc.consumeItem(ball)) return;
+    this.menu.set('main');
+    this.busy.set(true);
+    const foe = tb.active(1);
+    this.append(`You threw a ${ITEMS[ball].name}!`);
+    const hpPct = foe.currentHp / foe.maxHp;
+    const caught = attemptCatch(this.foeCatchRate, hpPct, foe.status, ball, new SeededRng(`catch-${Date.now()}-${Math.random()}`));
+    for (let i = 0; i < 3; i++) {
+      this.append('…');
+      await sleep(430);
+    }
+    if (caught) {
+      this.append(`Gotcha! ${titleCase(foe.battler.name)} was caught!`, 'win');
+      await sleep(500);
+      await this.finalizeCaught();
+    } else {
+      this.append(`Oh no! ${titleCase(foe.battler.name)} broke free!`);
+      await sleep(300);
+      await this.passTurn();
+    }
+  }
+
+  private async passTurn(): Promise<void> {
+    const tb = this.tb;
+    if (!tb) return;
+    await this.playEvents(tb.takeTurn({ type: 'pass' }, tb.chooseAction(1)));
+    this.syncAll();
+    if (tb.state.finished) {
+      await this.finalize(tb.state.winner === 0, false);
+      return;
+    }
+    if (tb.mustSwitch(0)) {
+      this.forcedSwitch.set(true);
+      this.menu.set('pokemon');
+      this.append('Choose your next Pokémon!');
+      this.busy.set(false);
+      return;
+    }
+    this.busy.set(false);
+  }
 
   protected async useMove(index: number): Promise<void> {
     if (this.busy() || this.done()) return;
@@ -342,6 +437,32 @@ export class RpgBattleComponent {
       await sleep(900);
       this.svc.whiteout();
     }
+  }
+
+  /** Caught the wild Pokémon: write back party HP, add the catch, show the result. */
+  private async finalizeCaught(): Promise<void> {
+    const tb = this.tb;
+    this.done.set(true);
+    this.menu.set('done');
+    this.busy.set(false);
+    this.playerWon.set(true);
+    if (!tb) return;
+    const foe = tb.active(1);
+    const party = this.svc.party();
+    const finalHp = tb.hp(0);
+    const updated = party.map((m, i) => ({
+      ...m,
+      currentHp: Math.max(0, Math.min(m.maxHp, finalHp[i] ?? m.currentHp)),
+    }));
+    this.svc.applyParty(updated);
+
+    const mon = makePartyMon(foe.battler.name, foe.battler.id, this.foeLevel(), foe.maxHp);
+    mon.currentHp = foe.currentHp;
+    mon.status = foe.status;
+    const where = this.svc.addCaught(mon);
+    this.resultLines.set([
+      `${titleCase(foe.battler.name)} was added to your ${where === 'party' ? 'team' : 'storage box'}!`,
+    ]);
   }
 
   /** Leave the result overlay and return to the overworld. */

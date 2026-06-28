@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RpgService } from './rpg.service';
 import { OverworldComponent } from './overworld/overworld';
 import { RpgBattleComponent } from './battle/rpg-battle';
+import { FieldMenuComponent } from './ui/field-menu';
+import { ShopComponent } from './ui/shop';
 import { IconComponent } from '../../core/ui/icon/icon';
 
 /**
@@ -11,7 +13,7 @@ import { IconComponent } from '../../core/ui/icon/icon';
 @Component({
   selector: 'pv-rpg',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [OverworldComponent, RpgBattleComponent, IconComponent],
+  imports: [OverworldComponent, RpgBattleComponent, FieldMenuComponent, ShopComponent, IconComponent],
   templateUrl: './rpg.html',
   styleUrl: './rpg.scss',
 })

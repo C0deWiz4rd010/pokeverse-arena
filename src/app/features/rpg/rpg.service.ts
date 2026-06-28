@@ -5,9 +5,11 @@ import { SeededRng } from '../../core/utils/rng';
 import { getMap } from '../../game/rpg/maps';
 import { ahead, canEnter, isTallGrass, npcAt, signAt, warpAt } from '../../game/rpg/movement';
 import { rollEncounter } from '../../game/rpg/encounters';
+import { ITEMS } from '../../game/rpg/items-catalog';
+import { titleCase } from '../../core/ui/format';
 import { defaultSave, isValidSave } from '../../game/rpg/save';
 import { PARTY_MAX, healParty, makePartyMon, partyAlive } from '../../game/rpg/party';
-import type { Direction, MapDef, PartyMon, RpgSave } from '../../game/rpg/rpg-types';
+import type { Direction, ItemId, MapDef, PartyMon, RpgSave } from '../../game/rpg/rpg-types';
 
 const SAVE_KEY = 'rpg:save';
 
@@ -45,6 +47,8 @@ export class RpgService {
   /** The active battle's setup (null outside battle). */
   readonly battleSetup = signal<BattleSetup | null>(null);
   readonly party = computed<PartyMon[]>(() => this.game()?.party ?? []);
+  readonly bag = computed<Partial<Record<ItemId, number>>>(() => this.game()?.bag ?? {});
+  readonly money = computed<number>(() => this.game()?.money ?? 0);
   /** A transient one-line message (signs, pickups, …). */
   readonly toast = signal<string | null>(null);
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -251,19 +255,108 @@ export class RpgService {
     return partyAlive(this.party());
   }
 
-  /** Interact with whatever the player faces (signs for now; NPCs in P4). */
+  /** Interact with whatever the player faces (signs, nurse, clerk; NPCs/dialogue in P4). */
   interact(): void {
     const g = this.game();
     const m = this.map();
     if (!g || !m) return;
     const t = ahead(g.x, g.y, g.facing);
-    const sign = signAt(m, t.x, t.y);
-    if (sign) {
-      this.showToast(sign);
+    const npc = npcAt(m, t.x, t.y);
+    if (npc) {
+      if (npc.kind === 'heal') {
+        this.healAtCenter();
+        this.showToast('Your Pokémon are bursting with energy!');
+        return;
+      }
+      if (npc.kind === 'shop') {
+        this.phase.set('shop');
+        return;
+      }
+      this.showToast(`${npc.id} has nothing to say yet.`);
       return;
     }
-    const npc = npcAt(m, t.x, t.y);
-    if (npc) this.showToast(`${npc.id} has nothing to say yet.`);
+    const sign = signAt(m, t.x, t.y);
+    if (sign) this.showToast(sign);
+  }
+
+  /* --------------------------------------------------------------- menus */
+
+  openMenu(): void {
+    if (this.phase() === 'overworld') this.phase.set('menu');
+  }
+  closeMenu(): void {
+    if (this.phase() === 'menu' || this.phase() === 'shop') this.phase.set('overworld');
+  }
+
+  /* ---------------------------------------------------------------- bag */
+
+  itemCount(id: ItemId): number {
+    return this.game()?.bag[id] ?? 0;
+  }
+
+  addItem(id: ItemId, qty = 1): void {
+    const g = this.game();
+    if (!g) return;
+    const bag = { ...g.bag, [id]: (g.bag[id] ?? 0) + qty };
+    this.game.set({ ...g, bag });
+    this.persist();
+  }
+
+  /** Remove one of an item; returns false if none were held. */
+  consumeItem(id: ItemId): boolean {
+    const g = this.game();
+    if (!g || (g.bag[id] ?? 0) <= 0) return false;
+    const bag = { ...g.bag, [id]: (g.bag[id] ?? 0) - 1 };
+    if (bag[id] === 0) delete bag[id];
+    this.game.set({ ...g, bag });
+    this.persist();
+    return true;
+  }
+
+  spend(amount: number): boolean {
+    const g = this.game();
+    if (!g || g.money < amount) return false;
+    this.game.set({ ...g, money: g.money - amount });
+    this.persist();
+    return true;
+  }
+
+  /**
+   * Use a healing/status/revive item on a party member from the field menu.
+   * Returns a result message, or a reason string when it has no effect.
+   */
+  useFieldItem(id: ItemId, index: number): string {
+    const g = this.game();
+    const def = ITEMS[id];
+    if (!g || !def || (g.bag[id] ?? 0) <= 0) return 'You have none of those.';
+    const mon = g.party[index];
+    if (!mon) return 'No Pokémon there.';
+    const t = { ...mon };
+    const name = titleCase(t.nickname ?? t.species);
+    let msg = '';
+    if (def.revive) {
+      if (t.currentHp > 0) return 'It would have no effect.';
+      t.currentHp = Math.max(1, Math.floor(t.maxHp * def.revive));
+      t.status = 'none';
+      msg = `${name} was revived!`;
+    } else if (def.heal !== undefined) {
+      if (t.currentHp <= 0) return `${name} has fainted — use a Revive.`;
+      if (t.currentHp >= t.maxHp) return 'HP is already full.';
+      t.currentHp = Math.min(t.maxHp, t.currentHp + (def.heal === Infinity ? t.maxHp : def.heal));
+      msg = `${name} recovered HP!`;
+    } else if (def.cure) {
+      if (t.status === 'none' || (def.cure !== 'all' && t.status !== def.cure)) return 'It would have no effect.';
+      t.status = 'none';
+      msg = `${name}'s status was healed!`;
+    } else {
+      return 'You cannot use that here.';
+    }
+    const party = g.party.map((m, i) => (i === index ? t : m));
+    const bag = { ...g.bag, [id]: (g.bag[id] ?? 0) - 1 };
+    if (bag[id] === 0) delete bag[id];
+    this.game.set({ ...g, party, bag });
+    this.persist();
+    return msg;
   }
 
   showToast(text: string, ms = 2600): void {

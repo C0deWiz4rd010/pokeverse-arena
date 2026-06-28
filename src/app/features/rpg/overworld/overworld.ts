@@ -38,7 +38,7 @@ const KEY_DIR: Record<string, Direction> = {
       @if (svc.toast(); as t) {
         <div class="ow-toast" role="status">{{ t }}</div>
       }
-      <button class="ow-menu" type="button" (click)="svc.exitToTitle()" aria-label="Menu">☰</button>
+      <button class="ow-menu" type="button" (click)="svc.openMenu()" aria-label="Menu">☰</button>
 
       <!-- touch controls -->
       <div class="pad" aria-hidden="true">
@@ -49,7 +49,7 @@ const KEY_DIR: Record<string, Direction> = {
       </div>
       <div class="ab" aria-hidden="true">
         <button class="ab-btn a" (pointerdown)="interact($event)">A</button>
-        <button class="ab-btn b" (pointerdown)="svc.exitToTitle()">B</button>
+        <button class="ab-btn b" (pointerdown)="svc.openMenu()">B</button>
       </div>
     </div>
   `,
@@ -85,7 +85,7 @@ export class OverworldComponent implements OnDestroy {
     }
     if (e.key === 'Escape' || e.key === 'x' || e.key === 'X') {
       e.preventDefault();
-      this.svc.exitToTitle();
+      this.svc.openMenu();
       return;
     }
     const dir = KEY_DIR[e.key];

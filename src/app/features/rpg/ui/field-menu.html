@@ -1,0 +1,49 @@
+<div class="fm">
+  <header class="fm-head">
+    <div class="fm-tabs">
+      <button type="button" [class.on]="tab() === 'party'" (click)="tab.set('party')">Pokémon</button>
+      <button type="button" [class.on]="tab() === 'bag'" (click)="tab.set('bag')">Bag</button>
+    </div>
+    <span class="fm-money">{{ svc.money() }} ₽</span>
+  </header>
+
+  @if (pendingItem()) {
+    <p class="fm-prompt">Use on which Pokémon? <button type="button" class="link" (click)="cancelItem()">Cancel</button></p>
+  }
+
+  @if (tab() === 'party') {
+    <div class="fm-party">
+      @for (m of partyView(); track m.i) {
+        <button class="mon" type="button" [class.fainted]="m.fainted" [class.pick]="pendingItem()" (click)="onPartyClick(m.i)">
+          <div class="mon-top">
+            <strong>{{ m.name }}</strong>
+            <span class="lv">Lv{{ m.level }}</span>
+            @if (m.status !== 'none') { <pv-status-badge [status]="m.status" /> }
+          </div>
+          <div class="hpbar"><span class="fill" [class.mid]="m.hpPct <= 55 && m.hpPct > 25" [class.low]="m.hpPct <= 25" [style.width.%]="m.hpPct"></span></div>
+          <div class="mon-foot"><span>HP {{ m.hp }}/{{ m.maxHp }}</span><span class="xp">XP <i [style.width.%]="m.xpPct"></i></span></div>
+        </button>
+      } @empty {
+        <p class="fm-empty">No Pokémon yet. Find a starter in the Lab!</p>
+      }
+    </div>
+  } @else {
+    <div class="fm-bag">
+      @for (it of bagView(); track it.id) {
+        <button class="bag-item" type="button" [class.dim]="!it.field" (click)="pickItem(it.id)">
+          <span class="bi-name">{{ it.name }}</span>
+          <span class="bi-desc">{{ it.desc }}</span>
+          <span class="bi-count">×{{ it.count }}</span>
+        </button>
+      } @empty {
+        <p class="fm-empty">Your Bag is empty.</p>
+      }
+    </div>
+  }
+
+  <footer class="fm-actions">
+    <button class="btn" type="button" (click)="save()">Save</button>
+    <button class="btn" type="button" (click)="svc.closeMenu()">Resume</button>
+    <button class="btn ghost" type="button" (click)="svc.exitToTitle()">Title</button>
+  </footer>
+</div>
