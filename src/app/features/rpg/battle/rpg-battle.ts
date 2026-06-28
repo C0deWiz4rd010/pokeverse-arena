@@ -81,11 +81,15 @@ export class RpgBattleComponent {
 
   private readonly version = signal(0);
   private tb: TeamBattle | null = null;
-  private foeBaseExp = 64;
   private foeCatchRate = 120;
+  private xpReward = 0;
+  private trainerReward = 0;
+  private trainerFlag: string | undefined;
+  private trainerDefeat = '';
   private started = false;
-  /** Wild battles allow catching/running; trainer battles (P5) won't. */
+  /** Wild battles allow catching/running; trainer battles won't. */
   protected readonly isWild = signal(true);
+  protected readonly trainerName = signal<string | null>(null);
 
   protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
   protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
@@ -156,18 +160,33 @@ export class RpgBattleComponent {
       return;
     }
     try {
-      const dto = await this.api.pokemon(setup.foeSpecies);
-      this.foeBaseExp = dto.base_experience ?? 64;
-      this.foeCatchRate = setup.foeCatchRate;
-      const foe = await this.battleSvc.buildBattlerFromDto(dto, setup.foeLevel);
-      this.svc.markSeen(foe.id);
-      this.foeLevel.set(setup.foeLevel);
+      const isTrainer = setup.kind === 'trainer';
+      this.isWild.set(!isTrainer);
+
+      let foeTeam: Battler[];
+      if (isTrainer && setup.team?.length) {
+        foeTeam = await Promise.all(setup.team.map((t) => this.battleSvc.buildBattler(t.species, t.level)));
+        this.trainerName.set(setup.trainerName ?? 'Trainer');
+        this.trainerReward = setup.reward ?? 0;
+        this.trainerFlag = setup.winFlag;
+        this.trainerDefeat = setup.defeatText ?? '';
+        this.xpReward = setup.team.reduce((s, t) => s + xpYield(64, t.level), 0);
+        this.foeLevel.set(setup.team[0].level);
+      } else {
+        const dto = await this.api.pokemon(setup.foeSpecies);
+        this.foeCatchRate = setup.foeCatchRate;
+        const foe = await this.battleSvc.buildBattlerFromDto(dto, setup.foeLevel);
+        foeTeam = [foe];
+        this.xpReward = xpYield(dto.base_experience ?? 64, setup.foeLevel);
+        this.foeLevel.set(setup.foeLevel);
+      }
+      foeTeam.forEach((f) => this.svc.markSeen(f.id));
 
       const playerBattlers = await Promise.all(party.map((m) => this.battleSvc.buildBattler(m.species, m.level)));
       const startHpA = party.map((m) => m.currentHp);
 
-      this.tb = new TeamBattle(playerBattlers, [foe], `rpg-${Date.now()}`, {
-        aiTier: 'basic',
+      this.tb = new TeamBattle(playerBattlers, foeTeam, `rpg-${Date.now()}`, {
+        aiTier: isTrainer ? 'strong' : 'basic',
         startHpA,
       });
       // Lead with the first non-fainted party member.
@@ -176,7 +195,8 @@ export class RpgBattleComponent {
 
       this.loading.set(false);
       this.syncAll();
-      this.append(`A wild ${titleCase(foe.name)} appeared!`);
+      if (isTrainer) this.append(`${this.trainerName()} wants to battle!`, 'switch');
+      else this.append(`A wild ${titleCase(this.tb.active(1).battler.name)} appeared!`);
       this.append(`Go, ${titleCase(this.tb.active(0).battler.name)}!`);
     } catch {
       this.svc.showToast('The wild Pokémon fled before the battle began.');
@@ -230,7 +250,11 @@ export class RpgBattleComponent {
 
   private async throwBall(ball: RpgBallId): Promise<void> {
     const tb = this.tb;
-    if (!tb || !this.isWild()) return;
+    if (!tb) return;
+    if (!this.isWild()) {
+      this.svc.showToast("You can't catch another Trainer's Pokémon!");
+      return;
+    }
     if (!this.svc.consumeItem(ball)) return;
     this.menu.set('main');
     this.busy.set(true);
@@ -258,18 +282,7 @@ export class RpgBattleComponent {
     if (!tb) return;
     await this.playEvents(tb.takeTurn({ type: 'pass' }, tb.chooseAction(1)));
     this.syncAll();
-    if (tb.state.finished) {
-      await this.finalize(tb.state.winner === 0, false);
-      return;
-    }
-    if (tb.mustSwitch(0)) {
-      this.forcedSwitch.set(true);
-      this.menu.set('pokemon');
-      this.append('Choose your next Pokémon!');
-      this.busy.set(false);
-      return;
-    }
-    this.busy.set(false);
+    await this.afterResolve();
   }
 
   protected async useMove(index: number): Promise<void> {
@@ -309,10 +322,25 @@ export class RpgBattleComponent {
     this.busy.set(true);
     await this.playEvents(tb.takeTurn(action, tb.chooseAction(1)));
     this.syncAll();
+    await this.afterResolve();
+  }
 
+  /** Shared post-turn handling: end, foe forced-switch, or player forced-switch. */
+  private async afterResolve(): Promise<void> {
+    const tb = this.tb;
+    if (!tb) return;
     if (tb.state.finished) {
       await this.finalize(tb.state.winner === 0, false);
       return;
+    }
+    if (tb.mustSwitch(1)) {
+      await sleep(350);
+      await this.playEvents(tb.autoForceSwitch(1));
+      this.syncAll();
+      if (tb.state.finished) {
+        await this.finalize(tb.state.winner === 0, false);
+        return;
+      }
     }
     if (tb.mustSwitch(0)) {
       this.forcedSwitch.set(true);
@@ -407,7 +435,7 @@ export class RpgBattleComponent {
 
       // XP to every participant that's still standing, on a win.
       if (won && mon.currentHp > 0) {
-        const gain = xpYield(this.foeBaseExp, this.foeLevel());
+        const gain = this.xpReward;
         const r = applyXp(mon.xp, mon.level, gain);
         lines.push(`${titleCase(mon.nickname ?? mon.species)} gained ${gain} XP!`);
         mon.xp = r.xp;
@@ -429,6 +457,13 @@ export class RpgBattleComponent {
     }
 
     this.svc.applyParty(updated);
+
+    // Trainer payout + win flag.
+    if (won && !this.isWild()) {
+      if (this.trainerDefeat) lines.unshift(`${this.trainerName()}: ${this.trainerDefeat}`);
+      if (this.trainerReward) lines.push(`You got ${this.trainerReward} ₽ for winning!`);
+      this.svc.finishTrainer(this.trainerReward, this.trainerFlag);
+    }
     this.resultLines.set(ran ? [] : lines);
 
     if (!won && !ran && !updated.some((m) => m.currentHp > 0)) {

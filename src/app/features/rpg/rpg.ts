@@ -4,6 +4,8 @@ import { OverworldComponent } from './overworld/overworld';
 import { RpgBattleComponent } from './battle/rpg-battle';
 import { FieldMenuComponent } from './ui/field-menu';
 import { ShopComponent } from './ui/shop';
+import { DialogueBoxComponent } from './ui/dialogue-box';
+import { StarterComponent } from './ui/starter';
 import { IconComponent } from '../../core/ui/icon/icon';
 
 /**
@@ -13,7 +15,15 @@ import { IconComponent } from '../../core/ui/icon/icon';
 @Component({
   selector: 'pv-rpg',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [OverworldComponent, RpgBattleComponent, FieldMenuComponent, ShopComponent, IconComponent],
+  imports: [
+    OverworldComponent,
+    RpgBattleComponent,
+    FieldMenuComponent,
+    ShopComponent,
+    DialogueBoxComponent,
+    StarterComponent,
+    IconComponent,
+  ],
   templateUrl: './rpg.html',
   styleUrl: './rpg.scss',
 })

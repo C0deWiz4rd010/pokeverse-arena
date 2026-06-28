@@ -78,6 +78,7 @@ export class OverworldComponent implements OnDestroy {
   private readonly stepMs = REDUCED ? 0 : 140;
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
+    if (this.svc.phase() !== 'overworld') return; // a dialogue/starter overlay is active
     if (e.key === 'z' || e.key === 'Z' || e.key === 'Enter') {
       e.preventDefault();
       this.svc.interact();
@@ -125,6 +126,7 @@ export class OverworldComponent implements OnDestroy {
 
   protected press(dir: Direction, ev?: Event): void {
     ev?.preventDefault();
+    if (this.svc.phase() !== 'overworld') return;
     this.held.add(dir);
   }
   protected release(dir: Direction): void {
@@ -132,6 +134,7 @@ export class OverworldComponent implements OnDestroy {
   }
   protected interact(ev?: Event): void {
     ev?.preventDefault();
+    if (this.svc.phase() !== 'overworld') return;
     this.svc.interact();
   }
 
@@ -169,7 +172,8 @@ export class OverworldComponent implements OnDestroy {
       if (p >= 1) this.stepping = false;
       return;
     }
-    // pick a held direction and try to walk
+    // pick a held direction and try to walk (frozen while an overlay is up)
+    if (this.svc.phase() !== 'overworld') return;
     const dir = this.nextDir();
     if (!dir) return;
     this.svc.face(dir);

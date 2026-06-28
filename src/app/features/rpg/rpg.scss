@@ -4,6 +4,7 @@
 
 /* ----------------------------------------------------------------- stage */
 .rpg-stage { display: grid; gap: 0.7rem; }
+.ow-host { position: relative; }
 .rpg-hint {
   display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; justify-content: center;
   margin: 0; font-size: 0.78rem; color: var(--text-dim);

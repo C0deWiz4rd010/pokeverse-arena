@@ -1,48 +1,43 @@
-@switch (svc.phase()) {
-  @case ('battle') {
-    <div class="rpg-stage"><pv-rpg-battle /></div>
-  }
-
-  @case ('menu') {
-    <div class="rpg-stage"><pv-field-menu /></div>
-  }
-
-  @case ('shop') {
-    <div class="rpg-stage"><pv-rpg-shop /></div>
-  }
-
-  @case ('overworld') {
-    <div class="rpg-stage">
-      <pv-overworld />
-      <p class="rpg-hint">
-        <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> / WASD move</span>
-        <span><kbd>Z</kbd> talk · <kbd>Esc</kbd> menu</span>
-        <span>On touch: use the on-screen pad</span>
+@if (svc.phase() === 'title') {
+  <section class="title">
+    <div class="title-card">
+      <span class="title-eyebrow"><pv-icon name="scroll-text" /> Story Mode</span>
+      <h1 class="title-name">PokéVerse <span class="grad">Adventure</span></h1>
+      <p class="title-sub">
+        A classic, top-down RPG. Pick a starter, explore Verdant Town, battle in
+        the tall grass, catch Pokémon and earn your first badge.
       </p>
-    </div>
-  }
-
-  @default {
-    <section class="title">
-      <div class="title-card">
-        <span class="title-eyebrow"><pv-icon name="scroll-text" /> Story Mode</span>
-        <h1 class="title-name">PokéVerse <span class="grad">Adventure</span></h1>
-        <p class="title-sub">
-          A classic, top-down RPG. Pick a starter, explore Verdant Town, battle in
-          the tall grass, catch Pokémon and earn your first badge.
-        </p>
-        <div class="title-actions">
-          <button class="btn primary" type="button" (click)="svc.newGame()">
-            <pv-icon name="sparkles" /> New Adventure
-          </button>
-          <button class="btn" type="button" [disabled]="!svc.hasSave()" (click)="svc.continue()">
-            <pv-icon name="book" /> Continue
-          </button>
-        </div>
-        @if (svc.hasSave()) {
-          <p class="title-note">A saved adventure was found — Continue to resume.</p>
-        }
+      <div class="title-actions">
+        <button class="btn primary" type="button" (click)="svc.newGame()">
+          <pv-icon name="sparkles" /> New Adventure
+        </button>
+        <button class="btn" type="button" [disabled]="!svc.hasSave()" (click)="svc.continue()">
+          <pv-icon name="book" /> Continue
+        </button>
       </div>
-    </section>
-  }
+      @if (svc.hasSave()) {
+        <p class="title-note">A saved adventure was found — Continue to resume.</p>
+      }
+    </div>
+  </section>
+} @else if (svc.phase() === 'battle') {
+  <div class="rpg-stage"><pv-rpg-battle /></div>
+} @else if (svc.phase() === 'menu') {
+  <div class="rpg-stage"><pv-field-menu /></div>
+} @else if (svc.phase() === 'shop') {
+  <div class="rpg-stage"><pv-rpg-shop /></div>
+} @else {
+  <!-- overworld, with dialogue / starter overlays on top -->
+  <div class="rpg-stage">
+    <div class="ow-host">
+      <pv-overworld />
+      @if (svc.dialogue()) { <pv-dialogue-box /> }
+      @if (svc.phase() === 'starter') { <pv-starter /> }
+    </div>
+    <p class="rpg-hint">
+      <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> / WASD move</span>
+      <span><kbd>Z</kbd> talk · <kbd>Esc</kbd> menu</span>
+      <span>On touch: use the on-screen pad</span>
+    </p>
+  </div>
 }

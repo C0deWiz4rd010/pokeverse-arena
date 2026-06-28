@@ -9,18 +9,31 @@ import { ITEMS } from '../../game/rpg/items-catalog';
 import { titleCase } from '../../core/ui/format';
 import { defaultSave, isValidSave } from '../../game/rpg/save';
 import { PARTY_MAX, healParty, makePartyMon, partyAlive } from '../../game/rpg/party';
-import type { Direction, ItemId, MapDef, PartyMon, RpgSave } from '../../game/rpg/rpg-types';
+import type { Direction, ItemId, MapDef, PartyMon, RpgSave, ScriptNode } from '../../game/rpg/rpg-types';
 
 const SAVE_KEY = 'rpg:save';
 
-export type RpgPhase = 'title' | 'overworld' | 'battle' | 'dialogue' | 'menu' | 'shop';
+export type RpgPhase = 'title' | 'overworld' | 'battle' | 'dialogue' | 'menu' | 'shop' | 'starter';
 
 /** A pending battle the RpgBattleComponent picks up. */
 export interface BattleSetup {
-  readonly kind: 'wild';
-  readonly foeSpecies: string;
+  readonly kind: 'wild' | 'trainer';
+  readonly foeSpecies: string; // wild: the species; trainer: first team member (display)
   readonly foeLevel: number;
   readonly foeCatchRate: number;
+  /** Trainer-only. */
+  readonly trainerName?: string;
+  readonly team?: readonly { readonly species: string; readonly level: number }[];
+  readonly reward?: number;
+  readonly winFlag?: string;
+  readonly defeatText?: string;
+}
+
+/** Active dialogue box state (null when no box is shown). */
+export interface DialogueState {
+  readonly speaker?: string;
+  readonly text: string;
+  readonly choices?: readonly string[];
 }
 
 /** Result of attempting a step, so the overworld can animate / react. */
@@ -49,6 +62,11 @@ export class RpgService {
   readonly party = computed<PartyMon[]>(() => this.game()?.party ?? []);
   readonly bag = computed<Partial<Record<ItemId, number>>>(() => this.game()?.bag ?? {});
   readonly money = computed<number>(() => this.game()?.money ?? 0);
+  readonly badges = computed<string[]>(() => this.game()?.badges ?? []);
+  /** Active dialogue box (set by the script VM). */
+  readonly dialogue = signal<DialogueState | null>(null);
+  private scriptStack: { nodes: readonly ScriptNode[]; i: number }[] = [];
+  private choiceBranches: readonly (readonly ScriptNode[])[] = [];
   /** A transient one-line message (signs, pickups, …). */
   readonly toast = signal<string | null>(null);
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -69,8 +87,7 @@ export class RpgService {
     this.game.set(g);
     this.persist();
     this.phase.set('overworld');
-    // TEMP (until P4's Professor event): grant a starter so battles are playable.
-    void this.grantPokemon('charmander', 5);
+    this.showToast('Visit the Lab (top-right building) to choose your first Pokémon!', 4200);
   }
 
   /** Build a Pokémon from species/level and add it to the party (or box if full). */
@@ -272,11 +289,153 @@ export class RpgService {
         this.phase.set('shop');
         return;
       }
-      this.showToast(`${npc.id} has nothing to say yet.`);
+      if (npc.kind === 'professor' && !this.hasFlag('starter')) {
+        this.phase.set('starter');
+        return;
+      }
+      if (npc.kind === 'trainer' && npc.trainer && !this.hasFlag(npc.trainer.flag)) {
+        this.startTrainer(npc.trainer);
+        return;
+      }
+      if (npc.script.length) {
+        this.runScript(npc.script);
+        return;
+      }
+      this.showToast(`${npc.id} has nothing to say.`);
       return;
     }
     const sign = signAt(m, t.x, t.y);
     if (sign) this.showToast(sign);
+  }
+
+  /* ------------------------------------------------------------- flags */
+
+  hasFlag(flag: string): boolean {
+    return !!this.game()?.flags[flag];
+  }
+  setFlag(flag: string): void {
+    const g = this.game();
+    if (!g) return;
+    this.game.set({ ...g, flags: { ...g.flags, [flag]: true } });
+    this.persist();
+  }
+  awardBadge(badge: string): void {
+    const g = this.game();
+    if (!g || g.badges.includes(badge)) return;
+    this.game.set({ ...g, badges: [...g.badges, badge] });
+    this.persist();
+  }
+
+  /* ----------------------------------------------------- dialogue VM */
+
+  /** Run a dialogue/event script; pauses on `say`/`choice`, executes the rest. */
+  runScript(nodes: readonly ScriptNode[]): void {
+    this.scriptStack = [{ nodes, i: 0 }];
+    this.phase.set('dialogue');
+    this.advance();
+  }
+
+  /** Advance past the current line; resolves the next pause or ends the script. */
+  advance(): void {
+    if (this.dialogue()?.choices) return; // must pick a choice
+    this.dialogue.set(null);
+    while (this.scriptStack.length) {
+      const top = this.scriptStack[this.scriptStack.length - 1];
+      if (top.i >= top.nodes.length) {
+        this.scriptStack.pop();
+        continue;
+      }
+      const node = top.nodes[top.i++];
+      if (this.execNode(node) === 'pause') return;
+      if (this.phase() !== 'dialogue') return; // a node changed phase (battle/shop)
+    }
+    if (this.phase() === 'dialogue') this.phase.set('overworld');
+  }
+
+  choose(index: number): void {
+    const branch = this.choiceBranches[index] ?? [];
+    this.choiceBranches = [];
+    this.dialogue.set(null);
+    this.scriptStack.push({ nodes: branch, i: 0 });
+    this.advance();
+  }
+
+  private execNode(node: ScriptNode): 'pause' | void {
+    if ('say' in node) {
+      this.dialogue.set({ speaker: node.speaker, text: node.say });
+      return 'pause';
+    }
+    if ('choice' in node) {
+      this.choiceBranches = node.options.map((o) => o.then);
+      this.dialogue.set({ text: node.choice, choices: node.options.map((o) => o.label) });
+      return 'pause';
+    }
+    if ('ifFlag' in node) {
+      this.scriptStack.push({ nodes: this.hasFlag(node.ifFlag) ? node.then : node.else ?? [], i: 0 });
+      return;
+    }
+    if ('giveItem' in node) {
+      this.addItem(node.giveItem, node.qty ?? 1);
+      return;
+    }
+    if ('setFlag' in node) {
+      this.setFlag(node.setFlag);
+      return;
+    }
+    if ('badge' in node) {
+      this.awardBadge(node.badge);
+      return;
+    }
+    if ('heal' in node) {
+      this.healAtCenter();
+      return;
+    }
+    if ('openShop' in node) {
+      this.dialogue.set(null);
+      this.phase.set('shop');
+      return;
+    }
+  }
+
+  /* ---------------------------------------------------------- starter */
+
+  async chooseStarter(species: string): Promise<void> {
+    if (this.hasFlag('starter')) return;
+    const mon = await this.grantPokemon(species, 5);
+    if (mon) {
+      this.setFlag('starter');
+      this.runScript([{ say: `${titleCase(species)} — excellent choice! Your adventure begins!`, speaker: 'Prof. Oak' }]);
+    } else {
+      this.phase.set('overworld');
+    }
+  }
+
+  /* ---------------------------------------------------------- trainer */
+
+  startTrainer(trainer: { name: string; team: readonly { species: string; level: number }[]; reward: number; intro: string; defeat: string; flag: string }): void {
+    if (!trainer.team.length) return;
+    this.battleSetup.set({
+      kind: 'trainer',
+      foeSpecies: trainer.team[0].species,
+      foeLevel: trainer.team[0].level,
+      foeCatchRate: 0,
+      trainerName: trainer.name,
+      team: trainer.team,
+      reward: trainer.reward,
+      winFlag: trainer.flag,
+      defeatText: trainer.defeat,
+    });
+    this.showToast(`${trainer.name}: ${trainer.intro}`, 3200);
+    this.phase.set('battle');
+  }
+
+  /** Reward + flag after beating a trainer (called by the battle component). */
+  finishTrainer(reward: number, flag?: string): void {
+    const g = this.game();
+    if (!g) return;
+    this.game.set({ ...g, money: g.money + reward });
+    if (flag) this.setFlag(flag);
+    this.persist();
   }
 
   /* --------------------------------------------------------------- menus */
