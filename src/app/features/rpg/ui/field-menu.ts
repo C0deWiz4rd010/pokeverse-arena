@@ -7,7 +7,7 @@ import { xpProgress } from '../../../game/rpg/xp';
 import { SPRITE_BASE } from '../../../core/api/pokeapi-endpoints';
 import type { ItemId } from '../../../game/rpg/rpg-types';
 
-type Tab = 'party' | 'bag' | 'dex';
+type Tab = 'party' | 'bag' | 'dex' | 'box';
 
 /** Overworld pause menu: party overview, field bag, save / quit. */
 @Component({
@@ -23,10 +23,14 @@ export class FieldMenuComponent {
   protected readonly tab = signal<Tab>('party');
   /** When using a bag item, the item awaiting a party target. */
   protected readonly pendingItem = signal<ItemId | null>(null);
+  /** Inline rename: the uid being edited + its draft text. */
+  protected readonly renameUid = signal<string | null>(null);
+  protected readonly renameDraft = signal('');
 
   protected readonly partyView = computed(() =>
     this.svc.party().map((m, i) => ({
       i,
+      uid: m.uid,
       name: titleCase(m.nickname ?? m.species),
       level: m.level,
       hp: m.currentHp,
@@ -35,6 +39,15 @@ export class FieldMenuComponent {
       status: m.status,
       xpPct: xpProgress(m.xp, m.level).pct,
       fainted: m.currentHp <= 0,
+    })),
+  );
+
+  protected readonly boxView = computed(() =>
+    this.svc.box().map((m, i) => ({
+      i,
+      name: titleCase(m.nickname ?? m.species),
+      level: m.level,
+      sprite: `${SPRITE_BASE}/pokemon/${m.dexId}.png`,
     })),
   );
 
@@ -75,6 +88,22 @@ export class FieldMenuComponent {
 
   protected cancelItem(): void {
     this.pendingItem.set(null);
+  }
+
+  protected startRename(uid: string, current: string): void {
+    this.renameUid.set(uid);
+    this.renameDraft.set(current);
+  }
+  protected onRenameInput(e: Event): void {
+    this.renameDraft.set((e.target as HTMLInputElement).value);
+  }
+  protected saveRename(): void {
+    const uid = this.renameUid();
+    if (uid) this.svc.rename(uid, this.renameDraft());
+    this.renameUid.set(null);
+  }
+  protected cancelRename(): void {
+    this.renameUid.set(null);
   }
 
   protected save(): void {

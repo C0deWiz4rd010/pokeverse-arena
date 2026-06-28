@@ -21,13 +21,45 @@
 .fm-party { display: grid; gap: 0.5rem; }
 @include up(sm) { .fm-party { grid-template-columns: 1fr 1fr; } }
 .mon {
-  appearance: none; cursor: default; font: inherit; text-align: left;
   display: grid; gap: 0.3rem; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm);
   background: var(--surface); border: 1px solid var(--glass-border); color: var(--text);
 }
-.mon.pick { cursor: pointer; border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
-.mon.pick:hover { transform: translateY(-2px); }
 .mon.fainted { opacity: 0.6; }
+.mon-main {
+  appearance: none; cursor: default; font: inherit; text-align: left; color: inherit;
+  background: none; border: none; padding: 0; display: grid; gap: 0.3rem;
+}
+.mon-main.pick { cursor: pointer; }
+.mon-actions { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.mon-actions button,
+.mon-rename button {
+  appearance: none; cursor: pointer; font: inherit; font-size: 0.74rem; font-weight: 700;
+  padding: 0.25rem 0.55rem; border-radius: 6px;
+  border: 1px solid var(--glass-border); background: var(--surface); color: var(--text-dim);
+}
+.mon-actions button:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+.mon-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+.mon-rename { display: flex; gap: 0.3rem; align-items: center; }
+.mon-rename input {
+  flex: 1; min-width: 0; padding: 0.3rem 0.5rem; font: inherit; font-size: 0.82rem;
+  border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.25); color: var(--text);
+}
+
+.fm-box { display: grid; gap: 0.4rem; }
+.box-mon {
+  display: grid; grid-template-columns: auto 1fr auto auto; gap: 0.6rem; align-items: center;
+  padding: 0.4rem 0.7rem; border-radius: var(--radius-sm);
+  background: var(--surface); border: 1px solid var(--glass-border);
+}
+.box-mon img { width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; }
+.box-name { font-weight: 700; }
+.box-lv { font-size: 0.78rem; color: var(--text-dim); }
+.withdraw {
+  appearance: none; cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 700;
+  padding: 0.35rem 0.7rem; border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--glass-border));
+  background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--text);
+}
 .mon-top { display: flex; align-items: center; gap: 0.45rem; }
 .mon-top .lv { font-size: 0.75rem; color: var(--text-dim); }
 .hpbar { height: 8px; border-radius: 999px; background: rgba(0, 0, 0, 0.4); overflow: hidden; }

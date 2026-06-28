@@ -8,7 +8,16 @@ import { rollEncounter } from '../../game/rpg/encounters';
 import { ITEMS } from '../../game/rpg/items-catalog';
 import { titleCase } from '../../core/ui/format';
 import { defaultSave, isValidSave } from '../../game/rpg/save';
-import { PARTY_MAX, healParty, makePartyMon, partyAlive } from '../../game/rpg/party';
+import {
+  PARTY_MAX,
+  depositToBox,
+  healParty,
+  makePartyMon,
+  partyAlive,
+  rename as renameMon,
+  setLead,
+  withdrawFromBox,
+} from '../../game/rpg/party';
 import type { Direction, ItemId, MapDef, PartyMon, RpgSave, ScriptNode } from '../../game/rpg/rpg-types';
 
 const SAVE_KEY = 'rpg:save';
@@ -295,6 +304,46 @@ export class RpgService {
 
   partyCanFight(): boolean {
     return partyAlive(this.party());
+  }
+
+  readonly box = computed(() => this.game()?.box ?? []);
+
+  setLead(index: number): void {
+    const g = this.game();
+    if (!g) return;
+    this.game.set({ ...g, party: setLead(g.party, index) });
+    this.persist();
+  }
+
+  deposit(index: number): void {
+    const g = this.game();
+    if (!g) return;
+    const r = depositToBox(g.party, g.box, index);
+    if (!r.ok) {
+      this.showToast('You need at least one Pokémon with you.');
+      return;
+    }
+    this.game.set({ ...g, party: r.party, box: r.box });
+    this.persist();
+  }
+
+  withdraw(index: number): void {
+    const g = this.game();
+    if (!g) return;
+    const r = withdrawFromBox(g.party, g.box, index);
+    if (!r.ok) {
+      this.showToast('Your team is full (6).');
+      return;
+    }
+    this.game.set({ ...g, party: r.party, box: r.box });
+    this.persist();
+  }
+
+  rename(uid: string, name: string): void {
+    const g = this.game();
+    if (!g) return;
+    this.game.set({ ...g, party: renameMon(g.party, uid, name), box: renameMon(g.box, uid, name) });
+    this.persist();
   }
 
   /** Interact with whatever the player faces (signs, nurse, clerk; NPCs/dialogue in P4). */
