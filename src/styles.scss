@@ -10,14 +10,19 @@
 html,
 body {
   margin: 0;
-  height: 100%;
+  min-height: 100%;
+}
+
+/* The gradient lives on <html> so it covers the full document height and any
+   mobile overscroll/bounce area — never flashing white behind a long page. */
+html {
+  background: var(--bg);
+  background-attachment: fixed;
 }
 
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   color: var(--text);
-  background: var(--bg);
-  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
