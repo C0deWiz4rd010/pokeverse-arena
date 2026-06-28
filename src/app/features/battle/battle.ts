@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { BattleService } from './battle.service';
 import {
   Battle,
@@ -217,6 +217,18 @@ export class BattleComponent {
     this.pulseEnter(0);
     this.pulseEnter(1);
     this.phase.set('fighting');
+  }
+
+  /** Number keys 1–4 fire the matching move while fighting. */
+  @HostListener('document:keydown', ['$event'])
+  protected onKeydown(event: KeyboardEvent): void {
+    if (this.phase() !== 'fighting' || this.busy()) return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const n = Number(event.key);
+    if (Number.isInteger(n) && n >= 1 && n <= this.playerMoves().length) {
+      event.preventDefault();
+      void this.useMove(n - 1);
+    }
   }
 
   protected async useMove(index: number): Promise<void> {

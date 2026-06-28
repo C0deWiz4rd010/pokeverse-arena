@@ -125,6 +125,7 @@
               [defenderTypes]="foeTypes()"
               [rules]="rules()"
               [disabled]="busy() || slot.pp <= 0"
+              [hotkey]="i + 1"
               (picked)="useMove(i)"
             />
             @if (slot.maxPp !== null) { <span class="pp" [class.empty]="slot.pp <= 0">PP {{ slot.pp }}/{{ slot.maxPp }}</span> }

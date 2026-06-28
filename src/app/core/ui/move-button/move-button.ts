@@ -42,6 +42,7 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
 
       <span class="mv-head">
         <span class="mv-name">{{ label() }}</span>
+        @if (hotkey() !== null) { <kbd class="mv-key" aria-hidden="true">{{ hotkey() }}</kbd> }
         <span class="mv-cat" [attr.data-cat]="move().damageClass" [title]="cat().label">
           <pv-icon [name]="cat().icon" />
         </span>
@@ -90,6 +91,8 @@ export class MoveButtonComponent {
   readonly defenderTypes = input<readonly PokemonType[]>();
   readonly rules = input<BattleRules>();
   readonly disabled = input(false);
+  /** Optional 1–4 hotkey shown as a keycap (battle keyboard control). */
+  readonly hotkey = input<number | null>(null);
 
   readonly picked = output<void>();
 

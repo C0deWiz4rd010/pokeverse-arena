@@ -135,6 +135,7 @@
                   [move]="move"
                   [defenderTypes]="opponent()?.types"
                   [disabled]="busy()"
+                  [hotkey]="i + 1"
                   (picked)="useMove(i)"
                 />
               }

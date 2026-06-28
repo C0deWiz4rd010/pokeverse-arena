@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  HostListener,
   computed,
   effect,
   input,
@@ -229,6 +230,31 @@ export class TournamentMatchComponent {
   }
 
   /* ----------------------------------------------------------- actions */
+
+  /** Keyboard: 1–4 fire moves (or pick a replacement when switching), S toggles the switch tray. */
+  @HostListener('document:keydown', ['$event'])
+  protected onKeydown(event: KeyboardEvent): void {
+    if (this.done() || this.busy() || event.ctrlKey || event.metaKey || event.altKey) return;
+    const key = event.key.toLowerCase();
+    if (this.awaitingSwitch()) {
+      const n = Number(event.key);
+      const bench = this.tb?.benchedSwitches(0) ?? [];
+      if (Number.isInteger(n) && n >= 1 && n <= bench.length) {
+        event.preventDefault();
+        void this.onTraySelect(0, bench[n - 1]);
+      }
+      return;
+    }
+    if (key === 's') {
+      if (this.canSwitch()) { event.preventDefault(); this.toggleSwitch(); }
+      return;
+    }
+    const n = Number(event.key);
+    if (Number.isInteger(n) && n >= 1 && n <= this.moveSlots().length) {
+      const slot = this.moveSlots()[n - 1];
+      if (slot.pp > 0) { event.preventDefault(); void this.useMove(n - 1); }
+    }
+  }
 
   protected async useMove(index: number): Promise<void> {
     if (!this.ready()) return;
