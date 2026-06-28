@@ -14,9 +14,12 @@ body {
 }
 
 /* The gradient lives on <html> so it covers the full document height and any
-   mobile overscroll/bounce area — never flashing white behind a long page. */
+   mobile overscroll/bounce area. A solid fallback colour (the gradient's own
+   end stop) sits underneath so nothing flashes white below the fixed layer —
+   on overscroll, very long pages, or in full-page screenshots. */
 html {
-  background: var(--bg);
+  background-color: #05060f;
+  background-image: var(--bg);
   background-attachment: fixed;
 }
 
