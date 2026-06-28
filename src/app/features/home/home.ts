@@ -55,6 +55,7 @@ export class HomeComponent implements OnDestroy {
     { path: '/spire', icon: 'mountain', title: 'Ascension Spire', text: 'A seeded roguelike climb — relics, shops, bosses and meta-progression.', accent: 'var(--type-dragon)' },
     { path: '/world', icon: 'map', title: 'World Explorer', text: 'Roam regions, fill a per-region dex through animated catch expeditions.', accent: 'var(--type-grass)' },
     { path: '/contest', icon: 'sparkles', title: 'Contest Hall', text: 'A live appeal mini-game with combos, jamming, ranks and ribbons.', accent: 'var(--type-fairy)' },
+    { path: '/adventure', icon: 'scroll-text', title: 'Adventure (RPG)', text: 'A classic tile-world story: pick a starter, catch in the grass, earn a badge.', accent: 'var(--type-ground)' },
     { path: '/profile', icon: 'crown', title: 'Trainer Profile', text: 'Your rank, records and achievements across every mode, in one place.', accent: 'var(--accent-2)' },
   ];
 

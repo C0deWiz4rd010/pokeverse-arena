@@ -126,6 +126,28 @@ export function drawTile(ctx: CanvasRenderingContext2D, kind: TileKind, dx: numb
   }
 }
 
+/** Draw a small Poké Ball pickup centered in a tile. */
+export function drawBall(ctx: CanvasRenderingContext2D, dx: number, dy: number, ts: number): void {
+  const cx = dx + ts / 2;
+  const cy = dy + ts / 2;
+  const r = ts * 0.22;
+  ctx.fillStyle = '#e23b3b';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI, 0);
+  ctx.fill();
+  ctx.fillStyle = '#f4f4ff';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI);
+  ctx.fill();
+  ctx.strokeStyle = '#1a1430';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.moveTo(cx - r, cy);
+  ctx.lineTo(cx + r, cy);
+  ctx.stroke();
+}
+
 /** Draw a little trainer character centered in a tile, oriented by `facing`. */
 export function drawCharacter(
   ctx: CanvasRenderingContext2D,

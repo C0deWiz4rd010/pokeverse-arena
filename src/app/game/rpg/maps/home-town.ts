@@ -15,8 +15,8 @@ const ROWS = [
   'TGHDHGGGGGGHDHGT',
   'TGGGGGGGGGGGGGGT',
   'TGGGG,,,,,GGGGGT',
-  'TGGGGGGGGGGGGGGT',
-  'TTTTTTTTTTTTTTTT',
+  'TGGGGGGGPGGGGGGT',
+  'TTTTTTTTPTTTTTTT',
 ];
 
 export const HOME_TOWN: MapDef = {
@@ -34,6 +34,8 @@ export const HOME_TOWN: MapDef = {
     { x: 12, y: 8, to: 'mart', toX: 4, toY: 4, toFacing: 'up' },
     // Prof. Oak's Lab (top-right building).
     { x: 12, y: 3, to: 'lab', toX: 4, toY: 4, toFacing: 'up' },
+    // South gate → Route 1.
+    { x: 8, y: 12, to: 'route-1', toX: 5, toY: 1, toFacing: 'down' },
   ],
   signs: [{ x: 6, y: 4, text: 'VERDANT TOWN — where every journey begins.' }],
   npcs: [

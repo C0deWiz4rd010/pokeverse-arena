@@ -19,7 +19,7 @@ export const MART: MapDef = {
   height: 7,
   outdoor: false,
   tiles: parseTiles(ROWS),
-  warps: [{ x: 4, y: 5, to: 'home-town', toX: 12, toY: 9, toFacing: 'down' }],
+  warps: [{ x: 4, y: 5, to: '@return', toX: 0, toY: 0 }],
   signs: [],
   npcs: [
     {

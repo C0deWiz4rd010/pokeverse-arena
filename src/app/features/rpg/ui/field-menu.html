@@ -3,6 +3,7 @@
     <div class="fm-tabs">
       <button type="button" [class.on]="tab() === 'party'" (click)="tab.set('party')">Pokémon</button>
       <button type="button" [class.on]="tab() === 'bag'" (click)="tab.set('bag')">Bag</button>
+      <button type="button" [class.on]="tab() === 'dex'" (click)="tab.set('dex')">Dex</button>
     </div>
     <span class="fm-money">{{ svc.money() }} ₽</span>
   </header>
@@ -26,6 +27,20 @@
       } @empty {
         <p class="fm-empty">No Pokémon yet. Find a starter in the Lab!</p>
       }
+    </div>
+  } @else if (tab() === 'dex') {
+    <div class="fm-dex">
+      <p class="dex-stats">Seen <strong>{{ dexView().seen }}</strong> · Caught <strong>{{ dexView().caught }}</strong></p>
+      @if (dexView().badges.length) {
+        <p class="dex-badges">@for (b of dexView().badges; track b) { <span class="badge">🏅 {{ b }}</span> }</p>
+      }
+      <div class="dex-grid">
+        @for (m of dexView().mons; track m.id) {
+          <span class="dex-mon"><img [src]="m.sprite" [alt]="'#' + m.id" loading="lazy" /></span>
+        } @empty {
+          <p class="fm-empty">No Pokémon caught yet.</p>
+        }
+      </div>
     </div>
   } @else {
     <div class="fm-bag">

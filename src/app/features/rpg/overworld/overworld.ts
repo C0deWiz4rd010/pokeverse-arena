@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import type { Direction } from '../../../game/rpg/rpg-types';
-import { VOID, drawCharacter, drawTile } from './tile-renderer';
+import { VOID, drawBall, drawCharacter, drawTile } from './tile-renderer';
 
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -228,7 +228,14 @@ export class OverworldComponent implements OnDestroy {
       }
     }
 
-    // NPCs (none in P1, but render-ready)
+    // Ground items not yet picked up.
+    const flags = this.svc.game()?.flags ?? {};
+    for (const it of map.items) {
+      if (flags[it.flag]) continue;
+      drawBall(ctx, originX + it.x * ts, originY + it.y * ts, ts);
+    }
+
+    // NPCs
     for (const npc of map.npcs) {
       drawCharacter(ctx, originX + npc.x * ts, originY + npc.y * ts, ts, npc.facing, '#ffd166', '#c5524a');
     }

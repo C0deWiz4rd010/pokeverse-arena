@@ -51,6 +51,21 @@
 .bi-desc { grid-column: 1 / 2; font-size: 0.74rem; color: var(--text-dim); }
 .bi-count { grid-row: 1 / 3; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 
+.fm-dex { display: grid; gap: 0.6rem; }
+.dex-stats { margin: 0; font-size: 0.95rem; }
+.dex-stats strong { color: var(--accent-3); }
+.dex-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; }
+.dex-badges .badge {
+  font-size: 0.78rem; font-weight: 700; padding: 0.15rem 0.6rem; border-radius: 999px;
+  color: #0b0a1f; background: linear-gradient(135deg, var(--accent-3), var(--accent-2));
+}
+.dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 0.4rem; }
+.dex-mon {
+  display: grid; place-items: center; padding: 0.2rem; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--glass-border);
+}
+.dex-mon img { width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; }
+
 .fm-actions { display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; }
 .btn {
   appearance: none; cursor: pointer; font: inherit; font-weight: 700;

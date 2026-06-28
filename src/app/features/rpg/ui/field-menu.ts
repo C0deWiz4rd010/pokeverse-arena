@@ -4,9 +4,10 @@ import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge
 import { titleCase } from '../../../core/ui/format';
 import { ITEMS } from '../../../game/rpg/items-catalog';
 import { xpProgress } from '../../../game/rpg/xp';
+import { SPRITE_BASE } from '../../../core/api/pokeapi-endpoints';
 import type { ItemId } from '../../../game/rpg/rpg-types';
 
-type Tab = 'party' | 'bag';
+type Tab = 'party' | 'bag' | 'dex';
 
 /** Overworld pause menu: party overview, field bag, save / quit. */
 @Component({
@@ -42,6 +43,17 @@ export class FieldMenuComponent {
     return (Object.keys(bag) as ItemId[])
       .filter((id) => (bag[id] ?? 0) > 0)
       .map((id) => ({ id, name: ITEMS[id].name, desc: ITEMS[id].desc, count: bag[id] ?? 0, field: ITEMS[id].usableOnField }));
+  });
+
+  protected readonly dexView = computed(() => {
+    const g = this.svc.game();
+    const caught = [...(g?.caught ?? [])].sort((a, b) => a - b);
+    return {
+      seen: g?.seen.length ?? 0,
+      caught: caught.length,
+      badges: g?.badges ?? [],
+      mons: caught.map((id) => ({ id, sprite: `${SPRITE_BASE}/pokemon/${id}.png` })),
+    };
   });
 
   protected pickItem(id: ItemId): void {

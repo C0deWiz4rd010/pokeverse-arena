@@ -116,6 +116,10 @@ export interface TrainerDef {
   readonly intro: string;
   readonly defeat: string;
   readonly flag: string; // set once beaten
+  /** Gym leaders award a badge on defeat. */
+  readonly badge?: string;
+  /** Shown as a victory epilogue (e.g. the demo's "to be continued"). */
+  readonly ending?: string;
 }
 
 export type NpcKind = 'talk' | 'trainer' | 'heal' | 'shop' | 'professor';
@@ -167,4 +171,6 @@ export interface RpgSave {
   badges: string[];
   /** Where a whiteout returns the player (last Pokémon Center). */
   respawn: { map: string; x: number; y: number };
+  /** Where an interior's exit door (`@return`) drops the player back outside. */
+  doorReturn?: { map: string; x: number; y: number; facing: Direction };
 }

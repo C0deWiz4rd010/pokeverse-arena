@@ -86,6 +86,8 @@ export class RpgBattleComponent {
   private trainerReward = 0;
   private trainerFlag: string | undefined;
   private trainerDefeat = '';
+  private trainerBadge: string | undefined;
+  private trainerEnding: string | undefined;
   private started = false;
   /** Wild battles allow catching/running; trainer battles won't. */
   protected readonly isWild = signal(true);
@@ -170,6 +172,8 @@ export class RpgBattleComponent {
         this.trainerReward = setup.reward ?? 0;
         this.trainerFlag = setup.winFlag;
         this.trainerDefeat = setup.defeatText ?? '';
+        this.trainerBadge = setup.badge;
+        this.trainerEnding = setup.ending;
         this.xpReward = setup.team.reduce((s, t) => s + xpYield(64, t.level), 0);
         this.foeLevel.set(setup.team[0].level);
       } else {
@@ -458,11 +462,13 @@ export class RpgBattleComponent {
 
     this.svc.applyParty(updated);
 
-    // Trainer payout + win flag.
+    // Trainer payout + win flag (+ badge).
     if (won && !this.isWild()) {
       if (this.trainerDefeat) lines.unshift(`${this.trainerName()}: ${this.trainerDefeat}`);
       if (this.trainerReward) lines.push(`You got ${this.trainerReward} ₽ for winning!`);
-      this.svc.finishTrainer(this.trainerReward, this.trainerFlag);
+      if (this.trainerBadge) lines.push(`🏅 You earned the ${this.trainerBadge}!`);
+      if (this.trainerEnding) lines.push(this.trainerEnding);
+      this.svc.finishTrainer(this.trainerReward, this.trainerFlag, this.trainerBadge);
     }
     this.resultLines.set(ran ? [] : lines);
 

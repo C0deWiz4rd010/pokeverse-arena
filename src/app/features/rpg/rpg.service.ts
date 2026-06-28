@@ -27,6 +27,8 @@ export interface BattleSetup {
   readonly reward?: number;
   readonly winFlag?: string;
   readonly defeatText?: string;
+  readonly badge?: string;
+  readonly ending?: string;
 }
 
 /** Active dialogue box state (null when no box is shown). */
@@ -170,10 +172,33 @@ export class RpgService {
     let next: RpgSave = { ...g, x: t.x, y: t.y, facing: dir };
     const warp = warpAt(m, t.x, t.y);
     if (warp) {
-      next = { ...next, map: warp.to, x: warp.toX, y: warp.toY, facing: warp.toFacing ?? dir };
+      if (warp.to === '@return') {
+        const r = g.doorReturn ?? { map: g.respawn.map, x: g.respawn.x, y: g.respawn.y, facing: 'down' as Direction };
+        next = { ...next, map: r.map, x: r.x, y: r.y, facing: r.facing };
+      } else {
+        const target = getMap(warp.to);
+        // Entering an interior: remember the outdoor tile just below the door.
+        const doorReturn = target && !target.outdoor ? { map: g.map, x: t.x, y: t.y + 1, facing: 'down' as Direction } : g.doorReturn;
+        next = { ...next, map: warp.to, x: warp.toX, y: warp.toY, facing: warp.toFacing ?? dir, doorReturn };
+      }
       this.game.set(next);
       this.persist();
       return { moved: true, warped: true, grass: false };
+    }
+
+    // Pick up a ground item once (persisted so the flag sticks).
+    const gi = m.items.find((it) => it.x === t.x && it.y === t.y && !next.flags[it.flag]);
+    if (gi) {
+      next = {
+        ...next,
+        bag: { ...next.bag, [gi.item]: (next.bag[gi.item] ?? 0) + gi.qty },
+        flags: { ...next.flags, [gi.flag]: true },
+      };
+      this.game.set(next);
+      this.persist();
+      this.showToast(`Found ${ITEMS[gi.item].name}${gi.qty > 1 ? ' ×' + gi.qty : ''}!`);
+      const grassItem = isTallGrass(m, t.x, t.y);
+      return { moved: true, warped: false, grass: grassItem };
     }
 
     this.game.set(next);
@@ -412,7 +437,7 @@ export class RpgService {
 
   /* ---------------------------------------------------------- trainer */
 
-  startTrainer(trainer: { name: string; team: readonly { species: string; level: number }[]; reward: number; intro: string; defeat: string; flag: string }): void {
+  startTrainer(trainer: import('../../game/rpg/rpg-types').TrainerDef): void {
     if (!trainer.team.length) return;
     this.battleSetup.set({
       kind: 'trainer',
@@ -424,17 +449,20 @@ export class RpgService {
       reward: trainer.reward,
       winFlag: trainer.flag,
       defeatText: trainer.defeat,
+      badge: trainer.badge,
+      ending: trainer.ending,
     });
     this.showToast(`${trainer.name}: ${trainer.intro}`, 3200);
     this.phase.set('battle');
   }
 
-  /** Reward + flag after beating a trainer (called by the battle component). */
-  finishTrainer(reward: number, flag?: string): void {
+  /** Reward + flag (+ badge) after beating a trainer (called by the battle component). */
+  finishTrainer(reward: number, flag?: string, badge?: string): void {
     const g = this.game();
     if (!g) return;
     this.game.set({ ...g, money: g.money + reward });
     if (flag) this.setFlag(flag);
+    if (badge) this.awardBadge(badge);
     this.persist();
   }
 
