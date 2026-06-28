@@ -42,6 +42,11 @@ interface FloatNum {
   readonly text: string;
   readonly cls: string;
 }
+type LogTone = 'crit' | 'super' | 'resist' | 'faint' | 'win';
+interface LogLine {
+  readonly text: string;
+  readonly tone?: LogTone;
+}
 
 /** Engine weather → cosmetic overlay weather. */
 const OVERLAY_WEATHER: Record<EngineWeather, Weather> = {
@@ -112,7 +117,7 @@ export class BattleComponent {
   protected readonly weatherTurns = signal(0);
   protected readonly terrainTurns = signal(0);
 
-  protected readonly log = signal<string[]>([]);
+  protected readonly log = signal<LogLine[]>([]);
   protected readonly shakeSide = signal<SideIndex | null>(null);
   protected readonly flashSide = signal<SideIndex | null>(null);
   protected readonly critSide = signal<SideIndex | null>(null);
@@ -203,9 +208,9 @@ export class BattleComponent {
     this.ambientWeather.set(pickWeather(player.types, opponent.types, (items) => rng.pick(items)));
     const info = WEATHER_INFO[this.weather()];
     this.log.set([
-      `A wild ${titleCase(opponent.name)} appeared!`,
-      `Go, ${titleCase(player.name)}!`,
-      ...(this.weather() === 'clear' ? [] : [`${info.label}!`]),
+      { text: `A wild ${titleCase(opponent.name)} appeared!` },
+      { text: `Go, ${titleCase(player.name)}!` },
+      ...(this.weather() === 'clear' ? [] : [{ text: `${info.label}!` }]),
     ]);
     this.faintSide.set(null);
     this.floats.set([]);
@@ -268,10 +273,10 @@ export class BattleComponent {
           this.setHp(ev.side, ev.remainingHp);
           if (ev.crit) {
             this.critSide.set(ev.side);
-            this.append('A critical hit!');
+            this.append('A critical hit!', 'crit');
           }
           const note = effectivenessNote(ev.effectiveness);
-          if (note) this.append(note);
+          if (note) this.append(note, ev.effectiveness >= 2 ? 'super' : 'resist');
           await sleep(520);
           this.shakeSide.set(null);
           this.flashSide.set(null);
@@ -304,12 +309,12 @@ export class BattleComponent {
           await sleep(320);
           break;
         case 'faint':
-          this.append(`${titleCase(ev.name)} fainted!`);
+          this.append(`${titleCase(ev.name)} fainted!`, 'faint');
           this.faintSide.set(ev.side);
           await sleep(700);
           break;
         case 'end':
-          this.append(ev.winner === 0 ? 'You won the battle!' : 'You were defeated…');
+          this.append(ev.winner === 0 ? 'You won the battle!' : 'You were defeated…', ev.winner === 0 ? 'win' : 'faint');
           await sleep(280);
           break;
         default:
@@ -341,8 +346,8 @@ export class BattleComponent {
     else this.oppHp.set(hp);
   }
 
-  private append(line: string): void {
-    this.log.update((l) => [...l, line]);
+  private append(text: string, tone?: LogTone): void {
+    this.log.update((l) => [...l, { text, tone }]);
   }
 
   /** Retrigger a side's send-out slide-in animation. */

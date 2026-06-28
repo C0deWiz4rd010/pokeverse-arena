@@ -147,6 +147,6 @@
   }
 
   <ul class="log" aria-live="polite" #logEl>
-    @for (line of log(); track $index) { <li>{{ line }}</li> }
+    @for (line of log(); track $index) { <li [attr.data-tone]="line.tone">{{ line.text }}</li> }
   </ul>
 </div>

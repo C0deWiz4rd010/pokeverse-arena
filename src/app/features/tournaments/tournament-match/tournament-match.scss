@@ -243,6 +243,12 @@
 
   li { padding: 0.1rem 0; color: var(--text-dim); }
   li:last-child { color: var(--text); font-weight: 600; }
+  li[data-tone='crit'] { color: var(--danger); font-weight: 700; }
+  li[data-tone='super'] { color: var(--accent-3); font-weight: 600; }
+  li[data-tone='resist'] { color: #9fb3c8; }
+  li[data-tone='faint'] { color: #ff8a8a; font-weight: 600; }
+  li[data-tone='win'] { color: var(--success); font-weight: 700; }
+  li[data-tone='switch'] { color: var(--accent-2); }
 }
 @media (prefers-reduced-motion: reduce) { .log { scroll-behavior: auto; } }
 

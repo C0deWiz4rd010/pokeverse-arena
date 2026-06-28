@@ -61,6 +61,11 @@ interface FloatNum {
   readonly text: string;
   readonly cls: string;
 }
+type LogTone = 'crit' | 'super' | 'resist' | 'faint' | 'win' | 'switch';
+interface LogLine {
+  readonly text: string;
+  readonly tone?: LogTone;
+}
 
 export interface MatchOutcome {
   readonly playerWon: boolean;
@@ -115,7 +120,7 @@ export class TournamentMatchComponent {
   protected readonly fHp = signal(0);
   protected readonly fMax = signal(1);
 
-  protected readonly log = signal<string[]>([]);
+  protected readonly log = signal<LogLine[]>([]);
   protected readonly busy = signal(false);
   protected readonly done = signal(false);
   protected readonly playerWon = signal(false);
@@ -266,7 +271,7 @@ export class TournamentMatchComponent {
       startHpB: s.foeStartHp,
       field: s.field,
     });
-    this.log.set([`${s.foe.name} wants to battle!`]);
+    this.log.set([{ text: `${s.foe.name} wants to battle!` }]);
     this.syncAll();
     this.pulseEnter(0);
     this.pulseEnter(1);
@@ -331,7 +336,7 @@ export class TournamentMatchComponent {
     this.playerWon.set(tb.state.winner === 0);
     this.done.set(true);
     this.busy.set(false);
-    this.append(this.playerWon() ? 'Match won!' : 'You were knocked out…');
+    this.append(this.playerWon() ? 'Match won!' : 'You were knocked out…', this.playerWon() ? 'win' : 'faint');
   }
 
   /* ----------------------------------------------------------- sync + fx */
@@ -376,7 +381,7 @@ export class TournamentMatchComponent {
         case 'switch':
           this.syncSide(ev.side);
           this.pulseEnter(ev.side);
-          this.append(ev.text);
+          this.append(ev.text, 'switch');
           if (ev.side === 1) this.maybeAceQuip();
           await sleep(480);
           break;
@@ -402,10 +407,10 @@ export class TournamentMatchComponent {
           else this.fHp.set(ev.remainingHp);
           if (ev.crit) {
             this.critSide.set(ev.side);
-            this.append('A critical hit!');
+            this.append('A critical hit!', 'crit');
           }
           const note = effectivenessNote(ev.effectiveness);
-          if (note) this.append(note);
+          if (note) this.append(note, ev.effectiveness >= 2 ? 'super' : 'resist');
           await sleep(500);
           this.shakeSide.set(null);
           this.flashSide.set(null);
@@ -439,7 +444,7 @@ export class TournamentMatchComponent {
           await sleep(260);
           break;
         case 'faint':
-          this.append(`${titleCase(ev.name)} fainted!`);
+          this.append(`${titleCase(ev.name)} fainted!`, 'faint');
           this.faintSide.set(ev.side);
           await sleep(700);
           this.faintSide.set(null);
@@ -482,8 +487,8 @@ export class TournamentMatchComponent {
     }));
   }
 
-  private append(line: string): void {
-    this.log.update((l) => [...l, line]);
+  private append(text: string, tone?: LogTone): void {
+    this.log.update((l) => [...l, { text, tone }]);
   }
 
   /** Retrigger a side's send-out slide-in animation. */

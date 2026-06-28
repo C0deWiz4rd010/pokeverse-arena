@@ -208,6 +208,11 @@
 }
 .log-lines p { font-size: 0.85rem; margin: 0.12rem 0; color: var(--text-dim); }
 .log-lines p:last-child { color: var(--text); font-weight: 600; }
+.log-lines p[data-tone='crit'] { color: var(--danger); font-weight: 700; }
+.log-lines p[data-tone='super'] { color: var(--accent-3); font-weight: 600; }
+.log-lines p[data-tone='resist'] { color: #9fb3c8; }
+.log-lines p[data-tone='faint'] { color: #ff8a8a; font-weight: 600; }
+.log-lines p[data-tone='win'] { color: var(--success); font-weight: 700; }
 @media (prefers-reduced-motion: reduce) { .log-lines { scroll-behavior: auto; } }
 
 /* ---- moves ---- */
