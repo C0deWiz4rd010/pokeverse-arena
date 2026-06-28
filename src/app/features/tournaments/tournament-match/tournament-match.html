@@ -37,7 +37,7 @@
             <span class="lvl">Lv{{ foe.level }}</span>
             @if (fStatus() !== 'none') { <pv-status-badge [status]="fStatus()" /> }
           </div>
-          <div class="hpbar"><span class="fill" [class.low]="fHpPct() < 30" [style.width.%]="fHpPct()"></span><span class="kp">{{ fHp() }} / {{ fMax() }} <small>KP</small></span></div>
+          <div class="hpbar"><span class="fill" [class.mid]="fHpPct() > 30 && fHpPct() <= 55" [class.low]="fHpPct() <= 30" [style.width.%]="fHpPct()"></span><span class="kp">{{ fHp() }} / {{ fMax() }} <small>KP</small></span></div>
           <div class="types">
             @for (t of foe.types; track t) { <pv-type-badge [type]="t" /> }
           </div>
@@ -69,7 +69,7 @@
             <span class="lvl">Lv{{ me.level }}</span>
             @if (pStatus() !== 'none') { <pv-status-badge [status]="pStatus()" /> }
           </div>
-          <div class="hpbar"><span class="fill" [class.low]="pHpPct() < 30" [style.width.%]="pHpPct()"></span><span class="kp">{{ pHp() }} / {{ pMax() }} <small>KP</small></span></div>
+          <div class="hpbar"><span class="fill" [class.mid]="pHpPct() > 30 && pHpPct() <= 55" [class.low]="pHpPct() <= 30" [style.width.%]="pHpPct()"></span><span class="kp">{{ pHp() }} / {{ pMax() }} <small>KP</small></span></div>
           <div class="types">
             @for (t of me.types; track t) { <pv-type-badge [type]="t" /> }
           </div>

@@ -134,8 +134,9 @@
     height: 100%;
     border-radius: inherit;
     background: linear-gradient(90deg, #36e27a, #8df0a8);
-    transition: width 0.45s ease;
+    transition: width 0.45s ease, background 0.3s ease;
 
+    &.mid { background: linear-gradient(90deg, #ffc24b, #ffe08a); }
     &.low { background: linear-gradient(90deg, #ff5d6c, #ffb199); }
   }
 
