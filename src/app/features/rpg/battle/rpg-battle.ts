@@ -175,7 +175,7 @@ export class RpgBattleComponent {
 
       let foeTeam: Battler[];
       if (isTrainer && setup.team?.length) {
-        foeTeam = await Promise.all(setup.team.map((t) => this.battleSvc.buildBattler(t.species, t.level)));
+        foeTeam = await Promise.all(setup.team.map((t) => this.battleSvc.buildBattler(t.species, t.level, { levelMoves: true })));
         this.trainerName.set(setup.trainerName ?? 'Trainer');
         this.trainerReward = setup.reward ?? 0;
         this.trainerFlag = setup.winFlag;
@@ -187,14 +187,14 @@ export class RpgBattleComponent {
       } else {
         const dto = await this.api.pokemon(setup.foeSpecies);
         this.foeCatchRate = setup.foeCatchRate;
-        const foe = await this.battleSvc.buildBattlerFromDto(dto, setup.foeLevel);
+        const foe = await this.battleSvc.buildBattlerFromDto(dto, setup.foeLevel, { levelMoves: true });
         foeTeam = [foe];
         this.xpReward = xpYield(dto.base_experience ?? 64, setup.foeLevel);
         this.foeLevel.set(setup.foeLevel);
       }
       foeTeam.forEach((f) => this.svc.markSeen(f.id));
 
-      const playerBattlers = await Promise.all(party.map((m) => this.battleSvc.buildBattler(m.species, m.level)));
+      const playerBattlers = await Promise.all(party.map((m) => this.battleSvc.buildBattler(m.species, m.level, { levelMoves: true })));
       const startHpA = party.map((m) => m.currentHp);
 
       this.tb = new TeamBattle(playerBattlers, foeTeam, `rpg-${Date.now()}`, {

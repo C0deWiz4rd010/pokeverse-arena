@@ -48,14 +48,18 @@ export class BattleService {
     return id;
   }
 
-  /** Build an engine-ready Battler from a Pokémon id/name at a given level. */
-  async buildBattler(idOrName: string | number, level = 50): Promise<Battler> {
+  /**
+   * Build an engine-ready Battler from a Pokémon id/name at a given level.
+   * Pass `{ levelMoves: true }` (RPG mode) to use the moves the species would
+   * actually know at that level instead of its strongest four.
+   */
+  async buildBattler(idOrName: string | number, level = 50, opts?: { levelMoves?: boolean }): Promise<Battler> {
     const dto = await this.api.pokemon(String(idOrName).toLowerCase());
-    return this.buildBattlerFromDto(dto, level);
+    return this.buildBattlerFromDto(dto, level, opts);
   }
 
   /** Build an engine-ready Battler from an already-fetched DTO (saves a request). */
-  async buildBattlerFromDto(dto: PokemonDto, level = 50): Promise<Battler> {
+  async buildBattlerFromDto(dto: PokemonDto, level = 50, opts?: { levelMoves?: boolean }): Promise<Battler> {
     const baseStats = this.baseStats(dto);
     const stats = quickStats(baseStats, level);
     const types = dto.types
@@ -63,7 +67,7 @@ export class BattleService {
       .sort((a, b) => a.slot - b.slot)
       .map((t) => t.type.name)
       .filter(isPokemonType);
-    const moves = await this.pickMoves(dto);
+    const moves = await this.pickMoves(dto, opts?.levelMoves ? level : undefined);
     return {
       id: dto.id,
       name: dto.name,
@@ -111,30 +115,47 @@ export class BattleService {
     return stats;
   }
 
-  private async pickMoves(dto: PokemonDto): Promise<BattleMove[]> {
-    const names = [
-      ...new Set(
-        dto.moves
-          .filter((m) =>
-            m.version_group_details.some((d) => d.move_learn_method.name === 'level-up'),
-          )
-          .map((m) => m.move.name),
-      ),
-    ].slice(0, MOVE_CANDIDATES);
+  /**
+   * Pick up to four damaging moves. Default: the species' strongest level-up
+   * moves (fair level-50 fights). When `atLevel` is given (RPG mode): the moves
+   * known at that level, most-recently-learned first — so movesets scale as a
+   * Pokémon levels up.
+   */
+  private async pickMoves(dto: PokemonDto, atLevel?: number): Promise<BattleMove[]> {
+    let names: string[];
+    if (atLevel !== undefined) {
+      // Earliest level-up level per move, capped at the current level.
+      const byMove = new Map<string, number>();
+      for (const m of dto.moves) {
+        for (const d of m.version_group_details) {
+          if (d.move_learn_method.name !== 'level-up') continue;
+          if (d.level_learned_at > atLevel) continue;
+          const prev = byMove.get(m.move.name);
+          if (prev === undefined || d.level_learned_at < prev) byMove.set(m.move.name, d.level_learned_at);
+        }
+      }
+      names = [...byMove.entries()]
+        .sort((a, b) => b[1] - a[1]) // most recently learned first
+        .slice(0, MOVE_CANDIDATES)
+        .map(([name]) => name);
+    } else {
+      names = [
+        ...new Set(
+          dto.moves
+            .filter((m) => m.version_group_details.some((d) => d.move_learn_method.name === 'level-up'))
+            .map((m) => m.move.name),
+        ),
+      ].slice(0, MOVE_CANDIDATES);
+    }
 
-    const details = await Promise.all(
-      names.map((n) =>
-        this.api.move(n).catch(() => null as MoveDto | null),
-      ),
-    );
+    const details = await Promise.all(names.map((n) => this.api.move(n).catch(() => null as MoveDto | null)));
 
-    const damaging = details
-      .filter((d): d is MoveDto => !!d && (d.power ?? 0) > 0)
-      .map((d) => this.toMove(d))
-      .sort((a, b) => b.power - a.power)
-      .slice(0, MOVE_SLOTS);
+    const damaging = details.filter((d): d is MoveDto => !!d && (d.power ?? 0) > 0).map((d) => this.toMove(d));
 
-    return damaging.length ? damaging : [STRUGGLE];
+    // Level mode keeps recency order (already sorted); default takes the strongest.
+    const chosen = atLevel !== undefined ? damaging.slice(0, MOVE_SLOTS) : damaging.sort((a, b) => b.power - a.power).slice(0, MOVE_SLOTS);
+
+    return chosen.length ? chosen : [STRUGGLE];
   }
 
   private toMove(dto: MoveDto): BattleMove {
