@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RpgService } from './rpg.service';
 import { OverworldComponent } from './overworld/overworld';
+import { RpgBattleComponent } from './battle/rpg-battle';
 import { IconComponent } from '../../core/ui/icon/icon';
 
 /**
@@ -10,7 +11,7 @@ import { IconComponent } from '../../core/ui/icon/icon';
 @Component({
   selector: 'pv-rpg',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [OverworldComponent, IconComponent],
+  imports: [OverworldComponent, RpgBattleComponent, IconComponent],
   templateUrl: './rpg.html',
   styleUrl: './rpg.scss',
 })

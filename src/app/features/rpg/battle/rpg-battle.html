@@ -1,0 +1,79 @@
+<div class="rb">
+  @if (loading()) {
+    <div class="rb-loading">A wild Pokémon appeared…</div>
+  } @else {
+    <div class="rb-field">
+      <!-- Foe -->
+      <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1">
+        @if (foeActive(); as foe) {
+          <div class="info">
+            <div class="row">
+              <strong>{{ titleCase(foe.name) }}</strong>
+              <span class="lv">Lv{{ foeLevel() }}</span>
+              @if (fStatus() !== 'none') { <pv-status-badge [status]="fStatus()" /> }
+            </div>
+            <div class="types">@for (t of foe.types; track t) { <pv-type-badge [type]="t" /> }</div>
+            <div class="hpbar"><span class="fill" [class.mid]="fHpPct() <= 55 && fHpPct() > 25" [class.low]="fHpPct() <= 25" [style.width.%]="fHpPct()"></span></div>
+          </div>
+          <img class="sprite" [src]="foe.sprite" [alt]="foe.name" />
+        }
+      </div>
+
+      <!-- Player -->
+      <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0">
+        @if (playerActive(); as me) {
+          <img class="sprite" [src]="me.sprite" [alt]="me.name" />
+          <div class="info">
+            <div class="row">
+              <strong>{{ titleCase(me.name) }}</strong>
+              <span class="lv">Lv{{ me.level }}</span>
+              @if (pStatus() !== 'none') { <pv-status-badge [status]="pStatus()" /> }
+            </div>
+            <div class="hpbar"><span class="fill" [class.mid]="pHpPct() <= 55 && pHpPct() > 25" [class.low]="pHpPct() <= 25" [style.width.%]="pHpPct()"></span><span class="kp">{{ pHp() }} / {{ pMax() }}</span></div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <ul class="rb-log" aria-live="polite">
+      @for (line of log(); track $index) { <li [attr.data-tone]="line.tone">{{ line.text }}</li> }
+    </ul>
+
+    @if (done()) {
+      <div class="rb-result">
+        @if (resultLines().length) {
+          <ul class="rb-gains">@for (l of resultLines(); track $index) { <li>{{ l }}</li> }</ul>
+        }
+        <button class="cmd primary" type="button" (click)="close()">Continue ›</button>
+      </div>
+    } @else if (menu() === 'fight') {
+      <div class="rb-moves">
+        @for (slot of moveSlots(); track slot.move.name; let i = $index) {
+          <div class="move-slot">
+            <pv-move-button [move]="slot.move" [defenderTypes]="foeActive()?.types" [disabled]="busy() || slot.pp <= 0" [hotkey]="i + 1" (picked)="useMove(i)" />
+            @if (slot.maxPp !== null) { <span class="pp" [class.empty]="slot.pp <= 0">PP {{ slot.pp }}/{{ slot.maxPp }}</span> }
+          </div>
+        }
+        <button class="cmd back" type="button" (click)="backToMain()">‹ Back</button>
+      </div>
+    } @else if (menu() === 'pokemon') {
+      <div class="rb-party">
+        @if (forcedSwitch()) { <p class="rb-prompt">Your Pokémon fainted — send out another!</p> }
+        @for (m of switchList(); track m.index) {
+          <button class="party-row" type="button" [class.active]="m.active" [disabled]="m.active || m.fainted || busy()" (click)="chooseSwitch(m.index)">
+            <span class="pr-name">{{ m.name }}</span>
+            <span class="pr-hp"><span class="bar"><span class="fill" [style.width.%]="(m.hp / m.maxHp) * 100"></span></span>{{ m.hp }}/{{ m.maxHp }}</span>
+          </button>
+        }
+        @if (!forcedSwitch()) { <button class="cmd back" type="button" (click)="backToMain()">‹ Back</button> }
+      </div>
+    } @else {
+      <div class="rb-cmd">
+        <button class="cmd" type="button" [disabled]="busy()" (click)="openFight()">Fight</button>
+        <button class="cmd" type="button" [disabled]="busy() || switchList().length < 2" (click)="openPokemon()">Pokémon</button>
+        <button class="cmd dim" type="button" disabled title="Coming in the next update">Bag</button>
+        <button class="cmd" type="button" [disabled]="busy()" (click)="run()">Run</button>
+      </div>
+    }
+  }
+</div>

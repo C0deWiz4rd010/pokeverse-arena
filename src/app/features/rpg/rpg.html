@@ -1,4 +1,8 @@
 @switch (svc.phase()) {
+  @case ('battle') {
+    <div class="rpg-stage"><pv-rpg-battle /></div>
+  }
+
   @case ('overworld') {
     <div class="rpg-stage">
       <pv-overworld />

@@ -33,4 +33,14 @@ export const HOME_TOWN: MapDef = {
   signs: [{ x: 6, y: 4, text: 'VERDANT TOWN — where every journey begins.' }],
   npcs: [],
   items: [],
+  encounter: {
+    rate: 0.22,
+    table: [
+      { species: 'pidgey', min: 2, max: 4, weight: 4, catchRate: 255 },
+      { species: 'rattata', min: 2, max: 4, weight: 4, catchRate: 255 },
+      { species: 'caterpie', min: 2, max: 3, weight: 3, catchRate: 255 },
+      { species: 'weedle', min: 2, max: 3, weight: 3, catchRate: 255 },
+      { species: 'oddish', min: 3, max: 5, weight: 2, catchRate: 235 },
+    ],
+  },
 };
