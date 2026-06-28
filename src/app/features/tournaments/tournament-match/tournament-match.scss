@@ -238,12 +238,12 @@
   border: 1px solid var(--glass-border);
   background: color-mix(in srgb, var(--bg) 78%, #000);
   font-size: 0.82rem;
-  display: flex;
-  flex-direction: column-reverse;
+  scroll-behavior: smooth;
 
   li { padding: 0.1rem 0; color: var(--text-dim); }
-  li:first-child { color: var(--text); }
+  li:last-child { color: var(--text); font-weight: 600; }
 }
+@media (prefers-reduced-motion: reduce) { .log { scroll-behavior: auto; } }
 
 @keyframes hit-shake {
   0%, 100% { transform: translateX(0); }

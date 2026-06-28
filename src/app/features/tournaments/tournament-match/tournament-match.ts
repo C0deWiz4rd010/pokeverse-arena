@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   effect,
   input,
@@ -204,6 +205,7 @@ export class TournamentMatchComponent {
   private tb: TeamBattle | null = null;
   private started = false;
   private readonly fx = viewChild(BattleFxComponent);
+  private readonly logEl = viewChild<ElementRef<HTMLElement>>('logEl');
   private pendingMove: { side: SideIndex; type: PokemonType } | null = null;
 
   constructor() {
@@ -212,6 +214,12 @@ export class TournamentMatchComponent {
       if (this.started || !s) return;
       this.started = true;
       this.begin(s);
+    });
+    // Keep the battle log pinned to the newest line as it streams in.
+    effect(() => {
+      this.log();
+      const el = this.logEl()?.nativeElement;
+      if (el) queueMicrotask(() => (el.scrollTop = el.scrollHeight));
     });
   }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { BattleService } from './battle.service';
 import {
   Battle,
@@ -145,11 +145,18 @@ export class BattleComponent {
   protected readonly oppAbility = computed(() => abilityName(this.opponent()?.ability));
 
   private readonly fx = viewChild(BattleFxComponent);
+  private readonly logEl = viewChild<ElementRef<HTMLElement>>('logLines');
   private battle: Battle | null = null;
   private pendingMove: { side: SideIndex; type: PokemonType } | null = null;
 
   constructor() {
     void this.pokedex.ensureLoaded();
+    // Keep the battle log pinned to the newest line as it streams in.
+    effect(() => {
+      this.log();
+      const el = this.logEl()?.nativeElement;
+      if (el) queueMicrotask(() => (el.scrollTop = el.scrollHeight));
+    });
   }
 
   protected setPlayerInput(event: Event): void {

@@ -146,7 +146,7 @@
     </div>
   }
 
-  <ul class="log" aria-live="polite">
+  <ul class="log" aria-live="polite" #logEl>
     @for (line of log(); track $index) { <li>{{ line }}</li> }
   </ul>
 </div>

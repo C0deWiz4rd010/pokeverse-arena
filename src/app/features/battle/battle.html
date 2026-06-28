@@ -166,7 +166,7 @@
 
         <aside class="log glass" aria-live="polite">
           <h3 class="log-title"><pv-icon name="scroll-text" /> Battle Log</h3>
-          <div class="log-lines">
+          <div class="log-lines" #logLines>
             @for (line of log(); track $index) {
               <p>{{ line }}</p>
             }

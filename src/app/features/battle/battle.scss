@@ -201,14 +201,14 @@
   color: var(--text-dim);
 }
 .log-lines {
-  display: flex;
-  flex-direction: column-reverse;
   overflow-y: auto;
   max-height: 150px;
   min-height: 0;
+  scroll-behavior: smooth;
 }
-.log-lines p { font-size: 0.85rem; margin: 0.12rem 0; }
-.log-lines p:first-child { color: var(--text); font-weight: 600; }
+.log-lines p { font-size: 0.85rem; margin: 0.12rem 0; color: var(--text-dim); }
+.log-lines p:last-child { color: var(--text); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .log-lines { scroll-behavior: auto; } }
 
 /* ---- moves ---- */
 .moves {
