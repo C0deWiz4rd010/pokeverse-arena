@@ -64,7 +64,15 @@ import {
   type SideIndex,
 } from './battle-types';
 
-export type TeamAction = { type: 'move'; index: number } | { type: 'switch'; to: number };
+/**
+ * A side's choice for a turn. `pass` forfeits the side's action (the other side
+ * still acts) — used by the RPG battle when the player throws a ball, uses an
+ * item, or fails to run, so the opponent gets its free turn.
+ */
+export type TeamAction =
+  | { type: 'move'; index: number }
+  | { type: 'switch'; to: number }
+  | { type: 'pass' };
 
 function critChanceForStage(stage: number): number {
   return [CRIT_CHANCE, 1 / 8, 1 / 2, 1][Math.max(0, Math.min(3, stage))];

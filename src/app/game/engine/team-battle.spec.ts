@@ -82,6 +82,17 @@ describe('TeamBattle', () => {
     expect(tb.active(1).stages.attack).toBe(-1);
   });
 
+  it('lets one side pass while the other still attacks', () => {
+    const teamA = [mk({ name: 'A', stats: { ...mk({}).stats, speed: 1 } })];
+    const teamB = [mk({ name: 'B', moves: [tackle], stats: { ...mk({}).stats, attack: 200, speed: 200 } })];
+    const tb = new TeamBattle(teamA, teamB, 'pass');
+    const beforeA = tb.active(0).currentHp;
+    const beforeB = tb.active(1).currentHp;
+    tb.takeTurn({ type: 'pass' }, { type: 'move', index: 0 });
+    expect(tb.active(0).currentHp).toBeLessThan(beforeA); // foe hit us
+    expect(tb.active(1).currentHp).toBe(beforeB); // we did nothing
+  });
+
   it('opens in a configured gym field (weather/terrain)', () => {
     const tb = new TeamBattle([mk({ name: 'A' })], [mk({ name: 'B' })], 'field', {
       field: { weather: 'rain', terrain: 'grassy' },
