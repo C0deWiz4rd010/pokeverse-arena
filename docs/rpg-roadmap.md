@@ -87,15 +87,26 @@ Reuse the engine — don't fork battle logic.
 - **Check in a Playwright e2e spec** for the adventure happy-path (currently
   verified via ad-hoc scripts) so regressions are caught in CI.
 
-## Recommended next steps (the immediate slice)
-A tight, high-value first increment ("v1.1"):
-1. Extract shared **battle-presentation** → port **FX + cries** into rpg-battle.
-2. **Level-accurate movesets + learn-on-level-up** (+ status moves).
-3. **PC Box / party reorder / nicknames**.
+## Progress
 
-That trio fixes the most-felt gaps (battle feel, move authenticity, the
-inaccessible box) before expanding content. Then tackle **evolutions**, then the
-**Tier-2 world expansion** (Route 2 + cave + gyms 2–3 + rival).
+### ✅ v1.1 — shipped
+1. **Battle FX + cries** in rpg-battle (floating numbers, send-out/faint, cries).
+2. **Level-accurate movesets** (`buildBattler({ levelMoves })`) — movesets scale
+   with level and auto-upgrade as a mon levels (rebuilt each battle).
+3. **PC Box / set-lead / nicknames** (party.ts ops + Box tab).
+
+### ▶ Next up (recommended order)
+1. **Evolutions (level-up)** — `game/rpg/evolution.ts` from the evolution-chain
+   API; evolve after battle with an animation; per-mon cancel toggle. *(Tier 1 #4)*
+2. **Tier-2 world expansion** — Route 2 + a cave, gyms 2–3 (reuse `GymLeader`
+   themes), a recurring rival, more trainers/items; line-of-sight trainers.
+3. **Battle depth** — carry status into battle, Revive in battle, EXP-Share +
+   simple held items.
+4. **Tech debt** — extract the shared battle-presentation pipeline now used by
+   `battle.ts`, `tournament-match.ts`, `rpg-battle.ts`; check in a Playwright
+   adventure e2e spec.
+
+(Then Tier-3 polish: day/night + weather, save slots, quests/fly, a11y, perf.)
 
 ## Per-increment definition of done
 `npx ng build` clean · `npx vitest run` green (new pure logic covered) · Playwright
