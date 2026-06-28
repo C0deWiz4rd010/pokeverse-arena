@@ -218,6 +218,63 @@
   .name { font-size: 1.05rem; }
 }
 
+/* Scouting preview: the leader's signature team at a glance. */
+.scout {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+.scout-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-right: 0.1rem;
+}
+.scout-mon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--type) 16%, #0b0a1f);
+  border: 1px solid color-mix(in srgb, var(--type) 40%, var(--glass-border));
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+.scout-mon:hover {
+  transform: translateY(-2px) scale(1.08);
+  border-color: color-mix(in srgb, var(--type) 70%, transparent);
+  z-index: 2;
+}
+.scout-mon img { width: 30px; height: 30px; object-fit: contain; }
+.scout-mon.ace {
+  border-color: color-mix(in srgb, var(--accent-3) 65%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-3) 35%, transparent);
+}
+.scout-ph {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--type) 22%, transparent);
+}
+.ace-pip {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  font-size: 0.6rem;
+  border-radius: 50%;
+  color: #0b0a1f;
+  background: var(--accent-3);
+}
+
 .title {
   font-size: 0.78rem;
   color: var(--text-dim);
@@ -322,9 +379,11 @@
   .card,
   .btn,
   .badge-icon,
+  .scout-mon,
   .progress-bar span {
     transition: none;
   }
+  .scout-mon:hover { transform: none; }
 }
 
 /* ============================ Arena v2 — gym experience ==================== */
