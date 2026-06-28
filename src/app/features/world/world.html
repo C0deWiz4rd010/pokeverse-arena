@@ -77,7 +77,10 @@
         <section class="expedition" [style.--accent]="region.accent">
           <div class="exp-head">
             <strong><pv-icon name="map-pin" /> Expedition</strong>
-            <span class="exp-prog">{{ svc.regionCaughtCount() }} / {{ svc.count() }} registered · {{ svc.regionCompletion() }}%</span>
+            <span class="exp-head-right">
+              @if (svc.shinyCount() > 0) { <span class="shiny-chip" title="Shiny Pokémon caught">✨ {{ svc.shinyCount() }}</span> }
+              <span class="exp-prog">{{ svc.regionCaughtCount() }} / {{ svc.count() }} registered · {{ svc.regionCompletion() }}%</span>
+            </span>
           </div>
           <div class="exp-controls">
             <div class="balls">
@@ -89,15 +92,16 @@
           </div>
 
           @if (svc.encounter(); as enc) {
-            <div class="encounter" [class.caught]="enc.caught" [class.throwing]="svc.throwing()" [class]="'rarity-' + enc.rarity">
+            <div class="encounter" [class.caught]="enc.caught" [class.throwing]="svc.throwing()" [class.shiny]="enc.shiny" [class]="'rarity-' + enc.rarity">
               <div class="enc-sprite">
                 @if (enc.caught) {
                   <span class="catch-burst" aria-hidden="true">@for (i of [1,2,3,4,5,6]; track i) { <span class="cb" [style.--i]="i">✦</span> }</span>
                 }
+                @if (enc.shiny) { <span class="shiny-spark" aria-hidden="true">✨</span> }
                 <img [src]="enc.sprite" [class.wiggle]="svc.throwing()" [alt]="enc.displayName" width="80" height="80" />
               </div>
               <div class="enc-info">
-                <strong>{{ enc.displayName }}</strong>
+                <strong>{{ enc.displayName }} @if (enc.shiny) { <span class="shiny-tag">✨ Shiny</span> }</strong>
                 <span class="enc-meta"><span class="rarity-dot"></span> Lv{{ enc.level }} · {{ enc.rarity }} · catch {{ enc.chancePct }}%</span>
                 <div class="enc-actions">
                   @if (!enc.caught) {

@@ -26,7 +26,16 @@ export interface ActiveEncounter extends WildEncounter {
   readonly displayName: string;
   readonly sprite: string;
   readonly chancePct: number;
+  readonly shiny: boolean;
   caught: boolean;
+}
+
+/** Odds that a wild encounter is shiny (1 in N). */
+const SHINY_ODDS = 40;
+
+/** Pixel front sprite, shiny palette. */
+function shinySpriteFor(dex: number): string {
+  return `${SPRITE_BASE}/pokemon/shiny/${dex}.png`;
 }
 
 type Status = 'idle' | 'loading' | 'ready' | 'error';
@@ -72,6 +81,9 @@ export class WorldService {
 
   /* ----- expedition: wild encounters + a personal dex ----- */
   readonly caught = signal<ReadonlySet<number>>(new Set(this.save.read<number[]>('world:caught', [])));
+  /** Dex numbers caught in their shiny variant — a separate collector's goal. */
+  readonly shinyCaught = signal<ReadonlySet<number>>(new Set(this.save.read<number[]>('world:shiny', [])));
+  readonly shinyCount = computed(() => this.shinyCaught().size);
   readonly ball = signal<BallId>('poke');
   readonly encounter = signal<ActiveEncounter | null>(null);
   readonly expeditionToast = signal<string | null>(null);
@@ -119,14 +131,16 @@ export class WorldService {
     this.roamStep += 1;
     const enc = rollEncounter(region, `${this.roamStep}-${Math.floor(Math.random() * 1e9)}`);
     const member = this.members().find((m) => m.dex === enc.dex);
+    const shiny = Math.random() < 1 / SHINY_ODDS;
     this.encounter.set({
       ...enc,
       displayName: member?.name ?? `#${enc.dex}`,
-      sprite: member?.sprite ?? `${SPRITE_BASE}/pokemon/${enc.dex}.png`,
+      sprite: shiny ? shinySpriteFor(enc.dex) : member?.sprite ?? `${SPRITE_BASE}/pokemon/${enc.dex}.png`,
       chancePct: Math.round(catchChance(enc, this.ball()) * 100),
+      shiny,
       caught: false,
     });
-    this.expeditionToast.set(null);
+    this.expeditionToast.set(shiny ? `✨ A shiny ${member?.name ?? 'Pokémon'} appeared!` : null);
     this.cry.play(enc.dex, 0.35);
   }
 
@@ -144,8 +158,18 @@ export class WorldService {
         next.add(enc.dex);
         this.caught.set(next);
         this.save.write('world:caught', [...next]);
+        if (enc.shiny) {
+          const shinies = new Set(this.shinyCaught());
+          shinies.add(enc.dex);
+          this.shinyCaught.set(shinies);
+          this.save.write('world:shiny', [...shinies]);
+        }
         this.encounter.set({ ...enc, caught: true });
-        this.expeditionToast.set(`Gotcha! ${enc.displayName} was registered to your dex.`);
+        this.expeditionToast.set(
+          enc.shiny
+            ? `✨ Gotcha! A shiny ${enc.displayName} joined your dex!`
+            : `Gotcha! ${enc.displayName} was registered to your dex.`,
+        );
         this.cry.play(enc.dex, 0.4);
       } else {
         this.expeditionToast.set(`Oh no! ${enc.displayName} broke free!`);

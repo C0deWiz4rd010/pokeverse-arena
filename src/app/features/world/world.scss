@@ -311,6 +311,7 @@
   .mon a,
   .btn { transition: none; }
   .mon.spotlight a { animation: none; }
+  .shiny-spark { animation: none; }
 }
 
 /* ---- expedition (catch loop) ---- */
@@ -339,6 +340,33 @@
 .encounter.caught { border: 1px solid color-mix(in srgb, #5be08a 50%, transparent); }
 .encounter img { image-rendering: pixelated; }
 .enc-info { display: grid; gap: 0.25rem; }
+
+/* shiny encounter flair */
+.encounter.shiny {
+  border: 1px solid color-mix(in srgb, var(--accent-3) 60%, transparent);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent-3) 14%, transparent), rgba(0, 0, 0, 0.18) 60%);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent-3) 38%, transparent);
+}
+.enc-sprite { position: relative; }
+.shiny-spark {
+  position: absolute; top: -6px; right: -4px; font-size: 1.1rem;
+  animation: shiny-twinkle 1.6s ease-in-out infinite;
+}
+.shiny-tag {
+  font-size: 0.66rem; font-weight: 800; vertical-align: middle;
+  margin-left: 0.35rem; padding: 0.05rem 0.4rem; border-radius: 999px;
+  color: #0b0a1f; background: linear-gradient(135deg, var(--accent-3), var(--accent-2));
+}
+.exp-head-right { display: inline-flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.shiny-chip {
+  font-size: 0.78rem; font-weight: 700; color: var(--accent-3);
+  padding: 0.1rem 0.5rem; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-3) 16%, transparent);
+}
+@keyframes shiny-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+  50% { transform: scale(1.25) rotate(12deg); opacity: 1; }
+}
 .enc-meta { font-size: 0.82rem; color: var(--text-dim); text-transform: capitalize; }
 .enc-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.2rem; }
 .exp-toast { margin: 0.6rem 0 0; font-size: 0.86rem; }
