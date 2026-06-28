@@ -58,6 +58,17 @@ export class HomeComponent implements OnDestroy {
     { path: '/profile', icon: 'crown', title: 'Trainer Profile', text: 'Your rank, records and achievements across every mode, in one place.', accent: 'var(--accent-2)' },
   ];
 
+  /** A progress-aware "what next?" suggestion for the hero CTA row. */
+  protected readonly nextStep = computed<{ label: string; path: string; icon: IconName }>(() => {
+    const s = this.profile.state();
+    if (s.badges < s.totalBadges) return { label: 'Earn your next gym badge', path: '/arena', icon: 'castle' };
+    if (!s.arenaChampion) return { label: 'Face the Champion Gauntlet', path: '/arena', icon: 'crown' };
+    if (s.spireClears < 1) return { label: 'Conquer the Ascension Spire', path: '/spire', icon: 'mountain' };
+    if (s.tournamentWins < 1) return { label: 'Win your first cup', path: '/tournaments', icon: 'trophy' };
+    if (this.profile.unlocked() < this.profile.totalAchievements) return { label: 'Chase your next achievement', path: '/profile', icon: 'star' };
+    return { label: 'Fill your living dex', path: '/world', icon: 'map' };
+  });
+
   /** A compact "trainer dashboard" of live progress drawn from every system. */
   protected readonly stats = computed<StatChip[]>(() => {
     const s = this.profile.state();

@@ -14,6 +14,12 @@
       <a class="btn" routerLink="/battle">Start a Battle <pv-icon name="swords" /></a>
     </div>
 
+    <a class="next-step" [routerLink]="nextStep().path">
+      <span class="ns-icon"><pv-icon [name]="nextStep().icon" /></span>
+      <span class="ns-text"><small>What's next</small><strong>{{ nextStep().label }}</strong></span>
+      <span class="ns-go" aria-hidden="true">→</span>
+    </a>
+
     <div class="dash" aria-label="Your progress">
       <span class="dash-rank">{{ rank() }} Trainer</span>
       <div class="dash-chips">
