@@ -1,0 +1,111 @@
+@use '../../../../styles/responsive' as *;
+
+.ow {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+  background: #05060f;
+  touch-action: none;
+  user-select: none;
+}
+
+.ow-canvas {
+  display: block;
+  width: 100%;
+}
+
+.ow-loc {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg) 70%, #000);
+  border: 1px solid var(--glass-border);
+}
+
+.ow-menu {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg) 70%, #000);
+  border: 1px solid var(--glass-border);
+}
+
+.ow-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 0.8rem;
+  transform: translateX(-50%);
+  max-width: 86%;
+  text-align: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg) 82%, #000);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--glass-border));
+}
+
+/* ---- touch controls (hidden on desktop / pointer-fine devices) ---- */
+.pad,
+.ab {
+  position: absolute;
+  bottom: 0.8rem;
+  display: grid;
+  gap: 0.3rem;
+}
+.pad {
+  left: 0.8rem;
+  grid-template-columns: repeat(3, 2.6rem);
+  grid-template-rows: repeat(3, 2.6rem);
+}
+.ab {
+  right: 0.8rem;
+  grid-auto-flow: column;
+  align-items: end;
+}
+.pad-btn,
+.ab-btn {
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg) 60%, #000);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+}
+.pad-btn.up { grid-area: 1 / 2; }
+.pad-btn.left { grid-area: 2 / 1; }
+.pad-btn.right { grid-area: 2 / 3; }
+.pad-btn.down { grid-area: 3 / 2; }
+.ab-btn {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+}
+.ab-btn.a { background: color-mix(in srgb, var(--accent) 30%, #0b0a1f); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.ab-btn.b { background: color-mix(in srgb, var(--accent-2) 26%, #0b0a1f); border-color: color-mix(in srgb, var(--accent-2) 50%, transparent); }
+
+.pad-btn:active,
+.ab-btn:active { transform: scale(0.94); }
+
+/* Hide the on-screen pad where a precise pointer (mouse) is available. */
+@media (pointer: fine) {
+  .pad,
+  .ab { display: none; }
+}

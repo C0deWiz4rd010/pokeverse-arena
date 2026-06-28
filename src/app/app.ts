@@ -31,6 +31,7 @@ export class App {
     { path: '/spire', label: 'Spire', icon: 'mountain' },
     { path: '/world', label: 'World', icon: 'map' },
     { path: '/contest', label: 'Contest', icon: 'sparkles' },
+    { path: '/adventure', label: 'Adventure', icon: 'scroll-text' },
     { path: '/profile', label: 'Profile', icon: 'crown' },
   ];
 

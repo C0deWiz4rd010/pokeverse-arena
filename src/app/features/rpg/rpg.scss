@@ -1,0 +1,54 @@
+@use '../../../styles/responsive' as *;
+
+:host { display: block; width: min(900px, 100%); margin-inline: auto; padding-bottom: 3rem; }
+
+/* ----------------------------------------------------------------- stage */
+.rpg-stage { display: grid; gap: 0.7rem; }
+.rpg-hint {
+  display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; justify-content: center;
+  margin: 0; font-size: 0.78rem; color: var(--text-dim);
+}
+.rpg-hint kbd {
+  display: inline-grid; place-items: center; min-width: 1.2rem; height: 1.2rem; padding: 0 0.25rem;
+  font: 700 0.7rem/1 'Segoe UI', system-ui, sans-serif; color: var(--text);
+  background: rgba(0, 0, 0, 0.35); border: 1px solid var(--glass-border); border-radius: 5px;
+  margin: 0 0.05rem;
+}
+
+/* ----------------------------------------------------------------- title */
+.title { display: grid; place-items: center; min-height: 60vh; padding: 2rem 0; }
+.title-card {
+  display: grid; gap: 0.9rem; justify-items: center; text-align: center;
+  width: min(560px, 100%); padding: 2rem 1.4rem; border-radius: var(--radius);
+  background:
+    radial-gradient(120% 100% at 50% 0%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 60%),
+    var(--glass);
+  border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+}
+.title-eyebrow {
+  display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-3);
+  padding: 0.2rem 0.7rem; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-3) 14%, transparent);
+}
+.title-name { font-size: clamp(2rem, 6vw, 3rem); margin: 0; }
+.title-name .grad {
+  background: linear-gradient(120deg, var(--accent), var(--accent-2), var(--accent-3));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.title-sub { max-width: 42ch; color: var(--text-dim); margin: 0; }
+.title-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; margin-top: 0.4rem; }
+.title-note { font-size: 0.8rem; color: var(--text-faint); margin: 0; }
+
+.btn {
+  appearance: none; cursor: pointer; font: inherit; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.6rem 1.2rem; min-height: 2.6rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border); background: var(--surface); color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.primary { border: none; color: #0b0a1f; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+
+@media (prefers-reduced-motion: reduce) { .btn:hover:not(:disabled) { transform: none; } }

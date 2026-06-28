@@ -65,5 +65,10 @@ export const routes: Routes = [
     title: 'Trainer Profile · PokéVerse Arena',
     loadComponent: () => import('./features/profile/profile').then((m) => m.ProfileComponent),
   },
+  {
+    path: 'adventure',
+    title: 'Adventure · PokéVerse Arena',
+    loadComponent: () => import('./features/rpg/rpg').then((m) => m.RpgComponent),
+  },
   { path: '**', redirectTo: '' },
 ];
