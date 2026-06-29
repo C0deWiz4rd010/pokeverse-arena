@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RpgService } from './rpg.service';
 import { OverworldComponent } from './overworld/overworld';
+import { PixiOverworldComponent } from './overworld/pixi-overworld';
 import { RpgBattleComponent } from './battle/rpg-battle';
 import { FieldMenuComponent } from './ui/field-menu';
 import { ShopComponent } from './ui/shop';
@@ -17,6 +18,7 @@ import { IconComponent } from '../../core/ui/icon/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     OverworldComponent,
+    PixiOverworldComponent,
     RpgBattleComponent,
     FieldMenuComponent,
     ShopComponent,
@@ -29,4 +31,15 @@ import { IconComponent } from '../../core/ui/icon/icon';
 })
 export class RpgComponent {
   protected readonly svc = inject(RpgService);
+
+  /** Use the canvas fallback when motion is reduced or WebGL is unavailable. */
+  protected readonly useCanvas = ((): boolean => {
+    try {
+      if (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+      const c = document.createElement('canvas');
+      return !(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return true;
+    }
+  })();
 }

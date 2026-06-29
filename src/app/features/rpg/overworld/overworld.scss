@@ -17,6 +17,19 @@
   width: 100%;
 }
 
+/* Pixi appends its own <canvas> into this mount. */
+.ow-mount {
+  display: block;
+  width: 100%;
+  line-height: 0;
+}
+.ow-mount canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
 .ow-loc {
   position: absolute;
   top: 0.6rem;

@@ -30,7 +30,7 @@
   <!-- overworld, with dialogue / starter overlays on top -->
   <div class="rpg-stage">
     <div class="ow-host">
-      <pv-overworld />
+      @if (useCanvas) { <pv-overworld /> } @else { <pv-pixi-overworld /> }
       @if (svc.dialogue()) { <pv-dialogue-box /> }
       @if (svc.phase() === 'starter') { <pv-starter /> }
     </div>
