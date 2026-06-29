@@ -74,6 +74,18 @@ export class PixiOverworldComponent implements OnDestroy {
   private builtMapId = '';
   private zoom = 3;
 
+  // --- effects (Phase B) ---
+  private fx!: PContainer; // screen-space overlays (vignette/light/night/ambient)
+  private particlesLayer!: PContainer; // world-space particles
+  private ambientLayer!: PContainer; // screen-space ambient (fireflies/weather)
+  private vignette: PSprite | null = null;
+  private light: PSprite | null = null;
+  private nightTint: import('pixi.js').Graphics | null = null;
+  private parts: { node: PContainer; vx: number; vy: number; life: number; max: number; grav: number }[] = [];
+  private ambient: { s: PSprite; vx: number; vy: number; ph: number }[] = [];
+  private shakeUntil = 0;
+  private shakeMag = 0;
+
   private visX = 0;
   private visY = 0;
   private stepping = false;
@@ -147,8 +159,10 @@ export class PixiOverworldComponent implements OnDestroy {
       this.world = new this.PIXI.Container();
       this.tilesLayer = new this.PIXI.Container();
       this.entitiesLayer = new this.PIXI.Container();
-      this.world.addChild(this.tilesLayer, this.entitiesLayer);
+      this.particlesLayer = new this.PIXI.Container();
+      this.world.addChild(this.tilesLayer, this.particlesLayer, this.entitiesLayer);
       app.stage.addChild(this.world);
+      if (!REDUCED) this.buildFx();
 
       window.addEventListener('keydown', this.onKeyDown);
       window.addEventListener('keyup', this.onKeyUp);
@@ -283,6 +297,123 @@ export class PixiOverworldComponent implements OnDestroy {
     return s;
   }
 
+  /* ------------------------------------------------------------- effects */
+
+  private radial(size: number, inner: string, outer: string): PTexture {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const g = c.getContext('2d')!;
+    const grd = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    grd.addColorStop(0, inner);
+    grd.addColorStop(1, outer);
+    g.fillStyle = grd;
+    g.fillRect(0, 0, size, size);
+    return this.PIXI!.Texture.from(c);
+  }
+
+  private buildFx(): void {
+    const pixi = this.PIXI!;
+    this.fx = new pixi.Container();
+    this.fx.eventMode = 'none';
+    this.nightTint = new pixi.Graphics();
+    this.nightTint.blendMode = 'multiply';
+    this.nightTint.alpha = 0;
+    this.light = new pixi.Sprite(this.radial(256, 'rgba(255,238,200,0.55)', 'rgba(255,238,200,0)'));
+    this.light.anchor.set(0.5);
+    this.light.blendMode = 'add';
+    this.light.alpha = 0.18;
+    this.vignette = new pixi.Sprite(this.radial(256, 'rgba(0,0,0,0)', 'rgba(0,0,0,1)'));
+    this.vignette.alpha = 0.5;
+    this.ambientLayer = new pixi.Container();
+    this.fx.addChild(this.nightTint, this.light, this.vignette, this.ambientLayer);
+    this.app!.stage.addChild(this.fx);
+    // ambient firefly/pollen pool
+    for (let i = 0; i < 14; i++) {
+      const s = new pixi.Sprite(this.radial(16, 'rgba(255,245,180,0.9)', 'rgba(255,245,180,0)'));
+      s.anchor.set(0.5);
+      s.width = s.height = 4 + Math.random() * 4;
+      s.blendMode = 'add';
+      s.alpha = 0;
+      this.ambientLayer.addChild(s);
+      this.ambient.push({ s, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, ph: Math.random() * 6.28 });
+    }
+    this.resizeFx();
+  }
+
+  private resizeFx(): void {
+    if (!this.app || !this.vignette || !this.light || !this.nightTint) return;
+    const w = this.app.renderer.width / this.app.renderer.resolution;
+    const h = this.app.renderer.height / this.app.renderer.resolution;
+    this.vignette.width = w; this.vignette.height = h;
+    this.nightTint.clear().rect(0, 0, w, h).fill(0xffffff);
+    this.light.width = this.light.height = Math.max(w, h) * 1.15;
+    this.light.x = w / 2; this.light.y = h / 2;
+    for (const a of this.ambient) { if (a.s.x === 0 && a.s.y === 0) { a.s.x = Math.random() * w; a.s.y = Math.random() * h; } }
+  }
+
+  private updateDayNight(): void {
+    if (!this.nightTint || REDUCED) return;
+    const hr = new Date().getHours();
+    // [tintColor, tintAlpha, fireflyVisibility]
+    let color = 0xffffff, alpha = 0, fire = 0;
+    if (hr >= 21 || hr < 5) { color = 0x2a3b7a; alpha = 0.45; fire = 1; }       // night
+    else if (hr >= 18) { color = 0xff9e5a; alpha = 0.28; fire = 0.4; }          // dusk
+    else if (hr < 7) { color = 0x9a86c0; alpha = 0.22; fire = 0.3; }            // dawn
+    // ease toward target
+    this.nightTint.tint = color;
+    this.nightTint.alpha += (alpha - this.nightTint.alpha) * 0.04;
+    this.light!.alpha += ((0.12 + fire * 0.22) - this.light!.alpha) * 0.04;
+    this.fireflyVis += (fire - this.fireflyVis) * 0.04;
+  }
+  private fireflyVis = 0;
+
+  private updateAmbient(): void {
+    if (REDUCED || !this.app) return;
+    const w = this.app.renderer.width / this.app.renderer.resolution;
+    const h = this.app.renderer.height / this.app.renderer.resolution;
+    for (const a of this.ambient) {
+      a.s.x += a.vx; a.s.y += a.vy;
+      if (a.s.x < -8) a.s.x = w + 8; if (a.s.x > w + 8) a.s.x = -8;
+      if (a.s.y < -8) a.s.y = h + 8; if (a.s.y > h + 8) a.s.y = -8;
+      a.s.alpha = this.fireflyVis * (0.4 + 0.6 * Math.abs(Math.sin(this.frame / 40 + a.ph)));
+    }
+  }
+
+  private spawnParticle(wx: number, wy: number, color: number, size: number, vx: number, vy: number, life: number, grav: number): void {
+    const g = new this.PIXI!.Graphics().rect(-size / 2, -size / 2, size, size).fill(color);
+    g.x = wx; g.y = wy;
+    this.particlesLayer.addChild(g);
+    this.parts.push({ node: g, vx, vy, life, max: life, grav });
+  }
+
+  private spawnDust(tileX: number, tileY: number): void {
+    if (REDUCED) return;
+    const cx = (tileX + 0.5) * TILE_PX, cy = (tileY + 0.9) * TILE_PX;
+    for (let i = 0; i < 4; i++) this.spawnParticle(cx + (Math.random() - 0.5) * 6, cy, 0xcaa86a, 1.5 + Math.random() * 1.5, (Math.random() - 0.5) * 0.6, -0.4 - Math.random() * 0.4, 22, 0.04);
+  }
+
+  private spawnLeaves(tileX: number, tileY: number): void {
+    if (REDUCED) return;
+    const cx = (tileX + 0.5) * TILE_PX, cy = (tileY + 0.5) * TILE_PX;
+    for (let i = 0; i < 6; i++) this.spawnParticle(cx + (Math.random() - 0.5) * 10, cy, 0x3fa35a, 2 + Math.random() * 2, (Math.random() - 0.5) * 1.2, -0.6 - Math.random() * 0.6, 28, 0.03);
+  }
+
+  private updateParticles(): void {
+    for (let i = this.parts.length - 1; i >= 0; i--) {
+      const p = this.parts[i];
+      p.vy += p.grav;
+      p.node.x += p.vx; p.node.y += p.vy;
+      p.life--;
+      p.node.alpha = Math.max(0, p.life / p.max);
+      if (p.life <= 0) { p.node.destroy(); this.parts.splice(i, 1); }
+    }
+  }
+
+  private screenShake(mag = 5, ms = 240): void {
+    this.shakeMag = mag;
+    this.shakeUntil = performance.now() + ms;
+  }
+
   /* ------------------------------------------------------------- loop */
 
   private tick(): void {
@@ -295,6 +426,9 @@ export class PixiOverworldComponent implements OnDestroy {
     this.frame++;
     this.updateMovement();
     this.animateTiles();
+    this.updateParticles();
+    this.updateDayNight();
+    this.updateAmbient();
     this.updateCamera();
   }
 
@@ -319,6 +453,8 @@ export class PixiOverworldComponent implements OnDestroy {
           this.t0 = performance.now();
           this.stepping = this.stepMs > 0;
           if (!this.stepping) { this.visX = np.x; this.visY = np.y; }
+          this.spawnDust(before.x, before.y);
+          if (this.svc.map()?.tiles[np.y]?.[np.x] === 'tallgrass') this.spawnLeaves(np.x, np.y);
         }
       }
     }
@@ -359,8 +495,13 @@ export class PixiOverworldComponent implements OnDestroy {
     const w = this.app.renderer.width / this.app.renderer.resolution;
     const h = this.app.renderer.height / this.app.renderer.resolution;
     this.world.scale.set(this.zoom);
-    this.world.x = Math.round(w / 2 - (this.visX + 0.5) * TILE_PX * this.zoom);
-    this.world.y = Math.round(h / 2 - (this.visY + 0.5) * TILE_PX * this.zoom);
+    let sx = 0, sy = 0;
+    if (performance.now() < this.shakeUntil) {
+      sx = (Math.random() - 0.5) * this.shakeMag * 2;
+      sy = (Math.random() - 0.5) * this.shakeMag * 2;
+    }
+    this.world.x = Math.round(w / 2 - (this.visX + 0.5) * TILE_PX * this.zoom + sx);
+    this.world.y = Math.round(h / 2 - (this.visY + 0.5) * TILE_PX * this.zoom + sy);
   }
 
   /* ------------------------------------------------------------- resize */
@@ -377,5 +518,6 @@ export class PixiOverworldComponent implements OnDestroy {
     this.app.renderer.resize(w, h);
     // ~13 tiles tall in view
     this.zoom = Math.max(2, Math.round(h / (13 * TILE_PX)));
+    this.resizeFx();
   }
 }
