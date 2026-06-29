@@ -105,8 +105,12 @@ Reuse the engine — don't fork battle logic.
 - **Battle action FX**: Pixi attack/impact bursts, animated sprites, hit-stop,
   entry transition.
 
+### ✅ Evolutions (level-up) — shipped
+Pure `evolution.ts` (+spec), cache-first chain lookup, `evolve` phase + overlay
+(pulse → white-flash → reveal), HP-ratio carry, dex update. Verified live.
+
 ### ▶ Next up (recommended order)
-1. **Evolutions (level-up)** — `game/rpg/evolution.ts` from the evolution-chain
+1. ~~Evolutions~~ ✅ done → — `game/rpg/evolution.ts` from the evolution-chain
    API; evolve after battle with an animation; per-mon cancel toggle. *(Tier 1 #4)*
 2. **Tier-2 world expansion** — Route 2 + a cave, gyms 2–3 (reuse `GymLeader`
    themes), a recurring rival, more trainers/items; line-of-sight trainers.
