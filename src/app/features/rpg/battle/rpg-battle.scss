@@ -9,7 +9,12 @@
     radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%),
     var(--glass);
   padding: 0.9rem;
+  animation: rb-enter 0.45s ease both;
 }
+@keyframes rb-enter { 0% { opacity: 0; transform: scale(0.96); } 60% { opacity: 1; } 100% { transform: none; } }
+
+/* Pixi attack/impact FX fills the field, behind the fighters. */
+pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 
 .rb-loading { padding: 3rem 1rem; text-align: center; color: var(--text-dim); }
 
@@ -140,6 +145,7 @@
 @keyframes rb-rise { 0% { opacity: 0; transform: translate(-50%, 8px) scale(0.6); } 16% { opacity: 1; transform: translate(-50%, -6px) scale(1.12); } 100% { opacity: 0; transform: translate(-50%, -44px) scale(1); } }
 
 @media (prefers-reduced-motion: reduce) {
+  .rb { animation: none; }
   .fighter.shake, .fighter.flash .sprite { animation: none; }
   .fighter .sprite.send-in, .fighter .sprite.fainting { animation: none; }
   .dmg-float { animation: rb-fade 0.9s ease forwards; }

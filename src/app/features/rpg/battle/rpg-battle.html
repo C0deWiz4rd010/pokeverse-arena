@@ -3,6 +3,7 @@
     <div class="rb-loading">A wild Pokémon appeared…</div>
   } @else {
     <div class="rb-field">
+      <pv-battle-fx />
       <!-- Foe -->
       <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1">
         @if (foeActive(); as foe) {
@@ -15,7 +16,7 @@
             <div class="types">@for (t of foe.types; track t) { <pv-type-badge [type]="t" /> }</div>
             <div class="hpbar"><span class="fill" [class.mid]="fHpPct() <= 55 && fHpPct() > 25" [class.low]="fHpPct() <= 25" [style.width.%]="fHpPct()"></span></div>
           </div>
-          <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foe.sprite" [alt]="foe.name" />
+          <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foeAnim()" (error)="$any($event.target).src = foe.sprite" [alt]="foe.name" />
         }
         @for (f of floats(); track f.id) {
           @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
@@ -28,7 +29,7 @@
           @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
         }
         @if (playerActive(); as me) {
-          <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="me.sprite" [alt]="me.name" />
+          <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="playerAnim()" (error)="$any($event.target).src = me.sprite" [alt]="me.name" />
           <div class="info">
             <div class="row">
               <strong>{{ titleCase(me.name) }}</strong>

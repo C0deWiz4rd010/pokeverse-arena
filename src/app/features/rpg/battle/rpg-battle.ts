@@ -6,6 +6,7 @@ import {
   effect,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import { BattleService } from '../../battle/battle.service';
@@ -24,6 +25,9 @@ import {
 import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
 import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
+import { BattleFxComponent } from '../../battle/pixi/battle-fx';
+import { animatedSprite } from '../../../core/api/pokeapi-endpoints';
+import type { PokemonType } from '../../../core/utils/type-chart';
 import { titleCase } from '../../../core/ui/format';
 import { SeededRng } from '../../../core/utils/rng';
 import { applyXp, xpYield } from '../../../game/rpg/xp';
@@ -40,6 +44,8 @@ interface FloatNum { readonly id: number; readonly side: SideIndex; readonly tex
 type Menu = 'main' | 'fight' | 'pokemon' | 'bag' | 'done';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+const REDUCED =
+  typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
  * Classic RPG wild battle on the party-aware {@link TeamBattle} engine. Adds the
@@ -49,7 +55,7 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 @Component({
   selector: 'pv-rpg-battle',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, StatusBadgeComponent, MoveButtonComponent],
+  imports: [TypeBadgeComponent, StatusBadgeComponent, MoveButtonComponent, BattleFxComponent],
   templateUrl: './rpg-battle.html',
   styleUrl: './rpg-battle.scss',
 })
@@ -100,6 +106,11 @@ export class RpgBattleComponent {
   /** Wild battles allow catching/running; trainer battles won't. */
   protected readonly isWild = signal(true);
   protected readonly trainerName = signal<string | null>(null);
+
+  private readonly fx = viewChild(BattleFxComponent);
+  private pendingType: PokemonType = 'normal';
+  protected readonly foeAnim = computed(() => { const f = this.foeActive(); return f ? animatedSprite(f.id) : ''; });
+  protected readonly playerAnim = computed(() => { const m = this.playerActive(); return m ? animatedSprite(m.id) : ''; });
 
   protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
   protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
@@ -379,15 +390,19 @@ export class RpgBattleComponent {
           break;
         case 'move':
           this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
-          await sleep(440);
+          this.pendingType = this.moveType(ev.side, ev.move);
+          this.fx()?.cast(ev.side, this.pendingType);
+          await sleep(460);
           break;
         case 'miss':
           this.append(`${titleCase(ev.attacker)}'s attack missed!`);
           await sleep(360);
           break;
         case 'damage': {
+          this.fx()?.impact(ev.side, this.pendingType, ev.crit);
           this.flashSide.set(ev.side);
           this.shakeSide.set(ev.side);
+          if (!REDUCED) await sleep(70); // hit-stop
           const before = ev.side === 0 ? this.pHp() : this.fHp();
           const dealt = Math.max(0, before - ev.remainingHp);
           if (dealt > 0) this.spawnFloat(ev.side, `-${dealt}`, this.dmgClass(ev.crit, ev.effectiveness));
@@ -571,6 +586,11 @@ export class RpgBattleComponent {
 
   private append(text: string, tone?: LogTone): void {
     this.log.update((l) => [...l, { text, tone }]);
+  }
+
+  private moveType(side: SideIndex, name: string): PokemonType {
+    const b = side === 0 ? this.playerActive() : this.foeActive();
+    return b?.moves.find((m) => m.name === name)?.type ?? 'normal';
   }
 
   /* --------------------------------------------------------------- fx */
