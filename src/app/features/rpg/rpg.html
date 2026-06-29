@@ -29,6 +29,7 @@
 } @else {
   <!-- overworld, with dialogue / starter overlays on top -->
   <div class="rpg-stage">
+    @if (svc.objective(); as obj) { <p class="rpg-objective">{{ obj }}</p> }
     <div class="ow-host">
       @if (useCanvas) { <pv-overworld /> } @else { <pv-pixi-overworld /> }
       @if (svc.dialogue()) { <pv-dialogue-box /> }

@@ -68,6 +68,7 @@ export type ScriptNode =
   | { readonly openShop: true }
   | { readonly setFlag: string }
   | { readonly badge: string }
+  | { readonly starter: true }
   | { readonly ifFlag: string; readonly then: readonly ScriptNode[]; readonly else?: readonly ScriptNode[] };
 
 /* -------------------------------------------------------------------- world */

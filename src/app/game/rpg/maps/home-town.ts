@@ -74,7 +74,7 @@ export const HOME_TOWN: MapDef = {
   ],
   items: [],
   encounter: {
-    rate: 0.22,
+    rate: 0.32,
     table: [
       { species: 'pidgey', min: 2, max: 4, weight: 4, catchRate: 255 },
       { species: 'rattata', min: 2, max: 4, weight: 4, catchRate: 255 },

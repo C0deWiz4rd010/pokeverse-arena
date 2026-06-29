@@ -98,8 +98,24 @@ export class RpgService {
     this.game.set(g);
     this.persist();
     this.phase.set('overworld');
-    this.showToast('Visit the Lab (top-right building) to choose your first Pokémon!', 4200);
+    // Guided intro → choose a starter immediately (no hunting for the Lab).
+    this.runScript([
+      { say: 'Welcome to your PokéVerse adventure!' },
+      { say: 'Prof. Oak: Take one of these three partners — choose well!', speaker: 'Prof. Oak' },
+      { starter: true },
+    ]);
   }
+
+  /** Current objective for the on-screen banner, derived from progress flags. */
+  readonly objective = computed<string>(() => {
+    const g = this.game();
+    if (!g) return '';
+    if (!g.flags['starter'] || g.party.length === 0) return '▶ Choose your first Pokémon';
+    if (!g.flags['first-battle']) return '▶ Step into the tall grass to find a wild Pokémon';
+    if (!g.flags['beat-bugcatcher']) return '▶ Catch & train, then beat a Trainer';
+    if (!g.badges.length) return '▶ Head south to Route 1 → the Oakhaven Gym';
+    return '★ Champion of the demo — explore freely!';
+  });
 
   /** Build a Pokémon from species/level and add it to the party (or box if full). */
   async grantPokemon(species: string, level: number): Promise<PartyMon | null> {
@@ -218,6 +234,7 @@ export class RpgService {
       const rng = new SeededRng(`${Date.now()}-${t.x}-${t.y}-${Math.random()}`);
       const roll = rollEncounter(m.encounter, rng);
       if (roll) {
+        if (!next.flags['first-battle']) this.setFlag('first-battle');
         this.battleSetup.set({
           kind: 'wild',
           foeSpecies: roll.species,
@@ -458,6 +475,12 @@ export class RpgService {
     }
     if ('badge' in node) {
       this.awardBadge(node.badge);
+      return;
+    }
+    if ('starter' in node) {
+      this.dialogue.set(null);
+      this.scriptStack = [];
+      this.phase.set('starter');
       return;
     }
     if ('heal' in node) {
