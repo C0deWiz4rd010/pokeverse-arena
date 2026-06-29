@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { RpgService } from '../rpg.service';
+import { RpgService, type EvoEntry } from '../rpg.service';
 import { BattleService } from '../../battle/battle.service';
 import { PokeApiClient } from '../../../core/api/pokeapi.client';
 import { CryService } from '../../../core/audio/cry.service';
@@ -103,6 +103,7 @@ export class RpgBattleComponent {
   private trainerBadge: string | undefined;
   private trainerEnding: string | undefined;
   private started = false;
+  private pendingEvos: EvoEntry[] = [];
   /** Wild battles allow catching/running; trainer battles won't. */
   protected readonly isWild = signal(true);
   protected readonly trainerName = signal<string | null>(null);
@@ -510,6 +511,17 @@ export class RpgBattleComponent {
     }
     this.resultLines.set(ran ? [] : lines);
 
+    // Queue level-up evolutions for any member that gained a level.
+    this.pendingEvos = [];
+    if (won) {
+      for (let i = 0; i < updated.length; i++) {
+        if (updated[i].level > party[i].level) {
+          const step = await this.svc.evolutionFor(updated[i].species, updated[i].level);
+          if (step) this.pendingEvos.push({ uid: updated[i].uid, from: updated[i].species, fromId: party[i].dexId, to: step.to, toId: step.toId, level: updated[i].level });
+        }
+      }
+    }
+
     if (!won && !ran && !updated.some((m) => m.currentHp > 0)) {
       // Whiteout: short beat, then heal + respawn.
       this.append('You are out of usable Pokémon…', 'faint');
@@ -544,9 +556,10 @@ export class RpgBattleComponent {
     ]);
   }
 
-  /** Leave the result overlay and return to the overworld. */
+  /** Leave the result overlay → play any evolutions, else return to the overworld. */
   protected close(): void {
-    this.svc.endBattle();
+    if (this.pendingEvos.length) this.svc.startEvolutions(this.pendingEvos);
+    else this.svc.endBattle();
   }
 
   /* ------------------------------------------------------------- sync */

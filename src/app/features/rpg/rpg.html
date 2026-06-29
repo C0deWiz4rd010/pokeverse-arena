@@ -34,6 +34,7 @@
       @if (useCanvas) { <pv-overworld /> } @else { <pv-pixi-overworld /> }
       @if (svc.dialogue()) { <pv-dialogue-box /> }
       @if (svc.phase() === 'starter') { <pv-starter /> }
+      @if (svc.phase() === 'evolve') { <pv-evolution /> }
     </div>
     <p class="rpg-hint">
       <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> / WASD move</span>

@@ -7,6 +7,7 @@ import { FieldMenuComponent } from './ui/field-menu';
 import { ShopComponent } from './ui/shop';
 import { DialogueBoxComponent } from './ui/dialogue-box';
 import { StarterComponent } from './ui/starter';
+import { EvolutionComponent } from './ui/evolution';
 import { IconComponent } from '../../core/ui/icon/icon';
 
 /**
@@ -24,6 +25,7 @@ import { IconComponent } from '../../core/ui/icon/icon';
     ShopComponent,
     DialogueBoxComponent,
     StarterComponent,
+    EvolutionComponent,
     IconComponent,
   ],
   templateUrl: './rpg.html',

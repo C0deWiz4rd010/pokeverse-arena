@@ -1,0 +1,30 @@
+.evo {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  text-align: center;
+  background: radial-gradient(circle at 50% 40%, #1b2550, #05060f 75%);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.evo-sprite {
+  width: clamp(140px, 38vw, 220px);
+  height: clamp(140px, 38vw, 220px);
+  object-fit: contain;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5));
+}
+.evo-sprite.pulse { animation: evo-pulse 1.3s ease-in-out infinite; }
+.evo-sprite.flash { animation: evo-flash 0.35s steps(2) infinite; }
+.evo-text { margin: 0; font-size: 1rem; font-weight: 700; color: var(--text); max-width: 34ch; }
+
+@keyframes evo-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes evo-flash { 0% { filter: brightness(1); transform: scale(1); } 100% { filter: brightness(6) saturate(0); transform: scale(0.9); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .evo-sprite.pulse, .evo-sprite.flash { animation: none; }
+}

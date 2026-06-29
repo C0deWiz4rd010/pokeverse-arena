@@ -1,6 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { SaveService } from '../../core/storage/save.service';
 import { BattleService } from '../battle/battle.service';
+import { PokeApiClient } from '../../core/api/pokeapi.client';
+import { idFromUrl } from '../../core/api/pokeapi-endpoints';
+import { evolutionAt, levelUpEvolutions } from '../../game/rpg/evolution';
 import { SeededRng } from '../../core/utils/rng';
 import { getMap } from '../../game/rpg/maps';
 import { ahead, canEnter, isTallGrass, npcAt, signAt, warpAt } from '../../game/rpg/movement';
@@ -22,7 +25,17 @@ import type { Direction, ItemId, MapDef, PartyMon, RpgSave, ScriptNode } from '.
 
 const SAVE_KEY = 'rpg:save';
 
-export type RpgPhase = 'title' | 'overworld' | 'battle' | 'dialogue' | 'menu' | 'shop' | 'starter';
+export type RpgPhase = 'title' | 'overworld' | 'battle' | 'dialogue' | 'menu' | 'shop' | 'starter' | 'evolve';
+
+/** A queued evolution to play after a battle. */
+export interface EvoEntry {
+  readonly uid: string;
+  readonly from: string;
+  readonly fromId: number;
+  readonly to: string;
+  readonly toId: number;
+  readonly level: number;
+}
 
 /** A pending battle the RpgBattleComponent picks up. */
 export interface BattleSetup {
@@ -64,6 +77,9 @@ export interface StepResult {
 export class RpgService {
   private readonly store = inject(SaveService);
   private readonly battle = inject(BattleService);
+  private readonly api = inject(PokeApiClient);
+  /** Evolutions queued by the last battle, played in the `evolve` phase. */
+  readonly evolutions = signal<EvoEntry[]>([]);
 
   readonly phase = signal<RpgPhase>('title');
   readonly game = signal<RpgSave | null>(null);
@@ -536,6 +552,53 @@ export class RpgService {
     if (flag) this.setFlag(flag);
     if (badge) this.awardBadge(badge);
     this.persist();
+  }
+
+  /* -------------------------------------------------------- evolution */
+
+  /** The level-up evolution a species qualifies for at `level`, or null (cache-first). */
+  async evolutionFor(species: string, level: number): Promise<{ to: string; toId: number; minLevel: number } | null> {
+    try {
+      const sp = await this.api.species(species);
+      const chain = await this.api.evolutionChain(idFromUrl(sp.evolution_chain.url));
+      return evolutionAt(levelUpEvolutions(chain), species, level);
+    } catch {
+      return null;
+    }
+  }
+
+  startEvolutions(list: EvoEntry[]): void {
+    this.evolutions.set(list);
+    this.phase.set('evolve');
+  }
+
+  /** Apply one evolution to a party member (recompute max HP, keep HP ratio, dex). */
+  async applyEvolution(uid: string, to: string, toId: number): Promise<void> {
+    const g = this.game();
+    if (!g) return;
+    const idx = g.party.findIndex((m) => m.uid === uid);
+    if (idx < 0) return;
+    const mon = g.party[idx];
+    let maxHp = mon.maxHp;
+    try {
+      const built = await this.battle.buildBattler(to, mon.level);
+      maxHp = built.stats.hp;
+    } catch {
+      /* keep old maxHp */
+    }
+    const ratio = mon.maxHp > 0 ? mon.currentHp / mon.maxHp : 1;
+    const evolved = { ...mon, species: to, dexId: toId, maxHp, currentHp: Math.max(1, Math.round(maxHp * ratio)) };
+    const next = { ...g, party: g.party.map((m, i) => (i === idx ? evolved : m)) };
+    this.markCaught(next, toId);
+    this.game.set(next);
+    this.persist();
+  }
+
+  /** Leave the evolution sequence and return to the overworld. */
+  finishEvolutions(): void {
+    this.evolutions.set([]);
+    this.battleSetup.set(null);
+    this.phase.set('overworld');
   }
 
   /* --------------------------------------------------------------- menus */
