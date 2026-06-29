@@ -95,6 +95,16 @@ Reuse the engine — don't fork battle logic.
    with level and auto-upgrade as a mon levels (rebuilt each battle).
 3. **PC Box / set-lead / nicknames** (party.ts ops + Box tab).
 
+### ✅ v2 — High-end pixel overhaul (shipped)
+- **PixiJS (WebGL) overworld** with Kenney **CC0** tilesets (Tiny Town / Tiny
+  Dungeon) + characters; procedural animated water & tall grass.
+- **Action-RPG FX**: vignette + player light, day/night tint with fireflies,
+  step/leaf particles, screen-shake; canvas fallback for reduced-motion/no-WebGL.
+- **Onboarding fix**: intro → immediate starter, flag-derived **objective banner**
+  → first battle is reachable in seconds (the "can't trigger battles" problem).
+- **Battle action FX**: Pixi attack/impact bursts, animated sprites, hit-stop,
+  entry transition.
+
 ### ▶ Next up (recommended order)
 1. **Evolutions (level-up)** — `game/rpg/evolution.ts` from the evolution-chain
    API; evolve after battle with an animation; per-mon cancel toggle. *(Tier 1 #4)*

@@ -23,12 +23,21 @@ Route: `/adventure` ([rpg.ts](../../src/app/features/rpg/rpg.ts)).
 - `rpg.service.ts` — state hub: phase, the `RpgSave` signal, movement/warps/
   interaction, the dialogue script VM, encounters, bag/money/flags, battle setup,
   whiteout. Persists to `rpg:save` via `SaveService`.
-- `overworld/` — `<canvas>` camera renderer (stylized tiles drawn with shapes,
-  no external art) + smooth grid movement; keyboard (arrows/WASD, Z, Esc) **and**
-  an on-screen D-pad + A/B for touch.
+- `overworld/pixi-overworld.ts` — **PixiJS (WebGL) renderer** with Kenney **CC0**
+  pixel tilesets (Tiny Town outdoors / Tiny Dungeon interiors + characters, in
+  `public/rpg/`, mapped by `atlas.ts`): real tilemap, follow camera, character
+  sprites, **procedural animated water & tall grass**, plus an action-RPG FX layer
+  (vignette + player light, day/night tint with fireflies, step/leaf particles,
+  screen-shake). Keyboard + on-screen D-pad/A-B input.
+- `overworld/overworld.ts` — the original shape-drawn `<canvas>` renderer, kept as
+  the **fallback** for `prefers-reduced-motion` / no-WebGL (the shell picks one).
+- **Onboarding**: New Game runs a short intro then opens the starter chooser
+  immediately (no Lab hunt); a flag-derived **objective banner** guides the player
+  to the first battle and the gym.
 - `battle/rpg-battle.ts` — drives the party-aware `TeamBattle` engine with the
   classic Fight / Pokémon / Bag / Run menu, catching, XP rollup + level-ups, HP
-  writeback, trainer rewards/badges, and whiteout.
+  writeback, trainer rewards/badges, whiteout; **action FX** (Pixi attack/impact
+  bursts, animated sprites, floating numbers, send-out/faint, hit-stop, cries).
 - `ui/` — dialogue box (typewriter + choices), field menu (party / bag / dex),
   starter chooser, shop.
 
