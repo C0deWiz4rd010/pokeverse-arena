@@ -8,6 +8,10 @@ import { LAB } from './lab';
 import { ROUTE_1 } from './route-1';
 import { GYM_TOWN } from './gym-town';
 import { GYM } from './gym';
+import { ROUTE_2 } from './route-2';
+import { CAVE } from './cave';
+import { STONEHOLLOW } from './stonehollow';
+import { GYM2 } from './gym2';
 
 export const MAPS: Record<string, MapDef> = {
   [PLAYER_HOME.id]: PLAYER_HOME,
@@ -18,6 +22,10 @@ export const MAPS: Record<string, MapDef> = {
   [ROUTE_1.id]: ROUTE_1,
   [GYM_TOWN.id]: GYM_TOWN,
   [GYM.id]: GYM,
+  [ROUTE_2.id]: ROUTE_2,
+  [CAVE.id]: CAVE,
+  [STONEHOLLOW.id]: STONEHOLLOW,
+  [GYM2.id]: GYM2,
 };
 
 export function getMap(id: string): MapDef | undefined {

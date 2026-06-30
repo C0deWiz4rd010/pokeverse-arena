@@ -46,7 +46,7 @@ export const GYM: MapDef = {
         defeat: 'Impossible… my swarm has fallen. The Hive Badge is yours.',
         flag: 'beat-gym1',
         badge: 'Hive Badge',
-        ending: '🎉 You earned your first badge! To be continued — thanks for playing the demo!',
+        ending: '🎉 Your first badge! The south gate opens — Route 2 leads to Stonehollow.',
       },
     },
   ],

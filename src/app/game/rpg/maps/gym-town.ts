@@ -14,7 +14,7 @@ const ROWS = [
   'TGGGHHDHHGGGT',
   'TGGGGGGGGGGGT',
   'TGGGGGGGGGGGT',
-  'TTTTTTTTTTTTT',
+  'TTTTTTPTTTTTT',
 ];
 
 export const GYM_TOWN: MapDef = {
@@ -29,6 +29,7 @@ export const GYM_TOWN: MapDef = {
     { x: 3, y: 4, to: 'center', toX: 4, toY: 4, toFacing: 'up' },
     { x: 9, y: 4, to: 'mart', toX: 4, toY: 4, toFacing: 'up' },
     { x: 6, y: 8, to: 'gym', toX: 4, toY: 7, toFacing: 'up' },
+    { x: 6, y: 11, to: 'route-2', toX: 5, toY: 1, toFacing: 'down' },
   ],
   signs: [{ x: 7, y: 5, text: 'OAKHAVEN GYM — Leader Chitin, the Swarm Keeper.' }],
   npcs: [],

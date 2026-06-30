@@ -105,9 +105,11 @@ export interface EncounterEntry {
   readonly catchRate?: number;
 }
 export interface EncounterZone {
-  /** Probability per tall-grass step that a wild encounter triggers (0–1). */
+  /** Probability per qualifying step that a wild encounter triggers (0–1). */
   readonly rate: number;
   readonly table: readonly EncounterEntry[];
+  /** Cave mode: encounters roll on every walkable step, not just tall grass. */
+  readonly everywhere?: boolean;
 }
 
 export interface TrainerDef {
@@ -117,6 +119,8 @@ export interface TrainerDef {
   readonly intro: string;
   readonly defeat: string;
   readonly flag: string; // set once beaten
+  /** Line-of-sight range in tiles — the trainer challenges when it spots you. */
+  readonly sight?: number;
   /** Gym leaders award a badge on defeat. */
   readonly badge?: string;
   /** Shown as a victory epilogue (e.g. the demo's "to be continued"). */

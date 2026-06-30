@@ -6,7 +6,8 @@ import { idFromUrl } from '../../core/api/pokeapi-endpoints';
 import { evolutionAt, levelUpEvolutions } from '../../game/rpg/evolution';
 import { SeededRng } from '../../core/utils/rng';
 import { getMap } from '../../game/rpg/maps';
-import { ahead, canEnter, isTallGrass, npcAt, signAt, warpAt } from '../../game/rpg/movement';
+import { DELTA, ahead, canEnter, isTallGrass, npcAt, signAt, tileAt, warpAt } from '../../game/rpg/movement';
+import { TILE } from '../../game/rpg/tiles';
 import { rollEncounter } from '../../game/rpg/encounters';
 import { ITEMS } from '../../game/rpg/items-catalog';
 import { titleCase } from '../../core/ui/format';
@@ -129,8 +130,9 @@ export class RpgService {
     if (!g.flags['starter'] || g.party.length === 0) return '▶ Choose your first Pokémon';
     if (!g.flags['first-battle']) return '▶ Step into the tall grass to find a wild Pokémon';
     if (!g.flags['beat-bugcatcher']) return '▶ Catch & train, then beat a Trainer';
-    if (!g.badges.length) return '▶ Head south to Route 1 → the Oakhaven Gym';
-    return '★ Champion of the demo — explore freely!';
+    if (!g.badges.includes('Hive Badge')) return '▶ Head south to Route 1 → the Oakhaven Gym';
+    if (!g.badges.includes('Boulder Badge')) return '▶ Through Route 2 & the cave → the Stonehollow Gym';
+    return '★ Two badges! Champion of the demo — explore freely!';
   });
 
   /** Build a Pokémon from species/level and add it to the party (or box if full). */
@@ -245,8 +247,8 @@ export class RpgService {
     this.game.set(next);
     const grass = isTallGrass(m, t.x, t.y);
 
-    // Roll a wild encounter — only once the player actually has a Pokémon.
-    if (grass && m.encounter && next.party.length > 0) {
+    // Roll a wild encounter — tall grass, or every step in a cave (everywhere).
+    if ((grass || m.encounter?.everywhere) && m.encounter && next.party.length > 0) {
       const rng = new SeededRng(`${Date.now()}-${t.x}-${t.y}-${Math.random()}`);
       const roll = rollEncounter(m.encounter, rng);
       if (roll) {
@@ -260,7 +262,30 @@ export class RpgService {
         this.phase.set('battle');
       }
     }
+
+    // A trainer may spot the player along its line of sight.
+    if (this.phase() === 'overworld' && next.party.length > 0) this.checkTrainerSight(next, m);
+
     return { moved: true, warped: false, grass };
+  }
+
+  /** Start a trainer battle if any unbeaten line-of-sight trainer can see the player. */
+  private checkTrainerSight(g: RpgSave, m: MapDef): void {
+    for (const npc of m.npcs) {
+      const tr = npc.trainer;
+      if (npc.kind !== 'trainer' || !tr || !tr.sight || g.flags[tr.flag]) continue;
+      const d = DELTA[npc.facing];
+      for (let step = 1; step <= tr.sight; step++) {
+        const tx = npc.x + d.dx * step;
+        const ty = npc.y + d.dy * step;
+        const tile = tileAt(m, tx, ty);
+        if (!tile || !TILE[tile].walkable || npcAt(m, tx, ty)) break;
+        if (g.x === tx && g.y === ty) {
+          this.startTrainer(tr);
+          return;
+        }
+      }
+    }
   }
 
   /* --------------------------------------------------------------- battle */
