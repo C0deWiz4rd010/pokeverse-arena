@@ -110,12 +110,12 @@ Pure `evolution.ts` (+spec), cache-first chain lookup, `evolve` phase + overlay
 (pulse → white-flash → reveal), HP-ratio carry, dex update. Verified live.
 
 ### ▶ Next up (recommended order)
-1. ~~Evolutions~~ ✅ done → — `game/rpg/evolution.ts` from the evolution-chain
-   API; evolve after battle with an animation; per-mon cancel toggle. *(Tier 1 #4)*
-2. **Tier-2 world expansion** — Route 2 + a cave, gyms 2–3 (reuse `GymLeader`
-   themes), a recurring rival, more trainers/items; line-of-sight trainers.
-3. **Battle depth** — carry status into battle, Revive in battle, EXP-Share +
+1. ~~Evolutions~~ ✅ · ~~Line-of-sight trainers + Route 2 / Cave / Stonehollow /
+   Gym 2 + Rival~~ ✅ — both shipped & verified.
+2. **Battle depth** — carry status into battle, Revive in battle, EXP-Share +
    simple held items.
+3. **More content** — a 3rd gym/route, wandering NPCs, an HM-lite gate, trainer/
+   gym rematches.
 4. **Tech debt** — extract the shared battle-presentation pipeline now used by
    `battle.ts`, `tournament-match.ts`, `rpg-battle.ts`; check in a Playwright
    adventure e2e spec.
