@@ -13,6 +13,10 @@ import {
   ROUND_ORDER,
   TOURNAMENT_MODES,
   TOURNAMENT_FORMATS,
+  winOdds,
+  teamPower,
+  scoutMatchup,
+  bestLead,
   type BracketFormat,
   type BracketMatch,
   type ModeId,
@@ -70,6 +74,44 @@ export class TournamentsComponent {
 
   protected readonly championIsPlayer = computed(() => this.svc.champion()?.isPlayer ?? false);
 
+  /** Estimated win chance (%) for the player's upcoming match. */
+  protected readonly matchOdds = computed(() => {
+    const setup = this.svc.currentMatchSetup();
+    return setup ? winOdds(setup.playerTeam, setup.foeTeam) : 50;
+  });
+
+  /** A short verdict label derived from the odds. */
+  protected readonly oddsVerdict = computed(() => {
+    const o = this.matchOdds();
+    if (o >= 66) return 'Favoured';
+    if (o >= 55) return 'Slight edge';
+    if (o > 45) return 'Even match';
+    if (o > 34) return 'Underdog';
+    return 'Long shot';
+  });
+
+  /** Type-matchup scouting for the upcoming match. */
+  protected readonly scouting = computed(() => {
+    const setup = this.svc.currentMatchSetup();
+    return setup ? scoutMatchup(setup.playerTeam, setup.foeTeam) : null;
+  });
+
+  /** Suggested lead against the upcoming foe team. */
+  protected readonly lead = computed(() => {
+    const setup = this.svc.currentMatchSetup();
+    return setup ? bestLead(setup.playerTeam, setup.foeTeam) : null;
+  });
+
+  /** Career totals derived from the persisted run history. */
+  protected readonly career = computed(() => {
+    const runs = this.svc.history();
+    if (!runs.length) return null;
+    const earnings = runs.reduce((s, r) => s + r.prize, 0);
+    const wins = runs.filter((r) => r.playerWon).length;
+    const best = Math.min(...runs.map((r) => r.placement));
+    return { runs: runs.length, earnings, wins, best };
+  });
+
   /* --------------------------------------------------------------- actions */
 
   protected setFormat(format: BracketFormat): void {
@@ -121,5 +163,16 @@ export class TournamentsComponent {
 
   protected isLive(m: BracketMatch): boolean {
     return this.hasPlayer(m) && !m.played && m.a !== null && m.b !== null;
+  }
+
+  /** Whether a card should show a pre-match odds bar (both sides set, unplayed). */
+  protected showCardOdds(m: BracketMatch): boolean {
+    return !m.played && m.a !== null && m.b !== null;
+  }
+
+  /** Side A's share (%) of the head-to-head power for a card's odds bar. */
+  protected cardOddsA(m: BracketMatch): number {
+    if (!m.a || !m.b) return 50;
+    return winOdds(m.a.team, m.b.team);
   }
 }

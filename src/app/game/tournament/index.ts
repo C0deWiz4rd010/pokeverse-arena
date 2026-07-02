@@ -6,3 +6,5 @@ export * from './format';
 export * from './standings';
 export * from './round-robin';
 export * from './history';
+export * from './odds';
+export * from './scouting';

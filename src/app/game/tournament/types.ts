@@ -15,6 +15,8 @@ export interface Trainer {
   readonly avatar: string;
   readonly team: Battler[];
   readonly isPlayer?: boolean;
+  /** 1-based power seed within a knockout bracket (set by seedTrainers). */
+  readonly seed?: number;
 }
 
 export type RoundId = 'r16' | 'qf' | 'sf' | 'final';

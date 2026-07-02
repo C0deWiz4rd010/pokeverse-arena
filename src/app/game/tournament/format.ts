@@ -73,5 +73,5 @@ export function seedSlots(size: number): number[] {
  */
 export function seedTrainers(sortedStrongestFirst: readonly Trainer[]): Trainer[] {
   const slots = seedSlots(sortedStrongestFirst.length);
-  return slots.map((seed) => sortedStrongestFirst[seed - 1]);
+  return slots.map((seed) => ({ ...sortedStrongestFirst[seed - 1], seed }));
 }

@@ -151,6 +151,8 @@ export class TournamentService {
   readonly standings = signal<Standing[] | null>(null);
   /** Persisted tournament history. */
   readonly history = signal<TournamentRecord[]>(loadHistory());
+  /** The record just logged for the current finished run (placement + prize). */
+  readonly lastRun = signal<TournamentRecord | null>(null);
 
   /** Survival HP carry: trainer id → remaining HP per team member. */
   private readonly carry = new Map<string, number[]>();
@@ -433,6 +435,7 @@ export class TournamentService {
       playerWon,
       prize: prizeFor(place, field),
     };
+    this.lastRun.set(rec);
     this.history.set(pushHistory(rec));
   }
 
@@ -452,6 +455,7 @@ export class TournamentService {
     this.leagueMatch.set(null);
     this.leagueWinner.set(null);
     this.historyLogged = false;
+    this.lastRun.set(null);
   }
 
   /* -------------------------------------------------------- bracket runner */

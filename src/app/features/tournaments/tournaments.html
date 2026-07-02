@@ -42,6 +42,14 @@
 
       @if (svc.history().length) {
         <section class="history">
+          @if (career(); as c) {
+            <div class="career" aria-label="Career stats">
+              <div class="career-stat"><span class="cs-v">{{ c.runs }}</span><span class="cs-k">Runs</span></div>
+              <div class="career-stat"><span class="cs-v">{{ c.wins }}</span><span class="cs-k">Titles</span></div>
+              <div class="career-stat"><span class="cs-v">#{{ c.best }}</span><span class="cs-k">Best finish</span></div>
+              <div class="career-stat gold"><span class="cs-v">{{ c.earnings }} ₽</span><span class="cs-k">Career prize</span></div>
+            </div>
+          }
           <h3 class="section-h">Recent runs</h3>
           <ul class="history-list">
             @for (h of svc.history(); track $index) {
@@ -115,6 +123,13 @@
             {{ championIsPlayer() ? 'You are the Champion!' : champ.name + ' lifts the trophy' }}
           </p>
           @if (!championIsPlayer()) { <p class="champ-sub">You were knocked out — better luck next run.</p> }
+          @if (svc.lastRun(); as run) {
+            <div class="finale-stats">
+              <span class="fs-item"><span class="fs-k">Placement</span><span class="fs-v">#{{ run.placement }}</span></span>
+              <span class="fs-item"><span class="fs-k">Prize</span><span class="fs-v">+{{ run.prize }} ₽</span></span>
+              <span class="fs-item"><span class="fs-k">Field</span><span class="fs-v">{{ run.field }}</span></span>
+            </div>
+          }
           <button class="btn" type="button" (click)="restart()">New tournament</button>
         </div>
       } @else if (svc.currentMatchSetup(); as setup) {
@@ -130,6 +145,22 @@
           <div class="cta-team">
             @for (mon of setup.foeTeam; track mon.id) {
               <img [src]="mon.sprite" [alt]="mon.name" [title]="titleCase(mon.name)" loading="lazy" />
+            }
+          </div>
+          <div class="cta-odds" [attr.data-tier]="matchOdds() >= 55 ? 'up' : matchOdds() > 45 ? 'even' : 'down'">
+            <span class="odds-head"><span class="odds-verdict">{{ oddsVerdict() }}</span> · win chance</span>
+            <div class="odds-track" role="img" [attr.aria-label]="'Estimated win chance ' + matchOdds() + '%'">
+              <span class="odds-fill" [style.width.%]="matchOdds()"></span>
+              <span class="odds-pct">{{ matchOdds() }}%</span>
+            </div>
+            @if (scouting(); as sc) {
+              <div class="scout" aria-label="Type matchup">
+                <span class="scout-chip up" [title]="'Your team hits ' + sc.advantage + ' of ' + sc.total + ' super-effectively'">⚔ {{ sc.advantage }}/{{ sc.total }}</span>
+                <span class="scout-chip down" [title]="sc.threat + ' of your Pokémon are hit super-effectively'">🛡 {{ sc.threat }}</span>
+                @if (lead(); as ld) {
+                  <span class="scout-chip lead" [title]="'Recommended lead vs this team'">★ {{ ld.name }}</span>
+                }
+              </div>
             }
           </div>
           <button class="btn battle" type="button" (click)="battle()">Battle ›</button>
@@ -216,6 +247,7 @@
     <div class="slot" [class.win]="m.played && m.winner === 0" [class.out]="m.played && m.winner === 1">
       @if (m.a) {
         <img class="ava" [src]="m.a.avatar" [alt]="m.a.name" loading="lazy" />
+        @if (m.a.seed) { <span class="seed">{{ m.a.seed }}</span> }
       } @else {
         <span class="ava ph">·</span>
       }
@@ -224,10 +256,16 @@
     <div class="slot" [class.win]="m.played && m.winner === 1" [class.out]="m.played && m.winner === 0">
       @if (m.b) {
         <img class="ava" [src]="m.b.avatar" [alt]="m.b.name" loading="lazy" />
+        @if (m.b.seed) { <span class="seed">{{ m.b.seed }}</span> }
       } @else {
         <span class="ava ph">·</span>
       }
       <span class="nm">{{ m.b ? (m.b.isPlayer ? 'You' : m.b.name) : 'TBD' }}</span>
     </div>
+    @if (showCardOdds(m)) {
+      <div class="bm-odds" [attr.title]="'Projected: ' + cardOddsA(m) + '% / ' + (100 - cardOddsA(m)) + '%'">
+        <span class="bm-odds-a" [style.width.%]="cardOddsA(m)"></span>
+      </div>
+    }
   </div>
 </ng-template>
