@@ -29,6 +29,9 @@ import {
   saveRival,
   recordRivalMeeting,
   rivalLevelBoost,
+  teamPower,
+  pickemMultiplier,
+  pickemPayout,
   type RivalState,
   type Bracket,
   type BracketMatch,
@@ -161,6 +164,20 @@ export class TournamentService {
   /** Your persistent rival (identity + head-to-head record; survives resets). */
   readonly rival = signal<RivalState>(loadRival());
 
+  /** Everyone in the current field (for the crystal-ball pick strip). */
+  readonly fieldList = signal<Trainer[]>([]);
+  /** The run's champion call (null = no call made). */
+  readonly pick = signal<{ trainerId: string; name: string; avatar: string; mult: number; payout: number } | null>(null);
+  /** Picks lock the moment you fight your first match. */
+  readonly pickLocked = signal(false);
+  /** Outcome of the call once the run is done (null when no call was made). */
+  readonly pickResult = computed(() => {
+    const p = this.pick();
+    const champ = this.champion();
+    if (!p || !champ || this.status() !== 'done') return null;
+    return { ...p, hit: champ.id === p.trainerId };
+  });
+
   /** Survival HP carry: trainer id → remaining HP per team member. */
   private readonly carry = new Map<string, number[]>();
   private chosenType: PokemonType | null = null;
@@ -241,6 +258,7 @@ export class TournamentService {
       const dtos = await this.selectDtos(mode, field * mode.teamSize);
       const teams = this.distribute(dtos, field, mode.teamSize, mode.balanced);
       const trainers = this.injectRival(await this.buildTrainers(teams, mode, 0));
+      this.fieldList.set(trainers);
 
       if (format === 'single-elim') {
         this.bracket.set(buildBracket(this.seed(trainers)));
@@ -302,6 +320,35 @@ export class TournamentService {
     const next = recordRivalMeeting(this.rival(), playerWon);
     saveRival(next);
     this.rival.set(next);
+  }
+
+  /* ------------------------------------------------------------- pick'em */
+
+  /** Call the run's champion (allowed until your first match starts). */
+  makePick(trainerId: string): void {
+    if (this.pickLocked() || this.status() !== 'ready') return;
+    const field = this.fieldList();
+    const t = field.find((x) => x.id === trainerId);
+    if (!t) return;
+    const powers = field.map((x) => teamPower(x.team));
+    const power = teamPower(t.team);
+    this.pick.set({
+      trainerId,
+      name: t.isPlayer ? 'You' : t.name,
+      avatar: t.avatar,
+      mult: pickemMultiplier(power, powers),
+      payout: pickemPayout(power, powers),
+    });
+  }
+
+  /** Withdraw the call (only while it isn't locked). */
+  clearPick(): void {
+    if (!this.pickLocked()) this.pick.set(null);
+  }
+
+  /** Lock the call — your first battle is starting. */
+  lockPick(): void {
+    this.pickLocked.set(true);
   }
 
   private teamStrength(t: Trainer): number {
@@ -419,6 +466,7 @@ export class TournamentService {
         this.makeTrainer(i + 1, false, team.map((d) => this.buildLight(d, mode.baseLevel))),
       ));
       const player = this.makeTrainer(0, true, picks);
+      this.fieldList.set([player, ...cpu]);
       this.bracket.set(buildBracket([player, ...cpu]));
       this.status.set('ready');
       this.runAiMatches();
@@ -479,6 +527,8 @@ export class TournamentService {
     this.historyLogged = true;
     const playerWon = !!champ?.isPlayer;
     const place = playerWon ? 1 : placement > 0 ? placement : Math.ceil(field / 2) + 1;
+    const p = this.pick();
+    const pickBonus = p && champ && p.trainerId === champ.id ? p.payout : 0;
     const rec: TournamentRecord = {
       date: new Date().toISOString(),
       modeName: this.mode()?.name ?? 'Tournament',
@@ -487,7 +537,8 @@ export class TournamentService {
       placement: place,
       champion: champ?.name ?? '—',
       playerWon,
-      prize: prizeFor(place, field),
+      prize: prizeFor(place, field) + pickBonus,
+      ...(pickBonus > 0 ? { pickBonus } : {}),
     };
     this.lastRun.set(rec);
     this.history.set(pushHistory(rec));
@@ -510,6 +561,9 @@ export class TournamentService {
     this.leagueWinner.set(null);
     this.historyLogged = false;
     this.lastRun.set(null);
+    this.fieldList.set([]);
+    this.pick.set(null);
+    this.pickLocked.set(false);
   }
 
   /* -------------------------------------------------------- bracket runner */

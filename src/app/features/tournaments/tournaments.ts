@@ -19,6 +19,8 @@ import {
   bestLead,
   rivalTaunt,
   rivalMeetings,
+  pickemMultiplier,
+  pickemPayout,
   type BracketFormat,
   type BracketMatch,
   type ModeId,
@@ -128,6 +130,41 @@ export class TournamentsComponent {
     return rivalMeetings(r) > 0 ? r : null;
   });
 
+  /** Trainers already knocked out (their crystal-ball option disappears). */
+  private readonly eliminatedIds = computed(() => {
+    const out = new Set<string>();
+    const b = this.svc.bracket();
+    if (!b) return out;
+    for (const round of Object.values(b.rounds)) {
+      for (const m of round) {
+        if (!m.played || m.winner === null) continue;
+        const loser = m.winner === 0 ? m.b : m.a;
+        if (loser) out.add(loser.id);
+      }
+    }
+    return out;
+  });
+
+  /** Crystal-ball choices (empty once a pick is made, locked, or the run ended). */
+  protected readonly pickOptions = computed(() => {
+    if (this.svc.pick() || this.svc.pickLocked() || this.svc.status() !== 'ready') return [];
+    const field = this.svc.fieldList();
+    if (field.length < 2) return [];
+    const gone = this.eliminatedIds();
+    const powers = field.map((t) => teamPower(t.team));
+    return field
+      .filter((t) => !gone.has(t.id))
+      .map((t) => ({
+        id: t.id,
+        name: t.isPlayer ? 'You' : t.name,
+        avatar: t.avatar,
+        isRival: !!t.isRival,
+        mult: pickemMultiplier(teamPower(t.team), powers),
+        payout: pickemPayout(teamPower(t.team), powers),
+      }))
+      .sort((a, b) => a.mult - b.mult);
+  });
+
   /* --------------------------------------------------------------- actions */
 
   protected setFormat(format: BracketFormat): void {
@@ -157,6 +194,7 @@ export class TournamentsComponent {
   }
 
   protected battle(): void {
+    this.svc.lockPick();
     this.inMatch.set(true);
   }
 

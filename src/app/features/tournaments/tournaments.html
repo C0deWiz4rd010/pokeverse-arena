@@ -139,6 +139,12 @@
               <span class="fs-item"><span class="fs-k">Placement</span><span class="fs-v">#{{ run.placement }}</span></span>
               <span class="fs-item"><span class="fs-k">Prize</span><span class="fs-v">+{{ run.prize }} ₽</span></span>
               <span class="fs-item"><span class="fs-k">Field</span><span class="fs-v">{{ run.field }}</span></span>
+              @if (svc.pickResult(); as pr) {
+                <span class="fs-item" [class.pk-hit]="pr.hit" [class.pk-miss]="!pr.hit">
+                  <span class="fs-k">Crystal ball</span>
+                  <span class="fs-v">{{ pr.hit ? '+' + pr.payout + ' ₽' : 'missed — ' + pr.name }}</span>
+                </span>
+              }
             </div>
           }
           <button class="btn" type="button" (click)="restart()">New tournament</button>
@@ -179,6 +185,31 @@
           </div>
           <button class="btn battle" type="button" (click)="battle()">Battle ›</button>
         </div>
+      }
+
+      <!-- Crystal-ball pick'em -->
+      @if (pickOptions().length) {
+        <section class="pickem" aria-label="Crystal-ball pick">
+          <p class="pk-head">🔮 Crystal ball — call the champion <span class="pk-sub">lock before your first match; longshots pay more</span></p>
+          <div class="pk-strip">
+            @for (o of pickOptions(); track o.id) {
+              <button class="pk-opt" type="button" (click)="svc.makePick(o.id)" [title]="o.name + ' — pays +' + o.payout + ' ₽ on the title'">
+                <img [src]="o.avatar" [alt]="o.name" loading="lazy" />
+                <span class="pk-name">{{ o.name }}@if (o.isRival) { <span aria-hidden="true">⚡</span> }</span>
+                <span class="pk-mult">×{{ o.mult }}</span>
+              </button>
+            }
+          </div>
+        </section>
+      } @else if (svc.pick(); as p) {
+        @if (!svc.pickResult()) {
+          <div class="pickem chosen">
+            <span class="pk-head">🔮 Your call:</span>
+            <img class="pk-ava" [src]="p.avatar" [alt]="p.name" />
+            <span class="pk-call">{{ p.name }} <span class="pk-mult">×{{ p.mult }}</span> — pays +{{ p.payout }} ₽ on the title</span>
+            @if (!svc.pickLocked()) { <button class="ghost" type="button" (click)="svc.clearPick()">Change</button> }
+          </div>
+        }
       }
 
       @if (!isLeague()) {

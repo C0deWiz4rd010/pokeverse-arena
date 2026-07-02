@@ -14,8 +14,10 @@ export interface TournamentRecord {
   readonly placement: number;
   readonly champion: string;
   readonly playerWon: boolean;
-  /** Coins awarded for the run. */
+  /** Coins awarded for the run (includes any crystal-ball bonus). */
   readonly prize: number;
+  /** Crystal-ball pick'em bonus included in `prize` (absent when no hit). */
+  readonly pickBonus?: number;
 }
 
 const KEY = 'tournaments:history';

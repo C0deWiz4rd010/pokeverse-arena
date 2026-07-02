@@ -9,3 +9,4 @@ export * from './history';
 export * from './odds';
 export * from './scouting';
 export * from './rival';
+export * from './pickem';

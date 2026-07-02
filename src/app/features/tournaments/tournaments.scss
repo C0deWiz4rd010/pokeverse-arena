@@ -227,6 +227,47 @@
   border-color: color-mix(in srgb, #ff4d5e 55%, var(--glass-border));
 }
 
+/* ─────────────────────────── crystal-ball pick'em ─────────────────────────── */
+
+.pickem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 1.25rem;
+  border-radius: var(--radius);
+  border: 1px dashed color-mix(in srgb, var(--accent-2) 45%, transparent);
+  background: color-mix(in srgb, var(--accent-2) 6%, var(--bg));
+
+  .pk-head { margin: 0; font-weight: 800; font-size: 0.9rem; }
+  .pk-sub { font-weight: 500; font-size: 0.72rem; color: var(--text-dim); margin-left: 0.3rem; }
+  .pk-strip { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.25rem; scrollbar-width: thin; }
+  .pk-opt {
+    appearance: none; cursor: pointer; font: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+    flex: none; min-width: 68px; padding: 0.4rem 0.45rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--bg) 55%, #000);
+    color: var(--text);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    &:hover { transform: translateY(-2px); border-color: var(--accent-2); }
+    img { width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--bg) 60%, #000); }
+    .pk-name { max-width: 76px; font-size: 0.66rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  }
+  .pk-mult { font-size: 0.66rem; font-weight: 900; color: var(--accent-2); }
+  &.chosen {
+    flex-direction: row; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    .pk-ava { width: 30px; height: 30px; border-radius: 50%; background: color-mix(in srgb, var(--bg) 60%, #000); }
+    .pk-call { font-size: 0.85rem; }
+    .ghost { margin-left: auto; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pickem .pk-opt:hover { transform: none; }
+}
+
 .finale {
   display: flex;
   flex-direction: column;
@@ -262,6 +303,8 @@
   }
   .fs-k { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); }
   .fs-v { font-size: 1rem; font-weight: 800; color: var(--text); }
+  .fs-item.pk-hit { border-color: color-mix(in srgb, #3fd07a 50%, transparent); .fs-v { color: #3fd07a; } }
+  .fs-item.pk-miss .fs-v { color: var(--text-dim); font-weight: 600; }
 
   &.you {
     border-color: var(--accent-3);
