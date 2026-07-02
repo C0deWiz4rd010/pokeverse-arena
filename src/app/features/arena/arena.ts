@@ -8,6 +8,7 @@ import { TournamentMatchComponent } from '../tournaments/tournament-match/tourna
 import { PokedexService } from '../pokedex/pokedex.service';
 import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../core/ui/format';
+import { bestLead, scoutMatchup, winOdds } from '../../game/tournament';
 import type { GymLeader } from '../../game/arena/gym-leaders';
 import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
 
@@ -57,6 +58,18 @@ export class ArenaComponent {
   protected stars(n: number): boolean[] {
     return [n >= 1, n >= 2, n >= 3];
   }
+
+  /** Pre-battle intel for the VS splash (odds, type edge, suggested lead). */
+  protected readonly intel = computed(() => {
+    const g = this.svc.intro();
+    if (!g) return null;
+    const odds = winOdds(g.playerTeam, g.foeTeam);
+    const scout = scoutMatchup(g.playerTeam, g.foeTeam);
+    const lead = bestLead(g.playerTeam, g.foeTeam);
+    const verdict =
+      odds >= 66 ? 'Favoured' : odds >= 55 ? 'Slight edge' : odds > 45 ? 'Even match' : odds > 34 ? 'Underdog' : 'Long shot';
+    return { odds, verdict, scout, lead, tier: odds >= 55 ? 'up' : odds > 45 ? 'even' : 'down' };
+  });
 
   protected challenge(leader: GymLeader): void {
     void this.svc.challenge(leader);

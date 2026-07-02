@@ -47,6 +47,20 @@
           <span class="vs-boost"><pv-icon name="shield-check" /> {{ g.boostSummary }}</span>
         </div>
 
+        @if (intel(); as it) {
+          <div class="vs-intel" [attr.data-tier]="it.tier">
+            <div class="vi-odds" role="img" [attr.aria-label]="'Estimated win chance ' + it.odds + '%'">
+              <span class="vi-fill" [style.width.%]="it.odds"></span>
+              <span class="vi-pct">{{ it.verdict }} · {{ it.odds }}%</span>
+            </div>
+            <div class="vi-chips">
+              <span class="vi-chip up" [title]="'Your team hits ' + it.scout.advantage + ' of ' + it.scout.total + ' super-effectively'">⚔ {{ it.scout.advantage }}/{{ it.scout.total }}</span>
+              <span class="vi-chip down" [title]="it.scout.threat + ' of your Pokémon are hit super-effectively'">🛡 {{ it.scout.threat }}</span>
+              @if (it.lead; as ld) { <span class="vi-chip lead" title="Recommended lead">★ {{ ld.name }}</span> }
+            </div>
+          </div>
+        }
+
         <button type="button" class="btn big" (click)="begin()"><pv-icon name="swords" /> Battle!</button>
       </div>
     }
