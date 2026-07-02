@@ -61,3 +61,19 @@ seen/caught dex, badges, whiteout respawn, and the interior-return door.
   fight & **catch** → level-up → Center heal → Mart shop → beat a trainer →
   Route 1 → **beat the Gym leader → Hive Badge**; 0 console errors; reduced-motion
   uses instant tile hops.
+
+## Feel pack + battle depth (v2.1)
+
+- **Overworld feel**: per-map ambient **weather** (rain on Route 2, snow in
+  Stonehollow — particles + tint + a header icon), **Shift to run** (95 ms
+  steps), cinematic **encounter transitions** (flash/spiral/split wipes for wild
+  fights, the classic “!” alert for trainers), **field poison** (1 HP per 4
+  steps, floored at 1 HP — `game/rpg/field.ts`), and a compact **party HUD**
+  (name, level, HP bar, status tag) over the overworld canvas.
+- **Battle depth**: field **status carries into battle** (`TeamBattle`
+  `startStatusA/B`; sleepers roll fresh sleep turns) and the end-of-battle
+  status is written back to the party (fainting clears it). **Revive works in
+  battle** via Bag → revive-mode party targeting (half HP, costs the turn).
+  **Held items** — Leftovers, Sitrus/Lum Berry, Muscle Band, Wise Glasses — are
+  Mart stock, given/taken in the field menu (🎒 chip; swapped items return to
+  the Bag) and ride into every battle on the engine `Battler.item`.

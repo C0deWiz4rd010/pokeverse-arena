@@ -109,18 +109,25 @@ Reuse the engine — don't fork battle logic.
 Pure `evolution.ts` (+spec), cache-first chain lookup, `evolve` phase + overlay
 (pulse → white-flash → reveal), HP-ratio carry, dex update. Verified live.
 
+### ✅ v2.1 — feel pack + battle depth (shipped)
+- **Feel pack**: per-map weather (rain/snow particles + tint), Shift-to-run,
+  cinematic encounter transitions (flash/spiral/split + trainer “!”), field
+  poison (1 HP / 4 steps, floored at 1), compact overworld party HUD.
+- **Battle depth**: status carries into battle (`startStatusA/B`) and persists
+  back afterwards; Revive usable in battle (revive-mode party targeting);
+  held items (Leftovers, Sitrus/Lum Berry, Muscle Band, Wise Glasses) — Mart
+  stock, field-menu give/take, wired into the engine battler.
+
 ### ▶ Next up (recommended order)
-1. ~~Evolutions~~ ✅ · ~~Line-of-sight trainers + Route 2 / Cave / Stonehollow /
-   Gym 2 + Rival~~ ✅ — both shipped & verified.
-2. **Battle depth** — carry status into battle, Revive in battle, EXP-Share +
-   simple held items.
-3. **More content** — a 3rd gym/route, wandering NPCs, an HM-lite gate, trainer/
+1. ~~Evolutions~~ ✅ · ~~LOS trainers + world expansion~~ ✅ · ~~Battle depth~~ ✅
+   (EXP-Share still open).
+2. **More content** — a 3rd gym/route, wandering NPCs, an HM-lite gate, trainer/
    gym rematches.
-4. **Tech debt** — extract the shared battle-presentation pipeline now used by
+3. **Tech debt** — extract the shared battle-presentation pipeline now used by
    `battle.ts`, `tournament-match.ts`, `rpg-battle.ts`; check in a Playwright
    adventure e2e spec.
 
-(Then Tier-3 polish: day/night + weather, save slots, quests/fly, a11y, perf.)
+(Then Tier-3 polish: save slots, quests/fly, a11y, perf.)
 
 ## Per-increment definition of done
 `npx ng build` clean · `npx vitest run` green (new pure logic covered) · Playwright

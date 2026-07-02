@@ -126,3 +126,26 @@ A visual/animation pass over the existing format engine.
 - Animated lobby cards and a pulsing "Battle ›" call-to-action.
 
 All motion respects `prefers-reduced-motion`.
+
+## Tournaments v3 — rival, pre-match intel & the crystal ball
+
+- **Pre-match intel** (`game/tournament/odds.ts`, `scouting.ts`): the CTA panel
+  shows an estimated **win chance** (logistic over team-power ratio, capped
+  5–95%), a verdict label, **type-matchup scout chips** (foes you threaten vs
+  members threatened back) and a **suggested lead**. Bracket cards carry power
+  **seeds** and a projected head-to-head odds bar; a **career strip** (runs,
+  titles, best finish, career prize) sits above the run history.
+- **Persistent rival** (`game/tournament/rival.ts`): one generated nemesis per
+  profile (localStorage) takes over the strongest CPU entry in every format,
+  keeps a **head-to-head record**, taunts you before the match based on who
+  leads, and gains +1 level per past meeting (cap +6). Crimson ⚡ styling in the
+  bracket, a taunt line on the CTA, a `vs {name}` career stat and a finale line
+  when the rival lifts the trophy.
+- **Crystal-ball pick'em** (`game/tournament/pickem.ts`): before your first
+  match, call the champion from an avatar strip (favourites → longshots).
+  Payout = 20 ₽ × a multiplier (×2–×25) from the pick's implied win
+  probability; a correct call pays into the run's prize (`pickBonus` on the
+  history record) and the finale shows hit or miss. Eliminated trainers drop
+  out of the strip live; you may back yourself.
+
+All three are pure, spec-covered modules re-exported from `game/tournament`.
