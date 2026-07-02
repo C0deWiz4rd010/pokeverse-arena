@@ -1,0 +1,84 @@
+.party-hud {
+  position: absolute;
+  top: 3.1rem;
+  left: 0.6rem;
+  display: grid;
+  gap: 0.28rem;
+  width: min(168px, 42%);
+  padding: 0.4rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  z-index: 4;
+  animation: ph-in 0.4s ease both;
+}
+
+.ph-mon {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.1rem 0.35rem;
+  padding: 0.22rem 0.36rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, #000 28%, transparent);
+
+  &.fainted { opacity: 0.5; filter: grayscale(0.7); }
+}
+
+.ph-top {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem;
+  line-height: 1.05;
+}
+.ph-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ph-lvl { font-size: 0.62rem; font-weight: 700; color: var(--text-faint); }
+
+.ph-bar {
+  grid-column: 1;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, #000 55%, transparent);
+}
+.ph-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3fd07a, #63e08c);
+  transition: width 0.4s ease, background 0.3s ease;
+
+  &.mid { background: linear-gradient(90deg, #f2c744, #ffd66b); }
+  &.low { background: linear-gradient(90deg, #ff5964, #ff8080); animation: ph-pulse 0.9s ease-in-out infinite; }
+}
+
+.ph-status {
+  grid-column: 2;
+  grid-row: 2;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #fff;
+  padding: 0.05rem 0.3rem;
+  border-radius: 5px;
+  background: var(--sc);
+}
+
+@keyframes ph-in { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+@keyframes ph-pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .party-hud { animation: none; }
+  .ph-fill.low { animation: none; }
+}

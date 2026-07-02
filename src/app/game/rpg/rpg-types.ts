@@ -7,6 +7,9 @@ import type { StatusCondition } from '../engine';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
+/** Ambient overworld weather (drives particles + a colour tint). */
+export type WeatherKind = 'rain' | 'snow' | 'sun' | 'sandstorm';
+
 /** Visual + behavioural tile kinds (walkability/grass derived in tiles.ts). */
 export type TileKind =
   | 'grass'
@@ -154,6 +157,8 @@ export interface MapDef {
   readonly npcs: readonly NpcDef[];
   readonly items: readonly GroundItemDef[];
   readonly encounter?: EncounterZone;
+  /** Ambient weather rendered by the overworld (particles + tint). */
+  readonly weather?: WeatherKind;
 }
 
 /* --------------------------------------------------------------------- save */

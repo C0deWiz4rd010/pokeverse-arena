@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import type { Direction } from '../../../game/rpg/rpg-types';
+import { OwPartyHudComponent } from './party-hud';
 import { VOID, drawBall, drawCharacter, drawTile } from './tile-renderer';
 
 const REDUCED =
@@ -28,6 +29,7 @@ const KEY_DIR: Record<string, Direction> = {
 @Component({
   selector: 'pv-overworld',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [OwPartyHudComponent],
   template: `
     <div class="ow" #wrap>
       <canvas #cv class="ow-canvas"></canvas>
@@ -38,6 +40,7 @@ const KEY_DIR: Record<string, Direction> = {
       @if (svc.toast(); as t) {
         <div class="ow-toast" role="status">{{ t }}</div>
       }
+      <pv-ow-party-hud />
       <button class="ow-menu" type="button" (click)="svc.openMenu()" aria-label="Menu">☰</button>
 
       <!-- touch controls -->

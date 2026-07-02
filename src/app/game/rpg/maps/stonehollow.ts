@@ -51,4 +51,5 @@ export const STONEHOLLOW: MapDef = {
     },
   ],
   items: [],
+  weather: 'snow',
 };

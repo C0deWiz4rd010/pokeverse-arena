@@ -9,6 +9,7 @@ import { getMap } from '../../game/rpg/maps';
 import { DELTA, ahead, canEnter, isTallGrass, npcAt, signAt, tileAt, warpAt } from '../../game/rpg/movement';
 import { TILE } from '../../game/rpg/tiles';
 import { rollEncounter } from '../../game/rpg/encounters';
+import { FIELD_STEP_INTERVAL, applyFieldPoison } from '../../game/rpg/field';
 import { ITEMS } from '../../game/rpg/items-catalog';
 import { titleCase } from '../../core/ui/format';
 import { defaultSave, isValidSave } from '../../game/rpg/save';
@@ -27,6 +28,9 @@ import type { Direction, ItemId, MapDef, PartyMon, RpgSave, ScriptNode } from '.
 const SAVE_KEY = 'rpg:save';
 
 export type RpgPhase = 'title' | 'overworld' | 'battle' | 'dialogue' | 'menu' | 'shop' | 'starter' | 'evolve';
+
+/** A cinematic transition style played as a battle begins. */
+export type EncounterFx = 'flash' | 'spiral' | 'split' | 'alert';
 
 /** A queued evolution to play after a battle. */
 export interface EvoEntry {
@@ -87,6 +91,11 @@ export class RpgService {
   readonly hasSave = signal<boolean>(this.readSave() !== null);
   /** The active battle's setup (null outside battle). */
   readonly battleSetup = signal<BattleSetup | null>(null);
+  /** A cinematic transition overlay played as a battle begins (null when idle). */
+  readonly encounterFx = signal<EncounterFx | null>(null);
+  private fxTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Walkable steps since the last field-status (poison) tick. */
+  private fieldSteps = 0;
   readonly party = computed<PartyMon[]>(() => this.game()?.party ?? []);
   readonly bag = computed<Partial<Record<ItemId, number>>>(() => this.game()?.bag ?? {});
   readonly money = computed<number>(() => this.game()?.money ?? 0);
@@ -247,19 +256,30 @@ export class RpgService {
     this.game.set(next);
     const grass = isTallGrass(m, t.x, t.y);
 
+    // Field status tick — poisoned party members lose a little HP as you walk.
+    if (++this.fieldSteps >= FIELD_STEP_INTERVAL) {
+      this.fieldSteps = 0;
+      const fp = applyFieldPoison(next.party);
+      if (fp.hurt.length) {
+        next = { ...next, party: fp.party };
+        this.game.set(next);
+        this.persist();
+        this.showToast(`${fp.hurt[0]} is hurt by poison!`);
+      }
+    }
+
     // Roll a wild encounter — tall grass, or every step in a cave (everywhere).
     if ((grass || m.encounter?.everywhere) && m.encounter && next.party.length > 0) {
       const rng = new SeededRng(`${Date.now()}-${t.x}-${t.y}-${Math.random()}`);
       const roll = rollEncounter(m.encounter, rng);
       if (roll) {
         if (!next.flags['first-battle']) this.setFlag('first-battle');
-        this.battleSetup.set({
+        this.startEncounter({
           kind: 'wild',
           foeSpecies: roll.species,
           foeLevel: roll.level,
           foeCatchRate: roll.catchRate,
         });
-        this.phase.set('battle');
       }
     }
 
@@ -332,6 +352,20 @@ export class RpgService {
   endBattle(): void {
     this.battleSetup.set(null);
     this.phase.set('overworld');
+  }
+
+  /**
+   * Kick off a battle behind a cinematic transition overlay. The battle phase
+   * mounts immediately (freezing movement) while the flash/wipe plays on top and
+   * auto-clears once the battle scene has faded in behind it.
+   */
+  startEncounter(setup: BattleSetup): void {
+    this.battleSetup.set(setup);
+    const styles: EncounterFx[] = setup.kind === 'trainer' ? ['alert'] : ['flash', 'spiral', 'split'];
+    this.encounterFx.set(styles[Math.floor(Math.random() * styles.length)]);
+    this.phase.set('battle');
+    if (this.fxTimer) clearTimeout(this.fxTimer);
+    this.fxTimer = setTimeout(() => this.encounterFx.set(null), 950);
   }
 
   /** Whole party fainted — heal for free and return to the last Center. */
@@ -552,7 +586,8 @@ export class RpgService {
 
   startTrainer(trainer: import('../../game/rpg/rpg-types').TrainerDef): void {
     if (!trainer.team.length) return;
-    this.battleSetup.set({
+    this.showToast(`${trainer.name}: ${trainer.intro}`, 3200);
+    this.startEncounter({
       kind: 'trainer',
       foeSpecies: trainer.team[0].species,
       foeLevel: trainer.team[0].level,
@@ -565,8 +600,6 @@ export class RpgService {
       badge: trainer.badge,
       ending: trainer.ending,
     });
-    this.showToast(`${trainer.name}: ${trainer.intro}`, 3200);
-    this.phase.set('battle');
   }
 
   /** Reward + flag (+ badge) after beating a trainer (called by the battle component). */

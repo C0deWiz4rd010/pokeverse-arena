@@ -1,7 +1,6 @@
 @use '../../../styles/responsive' as *;
 
 :host { display: block; width: min(900px, 100%); margin-inline: auto; padding-bottom: 3rem; }
-
 /* ----------------------------------------------------------------- stage */
 .rpg-stage { display: grid; gap: 0.6rem; }
 .ow-host { position: relative; }
@@ -66,3 +65,90 @@
 .btn.primary { border: none; color: #0b0a1f; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
 
 @media (prefers-reduced-motion: reduce) { .btn:hover:not(:disabled) { transform: none; } }
+
+/* ------------------------------------------------------- encounter transition */
+.encounter-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  overflow: hidden;
+}
+.encounter-fx .ef-flash {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, #fff, color-mix(in srgb, var(--accent) 60%, #fff) 55%, transparent 75%);
+  opacity: 0;
+  animation: ef-flash 0.5s ease-out both;
+}
+.encounter-fx .ef-bar {
+  position: absolute; left: 0; right: 0; height: 52%;
+  background: #05060f;
+}
+.encounter-fx .ef-bar.top { top: 0; transform: translateY(-100%); }
+.encounter-fx .ef-bar.bottom { bottom: 0; transform: translateY(100%); }
+.encounter-fx .ef-iris {
+  position: absolute; inset: 0;
+  background: #05060f;
+  clip-path: circle(140% at 50% 50%);
+  opacity: 0;
+}
+
+/* flash: quick white burst + shutter bars sweep in then out */
+.encounter-fx[data-fx='flash'] .ef-bar.top { animation: ef-bar-top 0.9s cubic-bezier(0.5, 0, 0.5, 1) both; }
+.encounter-fx[data-fx='flash'] .ef-bar.bottom { animation: ef-bar-bottom 0.9s cubic-bezier(0.5, 0, 0.5, 1) both; }
+
+/* spiral: an iris that closes to a point then opens */
+.encounter-fx[data-fx='spiral'] .ef-iris { animation: ef-iris 0.9s ease-in-out both; }
+.encounter-fx[data-fx='spiral'] .ef-flash { animation-duration: 0.35s; }
+
+/* split: horizontal shutter meeting in the middle then parting */
+.encounter-fx[data-fx='split'] .ef-bar.top { animation: ef-split-top 0.9s cubic-bezier(0.6, 0, 0.4, 1) both; }
+.encounter-fx[data-fx='split'] .ef-bar.bottom { animation: ef-split-bottom 0.9s cubic-bezier(0.6, 0, 0.4, 1) both; }
+
+/* alert: trainer spots you — an exclamation pop + red vignette flash */
+.encounter-fx[data-fx='alert'] .ef-flash {
+  background: radial-gradient(circle at 50% 50%, transparent 40%, color-mix(in srgb, #ff3b3b 70%, transparent) 100%);
+  animation: ef-alert-flash 0.9s ease-out both;
+}
+.encounter-fx .ef-alert {
+  position: absolute; top: 32%; left: 50%;
+  font: 900 clamp(3rem, 12vw, 6rem)/1 'Segoe UI', system-ui, sans-serif;
+  color: #ffd23f; -webkit-text-stroke: 4px #05060f; text-stroke: 4px #05060f;
+  transform: translate(-50%, 0) scale(0);
+  animation: ef-alert-pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+@keyframes ef-flash { 0% { opacity: 0.9; } 100% { opacity: 0; } }
+@keyframes ef-alert-flash { 0%, 20% { opacity: 0; } 40% { opacity: 0.85; } 100% { opacity: 0; } }
+@keyframes ef-alert-pop {
+  0% { transform: translate(-50%, 20px) scale(0); }
+  55% { transform: translate(-50%, 0) scale(1.15); }
+  75% { transform: translate(-50%, 0) scale(1); }
+  100% { transform: translate(-50%, -8px) scale(0.9); opacity: 0; }
+}
+@keyframes ef-bar-top {
+  0% { transform: translateY(-100%); } 45% { transform: translateY(0); }
+  55% { transform: translateY(0); } 100% { transform: translateY(-100%); }
+}
+@keyframes ef-bar-bottom {
+  0% { transform: translateY(100%); } 45% { transform: translateY(0); }
+  55% { transform: translateY(0); } 100% { transform: translateY(100%); }
+}
+@keyframes ef-split-top {
+  0% { transform: translateY(-100%); } 50% { transform: translateY(48%); }
+  60% { transform: translateY(48%); } 100% { transform: translateY(-100%); }
+}
+@keyframes ef-split-bottom {
+  0% { transform: translateY(100%); } 50% { transform: translateY(-48%); }
+  60% { transform: translateY(-48%); } 100% { transform: translateY(100%); }
+}
+@keyframes ef-iris {
+  0% { opacity: 1; clip-path: circle(140% at 50% 50%); }
+  50% { opacity: 1; clip-path: circle(0% at 50% 50%); }
+  60% { opacity: 1; clip-path: circle(0% at 50% 50%); }
+  100% { opacity: 1; clip-path: circle(140% at 50% 50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .encounter-fx { display: none; }
+}

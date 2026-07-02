@@ -1,3 +1,12 @@
+@if (svc.encounterFx(); as fx) {
+  <div class="encounter-fx" [attr.data-fx]="fx" aria-hidden="true">
+    <span class="ef-flash"></span>
+    <span class="ef-bar top"></span>
+    <span class="ef-bar bottom"></span>
+    <span class="ef-iris"></span>
+    @if (fx === 'alert') { <span class="ef-alert">!</span> }
+  </div>
+}
 @if (svc.phase() === 'title') {
   <section class="title">
     <div class="title-card">
@@ -38,7 +47,7 @@
     </div>
     <p class="rpg-hint">
       <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> / WASD move</span>
-      <span><kbd>Z</kbd> talk · <kbd>Esc</kbd> menu</span>
+      <span><kbd>Shift</kbd> run · <kbd>Z</kbd> talk · <kbd>Esc</kbd> menu</span>
       <span>On touch: use the on-screen pad</span>
     </p>
   </div>

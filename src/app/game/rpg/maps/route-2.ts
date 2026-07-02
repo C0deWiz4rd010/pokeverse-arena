@@ -67,4 +67,5 @@ export const ROUTE_2: MapDef = {
       { species: 'mankey', min: 8, max: 11, weight: 2, catchRate: 235 },
     ],
   },
+  weather: 'rain',
 };

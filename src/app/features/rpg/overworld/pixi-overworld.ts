@@ -8,7 +8,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
-import type { Direction, MapDef, TileKind } from '../../../game/rpg/rpg-types';
+import type { Direction, MapDef, TileKind, WeatherKind } from '../../../game/rpg/rpg-types';
+import { OwPartyHudComponent } from './party-hud';
 import { CHAR_ART, GROUNDED, SHEET_URL, TILE_ART, TILE_PX, charIndex, frameRect, type Sheet, type TileArt } from './atlas';
 
 type Pixi = typeof import('pixi.js');
@@ -34,11 +35,13 @@ const KEY_DIR: Record<string, Direction> = {
 @Component({
   selector: 'pv-pixi-overworld',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [OwPartyHudComponent],
   template: `
     <div class="ow" #host>
       <div class="ow-mount" #mount></div>
-      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}</div> }
+      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }</div> }
       @if (svc.toast(); as t) { <div class="ow-toast" role="status">{{ t }}</div> }
+      <pv-ow-party-hud />
       <button class="ow-menu" type="button" (click)="svc.openMenu()" aria-label="Menu">☰</button>
       <div class="pad" aria-hidden="true">
         <button class="pad-btn up" (pointerdown)="press('up', $event)" (pointerup)="release('up')" (pointerleave)="release('up')">▲</button>
@@ -83,6 +86,12 @@ export class PixiOverworldComponent implements OnDestroy {
   private nightTint: import('pixi.js').Graphics | null = null;
   private parts: { node: PContainer; vx: number; vy: number; life: number; max: number; grav: number }[] = [];
   private ambient: { s: PSprite; vx: number; vy: number; ph: number }[] = [];
+  // --- weather (Phase C) ---
+  private weatherLayer!: PContainer;
+  private weatherTint: import('pixi.js').Graphics | null = null;
+  private weather: WeatherKind | null = null;
+  private rain: { g: import('pixi.js').Graphics; vy: number; vx: number }[] = [];
+  private snow: { s: PSprite; vy: number; ph: number }[] = [];
   private shakeUntil = 0;
   private shakeMag = 0;
 
@@ -93,10 +102,13 @@ export class PixiOverworldComponent implements OnDestroy {
   private to = { x: 0, y: 0 };
   private t0 = 0;
   private readonly held = new Set<Direction>();
-  private readonly stepMs = REDUCED ? 0 : 150;
+  private readonly baseStepMs = REDUCED ? 0 : 150;
+  private stepDur = REDUCED ? 0 : 150;
+  private running = false;
   private frame = 0;
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
+    this.running = e.shiftKey;
     if (this.svc.phase() !== 'overworld') return;
     if (e.key === 'z' || e.key === 'Z' || e.key === 'Enter') { e.preventDefault(); this.svc.interact(); return; }
     if (e.key === 'Escape' || e.key === 'x' || e.key === 'X') { e.preventDefault(); this.svc.openMenu(); return; }
@@ -104,6 +116,7 @@ export class PixiOverworldComponent implements OnDestroy {
     if (dir) { e.preventDefault(); this.held.add(dir); }
   };
   private readonly onKeyUp = (e: KeyboardEvent): void => {
+    this.running = e.shiftKey;
     const dir = KEY_DIR[e.key];
     if (dir) this.held.delete(dir);
   };
@@ -130,6 +143,10 @@ export class PixiOverworldComponent implements OnDestroy {
   protected interact(ev?: Event): void {
     ev?.preventDefault();
     if (this.svc.phase() === 'overworld') this.svc.interact();
+  }
+
+  protected weatherIcon(w?: WeatherKind): string {
+    return w === 'rain' ? '🌧' : w === 'snow' ? '❄' : w === 'sun' ? '☀' : w === 'sandstorm' ? '🌪' : '';
   }
 
   /* ------------------------------------------------------------- setup */
@@ -230,6 +247,8 @@ export class PixiOverworldComponent implements OnDestroy {
     // player
     this.player = this.makeChar(charIndex('boy'), this.visX, this.visY);
     this.entitiesLayer.addChild(this.player);
+
+    this.buildWeather(map.weather);
   }
 
   private drawTile(kind: TileKind, x: number, y: number, map: MapDef): void {
@@ -325,7 +344,12 @@ export class PixiOverworldComponent implements OnDestroy {
     this.vignette = new pixi.Sprite(this.radial(256, 'rgba(0,0,0,0)', 'rgba(0,0,0,1)'));
     this.vignette.alpha = 0.5;
     this.ambientLayer = new pixi.Container();
-    this.fx.addChild(this.nightTint, this.light, this.vignette, this.ambientLayer);
+    this.weatherTint = new pixi.Graphics();
+    this.weatherTint.blendMode = 'screen';
+    this.weatherTint.alpha = 0;
+    this.weatherLayer = new pixi.Container();
+    this.weatherLayer.eventMode = 'none';
+    this.fx.addChild(this.nightTint, this.weatherTint, this.light, this.vignette, this.ambientLayer, this.weatherLayer);
     this.app!.stage.addChild(this.fx);
     // ambient firefly/pollen pool
     for (let i = 0; i < 14; i++) {
@@ -386,6 +410,63 @@ export class PixiOverworldComponent implements OnDestroy {
     this.parts.push({ node: g, vx, vy, life, max: life, grav });
   }
 
+  /* ------------------------------------------------------------- weather */
+
+  /** Rebuild the ambient weather field (rain streaks / drifting snow) for a map. */
+  private buildWeather(kind: WeatherKind | undefined): void {
+    if (REDUCED || !this.app || !this.weatherLayer) return;
+    this.weather = kind ?? null;
+    this.weatherLayer.removeChildren();
+    this.rain = [];
+    this.snow = [];
+    const pixi = this.PIXI!;
+    const w = this.app.renderer.width / this.app.renderer.resolution;
+    const h = this.app.renderer.height / this.app.renderer.resolution;
+    if (this.weatherTint) {
+      this.weatherTint.clear();
+      const tint = kind === 'rain' ? 0x2a3d66 : kind === 'snow' ? 0x9fc2e0 : kind === 'sandstorm' ? 0xc2a15a : 0x000000;
+      if (kind) this.weatherTint.rect(0, 0, w, h).fill(tint);
+    }
+    if (kind === 'rain') {
+      for (let i = 0; i < 90; i++) {
+        const g = new pixi.Graphics().moveTo(0, 0).lineTo(-2.5, 11).stroke({ width: 1.4, color: 0xbcd4ff, alpha: 0.5 });
+        g.x = Math.random() * (w + 40); g.y = Math.random() * h;
+        this.weatherLayer.addChild(g);
+        this.rain.push({ g, vy: 13 + Math.random() * 4, vx: -3 });
+      }
+    } else if (kind === 'snow') {
+      for (let i = 0; i < 64; i++) {
+        const s = new pixi.Sprite(this.radial(16, 'rgba(255,255,255,0.95)', 'rgba(255,255,255,0)'));
+        s.anchor.set(0.5);
+        s.width = s.height = 2 + Math.random() * 3;
+        s.x = Math.random() * w; s.y = Math.random() * h;
+        this.weatherLayer.addChild(s);
+        this.snow.push({ s, vy: 0.7 + Math.random() * 1.1, ph: Math.random() * 6.28 });
+      }
+    }
+  }
+
+  private updateWeather(): void {
+    if (REDUCED || !this.app) return;
+    const w = this.app.renderer.width / this.app.renderer.resolution;
+    const h = this.app.renderer.height / this.app.renderer.resolution;
+    if (this.weatherTint) {
+      const target = this.weather === 'rain' ? 0.22 : this.weather === 'snow' ? 0.14 : this.weather === 'sandstorm' ? 0.2 : 0;
+      this.weatherTint.alpha += (target - this.weatherTint.alpha) * 0.05;
+    }
+    for (const r of this.rain) {
+      r.g.y += r.vy; r.g.x += r.vx;
+      if (r.g.y > h) { r.g.y = -12; r.g.x = Math.random() * (w + 40); }
+      if (r.g.x < -20) r.g.x = w + 10;
+    }
+    for (const f of this.snow) {
+      f.s.y += f.vy;
+      f.s.x += Math.sin(this.frame / 40 + f.ph) * 0.5;
+      if (f.s.y > h + 4) { f.s.y = -4; f.s.x = Math.random() * w; }
+      if (f.s.x < -6) f.s.x = w + 6; else if (f.s.x > w + 6) f.s.x = -6;
+    }
+  }
+
   private spawnDust(tileX: number, tileY: number): void {
     if (REDUCED) return;
     const cx = (tileX + 0.5) * TILE_PX, cy = (tileY + 0.9) * TILE_PX;
@@ -429,12 +510,13 @@ export class PixiOverworldComponent implements OnDestroy {
     this.updateParticles();
     this.updateDayNight();
     this.updateAmbient();
+    this.updateWeather();
     this.updateCamera();
   }
 
   private updateMovement(): void {
     if (this.stepping) {
-      const t = this.stepMs <= 0 ? 1 : Math.min(1, (performance.now() - this.t0) / this.stepMs);
+      const t = this.stepDur <= 0 ? 1 : Math.min(1, (performance.now() - this.t0) / this.stepDur);
       this.visX = this.from.x + (this.to.x - this.from.x) * t;
       this.visY = this.from.y + (this.to.y - this.from.y) * t;
       if (t >= 1) this.stepping = false;
@@ -451,7 +533,8 @@ export class PixiOverworldComponent implements OnDestroy {
           this.from = { x: before.x, y: before.y };
           this.to = { x: np.x, y: np.y };
           this.t0 = performance.now();
-          this.stepping = this.stepMs > 0;
+          this.stepDur = REDUCED ? 0 : this.running ? 95 : this.baseStepMs;
+          this.stepping = this.stepDur > 0;
           if (!this.stepping) { this.visX = np.x; this.visY = np.y; }
           this.spawnDust(before.x, before.y);
           if (this.svc.map()?.tiles[np.y]?.[np.x] === 'tallgrass') this.spawnLeaves(np.x, np.y);
@@ -519,5 +602,6 @@ export class PixiOverworldComponent implements OnDestroy {
     // ~13 tiles tall in view
     this.zoom = Math.max(2, Math.round(h / (13 * TILE_PX)));
     this.resizeFx();
+    this.buildWeather(this.svc.map()?.weather);
   }
 }
