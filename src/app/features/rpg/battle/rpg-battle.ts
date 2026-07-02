@@ -30,7 +30,7 @@ import { animatedSprite } from '../../../core/api/pokeapi-endpoints';
 import type { PokemonType } from '../../../core/utils/type-chart';
 import { titleCase } from '../../../core/ui/format';
 import { SeededRng } from '../../../core/utils/rng';
-import { applyXp, xpYield } from '../../../game/rpg/xp';
+import { applyXp, shareXp, xpYield } from '../../../game/rpg/xp';
 import { firstAlive, makePartyMon } from '../../../game/rpg/party';
 import { attemptCatch, type RpgBallId } from '../../../game/rpg/catch';
 import { ITEMS, isBall } from '../../../game/rpg/items-catalog';
@@ -110,6 +110,8 @@ export class RpgBattleComponent {
   /** Picking a fainted member to revive (Bag → Revive → Pokémon list). */
   protected readonly reviveMode = signal(false);
   private pendingRevive: ItemId | null = null;
+  /** Party indices that actually saw the field (earn full XP; bench needs EXP Share). */
+  private readonly participants = new Set<number>();
 
   private readonly fx = viewChild(BattleFxComponent);
   private pendingType: PokemonType = 'normal';
@@ -223,6 +225,8 @@ export class RpgBattleComponent {
       // Lead with the first non-fainted party member.
       const lead = firstAlive(party);
       if (lead > 0) this.tb.forceSwitch(0, lead);
+      this.participants.clear();
+      this.participants.add(this.tb.state.active[0]);
 
       this.loading.set(false);
       this.syncAll();
@@ -426,6 +430,7 @@ export class RpgBattleComponent {
     for (const ev of events) {
       switch (ev.kind) {
         case 'switch':
+          if (ev.side === 0) this.participants.add(this.tb!.state.active[0]);
           this.syncSide(ev.side);
           this.pulseEnter(ev.side);
           this.cry.play(this.tb!.active(ev.side).battler.id, 0.3);
@@ -512,6 +517,7 @@ export class RpgBattleComponent {
 
     const finalHp = tb.hp(0);
     const finalStatus = tb.state.parties[0].map((s) => s.status);
+    const hasShare = (this.svc.bag()['exp-share'] ?? 0) > 0;
     const lines: string[] = [];
     const updated: PartyMon[] = [];
 
@@ -521,11 +527,11 @@ export class RpgBattleComponent {
       // Status sticks after battle (burn/poison/…); fainting clears it.
       mon.status = mon.currentHp <= 0 ? 'none' : finalStatus[i] ?? mon.status;
 
-      // XP to every participant that's still standing, on a win.
-      if (won && mon.currentHp > 0) {
-        const gain = this.xpReward;
+      // XP on a win: participants earn the full yield, the bench needs an EXP Share.
+      const gain = won && mon.currentHp > 0 ? shareXp(this.xpReward, this.participants.has(i), hasShare) : 0;
+      if (gain > 0) {
         const r = applyXp(mon.xp, mon.level, gain);
-        lines.push(`${titleCase(mon.nickname ?? mon.species)} gained ${gain} XP!`);
+        lines.push(`${titleCase(mon.nickname ?? mon.species)} gained ${gain} XP!${this.participants.has(i) ? '' : ' (EXP Share)'}`);
         mon.xp = r.xp;
         if (r.leveledTo.length) {
           mon.level = r.level;

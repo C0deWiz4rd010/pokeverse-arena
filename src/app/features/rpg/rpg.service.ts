@@ -109,6 +109,8 @@ export class RpgService {
   /** A transient one-line message (signs, pickups, …). */
   readonly toast = signal<string | null>(null);
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Beaten trainer whose rematch offer is on screen (consumed by the script VM). */
+  private pendingRematch: import('../../game/rpg/rpg-types').TrainerDef | null = null;
 
   readonly map = computed<MapDef | null>(() => {
     const g = this.game();
@@ -465,6 +467,21 @@ export class RpgService {
         this.startTrainer(npc.trainer);
         return;
       }
+      // Beaten trainers offer a rematch at half reward (badge/epilogue only once).
+      if (npc.kind === 'trainer' && npc.trainer && this.hasFlag(npc.trainer.flag)) {
+        this.pendingRematch = npc.trainer;
+        this.runScript([
+          { say: `${npc.trainer.name}: Back again? I've been training for a rematch!`, speaker: npc.trainer.name },
+          {
+            choice: 'Accept the rematch?',
+            options: [
+              { label: 'Bring it on', then: [{ rematch: true }] },
+              { label: 'Not now', then: [{ say: `${npc.trainer.name}: Come find me when you're ready.`, speaker: npc.trainer.name }] },
+            ],
+          },
+        ]);
+        return;
+      }
       if (npc.script.length) {
         this.runScript(npc.script);
         return;
@@ -562,6 +579,22 @@ export class RpgService {
     }
     if ('heal' in node) {
       this.healAtCenter();
+      return;
+    }
+    if ('rematch' in node) {
+      const t = this.pendingRematch;
+      this.pendingRematch = null;
+      if (t) {
+        this.dialogue.set(null);
+        this.scriptStack = [];
+        this.startTrainer({
+          ...t,
+          reward: Math.max(10, Math.floor(t.reward / 2)),
+          intro: 'Show me how much stronger you have become!',
+          badge: undefined,
+          ending: undefined,
+        });
+      }
       return;
     }
     if ('openShop' in node) {

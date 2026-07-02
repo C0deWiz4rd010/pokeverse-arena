@@ -19,6 +19,7 @@ export const MART_STOCK: readonly ItemId[] = [
   'muscle-band',
   'wise-glasses',
   'leftovers',
+  'exp-share',
 ];
 
 export function buyPrice(id: ItemId): number {

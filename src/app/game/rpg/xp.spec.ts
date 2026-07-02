@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyXp, levelFromXp, xpForLevel, xpProgress, xpYield } from './xp';
+import { applyXp, levelFromXp, shareXp, xpForLevel, xpProgress, xpYield } from './xp';
 
 describe('xp curve', () => {
   it('uses medium-fast n^3 thresholds', () => {
@@ -50,5 +50,22 @@ describe('xpProgress', () => {
     const mid = xpProgress(xpForLevel(5) + Math.floor((xpForLevel(6) - xpForLevel(5)) / 2), 5);
     expect(mid.pct).toBeGreaterThanOrEqual(49);
     expect(mid.pct).toBeLessThanOrEqual(51);
+  });
+});
+
+describe('shareXp', () => {
+  it('pays participants in full', () => {
+    expect(shareXp(120, true, false)).toBe(120);
+    expect(shareXp(120, true, true)).toBe(120);
+  });
+
+  it('pays the bench half only with an EXP Share', () => {
+    expect(shareXp(120, false, true)).toBe(60);
+    expect(shareXp(121, false, true)).toBe(60); // floored
+    expect(shareXp(120, false, false)).toBe(0);
+  });
+
+  it('never goes negative', () => {
+    expect(shareXp(-50, true, true)).toBe(0);
   });
 });

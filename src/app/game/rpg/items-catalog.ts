@@ -6,7 +6,7 @@ import type { ItemId } from './rpg-types';
 import type { RpgBallId } from './catch';
 import type { ItemId as HeldItemId, StatusCondition } from '../engine';
 
-export type ItemCategory = 'ball' | 'heal' | 'status' | 'revive' | 'held';
+export type ItemCategory = 'ball' | 'heal' | 'status' | 'revive' | 'held' | 'key';
 
 export interface ItemDef {
   readonly id: ItemId;
@@ -45,6 +45,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   'lum-berry': { id: 'lum-berry', name: 'Lum Berry', category: 'held', price: 900, desc: 'Hold: cures any status problem, once.', held: 'lum-berry', usableInBattle: false, usableOnField: true },
   'muscle-band': { id: 'muscle-band', name: 'Muscle Band', category: 'held', price: 2200, desc: 'Hold: slightly boosts physical moves.', held: 'muscle-band', usableInBattle: false, usableOnField: true },
   'wise-glasses': { id: 'wise-glasses', name: 'Wise Glasses', category: 'held', price: 2200, desc: 'Hold: slightly boosts special moves.', held: 'wise-glasses', usableInBattle: false, usableOnField: true },
+  'exp-share': { id: 'exp-share', name: 'EXP Share', category: 'key', price: 4000, desc: 'While in your Bag, benched party members earn half XP from wins.', usableInBattle: false, usableOnField: false },
 };
 
 export const ITEM_ORDER: readonly ItemId[] = [
@@ -53,6 +54,7 @@ export const ITEM_ORDER: readonly ItemId[] = [
   'antidote', 'paralyze-heal', 'awakening', 'burn-heal', 'ice-heal', 'full-heal',
   'revive',
   'leftovers', 'sitrus-berry', 'lum-berry', 'muscle-band', 'wise-glasses',
+  'exp-share',
 ];
 
 /** Bag id for an engine held-item id (to return a swapped-out item to the Bag). */

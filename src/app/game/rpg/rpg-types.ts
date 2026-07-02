@@ -49,7 +49,9 @@ export type ItemId =
   | 'sitrus-berry'
   | 'lum-berry'
   | 'muscle-band'
-  | 'wise-glasses';
+  | 'wise-glasses'
+  // Key items (passive, owned once).
+  | 'exp-share';
 
 /** A persisted party/box Pokémon (rebuilt into an engine Battler for battle). */
 export interface PartyMon {
@@ -75,6 +77,7 @@ export type ScriptNode =
   | { readonly giveItem: ItemId; readonly qty?: number }
   | { readonly giveStarter: true }
   | { readonly startTrainer: true }
+  | { readonly rematch: true }
   | { readonly heal: true }
   | { readonly openShop: true }
   | { readonly setFlag: string }

@@ -20,8 +20,8 @@ import type { ItemId } from '../../../game/rpg/rpg-types';
             <span class="name">{{ name(id) }}</span>
             <span class="desc">{{ desc(id) }}</span>
             <span class="own">×{{ svc.itemCount(id) }}</span>
-            <button type="button" class="buy" [disabled]="svc.money() < price(id)" (click)="buy(id)">
-              {{ price(id) }} ₽
+            <button type="button" class="buy" [disabled]="svc.money() < price(id) || soldOut(id)" (click)="buy(id)">
+              {{ soldOut(id) ? 'Owned' : price(id) + ' ₽' }}
             </button>
           </li>
         }
@@ -38,6 +38,10 @@ export class ShopComponent {
   protected name(id: ItemId): string { return ITEMS[id].name; }
   protected desc(id: ItemId): string { return ITEMS[id].desc; }
   protected price(id: ItemId): number { return buyPrice(id); }
+  /** Key items are owned once — the Mart stops selling them after that. */
+  protected soldOut(id: ItemId): boolean {
+    return ITEMS[id].category === 'key' && this.svc.itemCount(id) > 0;
+  }
 
   protected buy(id: ItemId): void {
     if (this.svc.spend(this.price(id))) {

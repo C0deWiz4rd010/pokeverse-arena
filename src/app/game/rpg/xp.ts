@@ -24,6 +24,17 @@ export function xpYield(foeBaseExp: number, foeLevel: number): number {
   return Math.max(1, Math.floor((Math.max(1, foeBaseExp) * Math.max(1, foeLevel)) / 7));
 }
 
+/**
+ * XP actually granted to a party member after a win: participants earn the full
+ * yield, benched members earn half — but only when the trainer owns an EXP Share
+ * (otherwise they learn nothing from watching).
+ */
+export function shareXp(gain: number, participated: boolean, hasExpShare: boolean): number {
+  const g = Math.max(0, Math.floor(gain));
+  if (participated) return g;
+  return hasExpShare ? Math.floor(g / 2) : 0;
+}
+
 export interface XpResult {
   /** New total XP. */
   readonly xp: number;
