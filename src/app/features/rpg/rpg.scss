@@ -53,6 +53,31 @@
 .title-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; margin-top: 0.4rem; }
 .title-note { font-size: 0.8rem; color: var(--text-faint); margin: 0; }
 
+/* ------------------------------------------------------------ save slots */
+.slots {
+  display: grid;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0.4rem;
+  grid-template-columns: 1fr;
+  @media (min-width: 560px) { grid-template-columns: repeat(3, 1fr); }
+}
+.slot-card {
+  display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+  padding: 0.8rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--bg) 55%, #000);
+  &.empty { border-style: dashed; }
+  .sc-head { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
+  .sc-name { font-weight: 800; }
+  .sc-meta { font-size: 0.74rem; color: var(--text-dim); }
+  .sc-meta.dim { color: var(--text-faint); padding-block: 0.35rem; }
+  .sc-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; margin-top: 0.25rem; }
+  .btn { padding: 0.45rem 0.8rem; min-height: 2.3rem; font-size: 0.85rem; }
+  .btn.danger { color: #ff8d98; border-color: color-mix(in srgb, #ff4d5e 40%, var(--glass-border)); }
+}
+
 .btn {
   appearance: none; cursor: pointer; font: inherit; font-weight: 700;
   display: inline-flex; align-items: center; gap: 0.45rem;

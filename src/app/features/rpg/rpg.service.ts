@@ -32,6 +32,19 @@ const SAVE_KEY = 'rpg:save';
 
 export type RpgPhase = 'title' | 'overworld' | 'battle' | 'dialogue' | 'menu' | 'shop' | 'starter' | 'evolve';
 
+/** Title-screen preview of one save slot. */
+export type SlotInfo =
+  | { readonly slot: 1 | 2 | 3; readonly empty: true }
+  | {
+      readonly slot: 1 | 2 | 3;
+      readonly empty: false;
+      readonly name: string;
+      readonly badges: number;
+      readonly party: number;
+      readonly topLevel: number;
+      readonly map: string;
+    };
+
 /** A cinematic transition style played as a battle begins. */
 export type EncounterFx = 'flash' | 'spiral' | 'split' | 'alert';
 
@@ -91,6 +104,10 @@ export class RpgService {
 
   readonly phase = signal<RpgPhase>('title');
   readonly game = signal<RpgSave | null>(null);
+  /** Which of the three save slots the session plays in (slot 1 = legacy key). */
+  readonly slot = signal<1 | 2 | 3>(1);
+  /** Title-screen previews for all three slots. */
+  readonly slots = signal<SlotInfo[]>(this.readSlots());
   readonly hasSave = signal<boolean>(this.readSave() !== null);
   /** The active battle's setup (null outside battle). */
   readonly battleSetup = signal<BattleSetup | null>(null);
@@ -127,7 +144,8 @@ export class RpgService {
 
   /* ------------------------------------------------------------- lifecycle */
 
-  newGame(name = 'Red'): void {
+  newGame(name = 'Red', slot: 1 | 2 | 3 = this.slot()): void {
+    this.slot.set(slot);
     const g = defaultSave(name);
     this.game.set(g);
     this.persist();
@@ -172,8 +190,9 @@ export class RpgService {
     }
   }
 
-  continue(): void {
-    const g = this.readSave();
+  continue(slot: 1 | 2 | 3 = this.slot()): void {
+    this.slot.set(slot);
+    const g = this.readSave(slot);
     if (g) {
       this.game.set(g);
       this.phase.set('overworld');
@@ -183,18 +202,48 @@ export class RpgService {
   exitToTitle(): void {
     this.persist();
     this.phase.set('title');
+    this.slots.set(this.readSlots());
+  }
+
+  /** Wipe a slot (two-tap confirm lives in the title UI). */
+  deleteSlot(slot: 1 | 2 | 3): void {
+    this.store.remove(this.keyFor(slot));
+    this.slots.set(this.readSlots());
+    this.hasSave.set(this.slots().some((s) => !s.empty));
   }
 
   persist(): void {
     const g = this.game();
     if (!g) return;
-    this.store.write(SAVE_KEY, g);
+    this.store.write(this.keyFor(this.slot()), g);
     this.hasSave.set(true);
+    if (this.phase() === 'title') this.slots.set(this.readSlots());
   }
 
-  private readSave(): RpgSave | null {
-    const g = this.store.read<RpgSave | null>(SAVE_KEY, null);
+  /** Slot 1 stays on the legacy key so existing adventures keep working. */
+  private keyFor(slot: number): string {
+    return slot === 1 ? SAVE_KEY : `${SAVE_KEY}:${slot}`;
+  }
+
+  private readSave(slot: 1 | 2 | 3 = this.slot()): RpgSave | null {
+    const g = this.store.read<RpgSave | null>(this.keyFor(slot), null);
     return g && isValidSave(g) ? g : null;
+  }
+
+  private readSlots(): SlotInfo[] {
+    return ([1, 2, 3] as const).map((slot) => {
+      const g = this.readSave(slot);
+      if (!g) return { slot, empty: true as const };
+      return {
+        slot,
+        empty: false as const,
+        name: g.name,
+        badges: g.badges.length,
+        party: g.party.length,
+        topLevel: g.party.reduce((m, p) => Math.max(m, p.level), 0),
+        map: getMap(g.map)?.name ?? g.map,
+      };
+    });
   }
 
   /* ------------------------------------------------------------- movement */

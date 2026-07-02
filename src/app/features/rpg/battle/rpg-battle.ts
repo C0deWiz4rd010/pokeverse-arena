@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   HostListener,
   computed,
   effect,
@@ -132,6 +133,8 @@ export class RpgBattleComponent extends BattlePresenterBase {
     }));
   });
 
+  private readonly cmdFight = viewChild<ElementRef<HTMLButtonElement>>('cmdFight');
+
   constructor() {
     super();
     effect(() => {
@@ -139,6 +142,14 @@ export class RpgBattleComponent extends BattlePresenterBase {
       if (this.started || !setup) return;
       this.started = true;
       void this.begin();
+    });
+    // Classic cursor behaviour: focus returns to FIGHT whenever the command
+    // menu is back in the player's hands (also lands AT users in the menu).
+    effect(() => {
+      if (!this.loading() && !this.busy() && !this.done() && this.menu() === 'main') {
+        const el = this.cmdFight()?.nativeElement;
+        if (el) queueMicrotask(() => el.focus());
+      }
     });
   }
 

@@ -1,10 +1,11 @@
-<div class="fm">
+<div class="fm" role="dialog" aria-modal="true" aria-label="Field menu">
   <header class="fm-head">
-    <div class="fm-tabs">
-      <button type="button" [class.on]="tab() === 'party'" (click)="tab.set('party')">Pokémon</button>
-      <button type="button" [class.on]="tab() === 'bag'" (click)="tab.set('bag')">Bag</button>
-      <button type="button" [class.on]="tab() === 'box'" (click)="tab.set('box')">Box</button>
-      <button type="button" [class.on]="tab() === 'dex'" (click)="tab.set('dex')">Dex</button>
+    <div class="fm-tabs" role="tablist">
+      <button #firstTab type="button" role="tab" [attr.aria-selected]="tab() === 'party'" [class.on]="tab() === 'party'" (click)="tab.set('party')">Pokémon</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'bag'" [class.on]="tab() === 'bag'" (click)="tab.set('bag')">Bag</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'quests'" [class.on]="tab() === 'quests'" (click)="tab.set('quests')">Quests</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'box'" [class.on]="tab() === 'box'" (click)="tab.set('box')">Box</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'dex'" [class.on]="tab() === 'dex'" (click)="tab.set('dex')">Dex</button>
     </div>
     <span class="fm-money">{{ svc.money() }} ₽</span>
   </header>
@@ -60,6 +61,24 @@
       } @empty {
         <p class="fm-empty">The storage box is empty.</p>
       }
+    </div>
+  } @else if (tab() === 'quests') {
+    <div class="fm-quests">
+      <p class="q-progress">
+        <span class="q-bar"><span class="q-fill" [style.width.%]="questView().total ? (questView().done / questView().total) * 100 : 0"></span></span>
+        {{ questView().done }} / {{ questView().total }} complete
+      </p>
+      <ul class="q-list">
+        @for (e of questView().entries; track e.quest.id) {
+          <li [class.done]="e.done">
+            <span class="q-check" aria-hidden="true">{{ e.done ? '✔' : '○' }}</span>
+            <span class="q-body">
+              <span class="q-title">{{ e.quest.title }}</span>
+              @if (!e.done) { <span class="q-hint">{{ e.quest.hint }}</span> }
+            </span>
+          </li>
+        }
+      </ul>
     </div>
   } @else if (tab() === 'dex') {
     <div class="fm-dex">

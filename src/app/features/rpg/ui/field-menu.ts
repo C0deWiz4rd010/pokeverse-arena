@@ -1,14 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild, afterNextRender } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge';
 import { titleCase } from '../../../core/ui/format';
 import { ITEMS } from '../../../game/rpg/items-catalog';
 import { xpProgress } from '../../../game/rpg/xp';
+import { questLog, questProgress } from '../../../game/rpg/quests';
 import { SPRITE_BASE } from '../../../core/api/pokeapi-endpoints';
 import { itemName } from '../../../game/engine';
 import type { ItemId } from '../../../game/rpg/rpg-types';
 
-type Tab = 'party' | 'bag' | 'dex' | 'box';
+type Tab = 'party' | 'bag' | 'quests' | 'dex' | 'box';
 
 /** Overworld pause menu: party overview, field bag, save / quit. */
 @Component({
@@ -22,6 +23,12 @@ export class FieldMenuComponent {
   protected readonly svc = inject(RpgService);
   protected readonly titleCase = titleCase;
   protected readonly tab = signal<Tab>('party');
+  private readonly firstTab = viewChild<ElementRef<HTMLButtonElement>>('firstTab');
+
+  constructor() {
+    // Move focus into the menu when it opens so keyboard/AT users land inside.
+    afterNextRender(() => this.firstTab()?.nativeElement.focus());
+  }
   /** When using a bag item, the item awaiting a party target. */
   protected readonly pendingItem = signal<ItemId | null>(null);
   /** Inline rename: the uid being edited + its draft text. */
@@ -58,6 +65,13 @@ export class FieldMenuComponent {
     return (Object.keys(bag) as ItemId[])
       .filter((id) => (bag[id] ?? 0) > 0)
       .map((id) => ({ id, name: ITEMS[id].name, desc: ITEMS[id].desc, count: bag[id] ?? 0, field: ITEMS[id].usableOnField }));
+  });
+
+  /** Quest checklist + progress derived live from the save. */
+  protected readonly questView = computed(() => {
+    const g = this.svc.game();
+    if (!g) return { entries: [], done: 0, total: 0 };
+    return { entries: questLog(g), ...questProgress(g) };
   });
 
   protected readonly dexView = computed(() => {

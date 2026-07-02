@@ -113,3 +113,28 @@
 .btn.ghost { color: var(--text-dim); }
 
 @media (prefers-reduced-motion: reduce) { .mon.pick:hover { transform: none; } }
+
+/* ------------------------------------------------------------- quests */
+.fm-quests { display: grid; gap: 0.55rem; }
+.q-progress {
+  display: flex; align-items: center; gap: 0.6rem; margin: 0;
+  font-size: 0.78rem; color: var(--text-dim);
+}
+.q-bar {
+  flex: 1; height: 8px; border-radius: 999px; overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+}
+.q-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.q-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.q-list li {
+  display: flex; gap: 0.55rem; align-items: flex-start;
+  padding: 0.5rem 0.6rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--bg) 60%, #000);
+  &.done { opacity: 0.62; }
+  &.done .q-title { text-decoration: line-through; }
+}
+.q-check { font-size: 0.9rem; color: var(--accent-2); line-height: 1.3; }
+.q-body { display: flex; flex-direction: column; gap: 0.1rem; }
+.q-title { font-weight: 700; font-size: 0.86rem; }
+.q-hint { font-size: 0.74rem; color: var(--text-dim); }

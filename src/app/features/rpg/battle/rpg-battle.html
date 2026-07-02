@@ -47,7 +47,7 @@
     </ul>
 
     @if (done()) {
-      <div class="rb-result">
+      <div class="rb-result" role="status">
         @if (resultLines().length) {
           <ul class="rb-gains">@for (l of resultLines(); track $index) { <li>{{ l }}</li> }</ul>
         }
@@ -94,8 +94,8 @@
         @if (!forcedSwitch()) { <button class="cmd back" type="button" (click)="backToMain()">‹ Back</button> }
       </div>
     } @else {
-      <div class="rb-cmd">
-        <button class="cmd" type="button" [disabled]="busy()" (click)="openFight()">Fight</button>
+      <div class="rb-cmd" role="menu" aria-label="Battle commands">
+        <button #cmdFight class="cmd" type="button" [disabled]="busy()" (click)="openFight()">Fight</button>
         <button class="cmd" type="button" [disabled]="busy() || switchList().length < 2" (click)="openPokemon()">Pokémon</button>
         <button class="cmd" type="button" [disabled]="busy() || !bagSlots().length" (click)="openBag()">Bag</button>
         <button class="cmd" type="button" [disabled]="busy() || !isWild()" (click)="run()">Run</button>

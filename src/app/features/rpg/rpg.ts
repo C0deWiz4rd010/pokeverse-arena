@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RpgService } from './rpg.service';
 import { OverworldComponent } from './overworld/overworld';
 import { PixiOverworldComponent } from './overworld/pixi-overworld';
@@ -33,6 +33,19 @@ import { IconComponent } from '../../core/ui/icon/icon';
 })
 export class RpgComponent {
   protected readonly svc = inject(RpgService);
+
+  /** Slot whose Delete is armed (second tap wipes; anything else disarms). */
+  protected readonly deleteArm = signal<number | null>(null);
+
+  protected onDelete(slot: 1 | 2 | 3): void {
+    if (this.deleteArm() === slot) {
+      this.svc.deleteSlot(slot);
+      this.deleteArm.set(null);
+    } else {
+      this.deleteArm.set(slot);
+      setTimeout(() => this.deleteArm.update((v) => (v === slot ? null : v)), 3000);
+    }
+  }
 
   /** Use the canvas fallback when motion is reduced or WebGL is unavailable. */
   protected readonly useCanvas = ((): boolean => {

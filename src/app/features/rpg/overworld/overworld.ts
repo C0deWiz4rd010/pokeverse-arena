@@ -66,6 +66,11 @@ export class OverworldComponent implements OnDestroy {
   private ctx: CanvasRenderingContext2D | null = null;
   private raf = 0;
   private ts = 32;
+  /** Offscreen cache of the map's static tiles (rebuilt on map/zoom change). */
+  private tileCache: HTMLCanvasElement | null = null;
+  private cacheMapId = '';
+  private cacheTs = 0;
+  private waterTiles: { x: number; y: number }[] = [];
   private cssW = 0;
   private cssH = 0;
   private frame = 0;
@@ -205,6 +210,28 @@ export class OverworldComponent implements OnDestroy {
     return null;
   }
 
+  /** Rasterise every static tile once; water animates live over the blit. */
+  private buildTileCache(map: import('../../../game/rpg/rpg-types').MapDef, ts: number): void {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.round(map.width * ts * dpr));
+    cv.height = Math.max(1, Math.round(map.height * ts * dpr));
+    const cctx = cv.getContext('2d');
+    if (!cctx) return;
+    cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.waterTiles = [];
+    for (let ty = 0; ty < map.height; ty++) {
+      for (let tx = 0; tx < map.width; tx++) {
+        const kind = map.tiles[ty][tx];
+        if (kind === 'water') this.waterTiles.push({ x: tx, y: ty });
+        drawTile(cctx, kind, tx * ts, ty * ts, ts, 0);
+      }
+    }
+    this.tileCache = cv;
+    this.cacheMapId = map.id;
+    this.cacheTs = ts;
+  }
+
   private render(): void {
     const ctx = this.ctx;
     const map = this.svc.map();
@@ -218,17 +245,14 @@ export class OverworldComponent implements OnDestroy {
     ctx.fillStyle = VOID;
     ctx.fillRect(0, 0, this.cssW, this.cssH);
 
-    const x0 = Math.floor(-originX / ts) - 1;
-    const x1 = Math.ceil((this.cssW - originX) / ts) + 1;
-    const y0 = Math.floor(-originY / ts) - 1;
-    const y1 = Math.ceil((this.cssH - originY) / ts) + 1;
-
-    for (let ty = y0; ty <= y1; ty++) {
-      for (let tx = x0; tx <= x1; tx++) {
-        const kind = map.tiles[ty]?.[tx];
-        if (!kind) continue;
-        drawTile(ctx, kind, originX + tx * ts, originY + ty * ts, ts, this.frame);
-      }
+    // Static tiles come from a per-map offscreen cache; only water re-renders
+    // each frame (its shimmer animates), so big maps cost one blit + entities.
+    if (this.cacheMapId !== map.id || this.cacheTs !== ts) this.buildTileCache(map, ts);
+    if (this.tileCache) {
+      ctx.drawImage(this.tileCache, 0, 0, this.tileCache.width, this.tileCache.height, originX, originY, map.width * ts, map.height * ts);
+    }
+    for (const w of this.waterTiles) {
+      drawTile(ctx, 'water', originX + w.x * ts, originY + w.y * ts, ts, this.frame);
     }
 
     // Ground items not yet picked up.
