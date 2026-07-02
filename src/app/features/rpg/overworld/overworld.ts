@@ -238,9 +238,11 @@ export class OverworldComponent implements OnDestroy {
       drawBall(ctx, originX + it.x * ts, originY + it.y * ts, ts);
     }
 
-    // NPCs
+    // NPCs at their runtime tiles (wanderers move; statics mirror the map def).
+    const npcPositions = this.svc.npcPos();
     for (const npc of map.npcs) {
-      drawCharacter(ctx, originX + npc.x * ts, originY + npc.y * ts, ts, npc.facing, '#ffd166', '#c5524a');
+      const at = npcPositions[npc.id] ?? npc;
+      drawCharacter(ctx, originX + at.x * ts, originY + at.y * ts, ts, at.facing, '#ffd166', '#c5524a');
     }
 
     // player at camera centre

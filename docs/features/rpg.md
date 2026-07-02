@@ -84,3 +84,26 @@ seen/caught dex, badges, whiteout respawn, and the interior-return door.
   the **EXP Share** key item (Mart, owned once) pays the bench half XP.
 - **Trainer rematches**: beaten trainers (incl. gym leaders) offer a dialogue
   choice to fight again at half reward, without replaying badge/epilogue beats.
+
+## v2.3 — Tier-3 world + living towns
+
+- **Wandering NPCs** (`game/rpg/npc-walk.ts` + spec): a pure runtime-position
+  layer — NPCs with `wander: n` amble within n tiles of home (never onto the
+  player, other NPCs, warps, items or blocked tiles). Blocking, interaction and
+  trainer line-of-sight all read runtime positions; the Pixi renderer glides
+  sprites between tiles (canvas draws them directly). Villagers in Verdant
+  Town, Stonehollow and Sunreach now roam.
+- **Route 3 → Sunreach → Gym 3**: a sandstorm desert pass (ledges, two
+  trainers incl. a line-of-sight Ranger, ground/fighting wilds up to Rhyhorn),
+  the sun-baked town of Sunreach (Center/Mart reuse, fountain square) and the
+  Fighting gym — Leader Vala, **Knuckle Badge**, third and final demo badge.
+- **Badge-gated warp**: `WarpDef.requiresBadge` — the south road out of
+  Stonehollow is closed by a ranger until you hold the Boulder Badge.
+- **Weather polish**: sunny maps get a warm tint; sandstorms drive horizontal
+  dust streaks.
+- **Map-registry integrity spec** (`maps.spec.ts`): every map's dimensions,
+  warp targets (existing map + walkable tile), NPC/sign/item bounds, encounter
+  tables and gate badges are validated in CI.
+- **Checked-in E2E** (`npm run e2e`): the adventure happy-path (new game →
+  starter → wild battle → run → save) drives a real browser and fails on any
+  console error.

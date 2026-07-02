@@ -45,7 +45,7 @@ export const GYM2: MapDef = {
         defeat: 'Cracked at last. The Boulder Badge is yours.',
         flag: 'beat-gym2',
         badge: 'Boulder Badge',
-        ending: '🏆 Two badges! That’s the end of the demo — thanks for playing!',
+        ending: '🏆 Two badges! The ranger south of town will let you pass now — Route 3 awaits.',
       },
     },
   ],

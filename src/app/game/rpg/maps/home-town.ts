@@ -46,9 +46,23 @@ export const HOME_TOWN: MapDef = {
       facing: 'down',
       sprite: 'boy',
       kind: 'talk',
+      wander: 2,
       script: [
         { say: 'The tall grass south of town is full of wild Pokémon!' },
         { say: 'Weaken them first, then throw a Poké Ball to catch them.' },
+      ],
+    },
+    {
+      id: 'Gardener Ivy',
+      x: 8,
+      y: 9,
+      facing: 'left',
+      sprite: 'girl',
+      kind: 'talk',
+      wander: 2,
+      script: [
+        { say: 'I love watching the flowers sway… oh! A trainer!' },
+        { say: 'They say a ranger guards the road south of Stonehollow.' },
       ],
     },
     {

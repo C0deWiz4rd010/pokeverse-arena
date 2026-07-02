@@ -94,6 +94,8 @@ export interface WarpDef {
   readonly toX: number;
   readonly toY: number;
   readonly toFacing?: Direction;
+  /** Badge required to pass (a ranger turns you back without it). */
+  readonly requiresBadge?: string;
 }
 
 export interface SignDef {
@@ -153,6 +155,8 @@ export interface NpcDef {
   readonly kind: NpcKind;
   readonly script: readonly ScriptNode[];
   readonly trainer?: TrainerDef;
+  /** Wander radius in tiles around the home tile (omit for a static NPC). */
+  readonly wander?: number;
 }
 
 export interface MapDef {

@@ -118,15 +118,18 @@ Pure `evolution.ts` (+spec), cache-first chain lookup, `evolve` phase + overlay
   held items (Leftovers, Sitrus/Lum Berry, Muscle Band, Wise Glasses) — Mart
   stock, field-menu give/take, wired into the engine battler.
 
-### ▶ Next up (recommended order)
-1. ~~Evolutions~~ ✅ · ~~LOS trainers + world expansion~~ ✅ · ~~Battle depth~~ ✅
-   · ~~EXP Share + participant XP~~ ✅ · ~~trainer/gym rematches~~ ✅
-2. **More content** — a 3rd gym/route, wandering NPCs, an HM-lite gate.
-3. **Tech debt** — extract the shared battle-presentation pipeline now used by
-   `battle.ts`, `tournament-match.ts`, `rpg-battle.ts`; check in a Playwright
-   adventure e2e spec.
+### ✅ v2.3 — Tier-3 world + living towns (shipped)
+- **Wandering NPCs** (pure npc-walk layer; runtime positions drive blocking,
+  interaction, LOS and both renderers).
+- **Route 3 (sandstorm) → Sunreach (sun) → Gym 3** — Leader Vala, Knuckle
+  Badge; badge-gated south road (`WarpDef.requiresBadge`).
+- **Map-registry integrity spec** + **checked-in adventure E2E** (`npm run e2e`).
 
-(Then Tier-3 polish: save slots, quests/fly, a11y, perf.)
+### ▶ Next up (recommended order)
+1. **Tech debt** — extract the shared battle-presentation pipeline used by
+   `battle.ts`, `tournament-match.ts`, `rpg-battle.ts`.
+2. **Tier-3 polish** — save slots, quests/objectives tracker, town map/fly,
+   a11y (focus management, ARIA-live battle text), tile-layer perf caching.
 
 ## Per-increment definition of done
 `npx ng build` clean · `npx vitest run` green (new pure logic covered) · Playwright

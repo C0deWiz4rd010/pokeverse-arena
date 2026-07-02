@@ -12,6 +12,9 @@ import { ROUTE_2 } from './route-2';
 import { CAVE } from './cave';
 import { STONEHOLLOW } from './stonehollow';
 import { GYM2 } from './gym2';
+import { ROUTE_3 } from './route-3';
+import { SUNREACH } from './sunreach';
+import { GYM3 } from './gym3';
 
 export const MAPS: Record<string, MapDef> = {
   [PLAYER_HOME.id]: PLAYER_HOME,
@@ -26,6 +29,9 @@ export const MAPS: Record<string, MapDef> = {
   [CAVE.id]: CAVE,
   [STONEHOLLOW.id]: STONEHOLLOW,
   [GYM2.id]: GYM2,
+  [ROUTE_3.id]: ROUTE_3,
+  [SUNREACH.id]: SUNREACH,
+  [GYM3.id]: GYM3,
 };
 
 export function getMap(id: string): MapDef | undefined {

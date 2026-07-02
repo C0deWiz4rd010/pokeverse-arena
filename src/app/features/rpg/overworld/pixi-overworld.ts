@@ -94,6 +94,8 @@ export class PixiOverworldComponent implements OnDestroy {
   private snow: { s: PSprite; vy: number; ph: number }[] = [];
   private shakeUntil = 0;
   private shakeMag = 0;
+  /** npc id → sprite, so wanderers can glide to their runtime tile. */
+  private readonly npcSprites = new Map<string, PSprite>();
 
   private visX = 0;
   private visY = 0;
@@ -240,9 +242,14 @@ export class PixiOverworldComponent implements OnDestroy {
       if (flags[it.flag]) continue;
       this.entitiesLayer.addChild(this.makeBall(it.x, it.y));
     }
-    // NPCs
+    // NPCs (runtime positions — wanderers glide between tiles)
+    this.npcSprites.clear();
+    const positions = this.svc.npcPos();
     for (const npc of map.npcs) {
-      this.entitiesLayer.addChild(this.makeChar(charIndex(npc.sprite), npc.x, npc.y));
+      const at = positions[npc.id] ?? npc;
+      const s = this.makeChar(charIndex(npc.sprite), at.x, at.y);
+      this.npcSprites.set(npc.id, s);
+      this.entitiesLayer.addChild(s);
     }
     // player
     this.player = this.makeChar(charIndex('boy'), this.visX, this.visY);
@@ -424,7 +431,12 @@ export class PixiOverworldComponent implements OnDestroy {
     const h = this.app.renderer.height / this.app.renderer.resolution;
     if (this.weatherTint) {
       this.weatherTint.clear();
-      const tint = kind === 'rain' ? 0x2a3d66 : kind === 'snow' ? 0x9fc2e0 : kind === 'sandstorm' ? 0xc2a15a : 0x000000;
+      const tint =
+        kind === 'rain' ? 0x2a3d66
+        : kind === 'snow' ? 0x9fc2e0
+        : kind === 'sandstorm' ? 0xc2a15a
+        : kind === 'sun' ? 0xffcf7a
+        : 0x000000;
       if (kind) this.weatherTint.rect(0, 0, w, h).fill(tint);
     }
     if (kind === 'rain') {
@@ -433,6 +445,14 @@ export class PixiOverworldComponent implements OnDestroy {
         g.x = Math.random() * (w + 40); g.y = Math.random() * h;
         this.weatherLayer.addChild(g);
         this.rain.push({ g, vy: 13 + Math.random() * 4, vx: -3 });
+      }
+    } else if (kind === 'sandstorm') {
+      // Dust streaks race sideways; reuse the rain pool with horizontal motion.
+      for (let i = 0; i < 70; i++) {
+        const g = new pixi.Graphics().moveTo(0, 0).lineTo(9, 1.5).stroke({ width: 1.3, color: 0xe8c98a, alpha: 0.45 });
+        g.x = Math.random() * (w + 40) - 20; g.y = Math.random() * h;
+        this.weatherLayer.addChild(g);
+        this.rain.push({ g, vy: (Math.random() - 0.5) * 1.2, vx: 8 + Math.random() * 5 });
       }
     } else if (kind === 'snow') {
       for (let i = 0; i < 64; i++) {
@@ -451,13 +471,20 @@ export class PixiOverworldComponent implements OnDestroy {
     const w = this.app.renderer.width / this.app.renderer.resolution;
     const h = this.app.renderer.height / this.app.renderer.resolution;
     if (this.weatherTint) {
-      const target = this.weather === 'rain' ? 0.22 : this.weather === 'snow' ? 0.14 : this.weather === 'sandstorm' ? 0.2 : 0;
+      const target =
+        this.weather === 'rain' ? 0.22
+        : this.weather === 'snow' ? 0.14
+        : this.weather === 'sandstorm' ? 0.2
+        : this.weather === 'sun' ? 0.1
+        : 0;
       this.weatherTint.alpha += (target - this.weatherTint.alpha) * 0.05;
     }
     for (const r of this.rain) {
       r.g.y += r.vy; r.g.x += r.vx;
       if (r.g.y > h) { r.g.y = -12; r.g.x = Math.random() * (w + 40); }
+      if (r.g.y < -12) { r.g.y = h + 6; r.g.x = Math.random() * (w + 40); }
       if (r.g.x < -20) r.g.x = w + 10;
+      else if (r.g.x > w + 20) r.g.x = -14;
     }
     for (const f of this.snow) {
       f.s.y += f.vy;
@@ -511,7 +538,24 @@ export class PixiOverworldComponent implements OnDestroy {
     this.updateDayNight();
     this.updateAmbient();
     this.updateWeather();
+    this.updateNpcs();
     this.updateCamera();
+  }
+
+  /** Glide NPC sprites toward their runtime tiles (wanderers move; statics sit). */
+  private updateNpcs(): void {
+    const positions = this.svc.npcPos();
+    const ease = REDUCED ? 1 : 0.18;
+    for (const [id, s] of this.npcSprites) {
+      const p = positions[id];
+      if (!p) continue;
+      const tx = (p.x + 0.5) * TILE_PX;
+      const ty = (p.y + 0.5) * TILE_PX;
+      s.x += (tx - s.x) * ease;
+      s.y += (ty - s.y) * ease;
+      if (Math.abs(tx - s.x) < 0.4) s.x = tx;
+      if (Math.abs(ty - s.y) < 0.4) s.y = ty;
+    }
   }
 
   private updateMovement(): void {

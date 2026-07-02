@@ -6,7 +6,8 @@ import { idFromUrl } from '../../core/api/pokeapi-endpoints';
 import { evolutionAt, levelUpEvolutions } from '../../game/rpg/evolution';
 import { SeededRng } from '../../core/utils/rng';
 import { getMap } from '../../game/rpg/maps';
-import { DELTA, ahead, canEnter, isTallGrass, npcAt, signAt, tileAt, warpAt } from '../../game/rpg/movement';
+import { DELTA, ahead, isTallGrass, signAt, tileAt, warpAt } from '../../game/rpg/movement';
+import { canEnterRuntime, initNpcPositions, npcAtRuntime, stepWanderers, type NpcPositions } from '../../game/rpg/npc-walk';
 import { TILE } from '../../game/rpg/tiles';
 import { rollEncounter } from '../../game/rpg/encounters';
 import { FIELD_STEP_INTERVAL, applyFieldPoison } from '../../game/rpg/field';
@@ -111,6 +112,9 @@ export class RpgService {
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   /** Beaten trainer whose rematch offer is on screen (consumed by the script VM). */
   private pendingRematch: import('../../game/rpg/rpg-types').TrainerDef | null = null;
+  /** Runtime NPC positions (wanderers move; everyone else mirrors the map def). */
+  readonly npcPos = signal<NpcPositions>({});
+  private npcMapId: string | null = null;
 
   readonly map = computed<MapDef | null>(() => {
     const g = this.game();
@@ -145,7 +149,8 @@ export class RpgService {
     if (!g.flags['beat-bugcatcher']) return '▶ Catch & train, then beat a Trainer';
     if (!g.badges.includes('Hive Badge')) return '▶ Head south to Route 1 → the Oakhaven Gym';
     if (!g.badges.includes('Boulder Badge')) return '▶ Through Route 2 & the cave → the Stonehollow Gym';
-    return '★ Two badges! Champion of the demo — explore freely!';
+    if (!g.badges.includes('Knuckle Badge')) return '▶ South past the ranger → Route 3 → the Sunreach Gym';
+    return '★ Three badges! Champion of the demo — explore freely!';
   });
 
   /** Build a Pokémon from species/level and add it to the party (or box if full). */
@@ -201,13 +206,21 @@ export class RpgService {
     this.game.set({ ...g, facing: dir });
   }
 
+  /** Ensure runtime NPC positions exist for the current map. */
+  private ensureNpcs(m: MapDef): void {
+    if (this.npcMapId === m.id) return;
+    this.npcMapId = m.id;
+    this.npcPos.set(initNpcPositions(m));
+  }
+
   /** Whether the tile ahead in `dir` can be entered. */
   canStep(dir: Direction): boolean {
     const g = this.game();
     const m = this.map();
     if (!g || !m) return false;
+    this.ensureNpcs(m);
     const t = ahead(g.x, g.y, dir);
-    return canEnter(m, t.x, t.y);
+    return canEnterRuntime(m, this.npcPos(), t.x, t.y);
   }
 
   /**
@@ -219,14 +232,20 @@ export class RpgService {
     const m = this.map();
     if (!g || !m) return { moved: false, warped: false, grass: false };
 
+    this.ensureNpcs(m);
     const t = ahead(g.x, g.y, dir);
-    if (!canEnter(m, t.x, t.y)) {
+    if (!canEnterRuntime(m, this.npcPos(), t.x, t.y)) {
       this.face(dir);
       return { moved: false, warped: false, grass: false };
     }
 
     let next: RpgSave = { ...g, x: t.x, y: t.y, facing: dir };
     const warp = warpAt(m, t.x, t.y);
+    if (warp?.requiresBadge && !g.badges.includes(warp.requiresBadge)) {
+      this.face(dir);
+      this.showToast(`Ranger: “The road ahead is closed until you hold the ${warp.requiresBadge}.”`, 3000);
+      return { moved: false, warped: false, grass: false };
+    }
     if (warp) {
       if (warp.to === '@return') {
         const r = g.doorReturn ?? { map: g.respawn.map, x: g.respawn.x, y: g.respawn.y, facing: 'down' as Direction };
@@ -287,6 +306,9 @@ export class RpgService {
       }
     }
 
+    // Wandering villagers amble after the player moves.
+    this.npcPos.set(stepWanderers(m, this.npcPos(), { x: t.x, y: t.y }, Math.random));
+
     // A trainer may spot the player along its line of sight.
     if (this.phase() === 'overworld' && next.party.length > 0) this.checkTrainerSight(next, m);
 
@@ -295,15 +317,17 @@ export class RpgService {
 
   /** Start a trainer battle if any unbeaten line-of-sight trainer can see the player. */
   private checkTrainerSight(g: RpgSave, m: MapDef): void {
+    const positions = this.npcPos();
     for (const npc of m.npcs) {
       const tr = npc.trainer;
       if (npc.kind !== 'trainer' || !tr || !tr.sight || g.flags[tr.flag]) continue;
-      const d = DELTA[npc.facing];
+      const at = positions[npc.id] ?? npc;
+      const d = DELTA[at.facing];
       for (let step = 1; step <= tr.sight; step++) {
-        const tx = npc.x + d.dx * step;
-        const ty = npc.y + d.dy * step;
+        const tx = at.x + d.dx * step;
+        const ty = at.y + d.dy * step;
         const tile = tileAt(m, tx, ty);
-        if (!tile || !TILE[tile].walkable || npcAt(m, tx, ty)) break;
+        if (!tile || !TILE[tile].walkable || npcAtRuntime(m, positions, tx, ty)) break;
         if (g.x === tx && g.y === ty) {
           this.startTrainer(tr);
           return;
@@ -447,8 +471,9 @@ export class RpgService {
     const g = this.game();
     const m = this.map();
     if (!g || !m) return;
+    this.ensureNpcs(m);
     const t = ahead(g.x, g.y, g.facing);
-    const npc = npcAt(m, t.x, t.y);
+    const npc = npcAtRuntime(m, this.npcPos(), t.x, t.y);
     if (npc) {
       if (npc.kind === 'heal') {
         this.healAtCenter();
