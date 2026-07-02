@@ -30,3 +30,12 @@ The connective layer that unifies progress from every system into one identity.
 a single `ProfileState`. Achievements are pure `(state) => boolean` predicates, so
 they're trivially testable and always in sync with live progress. `SaveService`
 is the seam future migrations route through.
+
+## Full-app aggregation (v2)
+
+The snapshot now also folds in the **Adventure** (gym badges, catches), the
+**World Explorer dex** (registered species + shinies), **Contest ribbons**, the
+tournament **rival head-to-head** and **crystal-ball hits** — 18 achievements
+total (Trail Blazer, Field Researcher, Registrar, Shiny Hunter, Stage Debut,
+Ribbon Royalty, Rival Slayer, Crystal Oracle join the original ten), with the
+rank score counting adventure badges, ribbons and oracle hits.

@@ -88,3 +88,10 @@ A focused pass turning the Arena into a full gym-challenge loop:
 
 The shared match component gained an optional `field` (persistent gym weather/
 terrain) so the atmosphere is real, not cosmetic.
+
+## VS-splash intel
+
+The pre-battle splash shows an estimated **win-chance bar** with a verdict,
+**type-matchup chips** (foes you threaten / members threatened back) and a ★
+**suggested lead** — reusing the pure `game/tournament` odds/scouting modules
+on the already-built teams (zero extra requests).

@@ -120,9 +120,8 @@ Pure `evolution.ts` (+spec), cache-first chain lookup, `evolve` phase + overlay
 
 ### ▶ Next up (recommended order)
 1. ~~Evolutions~~ ✅ · ~~LOS trainers + world expansion~~ ✅ · ~~Battle depth~~ ✅
-   (EXP-Share still open).
-2. **More content** — a 3rd gym/route, wandering NPCs, an HM-lite gate, trainer/
-   gym rematches.
+   · ~~EXP Share + participant XP~~ ✅ · ~~trainer/gym rematches~~ ✅
+2. **More content** — a 3rd gym/route, wandering NPCs, an HM-lite gate.
 3. **Tech debt** — extract the shared battle-presentation pipeline now used by
    `battle.ts`, `tournament-match.ts`, `rpg-battle.ts`; check in a Playwright
    adventure e2e spec.

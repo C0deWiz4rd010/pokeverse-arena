@@ -77,3 +77,10 @@ seen/caught dex, badges, whiteout respawn, and the interior-return door.
   **Held items** — Leftovers, Sitrus/Lum Berry, Muscle Band, Wise Glasses — are
   Mart stock, given/taken in the field menu (🎒 chip; swapped items return to
   the Bag) and ride into every battle on the engine `Battler.item`.
+
+## v2.2 — EXP Share & rematches
+
+- **Participant XP**: only Pokémon that actually fought earn the full yield;
+  the **EXP Share** key item (Mart, owned once) pays the bench half XP.
+- **Trainer rematches**: beaten trainers (incl. gym leaders) offer a dialogue
+  choice to fight again at half reward, without replaying badge/epilogue beats.
