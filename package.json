@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "shots": "node tools/ui-shots.mjs"
+    "shots": "node tools/ui-shots.mjs",
+    "e2e": "node tools/e2e-adventure.mjs"
   },
   "private": true,
   "packageManager": "npm@11.4.2",
