@@ -107,6 +107,9 @@ export class RpgBattleComponent {
   /** Wild battles allow catching/running; trainer battles won't. */
   protected readonly isWild = signal(true);
   protected readonly trainerName = signal<string | null>(null);
+  /** Picking a fainted member to revive (Bag → Revive → Pokémon list). */
+  protected readonly reviveMode = signal(false);
+  private pendingRevive: ItemId | null = null;
 
   private readonly fx = viewChild(BattleFxComponent);
   private pendingType: PokemonType = 'normal';
@@ -206,12 +209,16 @@ export class RpgBattleComponent {
       }
       foeTeam.forEach((f) => this.svc.markSeen(f.id));
 
-      const playerBattlers = await Promise.all(party.map((m) => this.battleSvc.buildBattler(m.species, m.level, { levelMoves: true })));
+      const playerBattlers = await Promise.all(party.map(async (m) => {
+        const b = await this.battleSvc.buildBattler(m.species, m.level, { levelMoves: true });
+        return m.heldItem ? { ...b, item: m.heldItem } : b;
+      }));
       const startHpA = party.map((m) => m.currentHp);
 
       this.tb = new TeamBattle(playerBattlers, foeTeam, `rpg-${Date.now()}`, {
         aiTier: isTrainer ? 'strong' : 'basic',
         startHpA,
+        startStatusA: party.map((m) => m.status),
       });
       // Lead with the first non-fainted party member.
       const lead = firstAlive(party);
@@ -236,7 +243,13 @@ export class RpgBattleComponent {
   protected openFight(): void { this.menu.set('fight'); }
   protected openPokemon(): void { this.menu.set('pokemon'); }
   protected openBag(): void { this.menu.set('bag'); }
-  protected backToMain(): void { if (!this.forcedSwitch()) this.menu.set('main'); }
+  protected backToMain(): void {
+    if (this.reviveMode()) {
+      this.reviveMode.set(false);
+      this.pendingRevive = null;
+    }
+    if (!this.forcedSwitch()) this.menu.set('main');
+  }
 
   /** Use a bag item in battle: a ball attempts a catch, others heal/cure the active. */
   protected async useBagItem(id: ItemId): Promise<void> {
@@ -250,7 +263,13 @@ export class RpgBattleComponent {
     if (!tb) return;
     const me = tb.active(0);
     if (def.revive) {
-      this.svc.showToast('Save Revives for fainted Pokémon.');
+      if (!tb.state.parties[0].some((s) => s.currentHp <= 0)) {
+        this.svc.showToast('No fainted Pokémon to revive.');
+        return;
+      }
+      this.pendingRevive = id;
+      this.reviveMode.set(true);
+      this.menu.set('pokemon');
       return;
     }
     if (def.heal !== undefined) {
@@ -321,6 +340,10 @@ export class RpgBattleComponent {
   protected async chooseSwitch(index: number): Promise<void> {
     const tb = this.tb;
     if (!tb || this.busy() || this.done()) return;
+    if (this.reviveMode()) {
+      await this.reviveTarget(index);
+      return;
+    }
     if (index === tb.state.active[0] || tb.state.parties[0][index].currentHp <= 0) return;
     if (this.forcedSwitch()) {
       this.forcedSwitch.set(false);
@@ -339,6 +362,26 @@ export class RpgBattleComponent {
     if (this.busy() || this.done()) return;
     this.append('Got away safely!');
     void this.finalize(false, true);
+  }
+
+  /** Revive a fainted bench member mid-battle; costs the turn like other items. */
+  private async reviveTarget(index: number): Promise<void> {
+    const tb = this.tb;
+    const def = this.pendingRevive ? ITEMS[this.pendingRevive] : null;
+    const side = tb?.state.parties[0][index];
+    if (!tb || !side || !def?.revive || side.currentHp > 0) return;
+    if (!this.svc.consumeItem(this.pendingRevive!)) return;
+    this.reviveMode.set(false);
+    this.pendingRevive = null;
+    this.menu.set('main');
+    this.busy.set(true);
+    side.currentHp = Math.max(1, Math.floor(side.maxHp * def.revive));
+    side.status = 'none';
+    side.toxicCounter = 0;
+    this.append(`${titleCase(side.battler.name)} was revived!`, 'switch');
+    this.syncAll();
+    await sleep(420);
+    await this.passTurn();
   }
 
   /* ------------------------------------------------------------- engine */
@@ -468,13 +511,15 @@ export class RpgBattleComponent {
     }
 
     const finalHp = tb.hp(0);
+    const finalStatus = tb.state.parties[0].map((s) => s.status);
     const lines: string[] = [];
     const updated: PartyMon[] = [];
 
     for (let i = 0; i < party.length; i++) {
       const mon = { ...party[i] };
       mon.currentHp = Math.max(0, Math.min(mon.maxHp, finalHp[i] ?? mon.currentHp));
-      if (mon.currentHp <= 0) mon.status = 'none';
+      // Status sticks after battle (burn/poison/…); fainting clears it.
+      mon.status = mon.currentHp <= 0 ? 'none' : finalStatus[i] ?? mon.status;
 
       // XP to every participant that's still standing, on a win.
       if (won && mon.currentHp > 0) {
@@ -541,10 +586,11 @@ export class RpgBattleComponent {
     const foe = tb.active(1);
     const party = this.svc.party();
     const finalHp = tb.hp(0);
-    const updated = party.map((m, i) => ({
-      ...m,
-      currentHp: Math.max(0, Math.min(m.maxHp, finalHp[i] ?? m.currentHp)),
-    }));
+    const sides = tb.state.parties[0];
+    const updated = party.map((m, i) => {
+      const hp = Math.max(0, Math.min(m.maxHp, finalHp[i] ?? m.currentHp));
+      return { ...m, currentHp: hp, status: hp <= 0 ? ('none' as const) : sides[i]?.status ?? m.status };
+    });
     this.svc.applyParty(updated);
 
     const mon = makePartyMon(foe.battler.name, foe.battler.id, this.foeLevel(), foe.maxHp);

@@ -92,3 +92,28 @@ export function rename(list: readonly PartyMon[], uid: string, name: string): Pa
   const nickname = name.trim().slice(0, 16);
   return list.map((m) => (m.uid === uid ? { ...m, nickname: nickname || undefined } : m));
 }
+
+/** Equip a held item on party[i]; any previous item is returned for the bag. */
+export function giveHeldItem(
+  party: readonly PartyMon[],
+  i: number,
+  item: NonNullable<PartyMon['heldItem']>,
+): { party: PartyMon[]; replaced?: NonNullable<PartyMon['heldItem']> } {
+  const mon = party[i];
+  if (!mon) return { party: [...party] };
+  const replaced = mon.heldItem;
+  const next = party.map((m, idx) => (idx === i ? { ...m, heldItem: item } : m));
+  return replaced ? { party: next, replaced } : { party: next };
+}
+
+/** Unequip party[i]'s held item; the taken item goes back to the bag. */
+export function takeHeldItem(
+  party: readonly PartyMon[],
+  i: number,
+): { party: PartyMon[]; taken?: NonNullable<PartyMon['heldItem']> } {
+  const mon = party[i];
+  if (!mon?.heldItem) return { party: [...party] };
+  const taken = mon.heldItem;
+  const next = party.map((m, idx) => (idx === i ? { ...m, heldItem: undefined } : m));
+  return { party: next, taken };
+}

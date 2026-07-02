@@ -110,4 +110,28 @@ describe('TeamBattle', () => {
     tb.takeTurn(swap(1), move(0));
     expect(tb.state.field.weather).toBe('sun'); // persists across the switch
   });
+
+  it('carries start statuses onto living members (sleepers get sleep turns)', () => {
+    const teamA = [mk({ name: 'Poisoned' }), mk({ name: 'Sleeper' }), mk({ name: 'Down' })];
+    const teamB = [mk({ name: 'Foe' })];
+    const tb = new TeamBattle(teamA, teamB, 'carry', {
+      startHpA: [200, 200, 0],
+      startStatusA: ['poison', 'sleep', 'burn'],
+    });
+    expect(tb.state.parties[0][0].status).toBe('poison');
+    expect(tb.state.parties[0][1].status).toBe('sleep');
+    expect(tb.state.parties[0][1].sleepTurns).toBeGreaterThan(0);
+    // A fainted member never receives a carried status.
+    expect(tb.state.parties[0][2].status).toBe('none');
+  });
+
+  it('ticks residual damage from a carried-in poison at end of turn', () => {
+    const teamA = [mk({ name: 'Poisoned', moves: [weak] })];
+    const teamB = [mk({ name: 'Foe', moves: [weak], stats: { ...mk({}).stats, attack: 1, speed: 1 } })];
+    const tb = new TeamBattle(teamA, teamB, 'psn', { startStatusA: ['poison'] });
+    const before = tb.active(0).currentHp;
+    tb.takeTurn(move(0), move(0));
+    // Foe's weak hit alone is small — the 1/8 max-HP poison residual dominates.
+    expect(before - tb.active(0).currentHp).toBeGreaterThanOrEqual(Math.floor(250 / 8));
+  });
 });

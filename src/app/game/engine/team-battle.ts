@@ -124,6 +124,9 @@ export class TeamBattle {
       aiTier?: AiTier;
       startHpA?: readonly number[];
       startHpB?: readonly number[];
+      /** Pre-existing status conditions carried into battle (RPG field status). */
+      startStatusA?: readonly StatusCondition[];
+      startStatusB?: readonly StatusCondition[];
       /** A persistent battlefield condition active from the first turn (gym fields). */
       field?: { weather?: Weather; terrain?: Terrain };
     } = {},
@@ -133,6 +136,8 @@ export class TeamBattle {
     this.aiTier = opts.aiTier ?? 'strong';
     const a = teamA.map((m, i) => makeSide(m, opts.startHpA?.[i]));
     const b = teamB.map((m, i) => makeSide(m, opts.startHpB?.[i]));
+    this.applyStartStatus(a, opts.startStatusA);
+    this.applyStartStatus(b, opts.startStatusB);
     const field = freshField();
     if (opts.field?.weather) {
       field.weather = opts.field.weather;
@@ -150,6 +155,17 @@ export class TeamBattle {
       finished: false,
       winner: null,
     };
+  }
+
+  /** Seed carried-in statuses onto living sides (sleepers get fresh sleep turns). */
+  private applyStartStatus(sides: BattleSide[], statuses?: readonly StatusCondition[]): void {
+    if (!statuses) return;
+    sides.forEach((s, i) => {
+      const status = statuses[i];
+      if (!status || status === 'none' || s.currentHp <= 0) return;
+      s.status = status;
+      if (status === 'sleep') s.sleepTurns = rollSleepTurns((a, b) => this.rng.int(a, b));
+    });
   }
 
   active(side: SideIndex): BattleSide {

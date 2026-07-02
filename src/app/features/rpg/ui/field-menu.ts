@@ -5,6 +5,7 @@ import { titleCase } from '../../../core/ui/format';
 import { ITEMS } from '../../../game/rpg/items-catalog';
 import { xpProgress } from '../../../game/rpg/xp';
 import { SPRITE_BASE } from '../../../core/api/pokeapi-endpoints';
+import { itemName } from '../../../game/engine';
 import type { ItemId } from '../../../game/rpg/rpg-types';
 
 type Tab = 'party' | 'bag' | 'dex' | 'box';
@@ -39,6 +40,7 @@ export class FieldMenuComponent {
       status: m.status,
       xpPct: xpProgress(m.xp, m.level).pct,
       fainted: m.currentHp <= 0,
+      held: m.heldItem ? itemName(m.heldItem) : null,
     })),
   );
 

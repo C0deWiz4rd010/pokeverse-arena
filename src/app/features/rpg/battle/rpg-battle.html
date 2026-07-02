@@ -78,8 +78,15 @@
     } @else if (menu() === 'pokemon') {
       <div class="rb-party">
         @if (forcedSwitch()) { <p class="rb-prompt">Your Pokémon fainted — send out another!</p> }
+        @if (reviveMode()) { <p class="rb-prompt">Choose a Pokémon to revive!</p> }
         @for (m of switchList(); track m.index) {
-          <button class="party-row" type="button" [class.active]="m.active" [disabled]="m.active || m.fainted || busy()" (click)="chooseSwitch(m.index)">
+          <button
+            class="party-row"
+            type="button"
+            [class.active]="m.active"
+            [disabled]="busy() || (reviveMode() ? !m.fainted : m.active || m.fainted)"
+            (click)="chooseSwitch(m.index)"
+          >
             <span class="pr-name">{{ m.name }}</span>
             <span class="pr-hp"><span class="bar"><span class="fill" [style.width.%]="(m.hp / m.maxHp) * 100"></span></span>{{ m.hp }}/{{ m.maxHp }}</span>
           </button>

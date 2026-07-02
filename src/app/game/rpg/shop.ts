@@ -14,6 +14,11 @@ export const MART_STOCK: readonly ItemId[] = [
   'paralyze-heal',
   'awakening',
   'revive',
+  'sitrus-berry',
+  'lum-berry',
+  'muscle-band',
+  'wise-glasses',
+  'leftovers',
 ];
 
 export function buyPrice(id: ItemId): number {

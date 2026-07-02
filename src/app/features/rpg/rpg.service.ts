@@ -10,17 +10,19 @@ import { DELTA, ahead, canEnter, isTallGrass, npcAt, signAt, tileAt, warpAt } fr
 import { TILE } from '../../game/rpg/tiles';
 import { rollEncounter } from '../../game/rpg/encounters';
 import { FIELD_STEP_INTERVAL, applyFieldPoison } from '../../game/rpg/field';
-import { ITEMS } from '../../game/rpg/items-catalog';
+import { ITEMS, bagIdForHeld } from '../../game/rpg/items-catalog';
 import { titleCase } from '../../core/ui/format';
 import { defaultSave, isValidSave } from '../../game/rpg/save';
 import {
   PARTY_MAX,
   depositToBox,
+  giveHeldItem,
   healParty,
   makePartyMon,
   partyAlive,
   rename as renameMon,
   setLead,
+  takeHeldItem,
   withdrawFromBox,
 } from '../../game/rpg/party';
 import type { Direction, ItemId, MapDef, PartyMon, RpgSave, ScriptNode } from '../../game/rpg/rpg-types';
@@ -714,6 +716,19 @@ export class RpgService {
     const t = { ...mon };
     const name = titleCase(t.nickname ?? t.species);
     let msg = '';
+    if (def.held) {
+      if (mon.heldItem === def.held) return `${name} is already holding that.`;
+      const r = giveHeldItem(g.party, index, def.held);
+      const bag = { ...g.bag, [id]: (g.bag[id] ?? 0) - 1 };
+      if (bag[id] === 0) delete bag[id];
+      const backId = r.replaced ? bagIdForHeld(r.replaced) : null;
+      if (backId) bag[backId] = (bag[backId] ?? 0) + 1;
+      this.game.set({ ...g, party: r.party, bag });
+      this.persist();
+      return backId
+        ? `${name} now holds the ${def.name} — the ${ITEMS[backId].name} went back in the Bag.`
+        : `${name} is now holding the ${def.name}.`;
+    }
     if (def.revive) {
       if (t.currentHp > 0) return 'It would have no effect.';
       t.currentHp = Math.max(1, Math.floor(t.maxHp * def.revive));
@@ -737,6 +752,20 @@ export class RpgService {
     this.game.set({ ...g, party, bag });
     this.persist();
     return msg;
+  }
+
+  /** Unequip a party member's held item back into the Bag. */
+  takeHeld(index: number): void {
+    const g = this.game();
+    if (!g) return;
+    const r = takeHeldItem(g.party, index);
+    if (!r.taken) return;
+    const backId = bagIdForHeld(r.taken);
+    const bag = backId ? { ...g.bag, [backId]: (g.bag[backId] ?? 0) + 1 } : g.bag;
+    this.game.set({ ...g, party: r.party, bag });
+    this.persist();
+    const mon = g.party[index];
+    this.showToast(`Took the ${backId ? ITEMS[backId].name : 'item'} from ${titleCase(mon.nickname ?? mon.species)}.`);
   }
 
   showToast(text: string, ms = 2600): void {

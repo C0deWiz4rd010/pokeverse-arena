@@ -3,7 +3,7 @@
  * (movement, encounters, xp, save) and the Angular feature. Kept dependency-light
  * so every module stays unit-testable.
  */
-import type { StatusCondition } from '../engine';
+import type { ItemId as HeldItemId, StatusCondition } from '../engine';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -43,7 +43,13 @@ export type ItemId =
   | 'burn-heal'
   | 'ice-heal'
   | 'full-heal'
-  | 'revive';
+  | 'revive'
+  // Held items (ids match the engine's ItemId so they wire straight into battle).
+  | 'leftovers'
+  | 'sitrus-berry'
+  | 'lum-berry'
+  | 'muscle-band'
+  | 'wise-glasses';
 
 /** A persisted party/box Pokémon (rebuilt into an engine Battler for battle). */
 export interface PartyMon {
@@ -56,6 +62,8 @@ export interface PartyMon {
   currentHp: number;
   maxHp: number; // cached for the overworld; recomputed on build
   status: StatusCondition;
+  /** Engine held item carried into every battle (given/taken via the Bag). */
+  heldItem?: HeldItemId;
 }
 
 /* ----------------------------------------------------------------- scripting */

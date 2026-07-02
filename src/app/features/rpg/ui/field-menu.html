@@ -22,6 +22,7 @@
               <strong>{{ m.name }}</strong>
               <span class="lv">Lv{{ m.level }}</span>
               @if (m.status !== 'none') { <pv-status-badge [status]="m.status" /> }
+              @if (m.held) { <span class="held" [title]="'Holding: ' + m.held">🎒 {{ m.held }}</span> }
             </div>
             <div class="hpbar"><span class="fill" [class.mid]="m.hpPct <= 55 && m.hpPct > 25" [class.low]="m.hpPct <= 25" [style.width.%]="m.hpPct"></span></div>
             <div class="mon-foot"><span>HP {{ m.hp }}/{{ m.maxHp }}</span><span class="xp">XP <i [style.width.%]="m.xpPct"></i></span></div>
@@ -38,6 +39,7 @@
                 <button type="button" [disabled]="m.i === 0" (click)="svc.setLead(m.i)">Lead</button>
                 <button type="button" [disabled]="partyView().length < 2" (click)="svc.deposit(m.i)">→ Box</button>
                 <button type="button" (click)="startRename(m.uid, m.name)">Rename</button>
+                @if (m.held) { <button type="button" (click)="svc.takeHeld(m.i)">Take item</button> }
               </div>
             }
           }
