@@ -16,18 +16,16 @@ import {
   TeamBattle,
   abilityName,
   type Battler,
-  type BattleEvent,
   type BattleMove,
   type SideIndex,
-  type StatusCondition,
   type TeamAction,
 } from '../../../game/engine';
 import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
 import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { BattleFxComponent } from '../../battle/pixi/battle-fx';
+import { BattlePresenterBase, sleep, type PresenterTimes } from '../../battle/battle-presenter';
 import { animatedSprite } from '../../../core/api/pokeapi-endpoints';
-import type { PokemonType } from '../../../core/utils/type-chart';
 import { titleCase } from '../../../core/ui/format';
 import { SeededRng } from '../../../core/utils/rng';
 import { applyXp, shareXp, xpYield } from '../../../game/rpg/xp';
@@ -36,14 +34,10 @@ import { attemptCatch, type RpgBallId } from '../../../game/rpg/catch';
 import { ITEMS, isBall } from '../../../game/rpg/items-catalog';
 import type { ItemId, PartyMon } from '../../../game/rpg/rpg-types';
 
-type LogTone = 'crit' | 'super' | 'resist' | 'faint' | 'win' | 'switch';
-interface LogLine { readonly text: string; readonly tone?: LogTone; }
 interface MoveSlot { readonly move: BattleMove; readonly pp: number; readonly maxPp: number | null; }
 interface BagSlot { readonly id: ItemId; readonly name: string; readonly count: number; readonly ball: boolean; }
-interface FloatNum { readonly id: number; readonly side: SideIndex; readonly text: string; readonly cls: string; }
 type Menu = 'main' | 'fight' | 'pokemon' | 'bag' | 'done';
 
-const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -59,7 +53,7 @@ const REDUCED =
   templateUrl: './rpg-battle.html',
   styleUrl: './rpg-battle.scss',
 })
-export class RpgBattleComponent {
+export class RpgBattleComponent extends BattlePresenterBase {
   protected readonly svc = inject(RpgService);
   private readonly battleSvc = inject(BattleService);
   private readonly api = inject(PokeApiClient);
@@ -69,29 +63,17 @@ export class RpgBattleComponent {
 
   protected readonly loading = signal(true);
   protected readonly menu = signal<Menu>('main');
-  protected readonly busy = signal(false);
   protected readonly done = signal(false);
   protected readonly forcedSwitch = signal(false);
 
-  protected readonly playerActive = signal<Battler | null>(null);
-  protected readonly foeActive = signal<Battler | null>(null);
-  protected readonly pHp = signal(0);
-  protected readonly pMax = signal(1);
-  protected readonly fHp = signal(0);
-  protected readonly fMax = signal(1);
-  protected readonly pStatus = signal<StatusCondition>('none');
-  protected readonly fStatus = signal<StatusCondition>('none');
   protected readonly foeLevel = signal(1);
-  protected readonly log = signal<LogLine[]>([]);
-  protected readonly shakeSide = signal<SideIndex | null>(null);
-  protected readonly flashSide = signal<SideIndex | null>(null);
-  protected readonly enterMine = signal(false);
-  protected readonly enterFoe = signal(false);
-  protected readonly faintSide = signal<SideIndex | null>(null);
-  protected readonly floats = signal<FloatNum[]>([]);
-  private floatId = 0;
   protected readonly resultLines = signal<string[]>([]);
   protected readonly playerWon = signal(false);
+
+  /** Classic RPG pacing — a touch snappier than the arena match. */
+  protected override readonly times: PresenterTimes = {
+    switch: 420, move: 460, miss: 360, damage: 440, heal: 300, note: 280, stage: 280, faint: 640, end: 0,
+  };
 
   private readonly version = signal(0);
   private tb: TeamBattle | null = null;
@@ -113,13 +95,10 @@ export class RpgBattleComponent {
   /** Party indices that actually saw the field (earn full XP; bench needs EXP Share). */
   private readonly participants = new Set<number>();
 
-  private readonly fx = viewChild(BattleFxComponent);
-  private pendingType: PokemonType = 'normal';
+  protected readonly fx = viewChild(BattleFxComponent);
   protected readonly foeAnim = computed(() => { const f = this.foeActive(); return f ? animatedSprite(f.id) : ''; });
   protected readonly playerAnim = computed(() => { const m = this.playerActive(); return m ? animatedSprite(m.id) : ''; });
 
-  protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
-  protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
   protected readonly playerAbility = computed(() => abilityName(this.playerActive()?.ability));
 
   protected readonly moveSlots = computed<MoveSlot[]>(() => {
@@ -154,12 +133,47 @@ export class RpgBattleComponent {
   });
 
   constructor() {
+    super();
     effect(() => {
       const setup = this.svc.battleSetup();
       if (this.started || !setup) return;
       this.started = true;
       void this.begin();
     });
+  }
+
+  /* --------------------------------------------------- presenter hooks */
+
+  /** Track participants for XP and play the incomer's cry. */
+  protected override onSwitched(side: SideIndex): void {
+    if (side === 0) this.participants.add(this.tb!.state.active[0]);
+    this.cry.play(this.tb!.active(side).battler.id, 0.3);
+  }
+
+  protected override onFainted(side: SideIndex): void {
+    this.cry.play(this.tb!.active(side).battler.id, 0.25);
+  }
+
+  /** A brief hit-stop right on impact keeps hits feeling weighty. */
+  protected override async onImpact(): Promise<void> {
+    if (!REDUCED) await sleep(70);
+  }
+
+  protected syncSide(side: SideIndex): void {
+    const s = this.tb?.active(side);
+    if (!s) return;
+    if (side === 0) {
+      this.playerActive.set(s.battler);
+      this.pMax.set(s.maxHp);
+      this.pHp.set(s.currentHp);
+      this.pStatus.set(s.status);
+    } else {
+      this.foeActive.set(s.battler);
+      this.fMax.set(s.maxHp);
+      this.fHp.set(s.currentHp);
+      this.fStatus.set(s.status);
+    }
+    this.version.update((v) => v + 1);
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -426,80 +440,6 @@ export class RpgBattleComponent {
     this.busy.set(false);
   }
 
-  private async playEvents(events: BattleEvent[]): Promise<void> {
-    for (const ev of events) {
-      switch (ev.kind) {
-        case 'switch':
-          if (ev.side === 0) this.participants.add(this.tb!.state.active[0]);
-          this.syncSide(ev.side);
-          this.pulseEnter(ev.side);
-          this.cry.play(this.tb!.active(ev.side).battler.id, 0.3);
-          this.append(ev.text, 'switch');
-          await sleep(420);
-          break;
-        case 'move':
-          this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
-          this.pendingType = this.moveType(ev.side, ev.move);
-          this.fx()?.cast(ev.side, this.pendingType);
-          await sleep(460);
-          break;
-        case 'miss':
-          this.append(`${titleCase(ev.attacker)}'s attack missed!`);
-          await sleep(360);
-          break;
-        case 'damage': {
-          this.fx()?.impact(ev.side, this.pendingType, ev.crit);
-          this.flashSide.set(ev.side);
-          this.shakeSide.set(ev.side);
-          if (!REDUCED) await sleep(70); // hit-stop
-          const before = ev.side === 0 ? this.pHp() : this.fHp();
-          const dealt = Math.max(0, before - ev.remainingHp);
-          if (dealt > 0) this.spawnFloat(ev.side, `-${dealt}`, this.dmgClass(ev.crit, ev.effectiveness));
-          if (ev.side === 0) this.pHp.set(ev.remainingHp);
-          else this.fHp.set(ev.remainingHp);
-          if (ev.crit) this.append('A critical hit!', 'crit');
-          if (ev.effectiveness >= 2) this.append("It's super effective!", 'super');
-          else if (ev.effectiveness > 0 && ev.effectiveness < 1) this.append("It's not very effective…", 'resist');
-          await sleep(440);
-          this.shakeSide.set(null);
-          this.flashSide.set(null);
-          break;
-        }
-        case 'heal': {
-          const before = ev.side === 0 ? this.pHp() : this.fHp();
-          const gained = Math.max(0, ev.remainingHp - before);
-          if (gained > 0) this.spawnFloat(ev.side, `+${gained}`, 'heal');
-          if (ev.side === 0) this.pHp.set(ev.remainingHp);
-          else this.fHp.set(ev.remainingHp);
-          if (ev.text) this.append(ev.text);
-          await sleep(300);
-          break;
-        }
-        case 'faint':
-          this.append(`${titleCase(ev.name)} fainted!`, 'faint');
-          this.cry.play(this.tb!.active(ev.side).battler.id, 0.25);
-          this.faintSide.set(ev.side);
-          await sleep(640);
-          this.faintSide.set(null);
-          break;
-        case 'status-set':
-        case 'cure':
-        case 'weather':
-        case 'terrain':
-        case 'ability':
-        case 'item':
-        case 'stage-change':
-        case 'status':
-        case 'flinch':
-          if (ev.text) this.append(ev.text);
-          await sleep(280);
-          break;
-        default:
-          break;
-      }
-    }
-  }
-
   /* ------------------------------------------------------------- finish */
 
   private async finalize(won: boolean, ran: boolean): Promise<void> {
@@ -630,55 +570,5 @@ export class RpgBattleComponent {
     this.pStatus.set(me.status);
     this.fStatus.set(foe.status);
     this.version.update((v) => v + 1);
-  }
-
-  private syncSide(side: SideIndex): void {
-    const s = this.tb?.active(side);
-    if (!s) return;
-    if (side === 0) {
-      this.playerActive.set(s.battler);
-      this.pMax.set(s.maxHp);
-      this.pHp.set(s.currentHp);
-      this.pStatus.set(s.status);
-    } else {
-      this.foeActive.set(s.battler);
-      this.fMax.set(s.maxHp);
-      this.fHp.set(s.currentHp);
-      this.fStatus.set(s.status);
-    }
-    this.version.update((v) => v + 1);
-  }
-
-  private append(text: string, tone?: LogTone): void {
-    this.log.update((l) => [...l, { text, tone }]);
-  }
-
-  private moveType(side: SideIndex, name: string): PokemonType {
-    const b = side === 0 ? this.playerActive() : this.foeActive();
-    return b?.moves.find((m) => m.name === name)?.type ?? 'normal';
-  }
-
-  /* --------------------------------------------------------------- fx */
-
-  private pulseEnter(side: SideIndex): void {
-    const sig = side === 0 ? this.enterMine : this.enterFoe;
-    sig.set(false);
-    queueMicrotask(() => {
-      sig.set(true);
-      setTimeout(() => sig.set(false), 520);
-    });
-  }
-
-  private spawnFloat(side: SideIndex, text: string, cls: string): void {
-    const id = ++this.floatId;
-    this.floats.update((f) => [...f, { id, side, text, cls }]);
-    setTimeout(() => this.floats.update((f) => f.filter((x) => x.id !== id)), 1100);
-  }
-
-  private dmgClass(crit: boolean, effectiveness: number): string {
-    if (crit) return 'crit';
-    if (effectiveness >= 2) return 'super';
-    if (effectiveness > 0 && effectiveness < 1) return 'resist';
-    return 'normal';
   }
 }

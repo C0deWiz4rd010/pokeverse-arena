@@ -16,12 +16,10 @@ import {
   freshStages,
   BOOSTABLE_STATS,
   type Battler,
-  type BattleEvent,
   type BattleMove,
   type BoostableStat,
   type SideIndex,
   type Stages,
-  type StatusCondition,
   type TeamAction,
   type Terrain,
   type Weather as EngineWeather,
@@ -32,10 +30,10 @@ import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge
 import { FieldBannerComponent } from '../../../core/ui/field-banner/field-banner';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { BattleFxComponent } from '../../battle/pixi/battle-fx';
+import { BattlePresenterBase, sleep } from '../../battle/battle-presenter';
 import { pickWeather, weatherForType, type Weather } from '../../../core/ui/weather-overlay/weather';
 import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';
-import type { PokemonType } from '../../../core/utils/type-chart';
 import type { PlayerMatchSetup } from '../tournaments.service';
 
 interface StageChip {
@@ -56,17 +54,6 @@ interface MoveSlot {
   readonly pp: number;
   readonly maxPp: number | null;
 }
-interface FloatNum {
-  readonly id: number;
-  readonly side: SideIndex;
-  readonly text: string;
-  readonly cls: string;
-}
-type LogTone = 'crit' | 'super' | 'resist' | 'faint' | 'win' | 'switch';
-interface LogLine {
-  readonly text: string;
-  readonly tone?: LogTone;
-}
 
 export interface MatchOutcome {
   readonly playerWon: boolean;
@@ -83,15 +70,6 @@ const OVERLAY_WEATHER: Record<EngineWeather, Weather> = {
 function stageChips(stages: Stages): StageChip[] {
   return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({ label: STAGE_SHORT[s], value: stages[s] }));
 }
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-function effectivenessNote(mult: number): string | null {
-  if (mult === 0) return "It doesn't affect the foe…";
-  if (mult >= 2) return "It's super effective!";
-  if (mult > 0 && mult < 1) return "It's not very effective…";
-  return null;
-}
 
 /**
  * Interactive 3-v-3 match on the party-aware {@link TeamBattle} engine: the
@@ -106,23 +84,13 @@ function effectivenessNote(mult: number): string | null {
   templateUrl: './tournament-match.html',
   styleUrl: './tournament-match.scss',
 })
-export class TournamentMatchComponent {
+export class TournamentMatchComponent extends BattlePresenterBase {
   readonly setup = input.required<PlayerMatchSetup>();
   readonly finished = output<MatchOutcome>();
 
   protected readonly titleCase = titleCase;
   protected readonly abilityName = abilityName;
 
-  /** Active fighters + their live HP (animated). */
-  protected readonly playerActive = signal<Battler | null>(null);
-  protected readonly foeActive = signal<Battler | null>(null);
-  protected readonly pHp = signal(0);
-  protected readonly pMax = signal(1);
-  protected readonly fHp = signal(0);
-  protected readonly fMax = signal(1);
-
-  protected readonly log = signal<LogLine[]>([]);
-  protected readonly busy = signal(false);
   protected readonly done = signal(false);
   protected readonly playerWon = signal(false);
   /** True while the player must pick a replacement after a faint. */
@@ -130,19 +98,6 @@ export class TournamentMatchComponent {
   /** Whether the switch tray is open (manual switch chooser). */
   protected readonly switchOpen = signal(false);
 
-  protected readonly shakeSide = signal<SideIndex | null>(null);
-  protected readonly flashSide = signal<SideIndex | null>(null);
-  protected readonly critSide = signal<SideIndex | null>(null);
-  /** Sprite currently sliding in (send-out), per side; and the one dropping (faint). */
-  protected readonly enterMine = signal(false);
-  protected readonly enterFoe = signal(false);
-  protected readonly faintSide = signal<SideIndex | null>(null);
-  /** Floating damage / heal numbers over a fighter. */
-  protected readonly floats = signal<FloatNum[]>([]);
-  private floatId = 0;
-
-  protected readonly pStatus = signal<StatusCondition>('none');
-  protected readonly fStatus = signal<StatusCondition>('none');
   protected readonly pStages = signal<Stages>(freshStages());
   protected readonly fStages = signal<Stages>(freshStages());
   protected readonly engWeather = signal<EngineWeather>('none');
@@ -160,8 +115,6 @@ export class TournamentMatchComponent {
   protected readonly fStageChips = computed(() => stageChips(this.fStages()));
   protected readonly playerAbility = computed(() => abilityName(this.playerActive()?.ability));
   protected readonly foeAbility = computed(() => abilityName(this.foeActive()?.ability));
-  protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
-  protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
 
   /** The active Pokémon's moves with remaining PP. */
   protected readonly moveSlots = computed<MoveSlot[]>(() => {
@@ -210,11 +163,11 @@ export class TournamentMatchComponent {
 
   private tb: TeamBattle | null = null;
   private started = false;
-  private readonly fx = viewChild(BattleFxComponent);
+  protected readonly fx = viewChild(BattleFxComponent);
   private readonly logEl = viewChild<ElementRef<HTMLElement>>('logEl');
-  private pendingMove: { side: SideIndex; type: PokemonType } | null = null;
 
   constructor() {
+    super();
     effect(() => {
       const s = this.setup();
       if (this.started || !s) return;
@@ -401,88 +354,13 @@ export class TournamentMatchComponent {
     setTimeout(() => this.foeQuip.set(null), 3200);
   }
 
-  private async playEvents(events: BattleEvent[]): Promise<void> {
-    for (const ev of events) {
-      switch (ev.kind) {
-        case 'switch':
-          this.syncSide(ev.side);
-          this.pulseEnter(ev.side);
-          this.append(ev.text, 'switch');
-          if (ev.side === 1) this.maybeAceQuip();
-          await sleep(480);
-          break;
-        case 'move':
-          this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
-          this.pendingMove = { side: ev.side, type: this.moveType(ev.side, ev.move) };
-          this.fx()?.cast(ev.side, this.pendingMove.type);
-          await sleep(520);
-          break;
-        case 'miss':
-          this.append(`${titleCase(ev.attacker)}'s attack missed!`);
-          this.pendingMove = null;
-          await sleep(440);
-          break;
-        case 'damage': {
-          this.flashSide.set(ev.side);
-          this.shakeSide.set(ev.side);
-          if (this.pendingMove) this.fx()?.impact(ev.side, this.pendingMove.type, ev.crit);
-          const before = ev.side === 0 ? this.pHp() : this.fHp();
-          const dealt = Math.max(0, before - ev.remainingHp);
-          if (dealt > 0) this.spawnFloat(ev.side, `-${dealt}`, this.dmgClass(ev.crit, ev.effectiveness));
-          if (ev.side === 0) this.pHp.set(ev.remainingHp);
-          else this.fHp.set(ev.remainingHp);
-          if (ev.crit) {
-            this.critSide.set(ev.side);
-            this.append('A critical hit!', 'crit');
-          }
-          const note = effectivenessNote(ev.effectiveness);
-          if (note) this.append(note, ev.effectiveness >= 2 ? 'super' : 'resist');
-          await sleep(500);
-          this.shakeSide.set(null);
-          this.flashSide.set(null);
-          this.critSide.set(null);
-          break;
-        }
-        case 'heal': {
-          const before = ev.side === 0 ? this.pHp() : this.fHp();
-          const gained = Math.max(0, ev.remainingHp - before);
-          if (gained > 0) this.spawnFloat(ev.side, `+${gained}`, 'heal');
-          if (ev.side === 0) this.pHp.set(ev.remainingHp);
-          else this.fHp.set(ev.remainingHp);
-          if (ev.text) this.append(ev.text);
-          await sleep(330);
-          break;
-        }
-        case 'status-set':
-        case 'cure':
-        case 'weather':
-        case 'terrain':
-        case 'hazard':
-        case 'ability':
-        case 'item':
-        case 'flinch':
-        case 'status':
-          if (ev.text) this.append(ev.text);
-          await sleep(300);
-          break;
-        case 'stage-change':
-          if (ev.text) this.append(ev.text);
-          await sleep(260);
-          break;
-        case 'faint':
-          this.append(`${titleCase(ev.name)} fainted!`, 'faint');
-          this.faintSide.set(ev.side);
-          await sleep(700);
-          this.faintSide.set(null);
-          break;
-        default:
-          break;
-      }
-    }
+  /** The ace gets its quip the moment it walks on stage. */
+  protected override onSwitched(side: SideIndex): void {
+    if (side === 1) this.maybeAceQuip();
   }
 
   /** Update one side's active sprite + HP mid-animation (after a switch). */
-  private syncSide(side: SideIndex): void {
+  protected syncSide(side: SideIndex): void {
     const s = this.tb?.active(side);
     if (!s) return;
     if (side === 0) {
@@ -513,37 +391,4 @@ export class TournamentMatchComponent {
     }));
   }
 
-  private append(text: string, tone?: LogTone): void {
-    this.log.update((l) => [...l, { text, tone }]);
-  }
-
-  /** Retrigger a side's send-out slide-in animation. */
-  private pulseEnter(side: SideIndex): void {
-    const sig = side === 0 ? this.enterMine : this.enterFoe;
-    sig.set(false);
-    // Next microtask so the class is removed→added and the animation replays.
-    queueMicrotask(() => {
-      sig.set(true);
-      setTimeout(() => sig.set(false), 520);
-    });
-  }
-
-  /** Spawn a floating damage/heal number that drifts up and fades. */
-  private spawnFloat(side: SideIndex, text: string, cls: string): void {
-    const id = ++this.floatId;
-    this.floats.update((f) => [...f, { id, side, text, cls }]);
-    setTimeout(() => this.floats.update((f) => f.filter((x) => x.id !== id)), 1100);
-  }
-
-  private dmgClass(crit: boolean, effectiveness: number): string {
-    if (crit) return 'crit';
-    if (effectiveness >= 2) return 'super';
-    if (effectiveness > 0 && effectiveness < 1) return 'resist';
-    return 'normal';
-  }
-
-  private moveType(side: SideIndex, name: string): PokemonType {
-    const battler = side === 0 ? this.playerActive() : this.foeActive();
-    return battler?.moves.find((m) => m.name === name)?.type ?? 'normal';
-  }
 }
