@@ -25,6 +25,11 @@ import {
   pushHistory,
   loadHistory,
   formatById,
+  loadRival,
+  saveRival,
+  recordRivalMeeting,
+  rivalLevelBoost,
+  type RivalState,
   type Bracket,
   type BracketMatch,
   type BracketFormat,
@@ -153,6 +158,8 @@ export class TournamentService {
   readonly history = signal<TournamentRecord[]>(loadHistory());
   /** The record just logged for the current finished run (placement + prize). */
   readonly lastRun = signal<TournamentRecord | null>(null);
+  /** Your persistent rival (identity + head-to-head record; survives resets). */
+  readonly rival = signal<RivalState>(loadRival());
 
   /** Survival HP carry: trainer id → remaining HP per team member. */
   private readonly carry = new Map<string, number[]>();
@@ -233,7 +240,7 @@ export class TournamentService {
       const field = format === 'round-robin' ? LEAGUE_FIELD : FIELD;
       const dtos = await this.selectDtos(mode, field * mode.teamSize);
       const teams = this.distribute(dtos, field, mode.teamSize, mode.balanced);
-      const trainers = await this.buildTrainers(teams, mode, 0);
+      const trainers = this.injectRival(await this.buildTrainers(teams, mode, 0));
 
       if (format === 'single-elim') {
         this.bracket.set(buildBracket(this.seed(trainers)));
@@ -252,6 +259,49 @@ export class TournamentService {
   private seed(trainers: Trainer[]): Trainer[] {
     const sorted = [...trainers].sort((a, b) => this.teamStrength(b) - this.teamStrength(a));
     return seedTrainers(sorted);
+  }
+
+  /**
+   * The rival takes over the strongest CPU entry every run, keeping that team
+   * (so mode rules still hold) but wearing their persistent identity — and a
+   * level edge that grows with your shared history.
+   */
+  private injectRival(trainers: Trainer[]): Trainer[] {
+    const state = this.rival();
+    let strongest = -1;
+    let best = -Infinity;
+    trainers.forEach((t, i) => {
+      if (t.isPlayer) return;
+      const s = this.teamStrength(t);
+      if (s > best) { best = s; strongest = i; }
+    });
+    if (strongest < 0) return trainers;
+    const boost = rivalLevelBoost(state);
+    const host = trainers[strongest];
+    const team = boost > 0
+      ? host.team.map((b) => ({
+          ...b,
+          level: b.level + boost,
+          stats: this.scaleStats(b.stats, (b.level + boost) / b.level),
+        }))
+      : host.team;
+    const rival: Trainer = {
+      ...host,
+      id: 'rival',
+      name: state.name,
+      title: state.title,
+      avatar: trainerAvatar(state.seed),
+      team,
+      isRival: true,
+    };
+    return trainers.map((t, i) => (i === strongest ? rival : t));
+  }
+
+  /** Persist a head-to-head result against the rival. */
+  private recordRival(playerWon: boolean): void {
+    const next = recordRivalMeeting(this.rival(), playerWon);
+    saveRival(next);
+    this.rival.set(next);
   }
 
   private teamStrength(t: Trainer): number {
@@ -365,9 +415,9 @@ export class TournamentService {
     try {
       const dtos = await this.selectDtos(mode, (FIELD - 1) * mode.teamSize);
       const cpuTeams = this.distribute(dtos, FIELD - 1, mode.teamSize, mode.balanced);
-      const cpu = cpuTeams.map((team, i) =>
+      const cpu = this.injectRival(cpuTeams.map((team, i) =>
         this.makeTrainer(i + 1, false, team.map((d) => this.buildLight(d, mode.baseLevel))),
-      );
+      ));
       const player = this.makeTrainer(0, true, picks);
       this.bracket.set(buildBracket([player, ...cpu]));
       this.status.set('ready');
@@ -394,6 +444,8 @@ export class TournamentService {
     if (!pm) return;
     const playerIsA = !!pm.a?.isPlayer;
     const winnerSide: 0 | 1 = playerWon === playerIsA ? 0 : 1;
+    const foe = (playerIsA ? pm.b : pm.a) as Trainer;
+    if (foe?.isRival) this.recordRival(playerWon);
 
     if (mode.hpCarry && playerWon && playerFinalHp) {
       const player = (playerIsA ? pm.a : pm.b) as Trainer;
@@ -409,6 +461,8 @@ export class TournamentService {
     const lg = this.league;
     if (!lg?.pending) return;
     const { fixture, playerIsA } = lg.pending;
+    const foe = lg.byId.get(playerIsA ? fixture.bId : fixture.aId);
+    if (foe?.isRival) this.recordRival(playerWon);
     const playerSurv = (playerFinalHp ?? []).filter((h) => h > 0).length;
     const aSurv = playerIsA ? playerSurv : playerWon ? 0 : 1;
     const bSurv = playerIsA ? (playerWon ? 0 : 1) : playerSurv;

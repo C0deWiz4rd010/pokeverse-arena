@@ -48,6 +48,12 @@
               <div class="career-stat"><span class="cs-v">{{ c.wins }}</span><span class="cs-k">Titles</span></div>
               <div class="career-stat"><span class="cs-v">#{{ c.best }}</span><span class="cs-k">Best finish</span></div>
               <div class="career-stat gold"><span class="cs-v">{{ c.earnings }} ₽</span><span class="cs-k">Career prize</span></div>
+              @if (rivalry(); as rv) {
+                <div class="career-stat riv" [title]="'Head-to-head vs ' + rv.name">
+                  <span class="cs-v">{{ rv.playerWins }}–{{ rv.rivalWins }}</span>
+                  <span class="cs-k">vs {{ rv.name }}</span>
+                </div>
+              }
             </div>
           }
           <h3 class="section-h">Recent runs</h3>
@@ -122,7 +128,12 @@
           <p class="champ-name">
             {{ championIsPlayer() ? 'You are the Champion!' : champ.name + ' lifts the trophy' }}
           </p>
-          @if (!championIsPlayer()) { <p class="champ-sub">You were knocked out — better luck next run.</p> }
+          @if (!championIsPlayer()) {
+            <p class="champ-sub">
+              @if (champ.isRival) { Your rival takes the crown — this isn't over. }
+              @else { You were knocked out — better luck next run. }
+            </p>
+          }
           @if (svc.lastRun(); as run) {
             <div class="finale-stats">
               <span class="fs-item"><span class="fs-k">Placement</span><span class="fs-v">#{{ run.placement }}</span></span>
@@ -133,15 +144,18 @@
           <button class="btn" type="button" (click)="restart()">New tournament</button>
         </div>
       } @else if (svc.currentMatchSetup(); as setup) {
-        <div class="cta">
+        <div class="cta" [class.rival-up]="foeIsRival()">
           <span class="cta-round">{{ isLeague() ? 'Next match' : roundLabel[setup.round] }}</span>
           <div class="cta-foe">
             <img class="ava" [src]="setup.foe.avatar" [alt]="setup.foe.name" loading="lazy" />
             <div class="cta-foe-meta">
-              <p class="vs">vs {{ setup.foe.name }}</p>
+              <p class="vs">vs {{ setup.foe.name }} @if (foeIsRival()) { <span class="rival-tag">RIVAL</span> }</p>
               <p class="foe-title">{{ setup.foe.title }}</p>
             </div>
           </div>
+          @if (rivalLine(); as line) {
+            <p class="rival-taunt">“{{ line }}”</p>
+          }
           <div class="cta-team">
             @for (mon of setup.foeTeam; track mon.id) {
               <img [src]="mon.sprite" [alt]="mon.name" [title]="titleCase(mon.name)" loading="lazy" />
@@ -244,23 +258,23 @@
 <!-- Reusable bracket-match card -->
 <ng-template #card let-m>
   <div class="bmatch" [class.live]="isLive(m)" [class.player]="hasPlayer(m)" [class.done]="m.played">
-    <div class="slot" [class.win]="m.played && m.winner === 0" [class.out]="m.played && m.winner === 1">
+    <div class="slot" [class.win]="m.played && m.winner === 0" [class.out]="m.played && m.winner === 1" [class.rival]="m.a?.isRival">
       @if (m.a) {
         <img class="ava" [src]="m.a.avatar" [alt]="m.a.name" loading="lazy" />
         @if (m.a.seed) { <span class="seed">{{ m.a.seed }}</span> }
       } @else {
         <span class="ava ph">·</span>
       }
-      <span class="nm">{{ m.a ? (m.a.isPlayer ? 'You' : m.a.name) : 'TBD' }}</span>
+      <span class="nm">{{ m.a ? (m.a.isPlayer ? 'You' : m.a.name) : 'TBD' }}@if (m.a?.isRival) { <span class="riv-flag" title="Your rival">⚡</span> }</span>
     </div>
-    <div class="slot" [class.win]="m.played && m.winner === 1" [class.out]="m.played && m.winner === 0">
+    <div class="slot" [class.win]="m.played && m.winner === 1" [class.out]="m.played && m.winner === 0" [class.rival]="m.b?.isRival">
       @if (m.b) {
         <img class="ava" [src]="m.b.avatar" [alt]="m.b.name" loading="lazy" />
         @if (m.b.seed) { <span class="seed">{{ m.b.seed }}</span> }
       } @else {
         <span class="ava ph">·</span>
       }
-      <span class="nm">{{ m.b ? (m.b.isPlayer ? 'You' : m.b.name) : 'TBD' }}</span>
+      <span class="nm">{{ m.b ? (m.b.isPlayer ? 'You' : m.b.name) : 'TBD' }}@if (m.b?.isRival) { <span class="riv-flag" title="Your rival">⚡</span> }</span>
     </div>
     @if (showCardOdds(m)) {
       <div class="bm-odds" [attr.title]="'Projected: ' + cardOddsA(m) + '% / ' + (100 - cardOddsA(m)) + '%'">

@@ -17,6 +17,8 @@ import {
   teamPower,
   scoutMatchup,
   bestLead,
+  rivalTaunt,
+  rivalMeetings,
   type BracketFormat,
   type BracketMatch,
   type ModeId,
@@ -110,6 +112,20 @@ export class TournamentsComponent {
     const wins = runs.filter((r) => r.playerWon).length;
     const best = Math.min(...runs.map((r) => r.placement));
     return { runs: runs.length, earnings, wins, best };
+  });
+
+  /** True when the upcoming foe is your persistent rival. */
+  protected readonly foeIsRival = computed(() => !!this.svc.currentMatchSetup()?.foe.isRival);
+
+  /** The rival's pre-match taunt (null unless the rival is up next). */
+  protected readonly rivalLine = computed(() =>
+    this.foeIsRival() ? rivalTaunt(this.svc.rival()) : null,
+  );
+
+  /** Head-to-head record vs the rival (null until you have actually met). */
+  protected readonly rivalry = computed(() => {
+    const r = this.svc.rival();
+    return rivalMeetings(r) > 0 ? r : null;
   });
 
   /* --------------------------------------------------------------- actions */

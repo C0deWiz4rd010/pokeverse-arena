@@ -151,6 +151,17 @@
   .vs { margin: 0; font-weight: 700; }
   .foe-title { margin: 0; font-size: 0.78rem; color: var(--text-dim); }
 
+  .rival-tag {
+    display: inline-block; padding: 0.06rem 0.4rem; margin-left: 0.25rem;
+    border-radius: 999px; font-size: 0.62rem; font-weight: 900; letter-spacing: 0.08em;
+    color: #fff; background: linear-gradient(135deg, #ff4d5e, #b3122a);
+    vertical-align: middle;
+  }
+  .rival-taunt {
+    flex: 1 1 100%; margin: 0; font-size: 0.85rem; font-style: italic;
+    color: color-mix(in srgb, #ff8d98 75%, var(--text));
+  }
+
   .cta-team { display: flex; gap: 0.35rem; margin-left: auto; }
   .cta-team img {
     width: 42px; height: 42px; object-fit: contain;
@@ -209,6 +220,11 @@
   .battle { white-space: nowrap; }
 
   @include up(md) { flex-wrap: nowrap; }
+}
+/* Keep wrapping when the taunt line needs its own row. */
+.cta.rival-up {
+  flex-wrap: wrap;
+  border-color: color-mix(in srgb, #ff4d5e 55%, var(--glass-border));
 }
 
 .finale {
@@ -310,6 +326,9 @@
 
     &.win { color: var(--accent-3); font-weight: 700; }
     &.out { color: var(--text-dim); opacity: 0.55; }
+    &.rival .nm { color: #ff8d98; font-weight: 700; }
+    &.rival .ava { border-color: color-mix(in srgb, #ff4d5e 65%, transparent); }
+    .riv-flag { margin-left: 0.15rem; }
 
     .seed {
       position: absolute;
@@ -509,8 +528,13 @@
     border-color: color-mix(in srgb, #ffd23f 45%, transparent);
     background: color-mix(in srgb, #ffd23f 10%, color-mix(in srgb, var(--bg) 68%, #000));
   }
+  &.riv {
+    border-color: color-mix(in srgb, #ff4d5e 45%, transparent);
+    background: color-mix(in srgb, #ff4d5e 8%, color-mix(in srgb, var(--bg) 68%, #000));
+  }
   .cs-v { font-size: 1.05rem; font-weight: 800; color: var(--text); }
   .gold & .cs-v { color: #ffd23f; }
+  &.riv .cs-v { color: #ff8d98; }
   .cs-k { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); }
 }
 @media (max-width: 420px) {

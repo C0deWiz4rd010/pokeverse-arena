@@ -15,6 +15,8 @@ export interface Trainer {
   readonly avatar: string;
   readonly team: Battler[];
   readonly isPlayer?: boolean;
+  /** The persistent rival (one per profile) who enters every run. */
+  readonly isRival?: boolean;
   /** 1-based power seed within a knockout bracket (set by seedTrainers). */
   readonly seed?: number;
 }

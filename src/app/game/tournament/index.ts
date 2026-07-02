@@ -8,3 +8,4 @@ export * from './round-robin';
 export * from './history';
 export * from './odds';
 export * from './scouting';
+export * from './rival';
