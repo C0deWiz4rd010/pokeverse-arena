@@ -13,7 +13,7 @@ export interface TrainerIdentity {
 
 export const DEFAULT_IDENTITY: TrainerIdentity = { name: 'Trainer', title: 'Rising Challenger' };
 
-/** Snapshot aggregated from arena, tournaments and the spire. */
+/** Snapshot aggregated from every system: arena, tournaments, spire, adventure, world, contest. */
 export interface ProfileState {
   readonly badges: number;
   readonly totalBadges: number;
@@ -24,6 +24,21 @@ export interface ProfileState {
   readonly tournamentWins: number;
   readonly tournamentRuns: number;
   readonly coins: number;
+  /** Adventure (RPG) gym badges earned. */
+  readonly adventureBadges: number;
+  /** Pokémon caught in the Adventure. */
+  readonly adventureCaught: number;
+  /** Species registered in the World Explorer dex. */
+  readonly worldCaught: number;
+  /** Shiny catches from World expeditions. */
+  readonly shinyCaught: number;
+  /** Contest ribbons collected (of 5). */
+  readonly contestRibbons: number;
+  /** Head-to-head record against your tournament rival. */
+  readonly rivalWins: number;
+  readonly rivalLosses: number;
+  /** Crystal-ball champion calls that hit. */
+  readonly pickemHits: number;
 }
 
 export interface Achievement {
@@ -45,6 +60,14 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'spire-clear', name: 'Summit Reached', desc: 'Clear the Ascension Spire.', icon: 'mountain-snow', test: (s) => s.spireClears >= 1 },
   { id: 'ascendant', name: 'Ascendant', desc: 'Reach ascension tier 3.', icon: 'star', test: (s) => s.ascension >= 3 },
   { id: 'wealthy', name: 'Well Funded', desc: 'Bank 1000 coins across all modes.', icon: 'gem', test: (s) => s.coins >= 1000 },
+  { id: 'adv-badge', name: 'Trail Blazer', desc: 'Earn a gym badge in the Adventure.', icon: 'map', test: (s) => s.adventureBadges >= 1 },
+  { id: 'adv-catcher', name: 'Field Researcher', desc: 'Catch 10 Pokémon in the Adventure.', icon: 'map-pin', test: (s) => s.adventureCaught >= 10 },
+  { id: 'world-50', name: 'Registrar', desc: 'Register 50 species in the World Dex.', icon: 'book', test: (s) => s.worldCaught >= 50 },
+  { id: 'shiny-one', name: 'Shiny Hunter', desc: 'Catch a shiny on a World expedition.', icon: 'sparkles', test: (s) => s.shinyCaught >= 1 },
+  { id: 'ribbon-one', name: 'Stage Debut', desc: 'Win a contest ribbon.', icon: 'wand-sparkles', test: (s) => s.contestRibbons >= 1 },
+  { id: 'ribbon-all', name: 'Ribbon Royalty', desc: 'Collect all five contest ribbons.', icon: 'heart', test: (s) => s.contestRibbons >= 5 },
+  { id: 'rival-lead', name: 'Rival Slayer', desc: 'Lead your rival head-to-head by 3.', icon: 'zap', test: (s) => s.rivalWins >= s.rivalLosses + 3 },
+  { id: 'oracle', name: 'Crystal Oracle', desc: 'Hit a crystal-ball champion call.', icon: 'dices', test: (s) => s.pickemHits >= 1 },
 ];
 
 export interface AchievementView {
@@ -75,7 +98,15 @@ export const RANK_TIERS: readonly RankTier[] = [
 
 /** Weighted progression score that drives the rank ladder. */
 export function progressScore(state: ProfileState): number {
-  return state.badges + state.tournamentWins * 2 + state.spireClears * 3 + (state.arenaChampion ? 5 : 0);
+  return (
+    state.badges +
+    state.tournamentWins * 2 +
+    state.spireClears * 3 +
+    (state.arenaChampion ? 5 : 0) +
+    state.adventureBadges * 2 +
+    state.contestRibbons +
+    state.pickemHits
+  );
 }
 
 /** A simple rank title derived from total progression, used for flavour. */

@@ -11,7 +11,7 @@ import {
 } from '../../core/models/profile';
 import { LEADER_LADDER } from '../../game/arena/gym-leaders';
 import { loadMeta } from '../../game/spire';
-import { loadHistory } from '../../game/tournament';
+import { loadHistory, loadRival } from '../../game/tournament';
 
 /**
  * Aggregates progression from every system (arena badges/champion/coins, spire
@@ -58,6 +58,14 @@ export class ProfileService {
     const history = loadHistory();
     const tournamentWins = history.filter((h) => h.playerWon).length;
     const tournamentPrizes = history.reduce((sum, h) => sum + (h.prize ?? 0), 0);
+    const pickemHits = history.filter((h) => (h.pickBonus ?? 0) > 0).length;
+
+    // Adventure (RPG), World Explorer, Contest Hall and the tournament rival.
+    const rpg = this.save.read<{ badges?: string[]; caught?: number[] } | null>('rpg:save', null);
+    const worldCaught = this.save.read<number[]>('world:caught', []).length;
+    const shinyCaught = this.save.read<number[]>('world:shiny', []).length;
+    const contestRibbons = this.save.read<string[]>('contest:ribbons', []).length;
+    const rival = loadRival();
 
     return {
       badges,
@@ -69,6 +77,14 @@ export class ProfileService {
       tournamentWins,
       tournamentRuns: history.length,
       coins: arenaCoins + meta.bankedCoins + tournamentPrizes,
+      adventureBadges: rpg?.badges?.length ?? 0,
+      adventureCaught: rpg?.caught?.length ?? 0,
+      worldCaught,
+      shinyCaught,
+      contestRibbons,
+      rivalWins: rival.playerWins,
+      rivalLosses: rival.rivalWins,
+      pickemHits,
     };
   }
 }

@@ -32,6 +32,13 @@ export class ProfileComponent {
       { icon: 'star' as const, label: 'Ascension tier', value: `${s.ascension}` },
       { icon: 'gem' as const, label: 'Coins banked', value: `${s.coins} ₽` },
       { icon: 'clipboard-list' as const, label: 'Tournament runs', value: `${s.tournamentRuns}` },
+      { icon: 'map' as const, label: 'Adventure badges', value: `${s.adventureBadges}` },
+      { icon: 'map-pin' as const, label: 'Adventure catches', value: `${s.adventureCaught}` },
+      { icon: 'book' as const, label: 'World dex', value: `${s.worldCaught}` },
+      { icon: 'sparkles' as const, label: 'Shiny catches', value: `${s.shinyCaught}` },
+      { icon: 'wand-sparkles' as const, label: 'Contest ribbons', value: `${s.contestRibbons} / 5` },
+      { icon: 'zap' as const, label: 'Rivalry (W–L)', value: `${s.rivalWins}–${s.rivalLosses}` },
+      { icon: 'dices' as const, label: 'Crystal-ball hits', value: `${s.pickemHits}` },
     ];
   });
 
@@ -44,6 +51,8 @@ export class ProfileComponent {
       { icon: 'mountain' as const, label: 'Spire depth', text: `floor ${s.bestDepth}`, pct: Math.min(100, Math.round((s.bestDepth / 12) * 100)) },
       { icon: 'star' as const, label: 'Ascension', text: `tier ${s.ascension}`, pct: Math.min(100, Math.round((s.ascension / 5) * 100)) },
       { icon: 'trophy' as const, label: 'Cup win rate', text: s.tournamentRuns ? `${winRate}%` : '—', pct: winRate },
+      { icon: 'book' as const, label: 'World dex', text: `${s.worldCaught}/1025`, pct: Math.min(100, Math.round((s.worldCaught / 1025) * 100)) },
+      { icon: 'wand-sparkles' as const, label: 'Contest ribbons', text: `${s.contestRibbons}/5`, pct: Math.round((s.contestRibbons / 5) * 100) },
     ];
   });
 

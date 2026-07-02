@@ -11,6 +11,14 @@ const base: ProfileState = {
   tournamentWins: 0,
   tournamentRuns: 0,
   coins: 0,
+  adventureBadges: 0,
+  adventureCaught: 0,
+  worldCaught: 0,
+  shinyCaught: 0,
+  contestRibbons: 0,
+  rivalWins: 0,
+  rivalLosses: 0,
+  pickemHits: 0,
 };
 
 describe('profile achievements', () => {
@@ -31,6 +39,27 @@ describe('profile achievements', () => {
     expect(ids).toContain('spire-clear');
     expect(ids).toContain('ascendant');
     expect(ids).toContain('wealthy');
+  });
+
+  it('unlocks adventure, world, contest, rival and oracle achievements', () => {
+    const s = {
+      ...base,
+      adventureBadges: 1,
+      adventureCaught: 12,
+      worldCaught: 60,
+      shinyCaught: 1,
+      contestRibbons: 5,
+      rivalWins: 4,
+      rivalLosses: 1,
+      pickemHits: 1,
+    };
+    const ids = evaluateAchievements(s).filter((a) => a.unlocked).map((a) => a.achievement.id);
+    expect(ids).toEqual(expect.arrayContaining([
+      'adv-badge', 'adv-catcher', 'world-50', 'shiny-one', 'ribbon-one', 'ribbon-all', 'rival-lead', 'oracle',
+    ]));
+    // A 4–2 record is not yet a 3-win lead.
+    const close = evaluateAchievements({ ...base, rivalWins: 4, rivalLosses: 2 });
+    expect(close.find((a) => a.achievement.id === 'rival-lead')!.unlocked).toBe(false);
   });
 });
 
