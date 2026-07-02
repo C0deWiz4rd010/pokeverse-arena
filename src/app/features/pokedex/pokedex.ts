@@ -58,7 +58,7 @@ const VIEWS: { id: DexView; label: string; glyph: string }[] = [
   host: {
     '(document:keydown.escape)': 'closeQuickview()',
     '(document:keydown)': 'onKey($event)',
-    '(window:scroll)': 'closeQuickview()',
+    '(window:scroll)': 'onScroll()',
   },
 })
 export class PokedexComponent {
@@ -68,6 +68,19 @@ export class PokedexComponent {
   private readonly route = inject(ActivatedRoute);
 
   protected readonly types = POKEMON_TYPES;
+
+  /** Show the back-to-top FAB once the list has scrolled a couple of screens. */
+  protected readonly showTop = signal(false);
+
+  protected onScroll(): void {
+    this.closeQuickview();
+    this.showTop.set(window.scrollY > 900);
+  }
+
+  protected scrollTop(): void {
+    const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  }
   protected readonly generations = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   protected readonly sorts = SORTS;
   protected readonly views = VIEWS;

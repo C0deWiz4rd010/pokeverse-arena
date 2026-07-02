@@ -5,13 +5,26 @@
 /* ---------------------------------------------------------------- controls */
 .controls {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0.6rem;
   padding: 0.7rem;
   margin-bottom: 0.8rem;
 }
-@include up(sm) {
-  .controls { flex-direction: row; flex-wrap: wrap; align-items: center; }
+/* Mobile: search owns the first row; gen/sort split the second; the bar sticks
+   to the top of the viewport so filtering never scrolls out of reach. */
+@media (max-width: 767px) {
+  .controls {
+    position: sticky;
+    top: calc(var(--header-h, 64px) + 0.4rem);
+    z-index: 30;
+    background: color-mix(in srgb, var(--bg) 88%, #000);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+  .search { flex-basis: 100%; }
+  .sel.gen, .sel.sort { flex: 1 1 40%; min-width: 0; }
+  .btn.toggle { flex: 1 1 auto; justify-content: center; }
 }
 .search {
   flex: 1;
@@ -80,8 +93,23 @@
 }
 @include up(md) { .types-row { flex-direction: row; align-items: flex-start; justify-content: space-between; } }
 .types { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+/* Mobile: one swipeable row instead of an 18-chip wall eating half the screen. */
+@media (max-width: 767px) {
+  .types {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    margin-inline: -0.2rem;
+    padding-inline: 0.2rem;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  .type-chip { flex: none; scroll-snap-align: start; }
+}
 .type-chip {
-  padding: 0.3rem 0.7rem;
+  padding: 0.42rem 0.8rem;
+  min-height: 2.1rem;
   border-radius: 999px;
   font-size: 0.76rem;
   font-weight: 700;
@@ -133,8 +161,8 @@
 .view-btn {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 1.8rem;
+  width: 2.4rem;
+  height: 2.2rem;
   border: none;
   background: none;
   border-radius: calc(var(--radius-sm) - 2px);
@@ -219,7 +247,7 @@
 .compare-tray {
   position: fixed;
   left: 50%;
-  bottom: 1rem;
+  bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   z-index: 50;
   display: flex;
@@ -268,3 +296,28 @@
 
 @keyframes tray-up { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .compare-tray { animation: none; } }
+
+/* ---------------------------------------------------------------- top FAB */
+.top-fab {
+  position: fixed;
+  right: calc(0.9rem + env(safe-area-inset-right, 0px));
+  bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+  z-index: 49;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--surface, #12132a) 88%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  animation: tray-up-fab 0.2s ease;
+}
+.top-fab:hover { border-color: var(--accent); color: var(--accent); }
+/* Clear the compare tray when it is docked at the bottom. */
+.top-fab.raised { bottom: calc(4.9rem + env(safe-area-inset-bottom, 0px)); }
+@keyframes tray-up-fab { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .top-fab { animation: none; } }

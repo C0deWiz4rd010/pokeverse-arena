@@ -90,8 +90,10 @@ async function stepKey(key) {
   await page.keyboard.up(key);
   await page.waitForTimeout(60);
 }
-for (let i = 0; i < 70 && !inBattle; i++) {
-  const dir = i < path.length ? path[i] : (Math.floor(i / 3) % 2 === 0 ? 'ArrowRight' : 'ArrowLeft');
+// After the fixed path we bounce up/down at column 5 — outside every wandering
+// NPC's range — so each downward step re-enters tall grass and rolls (32%).
+for (let i = 0; i < 80 && !inBattle; i++) {
+  const dir = i < path.length ? path[i] : (i % 2 === 0 ? 'ArrowUp' : 'ArrowDown');
   await stepKey(dir);
   inBattle = (await page.locator('.rb, pv-rpg-battle').count()) > 0;
 }

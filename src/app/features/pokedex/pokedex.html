@@ -172,6 +172,10 @@
   }
 </section>
 
+@if (showTop()) {
+  <button class="top-fab" type="button" [class.raised]="store.compare().size > 0" (click)="scrollTop()" aria-label="Back to top">↑</button>
+}
+
 @if (store.compare().size > 0) {
   <div class="compare-tray">
     <div class="tray-mons">
