@@ -125,11 +125,18 @@ Pure `evolution.ts` (+spec), cache-first chain lookup, `evolve` phase + overlay
   Badge; badge-gated south road (`WarpDef.requiresBadge`).
 - **Map-registry integrity spec** + **checked-in adventure E2E** (`npm run e2e`).
 
-### ▶ Next up (recommended order)
-1. **Tech debt** — extract the shared battle-presentation pipeline used by
-   `battle.ts`, `tournament-match.ts`, `rpg-battle.ts`.
-2. **Tier-3 polish** — save slots, quests/objectives tracker, town map/fly,
-   a11y (focus management, ARIA-live battle text), tile-layer perf caching.
+### ✅ v2.4 — tech debt + Tier-3 polish (shipped)
+- **Shared battle presenter**: `features/battle/battle-presenter.ts` — one
+  event→log/HP/FX pipeline for all three battle UIs (hooks for cries,
+  hit-stop, ace quips; ~350 duplicated lines deleted).
+- **Save slots** (3, slot 1 on the legacy key), **quest log** tab
+  (pure quests.ts + spec), **a11y focus management** (field-menu dialog,
+  FIGHT-cursor return), **canvas tile-layer offscreen cache**.
+
+### ▶ Next up
+- **Content**: town map / fly-lite between visited Centers, berry trees,
+  day/night encounter shifts.
+- **Polish**: save export/import JSON, haptics on touch, RPG dex entry view.
 
 ## Per-increment definition of done
 `npx ng build` clean · `npx vitest run` green (new pure logic covered) · Playwright

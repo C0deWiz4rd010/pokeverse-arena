@@ -107,3 +107,18 @@ seen/caught dex, badges, whiteout respawn, and the interior-return door.
 - **Checked-in E2E** (`npm run e2e`): the adventure happy-path (new game →
   starter → wild battle → run → save) drives a real browser and fails on any
   console error.
+
+## v2.4 — slots, quests, a11y, perf
+
+- **Save slots**: three adventures side by side (slot 1 = legacy key, so old
+  saves keep working); title-screen previews with Continue / New / two-tap
+  Delete.
+- **Quest log**: ten spec-covered milestones (`game/rpg/quests.ts`) as a
+  field-menu tab with progress bar and hints.
+- **A11y**: field menu is a labelled dialog with focus landing on the first
+  tab; battle focus returns to FIGHT each turn; result overlay is a status
+  region; the log was already aria-live.
+- **Perf**: the canvas overworld blits a per-map offscreen tile cache and
+  re-draws only animated water each frame.
+- **Shared presenter**: rpg-battle now runs on the battle-presenter base
+  (cries/hit-stop as hooks) — see `features/battle/battle-presenter.ts`.

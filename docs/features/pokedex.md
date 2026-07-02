@@ -72,3 +72,10 @@ A deep interactivity + motion pass over the Pokédex.
 All animations honour `prefers-reduced-motion`. New files: `pokedex-filter.ts`,
 `pokedex-detail.service.ts`, `pokemon-quickview`, `pokemon-compare`, `whos-that`,
 and `core/audio/cry.service.ts`.
+
+## Mobile-first pass
+
+On phones the search/filter bar sticks below the app header (blurred +
+elevated), the 18 type chips collapse into one swipeable snap row, tap
+targets grow, a back-to-top FAB appears after two screens (reduced-motion
+aware, safe-area insets, lifts above the compare tray).

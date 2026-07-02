@@ -97,3 +97,11 @@ poison/toxic/paralysis/sleep/freeze with residuals + move gates), **stat stages*
 Pokémon get a real ability and move secondaries mapped from the PokéAPI; the UI
 shows status badges, stat-stage chips, the field banner and ability/item chips.
 See [../plan.md](../plan.md) phases 0–3.
+
+## Shared battle presenter
+
+`features/battle/battle-presenter.ts` hosts the event→log/HP/FX pipeline
+(visual-state signals, paced `playEvents` walker, float/log/pulse atoms) used
+by the quick battle, the tournament match and the RPG battle. Components
+override hooks (`onSwitched`, `onFainted`, `onImpact`, `onEnd`, timing table)
+instead of forking the pipeline.
