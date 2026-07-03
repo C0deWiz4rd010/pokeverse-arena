@@ -15,8 +15,11 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
 
 ## ✨ Features
 
+- **⌘K Command Palette** — press `Ctrl+K` anywhere to jump to
+  any page, run quick actions or fuzzy-find a Pokémon by name/number — fully
+  keyboard-driven.
 - **Interactive Pokédex** — search, filter, infinite scroll, shiny toggle, base-stat
-  radar, abilities, moves, evolution tree, compare.
+  radar, abilities, moves, evolution tree, compare — with shimmer skeleton loading.
 - **Type Lab** — interactive type chart, attacker/defender calculator, team
   weakness analyzer.
 - **Team Builder** — build teams of 1–6, pick level/nature/ability/moves/item,

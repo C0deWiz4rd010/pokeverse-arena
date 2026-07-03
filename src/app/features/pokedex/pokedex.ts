@@ -14,7 +14,6 @@ import { PokemonCardComponent, type QuickviewRequest } from './pokemon-card';
 import { PokemonQuickviewComponent } from './pokemon-quickview';
 import { PokemonCompareComponent } from './pokemon-compare';
 import { WhosThatComponent } from './whos-that';
-import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { CryService } from '../../core/audio/cry.service';
@@ -49,7 +48,6 @@ const VIEWS: { id: DexView; label: string; glyph: string }[] = [
     PokemonQuickviewComponent,
     PokemonCompareComponent,
     WhosThatComponent,
-    SpinnerComponent,
     PageHeaderComponent,
     IconComponent,
   ],
@@ -82,6 +80,8 @@ export class PokedexComponent {
     window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
   }
   protected readonly generations = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  /** Placeholder cards shown while the index loads (shimmer skeleton). */
+  protected readonly skeletons = Array.from({ length: 12 });
   protected readonly sorts = SORTS;
   protected readonly views = VIEWS;
   protected readonly titleCase = titleCase;

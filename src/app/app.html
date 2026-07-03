@@ -2,12 +2,18 @@
 
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
-<header class="topbar glass">
+<header class="topbar glass" [class.scrolled]="scrolled()">
   <a class="brand" routerLink="/" (click)="closeMenu()">
     <span class="brand-ball" aria-hidden="true"></span>
     <span class="brand-text gradient-text">PokéVerse</span>
     <span class="brand-sub">Arena</span>
   </a>
+
+  <button class="palette-btn" type="button" (click)="openPalette()" title="Search & commands (Ctrl+K)">
+    <pv-icon name="search" />
+    <span class="pb-label">Search…</span>
+    <kbd class="pb-kbd">Ctrl K</kbd>
+  </button>
 
   <button
     class="burger"
@@ -51,3 +57,7 @@
     aria-label="View source on GitHub"
   >v{{ version }}</a>
 </footer>
+
+@defer (on idle) {
+  <pv-command-palette [open]="paletteOpen()" (closed)="paletteOpen.set(false)" />
+}

@@ -114,7 +114,16 @@
   </div>
 
   @if (store.loading() && store.total() === 0) {
-    <pv-spinner label="Loading the Pokédex…" />
+    <div class="grid gallery" aria-hidden="true">
+      @for (s of skeletons; track $index) {
+        <div class="skel-card" [style.animation-delay]="($index * 60) + 'ms'">
+          <div class="skel-img"></div>
+          <div class="skel-line"></div>
+          <div class="skel-line short"></div>
+        </div>
+      }
+    </div>
+    <p class="sr-only" role="status">Loading the Pokédex…</p>
   } @else if (store.error()) {
     <div class="state glass">
       <p><pv-icon name="triangle-alert" /> {{ store.error() }}</p>

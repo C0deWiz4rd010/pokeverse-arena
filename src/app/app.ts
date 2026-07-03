@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from './core/version';
 import { IconComponent } from './core/ui/icon/icon';
 import type { IconName } from './core/ui/icon/icons.data';
+import { CommandPaletteComponent } from './features/command-palette/command-palette';
 
 interface NavItem {
   path: string;
@@ -13,12 +14,18 @@ interface NavItem {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, CommandPaletteComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  host: {
+    '(document:keydown)': 'onGlobalKey($event)',
+    '(window:scroll)': 'onScroll()',
+  },
 })
 export class App {
   protected readonly menuOpen = signal(false);
+  protected readonly paletteOpen = signal(false);
+  protected readonly scrolled = signal(false);
   protected readonly version = APP_VERSION;
 
   protected readonly nav: NavItem[] = [
@@ -34,6 +41,24 @@ export class App {
     { path: '/adventure', label: 'Adventure', icon: 'scroll-text' },
     { path: '/profile', label: 'Profile', icon: 'crown' },
   ];
+
+  /** ⌘K / Ctrl+K opens the command palette from anywhere. */
+  protected onGlobalKey(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      this.paletteOpen.update((v) => !v);
+      this.menuOpen.set(false);
+    }
+  }
+
+  protected onScroll(): void {
+    this.scrolled.set(window.scrollY > 8);
+  }
+
+  protected openPalette(): void {
+    this.paletteOpen.set(true);
+    this.menuOpen.set(false);
+  }
 
   protected toggleMenu(): void {
     this.menuOpen.update((v) => !v);

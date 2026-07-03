@@ -1,0 +1,67 @@
+@if (open()) {
+  <div class="cmd-backdrop" (click)="close()">
+    <div
+      class="cmd-panel glass"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+      (click)="$event.stopPropagation()"
+    >
+      <label class="cmd-search">
+        <pv-icon name="search" />
+        <input
+          #queryInput
+          type="text"
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="cmd-list"
+          [attr.aria-activedescendant]="flat().length ? 'cmd-opt-' + selected() : null"
+          placeholder="Search pages, actions or Pokémon…"
+          autocomplete="off"
+          spellcheck="false"
+          [value]="query()"
+          (input)="onInput($event)"
+          (keydown)="onKeydown($event)"
+        />
+        <kbd>Esc</kbd>
+      </label>
+
+      <div class="cmd-list" id="cmd-list" role="listbox" aria-label="Results">
+        @for (group of groups(); track group.title) {
+          <p class="cmd-group">{{ group.title }}</p>
+          @for (item of group.items; track item.key) {
+            <button
+              type="button"
+              class="cmd-item"
+              role="option"
+              [id]="'cmd-opt-' + indexOf(item)"
+              [class.active]="indexOf(item) === selected()"
+              [attr.aria-selected]="indexOf(item) === selected()"
+              (pointermove)="hover(item)"
+              (click)="execute(item)"
+            >
+              @if (item.sprite) {
+                <img class="cmd-sprite" [src]="item.sprite" alt="" loading="lazy" width="40" height="40" />
+              } @else if (item.icon) {
+                <span class="cmd-icon" aria-hidden="true"><pv-icon [name]="item.icon" /></span>
+              }
+              <span class="cmd-label">{{ item.label }}</span>
+              @if (item.hint) {
+                <span class="cmd-hint">{{ item.hint }}</span>
+              }
+              <span class="cmd-go" aria-hidden="true">↵</span>
+            </button>
+          }
+        } @empty {
+          <p class="cmd-empty">No matches — try a Pokémon name or “arena”.</p>
+        }
+      </div>
+
+      <footer class="cmd-foot" aria-hidden="true">
+        <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+        <span><kbd>↵</kbd> open</span>
+        <span><kbd>Esc</kbd> close</span>
+      </footer>
+    </div>
+  </div>
+}
