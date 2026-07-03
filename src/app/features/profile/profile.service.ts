@@ -10,6 +10,7 @@ import {
   type TrainerIdentity,
 } from '../../core/models/profile';
 import { LEADER_LADDER } from '../../game/arena/gym-leaders';
+import { EMPTY_DAILY, currentStreak, dailyKey, type DailyRecord } from '../../game/daily/daily';
 import { loadMeta } from '../../game/spire';
 import { loadHistory, loadRival } from '../../game/tournament';
 
@@ -66,6 +67,7 @@ export class ProfileService {
     const shinyCaught = this.save.read<number[]>('world:shiny', []).length;
     const contestRibbons = this.save.read<string[]>('contest:ribbons', []).length;
     const rival = loadRival();
+    const daily = this.save.read<DailyRecord>('daily:record', EMPTY_DAILY);
 
     return {
       badges,
@@ -85,6 +87,8 @@ export class ProfileService {
       rivalWins: rival.playerWins,
       rivalLosses: rival.rivalWins,
       pickemHits,
+      dailyStreak: currentStreak(daily, dailyKey()),
+      dailyBest: daily.best,
     };
   }
 }

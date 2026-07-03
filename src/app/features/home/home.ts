@@ -75,6 +75,7 @@ export class HomeComponent implements OnDestroy {
     const s = this.profile.state();
     return [
       { icon: 'shield', label: 'Badges', value: `${s.badges}/${s.totalBadges}` },
+      { icon: 'flame', label: 'Daily streak', value: `${s.dailyStreak}` },
       { icon: 'trophy', label: 'Cups', value: `${s.tournamentWins}` },
       { icon: 'mountain', label: 'Best depth', value: `${s.bestDepth}` },
       { icon: 'star', label: 'Achievements', value: `${this.profile.unlocked()}` },

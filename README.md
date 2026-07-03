@@ -23,7 +23,8 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
 - **Achievement toasts** — unlocking any milestone pops a celebratory
   notification, no matter which mode earned it.
 - **Daily Challenge** — one seeded battle per day, identical for every trainer;
-  win to build a day streak (first attempt counts, retries are for fun).
+  win to build a day streak (first attempt counts, retries are for fun) and
+  share a Wordle-style emoji recap of your run.
 - **Interactive Pokédex** — search, filter, infinite scroll, shiny toggle, base-stat
   radar, abilities, moves, evolution tree, compare — with shimmer skeleton loading.
 - **Type Lab** — interactive type chart, attacker/defender calculator, team

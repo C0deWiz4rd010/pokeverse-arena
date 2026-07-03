@@ -183,6 +183,9 @@
                 }
               </h2>
               <div class="result-actions">
+                @if (mode() === 'daily') {
+                  <button class="btn btn-primary" type="button" (click)="shareDaily()"><pv-icon name="copy" /> Share result</button>
+                }
                 <button class="btn" type="button" (click)="rematch()"><pv-icon name="rotate-ccw" /> Rematch</button>
                 <button class="btn ghost" type="button" (click)="newBattle()"><pv-icon name="swords" /> New battle</button>
               </div>

@@ -39,6 +39,9 @@ export interface ProfileState {
   readonly rivalLosses: number;
   /** Crystal-ball champion calls that hit. */
   readonly pickemHits: number;
+  /** Daily Challenge: live consecutive-day win streak and all-time best. */
+  readonly dailyStreak: number;
+  readonly dailyBest: number;
 }
 
 export interface Achievement {
@@ -68,6 +71,8 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'ribbon-all', name: 'Ribbon Royalty', desc: 'Collect all five contest ribbons.', icon: 'heart', test: (s) => s.contestRibbons >= 5 },
   { id: 'rival-lead', name: 'Rival Slayer', desc: 'Lead your rival head-to-head by 3.', icon: 'zap', test: (s) => s.rivalWins >= s.rivalLosses + 3 },
   { id: 'oracle', name: 'Crystal Oracle', desc: 'Hit a crystal-ball champion call.', icon: 'dices', test: (s) => s.pickemHits >= 1 },
+  { id: 'daily-3', name: 'On Fire', desc: 'Reach a 3-day Daily Challenge streak.', icon: 'flame', test: (s) => s.dailyBest >= 3 },
+  { id: 'daily-7', name: 'Eternal Flame', desc: 'Reach a 7-day Daily Challenge streak.', icon: 'sun', test: (s) => s.dailyBest >= 7 },
 ];
 
 export interface AchievementView {

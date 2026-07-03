@@ -19,11 +19,20 @@ const base: ProfileState = {
   rivalWins: 0,
   rivalLosses: 0,
   pickemHits: 0,
+  dailyStreak: 0,
+  dailyBest: 0,
 };
 
 describe('profile achievements', () => {
   it('unlocks nothing for a fresh trainer', () => {
     expect(unlockedCount(base)).toBe(0);
+  });
+
+  it('unlocks daily-streak milestones from the best streak', () => {
+    const ids = evaluateAchievements({ ...base, dailyBest: 3 }).filter((a) => a.unlocked).map((a) => a.achievement.id);
+    expect(ids).toContain('daily-3');
+    expect(ids).not.toContain('daily-7');
+    expect(evaluateAchievements({ ...base, dailyBest: 7 }).find((a) => a.achievement.id === 'daily-7')!.unlocked).toBe(true);
   });
 
   it('unlocks badge milestones progressively', () => {

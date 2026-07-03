@@ -4,6 +4,31 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.5.0 — 2026-07-03
+
+### Added
+
+- **Share your daily** — the daily result panel gains a *Share result* button
+  that builds a Wordle-style text: challenge number + date, outcome + turn
+  count + streak, and one emoji per player turn (🟩 super effective, 🟨
+  neutral, 🟥 resisted, 🟪 immune, ⬜ miss, 💥 crit), wrapped at ten per row.
+  Uses the native share sheet when available, otherwise copies to the
+  clipboard with a confirmation toast. Pure helpers (`dailyNumber`,
+  `turnEmoji`, `buildShareText`) are unit-tested.
+- **Daily-streak achievements** — two new milestones, *On Fire* (3-day best
+  streak) and *Eternal Flame* (7-day), evaluated from the persisted daily
+  record; the achievement watcher toasts them like any other unlock. The
+  profile records grid shows *Daily streak (best N)* and the home dashboard
+  gains a 🔥 streak chip.
+
+### Changed
+
+- **Component-style budgets** raised in `angular.json` (warn 8 kB → 20 kB,
+  error 20 kB → 32 kB): five feature stylesheets (tournaments 18.1 kB, arena
+  14.3 kB, contest 12.7 kB, team-builder 11.8 kB, pokemon-detail 11.1 kB) are
+  intentionally rich single-page components; the old threshold produced
+  permanent warning noise on every build.
+
 ## v1.4.0 — 2026-07-03
 
 ### Added

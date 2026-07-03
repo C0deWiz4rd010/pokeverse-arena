@@ -1,4 +1,5 @@
 import { SeededRng } from '../../core/utils/rng';
+import type { BattleEvent } from '../engine';
 
 /**
  * Daily Challenge — pure logic.
@@ -100,4 +101,58 @@ export function recordDailyResult(rec: DailyRecord, key: string, won: boolean): 
     wins: rec.wins + 1,
     plays,
   };
+}
+
+/* --------------------------------------------------------------- sharing */
+
+/** The first ever Daily Challenge day — share texts count up from here. */
+export const DAILY_EPOCH = '2026-07-01';
+
+/** 1-based challenge number for a day key (#1 on the epoch day). */
+export function dailyNumber(key: string): number {
+  const ms = Date.parse(key + 'T00:00:00Z') - Date.parse(DAILY_EPOCH + 'T00:00:00Z');
+  return Math.floor(ms / 86_400_000) + 1;
+}
+
+/**
+ * One emoji per player turn, Wordle-style:
+ * 🟩 super effective · 🟨 neutral · 🟥 resisted · 🟪 immune · ⬜ miss,
+ * with 💥 replacing the square on a critical hit.
+ */
+export function turnEmoji(events: readonly BattleEvent[]): string {
+  let mark = '⬜';
+  let sawMove = false;
+  for (const e of events) {
+    if (e.kind === 'move' && e.side === 0) sawMove = true;
+    if (e.kind === 'miss' && e.side === 0) return '⬜';
+    if (sawMove && e.kind === 'damage' && e.side === 1) {
+      if (e.crit) return '💥';
+      if (e.effectiveness === 0) return '🟪';
+      if (e.effectiveness > 1) return '🟩';
+      if (e.effectiveness < 1) return '🟥';
+      return '🟨';
+    }
+  }
+  return mark;
+}
+
+export interface ShareInput {
+  readonly key: string;
+  readonly won: boolean;
+  readonly turns: number;
+  readonly streak: number;
+  readonly marks: readonly string[];
+}
+
+/** The Wordle-style share text for a finished daily battle. */
+export function buildShareText(input: ShareInput): string {
+  const head = `PokéVerse Daily #${dailyNumber(input.key)} · ${input.key}`;
+  const outcome = input.won
+    ? `🏆 Won in ${input.turns} turn${input.turns === 1 ? '' : 's'}${input.streak > 0 ? ` · 🔥 ${input.streak}-day streak` : ''}`
+    : `💀 Defeated after ${input.turns} turn${input.turns === 1 ? '' : 's'}`;
+  const rows: string[] = [];
+  for (let i = 0; i < input.marks.length; i += 10) {
+    rows.push(input.marks.slice(i, i + 10).join(''));
+  }
+  return [head, outcome, ...rows, 'Same seed for every trainer — PokéVerse Arena'].join('\n');
 }

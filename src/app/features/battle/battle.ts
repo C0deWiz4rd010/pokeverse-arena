@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import { BattleService } from './battle.service';
 import { DailyService } from './daily.service';
+import { buildShareText, turnEmoji } from '../../game/daily/daily';
+import { ToastService } from '../../core/ui/toast/toast.service';
 import {
   Battle,
   abilityName,
@@ -77,6 +79,9 @@ export class BattleComponent extends BattlePresenterBase {
   private readonly svc = inject(BattleService);
   private readonly pokedex = inject(PokedexService);
   protected readonly daily = inject(DailyService);
+  private readonly toasts = inject(ToastService);
+  /** One emoji per player turn of the current daily run (for sharing). */
+  private dailyMarks: string[] = [];
 
   /** `?daily=1` (e.g. from the command palette) jumps straight into the daily. */
   readonly dailyParam = input<string | undefined>(undefined, { alias: 'daily' });
@@ -202,6 +207,7 @@ export class BattleComponent extends BattlePresenterBase {
   }
 
   private beginBattle(player: Battler, opponent: Battler, seed: number | string = Date.now()): void {
+    this.dailyMarks = [];
     this.battle = new Battle(player, opponent, seed, undefined, 'strong');
     this.player.set(player);
     this.opponent.set(opponent);
@@ -248,6 +254,7 @@ export class BattleComponent extends BattlePresenterBase {
     if (!this.battle || this.busy() || this.phase() !== 'fighting') return;
     this.busy.set(true);
     const events = this.battle.takeTurn(index);
+    if (this.mode() === 'daily') this.dailyMarks.push(turnEmoji(events));
     await this.playEvents(events);
     this.syncState();
     this.busy.set(false);
@@ -256,6 +263,31 @@ export class BattleComponent extends BattlePresenterBase {
       this.phase.set('done');
       // First daily attempt of the day feeds the streak; retries are for fun.
       if (this.mode() === 'daily') this.daily.report(this.battle.state.winner === 0);
+    }
+  }
+
+  /** Copy (or natively share) the Wordle-style result of a daily run. */
+  protected async shareDaily(): Promise<void> {
+    const text = buildShareText({
+      key: this.daily.today,
+      won: this.outcomeWon(),
+      turns: this.battle?.state.turn ?? this.dailyMarks.length,
+      streak: this.daily.streak(),
+      marks: this.dailyMarks,
+    });
+    try {
+      if (navigator.share) {
+        await navigator.share({ text });
+        return;
+      }
+      throw new Error('no web share');
+    } catch {
+      try {
+        await navigator.clipboard.writeText(text);
+        this.toasts.show({ title: 'Result copied to clipboard', text: 'Paste it anywhere to challenge a friend.', icon: 'copy', kind: 'info' });
+      } catch {
+        this.toasts.show({ title: 'Could not copy the result', icon: 'triangle-alert', kind: 'info' });
+      }
     }
   }
 

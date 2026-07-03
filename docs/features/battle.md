@@ -25,6 +25,10 @@ Seeded, type-accurate 1-v-1 battles with an animated arena and weather backdrops
   (current/best/wins shown on the setup card, persisted); retries replay the
   identical seeded battle for fun. A counted win pops a streak toast. Deep
   link `/battle?daily=1` (used by the ⌘K palette action) auto-starts it.
+  The result panel offers a **Wordle-style share text** (one emoji per turn:
+  effectiveness, crits, misses) via the native share sheet or clipboard, and
+  streak milestones feed two achievements (*On Fire*, *Eternal Flame*) plus a
+  🔥 chip on the home dashboard.
 
 ## Files
 
