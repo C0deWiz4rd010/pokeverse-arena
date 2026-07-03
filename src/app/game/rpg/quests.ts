@@ -24,6 +24,8 @@ export const QUESTS: readonly Quest[] = [
   { id: 'badge3', title: 'Earn the Knuckle Badge', hint: 'Past the ranger, Route 3 leads to Sunreach.', done: (g) => g.badges.includes('Knuckle Badge') },
   { id: 'party6', title: 'Assemble a full team of six', hint: 'Catch and carry six Pokémon at once.', done: (g) => g.party.length >= 6 },
   { id: 'dex10', title: 'Register 10 caught species', hint: 'The tall grass changes route to route.', done: (g) => g.caught.length >= 10 },
+  { id: 'rod', title: 'Get the Old Rod', hint: 'Fisher Finn idles by the Verdant Town pond.', done: (g) => !!g.flags['got-rod'] },
+  { id: 'hooked', title: 'Hook a wild Pokémon', hint: 'Face the water and press A with the Old Rod.', done: (g) => !!g.flags['hooked'] },
 ];
 
 export interface QuestEntry {

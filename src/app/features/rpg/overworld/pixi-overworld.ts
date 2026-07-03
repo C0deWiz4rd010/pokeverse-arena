@@ -5,6 +5,7 @@ import {
   OnDestroy,
   afterNextRender,
   inject,
+  signal,
   viewChild,
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
@@ -40,6 +41,7 @@ const KEY_DIR: Record<string, Direction> = {
     <div class="ow" #host>
       <div class="ow-mount" #mount></div>
       @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }</div> }
+      @if (banner(); as b) { <div class="ow-banner" aria-hidden="true">{{ b }}</div> }
       @if (svc.toast(); as t) { <div class="ow-toast" role="status">{{ t }}</div> }
       <pv-ow-party-hud />
       <button class="ow-menu" type="button" (click)="svc.openMenu()" aria-label="Menu">☰</button>
@@ -71,9 +73,9 @@ export class PixiOverworldComponent implements OnDestroy {
 
   private frames = new Map<string, PTexture>();
   private sheets: Record<Sheet, PTexture | null> = { town: null, dungeon: null };
-  private waterTiles: { g: import('pixi.js').Graphics; x: number; y: number }[] = [];
+  private waterTiles: { g: import('pixi.js').Graphics; glint?: import('pixi.js').Graphics; x: number; y: number }[] = [];
   private grassTiles: { c: PContainer; blades: import('pixi.js').Graphics[] }[] = [];
-  private player: PSprite | null = null;
+  private player: PContainer | null = null;
   private builtMapId = '';
   private zoom = 3;
 
@@ -94,8 +96,8 @@ export class PixiOverworldComponent implements OnDestroy {
   private snow: { s: PSprite; vy: number; ph: number }[] = [];
   private shakeUntil = 0;
   private shakeMag = 0;
-  /** npc id → sprite, so wanderers can glide to their runtime tile. */
-  private readonly npcSprites = new Map<string, PSprite>();
+  /** npc id → container, so wanderers can glide to their runtime tile. */
+  private readonly npcSprites = new Map<string, PContainer>();
 
   private visX = 0;
   private visY = 0;
@@ -221,6 +223,7 @@ export class PixiOverworldComponent implements OnDestroy {
     const map = this.svc.map();
     if (!map || !this.app) return;
     this.builtMapId = map.id;
+    this.showBanner(map.name);
     this.tilesLayer.removeChildren();
     this.entitiesLayer.removeChildren();
     this.waterTiles = [];
@@ -285,8 +288,11 @@ export class PixiOverworldComponent implements OnDestroy {
     c.x = x * TILE_PX; c.y = y * TILE_PX;
     const base = new pixi.Graphics().rect(0, 0, TILE_PX, TILE_PX).fill(0x2f6fd0);
     const ripple = new pixi.Graphics().rect(0, 5, 8, 1.5).fill(0x6fb0ff).rect(6, 11, 8, 1.5).fill(0x5b95e6);
-    c.addChild(base, ripple);
-    this.waterTiles.push({ g: ripple, x, y });
+    const glint = new pixi.Graphics().rect(0, 0, 2, 2).fill(0xe8f6ff);
+    glint.x = 3 + ((x * 7 + y * 13) % 10); glint.y = 2 + ((x * 5 + y * 3) % 9);
+    glint.alpha = 0;
+    c.addChild(base, ripple, glint);
+    this.waterTiles.push({ g: ripple, glint, x, y });
     return c;
   }
 
@@ -315,12 +321,22 @@ export class PixiOverworldComponent implements OnDestroy {
     return c;
   }
 
-  private makeChar(index: number, x: number, y: number): PSprite {
-    const s = new this.PIXI!.Sprite(this.texFor('dungeon', index));
+  /** A character = soft drop shadow + the atlas sprite, in one container. */
+  private makeChar(index: number, x: number, y: number): PContainer {
+    const pixi = this.PIXI!;
+    const c = new pixi.Container();
+    c.x = (x + 0.5) * TILE_PX;
+    c.y = (y + 0.5) * TILE_PX;
+    const shadow = new pixi.Graphics().ellipse(0, TILE_PX * 0.38, TILE_PX * 0.3, TILE_PX * 0.12).fill({ color: 0x000000, alpha: 0.32 });
+    const s = new pixi.Sprite(this.texFor('dungeon', index));
     s.anchor.set(0.5, 0.5);
-    s.x = (x + 0.5) * TILE_PX;
-    s.y = (y + 0.5) * TILE_PX;
-    return s;
+    c.addChild(shadow, s);
+    return c;
+  }
+
+  /** The atlas sprite inside a character container (for facing flips). */
+  private charSprite(c: PContainer | null): PSprite | null {
+    return (c?.children[1] as PSprite | undefined) ?? null;
   }
 
   /* ------------------------------------------------------------- effects */
@@ -526,12 +542,14 @@ export class PixiOverworldComponent implements OnDestroy {
 
   private tick(): void {
     if (!this.app) return;
-    if (this.svc.map()?.id !== this.builtMapId) {
+    const m = this.svc.map();
+    if (m && m.id !== this.builtMapId) {
       const p = this.svc.player();
       if (p) { this.visX = p.x; this.visY = p.y; this.stepping = false; }
       this.rebuildMap();
     }
     this.frame++;
+    this.pollGamepad();
     this.updateMovement();
     this.animateTiles();
     this.updateParticles();
@@ -577,10 +595,12 @@ export class PixiOverworldComponent implements OnDestroy {
           this.from = { x: before.x, y: before.y };
           this.to = { x: np.x, y: np.y };
           this.t0 = performance.now();
-          this.stepDur = REDUCED ? 0 : this.running ? 95 : this.baseStepMs;
+          this.hopping = !!res.hopped;
+          this.stepDur = REDUCED ? 0 : res.hopped ? 260 : this.running || this.runningPad ? 95 : this.baseStepMs;
           this.stepping = this.stepDur > 0;
           if (!this.stepping) { this.visX = np.x; this.visY = np.y; }
           this.spawnDust(before.x, before.y);
+          if (res.hopped) this.spawnDust(np.x, np.y);
           if (this.svc.map()?.tiles[np.y]?.[np.x] === 'tallgrass') this.spawnLeaves(np.x, np.y);
         }
       }
@@ -588,20 +608,67 @@ export class PixiOverworldComponent implements OnDestroy {
     if (this.player) {
       this.player.x = (this.visX + 0.5) * TILE_PX;
       this.player.y = (this.visY + 0.5) * TILE_PX;
-      // subtle walk bob
-      this.player.y -= this.stepping && !REDUCED ? Math.abs(Math.sin(this.frame / 4)) * 1.5 : 0;
+      // The sprite bobs (or arcs over a ledge); the shadow stays grounded.
+      const s = this.charSprite(this.player);
+      if (s && !REDUCED) {
+        if (this.stepping && this.hopping) {
+          const t = Math.min(1, (performance.now() - this.t0) / Math.max(1, this.stepDur));
+          s.y = -Math.sin(t * Math.PI) * 7;
+        } else {
+          s.y = this.stepping ? -Math.abs(Math.sin(this.frame / 4)) * 1.5 : 0;
+        }
+      }
     }
   }
+  private hopping = false;
 
   private flipFace(dir: Direction): void {
-    if (!this.player) return;
-    if (dir === 'left') this.player.scale.x = -1;
-    else if (dir === 'right') this.player.scale.x = 1;
+    const s = this.charSprite(this.player);
+    if (!s) return;
+    if (dir === 'left') s.scale.x = -1;
+    else if (dir === 'right') s.scale.x = 1;
   }
 
   private nextDir(): Direction | null {
-    for (const d of ['up', 'down', 'left', 'right'] as const) if (this.held.has(d)) return d;
+    for (const d of ['up', 'down', 'left', 'right'] as const) if (this.held.has(d) || this.padDirs.has(d)) return d;
     return null;
+  }
+
+  /* ---------------------------------------------------------- gamepad */
+
+  private readonly padDirs = new Set<Direction>();
+  private runningPad = false;
+  private padPrev = [false, false];
+
+  /** Poll the first connected gamepad: stick/d-pad walk, A interacts, B opens the menu, X runs. */
+  private pollGamepad(): void {
+    const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : null;
+    const gp = pads ? Array.from(pads).find((p) => p?.connected) : null;
+    this.padDirs.clear();
+    if (!gp) { this.runningPad = false; return; }
+    const ax = gp.axes[0] ?? 0;
+    const ay = gp.axes[1] ?? 0;
+    if (ay < -0.5 || gp.buttons[12]?.pressed) this.padDirs.add('up');
+    if (ay > 0.5 || gp.buttons[13]?.pressed) this.padDirs.add('down');
+    if (ax < -0.5 || gp.buttons[14]?.pressed) this.padDirs.add('left');
+    if (ax > 0.5 || gp.buttons[15]?.pressed) this.padDirs.add('right');
+    this.runningPad = gp.buttons[2]?.pressed ?? false;
+    const a = gp.buttons[0]?.pressed ?? false;
+    const b = gp.buttons[1]?.pressed ?? false;
+    if (a && !this.padPrev[0] && this.svc.phase() === 'overworld') this.svc.interact();
+    if (b && !this.padPrev[1] && this.svc.phase() === 'overworld') this.svc.openMenu();
+    this.padPrev = [a, b];
+  }
+
+  /* ------------------------------------------------------ area banner */
+
+  protected readonly banner = signal('');
+  private bannerTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private showBanner(name: string): void {
+    this.banner.set(name);
+    if (this.bannerTimer) clearTimeout(this.bannerTimer);
+    this.bannerTimer = setTimeout(() => this.banner.set(''), 2400);
   }
 
   private animateTiles(): void {
@@ -610,6 +677,11 @@ export class PixiOverworldComponent implements OnDestroy {
     for (const w of this.waterTiles) {
       w.g.x = Math.sin(t / 30 + w.x) * 2;
       w.g.alpha = 0.7 + Math.sin(t / 25 + w.y) * 0.25;
+      if (w.glint) {
+        // brief sparkles that wander tile to tile
+        const ph = Math.sin(t / 90 + w.x * 2.7 + w.y * 1.9);
+        w.glint.alpha = ph > 0.92 ? (ph - 0.92) * 11 : 0;
+      }
     }
     for (const g of this.grassTiles) {
       const sway = Math.sin(t / 18 + g.c.x) * 0.6;

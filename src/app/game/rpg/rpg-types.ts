@@ -50,8 +50,11 @@ export type ItemId =
   | 'lum-berry'
   | 'muscle-band'
   | 'wise-glasses'
+  // Field items.
+  | 'repel'
   // Key items (passive, owned once).
-  | 'exp-share';
+  | 'exp-share'
+  | 'old-rod';
 
 /** A persisted party/box Pokémon (rebuilt into an engine Battler for battle). */
 export interface PartyMon {
@@ -66,6 +69,8 @@ export interface PartyMon {
   status: StatusCondition;
   /** Engine held item carried into every battle (given/taken via the Bag). */
   heldItem?: HeldItemId;
+  /** Rare sparkling variant — kept for life once caught. */
+  shiny?: boolean;
 }
 
 /* ----------------------------------------------------------------- scripting */
@@ -172,6 +177,8 @@ export interface MapDef {
   readonly npcs: readonly NpcDef[];
   readonly items: readonly GroundItemDef[];
   readonly encounter?: EncounterZone;
+  /** Wild rolls when fishing off this map's water tiles (needs the Old Rod). */
+  readonly fishing?: EncounterZone;
   /** Ambient weather rendered by the overworld (particles + tint). */
   readonly weather?: WeatherKind;
 }
@@ -198,4 +205,6 @@ export interface RpgSave {
   respawn: { map: string; x: number; y: number };
   /** Where an interior's exit door (`@return`) drops the player back outside. */
   doorReturn?: { map: string; x: number; y: number; facing: Direction };
+  /** Remaining Repel steps (wild encounters are suppressed while > 0). */
+  repelSteps?: number;
 }

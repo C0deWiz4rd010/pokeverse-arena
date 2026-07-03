@@ -14,6 +14,7 @@ export const MART_STOCK: readonly ItemId[] = [
   'paralyze-heal',
   'awakening',
   'revive',
+  'repel',
   'sitrus-berry',
   'lum-berry',
   'muscle-band',

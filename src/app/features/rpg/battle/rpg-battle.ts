@@ -26,7 +26,7 @@ import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { BattleFxComponent } from '../../battle/pixi/battle-fx';
 import { BattlePresenterBase, sleep, type PresenterTimes } from '../../battle/battle-presenter';
-import { animatedSprite } from '../../../core/api/pokeapi-endpoints';
+import { animatedSprite, officialArtwork } from '../../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../../core/ui/format';
 import { SeededRng } from '../../../core/utils/rng';
 import { applyXp, shareXp, xpYield } from '../../../game/rpg/xp';
@@ -229,7 +229,8 @@ export class RpgBattleComponent extends BattlePresenterBase {
       } else {
         const dto = await this.api.pokemon(setup.foeSpecies);
         this.foeCatchRate = setup.foeCatchRate;
-        const foe = await this.battleSvc.buildBattlerFromDto(dto, setup.foeLevel, { levelMoves: true });
+        let foe = await this.battleSvc.buildBattlerFromDto(dto, setup.foeLevel, { levelMoves: true });
+        if (setup.shiny) foe = { ...foe, sprite: officialArtwork(dto.id, true) };
         foeTeam = [foe];
         this.xpReward = xpYield(dto.base_experience ?? 64, setup.foeLevel);
         this.foeLevel.set(setup.foeLevel);
@@ -259,7 +260,9 @@ export class RpgBattleComponent extends BattlePresenterBase {
       this.pulseEnter(1);
       this.cry.play(this.tb.active(1).battler.id, 0.4);
       if (isTrainer) this.append(`${this.trainerName()} wants to battle!`, 'switch');
+      else if (setup.fishing) this.append(`The hooked ${titleCase(this.tb.active(1).battler.name)} attacks!`);
       else this.append(`A wild ${titleCase(this.tb.active(1).battler.name)} appeared!`);
+      if (setup.shiny && !isTrainer) this.append('✨ It sparkles — a shiny!', 'win');
       this.append(`Go, ${titleCase(this.tb.active(0).battler.name)}!`);
     } catch {
       this.svc.showToast('The wild Pokémon fled before the battle began.');
@@ -553,9 +556,10 @@ export class RpgBattleComponent extends BattlePresenterBase {
     const mon = makePartyMon(foe.battler.name, foe.battler.id, this.foeLevel(), foe.maxHp);
     mon.currentHp = foe.currentHp;
     mon.status = foe.status;
+    if (this.svc.battleSetup()?.shiny) mon.shiny = true;
     const where = this.svc.addCaught(mon);
     this.resultLines.set([
-      `${titleCase(foe.battler.name)} was added to your ${where === 'party' ? 'team' : 'storage box'}!`,
+      `${mon.shiny ? '✨ Shiny ' : ''}${titleCase(foe.battler.name)} was added to your ${where === 'party' ? 'team' : 'storage box'}!`,
     ]);
   }
 

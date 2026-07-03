@@ -44,7 +44,7 @@ export class OwPartyHudComponent {
   protected readonly svc = inject(RpgService);
 
   protected label(m: PartyMon): string {
-    return m.nickname ?? titleCase(m.species);
+    return (m.shiny ? '✨' : '') + (m.nickname ?? titleCase(m.species));
   }
   protected pct(m: PartyMon): number {
     return m.maxHp > 0 ? Math.max(0, Math.round((m.currentHp / m.maxHp) * 100)) : 0;

@@ -39,7 +39,7 @@ export class FieldMenuComponent {
     this.svc.party().map((m, i) => ({
       i,
       uid: m.uid,
-      name: titleCase(m.nickname ?? m.species),
+      name: (m.shiny ? '✨' : '') + titleCase(m.nickname ?? m.species),
       level: m.level,
       hp: m.currentHp,
       maxHp: m.maxHp,
@@ -54,9 +54,9 @@ export class FieldMenuComponent {
   protected readonly boxView = computed(() =>
     this.svc.box().map((m, i) => ({
       i,
-      name: titleCase(m.nickname ?? m.species),
+      name: (m.shiny ? '✨' : '') + titleCase(m.nickname ?? m.species),
       level: m.level,
-      sprite: `${SPRITE_BASE}/pokemon/${m.dexId}.png`,
+      sprite: m.shiny ? `${SPRITE_BASE}/pokemon/shiny/${m.dexId}.png` : `${SPRITE_BASE}/pokemon/${m.dexId}.png`,
     })),
   );
 
@@ -88,6 +88,11 @@ export class FieldMenuComponent {
   protected pickItem(id: ItemId): void {
     if (!ITEMS[id].usableOnField) {
       this.svc.showToast('You can only use that in battle.');
+      return;
+    }
+    // Field-wide items (Repel) apply immediately — no party target needed.
+    if (ITEMS[id].repel) {
+      this.svc.showToast(this.svc.useFieldItem(id, -1));
       return;
     }
     this.pendingItem.set(id);

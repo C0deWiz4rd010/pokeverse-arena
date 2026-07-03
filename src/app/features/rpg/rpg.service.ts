@@ -6,7 +6,7 @@ import { idFromUrl } from '../../core/api/pokeapi-endpoints';
 import { evolutionAt, levelUpEvolutions } from '../../game/rpg/evolution';
 import { SeededRng } from '../../core/utils/rng';
 import { getMap } from '../../game/rpg/maps';
-import { DELTA, ahead, isTallGrass, signAt, tileAt, warpAt } from '../../game/rpg/movement';
+import { DELTA, ahead, isTallGrass, ledgeLanding, signAt, tileAt, warpAt } from '../../game/rpg/movement';
 import { canEnterRuntime, initNpcPositions, npcAtRuntime, stepWanderers, type NpcPositions } from '../../game/rpg/npc-walk';
 import { TILE } from '../../game/rpg/tiles';
 import { rollEncounter } from '../../game/rpg/encounters';
@@ -72,6 +72,10 @@ export interface BattleSetup {
   readonly defeatText?: string;
   readonly badge?: string;
   readonly ending?: string;
+  /** Wild-only: a rare sparkling variant (kept for life when caught). */
+  readonly shiny?: boolean;
+  /** Wild-only: the encounter was reeled in with the Old Rod. */
+  readonly fishing?: boolean;
 }
 
 /** Active dialogue box state (null when no box is shown). */
@@ -86,7 +90,12 @@ export interface StepResult {
   readonly moved: boolean;
   readonly warped: boolean;
   readonly grass: boolean;
+  /** The step was a two-tile ledge hop. */
+  readonly hopped?: boolean;
 }
+
+/** Shiny odds per wild roll (grass and fishing alike) — demo-friendly. */
+const SHINY_ODDS = 1 / 128;
 
 /**
  * Classic RPG mode state hub. Holds the single {@link RpgSave}, the current map,
@@ -262,13 +271,15 @@ export class RpgService {
     this.npcPos.set(initNpcPositions(m));
   }
 
-  /** Whether the tile ahead in `dir` can be entered. */
+  /** Whether the tile ahead in `dir` can be entered (or ledge-hopped over). */
   canStep(dir: Direction): boolean {
     const g = this.game();
     const m = this.map();
     if (!g || !m) return false;
     this.ensureNpcs(m);
     const t = ahead(g.x, g.y, dir);
+    const hop = ledgeLanding(m, t.x, t.y, dir);
+    if (hop) return canEnterRuntime(m, this.npcPos(), hop.x, hop.y);
     return canEnterRuntime(m, this.npcPos(), t.x, t.y);
   }
 
@@ -282,8 +293,14 @@ export class RpgService {
     if (!g || !m) return { moved: false, warped: false, grass: false };
 
     this.ensureNpcs(m);
-    const t = ahead(g.x, g.y, dir);
-    if (!canEnterRuntime(m, this.npcPos(), t.x, t.y)) {
+    let t = ahead(g.x, g.y, dir);
+    // One-way ledges: pressing down hops over the edge, landing below it.
+    const hop = ledgeLanding(m, t.x, t.y, dir);
+    let hopped = false;
+    if (hop && canEnterRuntime(m, this.npcPos(), hop.x, hop.y)) {
+      t = hop;
+      hopped = true;
+    } else if (!canEnterRuntime(m, this.npcPos(), t.x, t.y)) {
       this.face(dir);
       return { moved: false, warped: false, grass: false };
     }
@@ -307,7 +324,7 @@ export class RpgService {
       }
       this.game.set(next);
       this.persist();
-      return { moved: true, warped: true, grass: false };
+      return { moved: true, warped: true, grass: false, hopped };
     }
 
     // Pick up a ground item once (persisted so the flag sticks).
@@ -322,11 +339,19 @@ export class RpgService {
       this.persist();
       this.showToast(`Found ${ITEMS[gi.item].name}${gi.qty > 1 ? ' ×' + gi.qty : ''}!`);
       const grassItem = isTallGrass(m, t.x, t.y);
-      return { moved: true, warped: false, grass: grassItem };
+      return { moved: true, warped: false, grass: grassItem, hopped };
     }
 
     this.game.set(next);
     const grass = isTallGrass(m, t.x, t.y);
+
+    // Repel: each step burns one charge and suppresses wild rolls.
+    const repelActive = (next.repelSteps ?? 0) > 0;
+    if (repelActive) {
+      next = { ...next, repelSteps: (next.repelSteps ?? 0) - 1 };
+      this.game.set(next);
+      if (next.repelSteps === 0) this.showToast('The Repel wore off.');
+    }
 
     // Field status tick — poisoned party members lose a little HP as you walk.
     if (++this.fieldSteps >= FIELD_STEP_INTERVAL) {
@@ -341,7 +366,7 @@ export class RpgService {
     }
 
     // Roll a wild encounter — tall grass, or every step in a cave (everywhere).
-    if ((grass || m.encounter?.everywhere) && m.encounter && next.party.length > 0) {
+    if (!repelActive && (grass || m.encounter?.everywhere) && m.encounter && next.party.length > 0) {
       const rng = new SeededRng(`${Date.now()}-${t.x}-${t.y}-${Math.random()}`);
       const roll = rollEncounter(m.encounter, rng);
       if (roll) {
@@ -351,6 +376,7 @@ export class RpgService {
           foeSpecies: roll.species,
           foeLevel: roll.level,
           foeCatchRate: roll.catchRate,
+          shiny: rng.chance(SHINY_ODDS),
         });
       }
     }
@@ -361,7 +387,7 @@ export class RpgService {
     // A trainer may spot the player along its line of sight.
     if (this.phase() === 'overworld' && next.party.length > 0) this.checkTrainerSight(next, m);
 
-    return { moved: true, warped: false, grass };
+    return { moved: true, warped: false, grass, hopped };
   }
 
   /** Start a trainer battle if any unbeaten line-of-sight trainer can see the player. */
@@ -564,8 +590,50 @@ export class RpgService {
       return;
     }
     const sign = signAt(m, t.x, t.y);
-    if (sign) this.showToast(sign);
+    if (sign) {
+      this.showToast(sign);
+      return;
+    }
+    // Facing open water: cast the Old Rod (if we have it) and maybe hook a wild.
+    if (tileAt(m, t.x, t.y) === 'water') this.tryFish(m);
   }
+
+  /** Cast the Old Rod at the faced water tile; resolves to a bite or a shrug. */
+  private tryFish(m: MapDef): void {
+    const g = this.game();
+    if (!g) return;
+    if (this.itemCount('old-rod') <= 0) {
+      this.showToast('The water is calm. A fishing rod might change that…');
+      return;
+    }
+    if (!m.fishing || g.party.length === 0) {
+      this.showToast('Not even a nibble.');
+      return;
+    }
+    if (!g.flags['cast-rod']) this.setFlag('cast-rod');
+    this.showToast('You cast the Old Rod… …', 1400);
+    if (this.fishTimer) clearTimeout(this.fishTimer);
+    this.fishTimer = setTimeout(() => {
+      if (this.phase() !== 'overworld' || this.map()?.id !== m.id) return;
+      const rng = new SeededRng(`fish-${Date.now()}-${Math.random()}`);
+      const roll = rollEncounter(m.fishing!, rng);
+      if (!roll) {
+        this.showToast('Not even a nibble.');
+        return;
+      }
+      this.setFlag('hooked');
+      this.showToast('A bite!');
+      this.startEncounter({
+        kind: 'wild',
+        foeSpecies: roll.species,
+        foeLevel: roll.level,
+        foeCatchRate: roll.catchRate,
+        fishing: true,
+        shiny: rng.chance(SHINY_ODDS),
+      });
+    }, 900);
+  }
+  private fishTimer: ReturnType<typeof setTimeout> | null = null;
 
   /* ------------------------------------------------------------- flags */
 
@@ -818,6 +886,15 @@ export class RpgService {
     const g = this.game();
     const def = ITEMS[id];
     if (!g || !def || (g.bag[id] ?? 0) <= 0) return 'You have none of those.';
+    // Field-wide items apply to the world, not a party member.
+    if (def.repel) {
+      if ((g.repelSteps ?? 0) > 0) return 'A Repel is already working.';
+      const bag = { ...g.bag, [id]: (g.bag[id] ?? 0) - 1 };
+      if (bag[id] === 0) delete bag[id];
+      this.game.set({ ...g, bag, repelSteps: def.repel });
+      this.persist();
+      return `Wild Pokémon will keep away for ${def.repel} steps.`;
+    }
     const mon = g.party[index];
     if (!mon) return 'No Pokémon there.';
     const t = { ...mon };

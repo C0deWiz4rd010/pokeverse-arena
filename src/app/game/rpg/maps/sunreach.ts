@@ -44,8 +44,8 @@ export const SUNREACH: MapDef = {
       kind: 'talk',
       wander: 2,
       script: [
-        { say: 'The fountain is the only water for miles!' },
-        { say: 'Leader Vala trains at dawn — pure fighting spirit.' },
+        { say: 'The fountain is the only water for miles — and it BITES, I tell you!' },
+        { say: 'Got a rod? Face the water and cast. Dragons sleep down there…' },
       ],
     },
     {
@@ -70,5 +70,15 @@ export const SUNREACH: MapDef = {
     },
   ],
   items: [{ x: 11, y: 10, item: 'full-heal', qty: 1, flag: 'sunreach-fullheal' }],
+  // Desert anglers swear the fountain is bottomless.
+  fishing: {
+    rate: 0.75,
+    table: [
+      { species: 'magikarp', min: 8, max: 14, weight: 4, catchRate: 255 },
+      { species: 'goldeen', min: 10, max: 15, weight: 3, catchRate: 225 },
+      { species: 'staryu', min: 12, max: 16, weight: 2, catchRate: 225 },
+      { species: 'dratini', min: 12, max: 15, weight: 1, catchRate: 45 },
+    ],
+  },
   weather: 'sun',
 };

@@ -122,3 +122,23 @@ seen/caught dex, badges, whiteout respawn, and the interior-return door.
   re-draws only animated water each frame.
 - **Shared presenter**: rpg-battle now runs on the battle-presenter base
   (cries/hit-stop as hooks) — see `features/battle/battle-presenter.ts`.
+
+## v2.5 — Angler, Ledges & Wild Luck
+
+- **Fishing**: the **Old Rod** key item (Fisher Finn, Verdant pond; two new
+  quests) casts at any faced water tile via `MapDef.fishing` encounter
+  tables — Verdant pond and the Sunreach fountain (rare Dratini). Hooked
+  battles get their own intro line.
+- **Repel** (Mart, ₽350): `RpgSave.repelSteps` suppresses wild rolls for 100
+  steps; used from the Bag without a target (new `field` item category),
+  wear-off toast.
+- **Shiny wilds**: 1/128 per wild roll (grass + fishing) — shiny battle
+  artwork, sparkle log line, persistent `PartyMon.shiny` shown as ✨ in the
+  party HUD / field menu / box.
+- **One-way ledges**: `ledgeLanding` (unit-tested) — down-presses vault the
+  ledge with an arc + landing dust; other approaches block. Ledge tiles are
+  tinted so the drop reads.
+- **Overworld polish**: drop shadows under all characters (grounded during
+  bob/hop), water sparkle glints, an animated **area-name banner** on every
+  map entry (initial-entry bug found by verification and fixed).
+- **Gamepad**: stick/d-pad walks, A interacts, B menu, X runs (Pixi renderer).

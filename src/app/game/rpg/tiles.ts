@@ -16,7 +16,8 @@ export const TILE: Record<TileKind, TileMeta> = {
   rug: { walkable: true },
   door: { walkable: true },
   flower: { walkable: true },
-  ledge: { walkable: true },
+  /** One-way: hopped over from above (see movement.ledgeLanding), never stood on. */
+  ledge: { walkable: false },
   water: { walkable: false },
   tree: { walkable: false },
   wall: { walkable: false },

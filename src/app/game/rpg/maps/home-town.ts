@@ -66,6 +66,29 @@ export const HOME_TOWN: MapDef = {
       ],
     },
     {
+      id: 'Fisher Finn',
+      x: 10,
+      y: 6,
+      facing: 'left',
+      sprite: 'oldman',
+      kind: 'talk',
+      script: [
+        {
+          ifFlag: 'got-rod',
+          then: [
+            { say: 'Finn: Anything biting? The pond hides more than reflections…', speaker: 'Fisher Finn' },
+          ],
+          else: [
+            { say: 'Finn: Forty years I have fished this pond, and it never once bored me.', speaker: 'Fisher Finn' },
+            { say: 'Finn: Here — an Old Rod. Face the water, press A, and be patient.', speaker: 'Fisher Finn' },
+            { giveItem: 'old-rod' },
+            { setFlag: 'got-rod' },
+            { say: 'You received the Old Rod!' },
+          ],
+        },
+      ],
+    },
+    {
       id: 'Bug Catcher Sam',
       x: 6,
       y: 11,
@@ -87,6 +110,14 @@ export const HOME_TOWN: MapDef = {
     },
   ],
   items: [],
+  fishing: {
+    rate: 0.75,
+    table: [
+      { species: 'magikarp', min: 3, max: 7, weight: 5, catchRate: 255 },
+      { species: 'poliwag', min: 4, max: 7, weight: 3, catchRate: 255 },
+      { species: 'psyduck', min: 5, max: 8, weight: 2, catchRate: 190 },
+    ],
+  },
   encounter: {
     rate: 0.32,
     table: [

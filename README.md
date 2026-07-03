@@ -43,6 +43,8 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
   find where any Pokémon first appeared.
 - **Contest Hall** — blend berries into Poffins to raise contest conditions, then
   dazzle the judges against seeded rivals.
+- **Adventure (RPG)** — a top-down tile-world story with three gyms, quests,
+  fishing, one-way ledges, shiny wilds, save slots and gamepad support.
 - **Installable PWA** — web manifest, app icon and a service worker that caches the
   app shell, PokéAPI data and sprites for offline play.
 - **Offline-first** — every API response cached in IndexedDB; accessible skip link

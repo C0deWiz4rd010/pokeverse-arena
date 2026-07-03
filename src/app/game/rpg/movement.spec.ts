@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ahead, canEnter, isTallGrass, signAt, warpAt } from './movement';
+import { ahead, canEnter, isTallGrass, ledgeLanding, signAt, warpAt } from './movement';
 import { PLAYER_HOME } from './maps/player-home';
 import { HOME_TOWN } from './maps/home-town';
+import { parseTiles } from './maps/legend';
+import type { MapDef } from './rpg-types';
 
 describe('movement on authored maps', () => {
   it('blocks walls and allows floor in the bedroom', () => {
@@ -31,5 +33,28 @@ describe('movement on authored maps', () => {
   it('ahead() steps one tile in a direction', () => {
     expect(ahead(3, 4, 'down')).toEqual({ x: 3, y: 5 });
     expect(ahead(3, 4, 'up')).toEqual({ x: 3, y: 3 });
+  });
+});
+
+describe('one-way ledges', () => {
+  const map: MapDef = {
+    id: 't', name: 'T', width: 3, height: 4, outdoor: true,
+    tiles: parseTiles(['GGG', 'LLL', 'GGG', 'TTT']),
+    warps: [], signs: [], npcs: [], items: [],
+  };
+
+  it('hops down over a ledge onto the tile below', () => {
+    expect(ledgeLanding(map, 1, 1, 'down')).toEqual({ x: 1, y: 2 });
+  });
+
+  it('blocks every other approach', () => {
+    expect(ledgeLanding(map, 1, 1, 'up')).toBeNull();
+    expect(ledgeLanding(map, 1, 1, 'left')).toBeNull();
+    expect(canEnter(map, 1, 1)).toBe(false); // never stood on
+  });
+
+  it('refuses the hop when the landing tile is blocked', () => {
+    const cliff: MapDef = { ...map, tiles: parseTiles(['GGG', 'LLL', 'TTT', 'GGG']) };
+    expect(ledgeLanding(cliff, 1, 1, 'down')).toBeNull();
   });
 });

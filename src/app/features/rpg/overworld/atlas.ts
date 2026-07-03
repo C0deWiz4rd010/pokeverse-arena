@@ -42,7 +42,8 @@ export const TILE_ART: Record<TileKind, TileArt> = {
   floor: T('dungeon', 48),
   rug: T('dungeon', 63),
   counter: T('dungeon', 72),
-  ledge: T('town', 40),
+  // Tinted earthy so the one-way drop reads differently from a plain path.
+  ledge: T('town', 40, 0xc98f5a),
 };
 
 /** Outdoor decorations that should be drawn on top of a grass tile. */

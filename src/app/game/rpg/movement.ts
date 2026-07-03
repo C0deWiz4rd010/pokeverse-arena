@@ -46,3 +46,15 @@ export function isTallGrass(map: MapDef, x: number, y: number): boolean {
   const t = tileAt(map, x, y);
   return !!t && !!TILE[t].grass;
 }
+
+/**
+ * Classic one-way ledges: pressing **down** into a ledge tile hops over it,
+ * landing on the tile below (when that tile is walkable). Any other approach
+ * is blocked. Returns the landing tile, or null when no hop applies.
+ */
+export function ledgeLanding(map: MapDef, x: number, y: number, dir: Direction): { x: number; y: number } | null {
+  if (dir !== 'down' || tileAt(map, x, y) !== 'ledge') return null;
+  const land = { x, y: y + 1 };
+  const t = tileAt(map, land.x, land.y);
+  return t && TILE[t].walkable ? land : null;
+}

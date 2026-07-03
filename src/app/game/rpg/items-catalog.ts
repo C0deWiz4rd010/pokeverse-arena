@@ -6,7 +6,7 @@ import type { ItemId } from './rpg-types';
 import type { RpgBallId } from './catch';
 import type { ItemId as HeldItemId, StatusCondition } from '../engine';
 
-export type ItemCategory = 'ball' | 'heal' | 'status' | 'revive' | 'held' | 'key';
+export type ItemCategory = 'ball' | 'heal' | 'status' | 'revive' | 'held' | 'field' | 'key';
 
 export interface ItemDef {
   readonly id: ItemId;
@@ -22,6 +22,8 @@ export interface ItemDef {
   readonly revive?: number;
   /** Engine held-item this bag item equips when given to a Pokémon. */
   readonly held?: HeldItemId;
+  /** Steps of wild-encounter suppression this item grants when used. */
+  readonly repel?: number;
   readonly usableInBattle: boolean;
   readonly usableOnField: boolean;
 }
@@ -46,6 +48,8 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   'muscle-band': { id: 'muscle-band', name: 'Muscle Band', category: 'held', price: 2200, desc: 'Hold: slightly boosts physical moves.', held: 'muscle-band', usableInBattle: false, usableOnField: true },
   'wise-glasses': { id: 'wise-glasses', name: 'Wise Glasses', category: 'held', price: 2200, desc: 'Hold: slightly boosts special moves.', held: 'wise-glasses', usableInBattle: false, usableOnField: true },
   'exp-share': { id: 'exp-share', name: 'EXP Share', category: 'key', price: 4000, desc: 'While in your Bag, benched party members earn half XP from wins.', usableInBattle: false, usableOnField: false },
+  repel: { id: 'repel', name: 'Repel', category: 'field', price: 350, desc: 'Keeps wild Pokémon away for 100 steps.', repel: 100, usableInBattle: false, usableOnField: true },
+  'old-rod': { id: 'old-rod', name: 'Old Rod', category: 'key', price: 0, desc: 'Face the water and press A to fish. Even old rods catch new friends.', usableInBattle: false, usableOnField: false },
 };
 
 export const ITEM_ORDER: readonly ItemId[] = [
@@ -53,8 +57,9 @@ export const ITEM_ORDER: readonly ItemId[] = [
   'potion', 'super-potion', 'hyper-potion',
   'antidote', 'paralyze-heal', 'awakening', 'burn-heal', 'ice-heal', 'full-heal',
   'revive',
+  'repel',
   'leftovers', 'sitrus-berry', 'lum-berry', 'muscle-band', 'wise-glasses',
-  'exp-share',
+  'exp-share', 'old-rod',
 ];
 
 /** Bag id for an engine held-item id (to return a swapped-out item to the Bag). */

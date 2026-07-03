@@ -4,6 +4,47 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.6.0 — 2026-07-03
+
+Adventure (RPG) overhaul, part 1 — "Angler, Ledges & Wild Luck".
+
+### Added
+
+- **🎣 Fishing** — Fisher Finn by the Verdant Town pond hands over the **Old
+  Rod** (new key item + two quest-log entries). Face any water tile and press
+  A to cast: maps can define a `fishing` encounter table (`MapDef.fishing`),
+  authored for the Verdant pond (Magikarp/Poliwag/Psyduck) and the Sunreach
+  fountain (Goldeen/Staryu/… and a 1-in-10 **Dratini**). Hooked battles open
+  with "The hooked X attacks!".
+- **🧴 Repel** — new Mart item (₽350): suppresses wild rolls for 100 steps
+  (`RpgSave.repelSteps`), used straight from the Bag without a target, with a
+  wear-off toast. New `field` item category.
+- **✨ Shiny wilds** — every wild roll (grass *and* fishing) has a 1/128 shiny
+  chance: shiny artwork in battle, a sparkle log line, and the caught
+  `PartyMon.shiny` flag surfaces as ✨ in the party HUD, field menu and box
+  (shiny box sprites).
+- **🪾 One-way ledges** — classic hop-down ledges (`ledgeLanding` in
+  `movement.ts`, unit-tested): pressing down vaults the ledge with a little
+  arc + landing dust; every other approach is blocked. Ledge tiles are tinted
+  earthy so they read as drops. Route 3's authored ledges now behave.
+- **🗺️ Area-name banner** — entering any map pops an animated location banner
+  (also on first load — found & fixed: the initial map build ran before the
+  ticker, so the banner never fired on entry).
+- **🎮 Gamepad support** — the Pixi overworld polls the first connected pad:
+  left stick / d-pad walks, A interacts, B opens the menu, X runs.
+
+### Changed
+
+- **Overworld graphics pass** — soft drop shadows under the player and every
+  NPC (grounded while the sprite bobs/hops), wandering sparkle glints on
+  water tiles.
+
+### Fixed
+
+- Fisher Finn originally spawned in the town's main walking column and could
+  block the path south (caught by the checked-in adventure E2E); he now fishes
+  from the pond's east bank.
+
 ## v1.5.0 — 2026-07-03
 
 ### Added
