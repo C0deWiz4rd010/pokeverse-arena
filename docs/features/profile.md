@@ -12,6 +12,9 @@ The connective layer that unifies progress from every system into one identity.
   progression.
 - **An achievements wall** — 10 milestones evaluated by pure predicates over the
   aggregate state, shown locked/unlocked.
+- **Appearance picker** (v1.2.0) — five accent palettes (Aurora, Ember,
+  Verdant, Sakura, Solar) applied app-wide via `ThemeService` and persisted;
+  see [app-shell.md](app-shell.md#theme).
 
 ## Files
 
@@ -20,7 +23,8 @@ The connective layer that unifies progress from every system into one identity.
 | `core/storage/save.service.ts` | Typed, namespaced, versioned localStorage wrapper — the single persistence seam (with a legacy reader for older keys). |
 | `core/models/profile.ts` | `ProfileState`, the achievements catalogue + evaluator, rank thresholds. |
 | `features/profile/profile.service.ts` | Aggregates arena/spire/tournament state into one snapshot; persists identity. |
-| `features/profile/profile.ts/.html/.scss` | Identity card, rank, records grid, achievements wall. |
+| `features/profile/profile.ts/.html/.scss` | Identity card, rank, appearance picker, records grid, achievements wall. |
+| `core/theme/theme.service.ts` | Accent palettes + persistence; overrides `--accent*` tokens on `<html>`. |
 | `core/models/profile.spec.ts` | Achievement evaluation + rank thresholds. |
 
 ## How it works

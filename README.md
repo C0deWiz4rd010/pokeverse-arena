@@ -16,8 +16,10 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
 ## ✨ Features
 
 - **⌘K Command Palette** — press `Ctrl+K` anywhere to jump to
-  any page, run quick actions or fuzzy-find a Pokémon by name/number — fully
-  keyboard-driven.
+  any page, run quick actions, revisit recent Pokémon or fuzzy-find any Pokémon
+  by name/number — fully keyboard-driven.
+- **Accent themes** — five curated color palettes (Aurora, Ember, Verdant,
+  Sakura, Solar), switchable on the Trainer Profile and persisted.
 - **Interactive Pokédex** — search, filter, infinite scroll, shiny toggle, base-stat
   radar, abilities, moves, evolution tree, compare — with shimmer skeleton loading.
 - **Type Lab** — interactive type chart, attacker/defender calculator, team

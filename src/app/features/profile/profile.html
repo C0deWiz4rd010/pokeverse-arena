@@ -53,6 +53,25 @@
     </div>
   </header>
 
+  <h3 class="h">Appearance</h3>
+  <div class="themes" role="group" aria-label="Accent color theme">
+    @for (t of theme.themes; track t.id) {
+      <button
+        type="button"
+        class="theme-chip"
+        [class.on]="theme.themeId() === t.id"
+        [attr.aria-pressed]="theme.themeId() === t.id"
+        [style.--t1]="t.accent"
+        [style.--t2]="t.accent2"
+        (click)="theme.setTheme(t.id)"
+      >
+        <span class="theme-dot" aria-hidden="true"></span>
+        {{ t.name }}
+        @if (theme.themeId() === t.id) { <pv-icon name="check" /> }
+      </button>
+    }
+  </div>
+
   <h3 class="h">Mastery</h3>
   <div class="mastery">
     @for (m of mastery(); track m.label) {

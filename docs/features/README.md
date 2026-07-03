@@ -25,7 +25,8 @@ For the high-level plan and milestone status, see
 | 11 | World Explorer (regions, native dex, home finder, **expeditions**) | [world.md](world.md) | ✅ |
 | 12 | Contest Hall (berry Poffins, **multi-round appeals + ranks**) | [contest.md](contest.md) | ✅ |
 | 13 | Ascension Spire (seeded roguelike climb) | [spire.md](spire.md) | ✅ |
-| 14 | Trainer Profile (progression backbone, achievements) | [profile.md](profile.md) | ✅ |
+| 14 | Trainer Profile (progression backbone, achievements, accent themes) | [profile.md](profile.md) | ✅ |
+| 15 | ⌘K Command Palette (global search, actions, recents) | [command-palette.md](command-palette.md) | ✅ |
 
 ## Deep Systems Overhaul (v2)
 

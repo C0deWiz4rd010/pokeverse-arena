@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
+import { RecentPokemonService } from '../../core/recent/recent-pokemon.service';
 import {
   mapAbility,
   mapEvolutionChain,
@@ -23,6 +24,7 @@ interface DetailState {
 @Injectable({ providedIn: 'root' })
 export class PokemonDetailService {
   private readonly api = inject(PokeApiClient);
+  private readonly recent = inject(RecentPokemonService);
 
   readonly state = signal<DetailState | null>(null);
   readonly loading = signal(false);
@@ -40,6 +42,7 @@ export class PokemonDetailService {
         await this.api.evolutionChain(species.evolutionChainId),
       );
       this.state.set({ pokemon, species, evolution });
+      this.recent.record(pokemon.id, pokemon.name);
     } catch {
       this.error.set('Could not load this Pokémon. It may not exist — try another.');
     } finally {

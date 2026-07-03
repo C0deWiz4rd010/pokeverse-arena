@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { ProfileService } from './profile.service';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
+import { ThemeService } from '../../core/theme/theme.service';
 
 @Component({
   selector: 'pv-profile',
@@ -12,6 +13,7 @@ import { IconComponent } from '../../core/ui/icon/icon';
 })
 export class ProfileComponent {
   protected readonly svc = inject(ProfileService);
+  protected readonly theme = inject(ThemeService);
 
   protected readonly editing = signal(false);
   protected readonly nameDraft = signal('');

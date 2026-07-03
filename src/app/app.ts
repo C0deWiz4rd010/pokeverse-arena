@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from './core/version';
+import { ThemeService } from './core/theme/theme.service';
 import { IconComponent } from './core/ui/icon/icon';
 import type { IconName } from './core/ui/icon/icons.data';
 import { CommandPaletteComponent } from './features/command-palette/command-palette';
@@ -23,6 +24,9 @@ interface NavItem {
   },
 })
 export class App {
+  /** Instantiated here so the persisted accent palette applies at startup. */
+  private readonly theme = inject(ThemeService);
+
   protected readonly menuOpen = signal(false);
   protected readonly paletteOpen = signal(false);
   protected readonly scrolled = signal(false);

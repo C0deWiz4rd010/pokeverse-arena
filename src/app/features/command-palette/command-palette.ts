@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
 import { IconComponent } from '../../core/ui/icon/icon';
 import type { IconName } from '../../core/ui/icon/icons.data';
 import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
+import { RecentPokemonService } from '../../core/recent/recent-pokemon.service';
 import { titleCase } from '../../core/ui/format';
 import { PokedexService } from '../pokedex/pokedex.service';
 
@@ -73,6 +74,7 @@ const MAX_POKEMON_HITS = 8;
 export class CommandPaletteComponent {
   private readonly router = inject(Router);
   private readonly dex = inject(PokedexService);
+  private readonly recent = inject(RecentPokemonService);
 
   readonly open = input.required<boolean>();
   readonly closed = output<void>();
@@ -95,6 +97,19 @@ export class CommandPaletteComponent {
   protected readonly groups = computed<PaletteGroup[]>(() => {
     const q = this.query().trim().toLowerCase();
     const groups: PaletteGroup[] = [];
+
+    if (!q && this.recent.list().length) {
+      groups.push({
+        title: 'Recent',
+        items: this.recent.list().map((r) => ({
+          key: 'recent:' + r.id,
+          label: titleCase(r.name),
+          hint: '#' + r.id,
+          sprite: `${SPRITE_BASE}/pokemon/${r.id}.png`,
+          run: () => void this.router.navigate(['/pokemon', r.id]),
+        })),
+      });
+    }
 
     const pages = PAGES.filter(
       (p) => !q || p.label.toLowerCase().includes(q) || p.keywords.includes(q),

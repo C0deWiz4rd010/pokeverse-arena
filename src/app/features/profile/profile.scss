@@ -4,6 +4,38 @@
 
 .h { margin: 1.6rem 0 0.8rem; font-size: 1rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
 
+/* ------------------------------------------------------------- appearance */
+.themes { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.theme-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+
+  &:hover { transform: translateY(-1px); color: var(--text); border-color: var(--t1); }
+  &.on {
+    color: var(--text);
+    border-color: var(--t1);
+    background: color-mix(in srgb, var(--t1) 12%, var(--surface));
+    box-shadow: 0 0 12px color-mix(in srgb, var(--t1) 30%, transparent);
+  }
+}
+.theme-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--t1), var(--t2));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--t1) 60%, transparent);
+}
+
 /* ---------------------------------------------------------------- ID card */
 .id-card {
   display: grid;
