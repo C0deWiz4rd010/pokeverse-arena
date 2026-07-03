@@ -30,6 +30,31 @@
           @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
           <p class="hint">Both sides fight at level 50 with their strongest level-up moves.</p>
         </div>
+
+        <div class="daily glass">
+          <div class="daily-head">
+            <span class="daily-flame" aria-hidden="true"><pv-icon name="flame" /></span>
+            <div class="daily-title">
+              <h3>Daily Challenge</h3>
+              <span class="daily-date">{{ daily.today }} · same matchup for every trainer</span>
+            </div>
+          </div>
+          <div class="daily-stats">
+            <span class="d-stat"><strong>{{ daily.streak() }}</strong> streak</span>
+            <span class="d-stat"><strong>{{ daily.best() }}</strong> best</span>
+            <span class="d-stat"><strong>{{ daily.wins() }}</strong> wins</span>
+          </div>
+          @if (daily.wonToday()) {
+            <p class="daily-done"><pv-icon name="check" /> Cleared today — the streak is safe. Rematch just for fun?</p>
+          } @else if (daily.playedToday()) {
+            <p class="daily-done lost"><pv-icon name="heart-crack" /> Today's attempt is spent — new challenge tomorrow.</p>
+          } @else {
+            <p class="daily-hint">One counted attempt per day. Win to extend your streak!</p>
+          }
+          <button class="btn btn-primary" type="button" (click)="startDaily()">
+            <pv-icon name="flame" /> {{ daily.playedToday() ? 'Replay today’s battle' : 'Fight today’s battle' }}
+          </button>
+        </div>
       </div>
     }
 

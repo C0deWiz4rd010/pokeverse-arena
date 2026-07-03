@@ -4,7 +4,59 @@
 .setup-wrap {
   display: grid;
   place-items: center;
+  align-content: center;
+  gap: 1rem;
   min-height: min(58vh, 520px);
+}
+
+/* ---- daily challenge ---- */
+.daily {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 1.1rem 1.3rem;
+  display: grid;
+  gap: 0.7rem;
+  border-color: color-mix(in srgb, var(--accent-3) 35%, var(--glass-border));
+  background:
+    radial-gradient(130% 130% at 100% 0%, color-mix(in srgb, var(--accent-3) 10%, transparent), transparent 55%),
+    var(--glass);
+}
+.daily-head { display: flex; align-items: center; gap: 0.7rem; }
+.daily-flame {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  color: #0b0a1f;
+  background: linear-gradient(135deg, var(--accent-3), var(--danger));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent-3) 45%, transparent);
+}
+.daily-title h3 { margin: 0; font-size: 1.05rem; }
+.daily-date { font-size: 0.75rem; color: var(--text-dim); }
+.daily-stats { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.d-stat {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+
+  strong { color: var(--accent-3); font-size: 0.95rem; margin-right: 0.25rem; }
+}
+.daily-hint { margin: 0; font-size: 0.78rem; color: var(--text-dim); }
+.daily-done {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &.lost { color: var(--text-dim); }
 }
 .setup {
   width: 100%;

@@ -142,6 +142,13 @@ export class CommandPaletteComponent {
   private actionItems(): PaletteItem[] {
     return [
       {
+        key: 'act:daily',
+        label: 'Fight the Daily Challenge',
+        hint: 'Seeded battle of the day',
+        icon: 'flame',
+        run: () => void this.router.navigate(['/battle'], { queryParams: { daily: '1' } }),
+      },
+      {
         key: 'act:random',
         label: 'Surprise me — random Pokémon',
         hint: 'Opens a random detail page',

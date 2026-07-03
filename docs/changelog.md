@@ -4,6 +4,28 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.4.0 — 2026-07-03
+
+### Added
+
+- **Daily Challenge** — the Battle Arena's setup screen gains a challenge card:
+  every UTC day derives one deterministic matchup (fighters *and* battle seed)
+  from the date via `SeededRng`, so every trainer worldwide fights the same
+  battle. The first attempt of the day counts toward a consecutive-day win
+  streak (current / best / total wins, persisted as `pv:daily:record`); a loss
+  breaks it, a skipped day lapses it, retries replay the identical seeded
+  battle without touching the record. A counted win pops a streak toast.
+  - Pure logic in `src/app/game/daily/daily.ts` (day keys, matchup derivation,
+    streak fold) with 10 unit tests.
+  - `DailyService` handles persistence + reporting; `?daily=1` deep-links and
+    auto-starts (also from a finished battle), wired to a new ⌘K palette
+    action "Fight the Daily Challenge".
+
+### Fixed
+
+- Deep-linking `?daily=1` while a finished battle was still on screen did not
+  start the challenge (the auto-start guard only accepted the setup phase).
+
 ## v1.3.0 — 2026-07-03
 
 ### Added

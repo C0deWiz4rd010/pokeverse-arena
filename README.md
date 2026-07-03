@@ -22,6 +22,8 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
   Sakura, Solar), switchable on the Trainer Profile and persisted.
 - **Achievement toasts** — unlocking any milestone pops a celebratory
   notification, no matter which mode earned it.
+- **Daily Challenge** — one seeded battle per day, identical for every trainer;
+  win to build a day streak (first attempt counts, retries are for fun).
 - **Interactive Pokédex** — search, filter, infinite scroll, shiny toggle, base-stat
   radar, abilities, moves, evolution tree, compare — with shimmer skeleton loading.
 - **Type Lab** — interactive type chart, attacker/defender calculator, team

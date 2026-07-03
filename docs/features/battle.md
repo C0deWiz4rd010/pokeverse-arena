@@ -19,6 +19,12 @@ Seeded, type-accurate 1-v-1 battles with an animated arena and weather backdrops
   impact bursts, crit flashes and charge swirls on each hit. It degrades
   gracefully: if WebGL is unavailable or the user prefers reduced motion the
   canvas is never created and the battle still plays with its CSS animations.
+- **Daily Challenge** (v1.4.0) — one deterministic matchup per UTC day, derived
+  from the date: same fighters, same battle seed for every trainer worldwide.
+  The first attempt of the day counts toward a consecutive-day win streak
+  (current/best/wins shown on the setup card, persisted); retries replay the
+  identical seeded battle for fun. A counted win pops a streak toast. Deep
+  link `/battle?daily=1` (used by the ⌘K palette action) auto-starts it.
 
 ## Files
 
@@ -33,7 +39,9 @@ Seeded, type-accurate 1-v-1 battles with an animated arena and weather backdrops
 | `core/ui/weather-overlay/` | Shared `pv-weather-overlay` particle backdrop (used by battle, tournaments, arena). |
 | `core/ui/move-button/` | Shared `pv-move-button` (type-tinted, effectiveness badge, hover tooltip). |
 | `features/battle/pixi/battle-fx.ts` | Lazy `pv-battle-fx` PixiJS overlay: impact bursts, crit flashes, charge swirls. |
-| `features/battle/battle.ts` / `.html` / `.scss` | The component: setup form, animated arena, weather overlays, log, move buttons, result. |
+| `features/battle/battle.ts` / `.html` / `.scss` | The component: setup form, daily-challenge card, animated arena, weather overlays, log, move buttons, result. |
+| `game/daily/daily.ts` (+ spec) | Pure daily logic: UTC day key, deterministic matchup, streak record fold. |
+| `features/battle/daily.service.ts` | Daily state: persisted streak record, result reporting, win toast. |
 | `game/engine/damage.spec.ts` / `battle.spec.ts` | Engine unit tests. |
 
 ## How it works

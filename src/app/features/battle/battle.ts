@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import { BattleService } from './battle.service';
+import { DailyService } from './daily.service';
 import {
   Battle,
   abilityName,
@@ -75,6 +76,12 @@ const STAGE_SHORT: Record<BoostableStat, string> = {
 export class BattleComponent extends BattlePresenterBase {
   private readonly svc = inject(BattleService);
   private readonly pokedex = inject(PokedexService);
+  protected readonly daily = inject(DailyService);
+
+  /** `?daily=1` (e.g. from the command palette) jumps straight into the daily. */
+  readonly dailyParam = input<string | undefined>(undefined, { alias: 'daily' });
+  /** 'daily' battles are seeded from the date and feed the streak record. */
+  protected readonly mode = signal<'free' | 'daily'>('free');
   protected readonly titleCase = titleCase;
   protected readonly abilityName = abilityName;
   protected readonly itemName = itemName;
@@ -138,6 +145,16 @@ export class BattleComponent extends BattlePresenterBase {
       const el = this.logEl()?.nativeElement;
       if (el) queueMicrotask(() => (el.scrollTop = el.scrollHeight));
     });
+    // Deep link (?daily=1): start today's challenge as soon as we land — also
+    // when the palette navigates here while a finished battle is on screen.
+    let autoStarted = false;
+    effect(() => {
+      const idle = this.phase() === 'setup' || this.phase() === 'done';
+      if (this.dailyParam() === '1' && !autoStarted && idle) {
+        autoStarted = true;
+        void this.startDaily();
+      }
+    });
   }
 
   protected setPlayerInput(event: Event): void {
@@ -146,6 +163,7 @@ export class BattleComponent extends BattlePresenterBase {
 
   protected async start(): Promise<void> {
     const wanted = this.playerInput().trim().toLowerCase();
+    this.mode.set('free');
     this.phase.set('loading');
     this.error.set(null);
     try {
@@ -164,8 +182,27 @@ export class BattleComponent extends BattlePresenterBase {
     await this.start();
   }
 
-  private beginBattle(player: Battler, opponent: Battler): void {
-    this.battle = new Battle(player, opponent, Date.now(), undefined, 'strong');
+  /** Today's seeded matchup — identical for every trainer, streak on the line. */
+  protected async startDaily(): Promise<void> {
+    this.mode.set('daily');
+    this.phase.set('loading');
+    this.error.set(null);
+    try {
+      const m = this.daily.matchup;
+      const [player, opponent] = await Promise.all([
+        this.svc.buildBattler(m.playerId, m.level),
+        this.svc.buildBattler(m.opponentId, m.level),
+      ]);
+      this.beginBattle(player, opponent, m.seed);
+    } catch {
+      this.error.set('Could not load today’s challengers. Check your connection and retry.');
+      this.mode.set('free');
+      this.phase.set('setup');
+    }
+  }
+
+  private beginBattle(player: Battler, opponent: Battler, seed: number | string = Date.now()): void {
+    this.battle = new Battle(player, opponent, seed, undefined, 'strong');
     this.player.set(player);
     this.opponent.set(opponent);
     this.playerMaxHp.set(this.battle.player.maxHp);
@@ -217,16 +254,21 @@ export class BattleComponent extends BattlePresenterBase {
     if (this.battle.state.finished) {
       this.winner.set(this.battle.state.winner);
       this.phase.set('done');
+      // First daily attempt of the day feeds the streak; retries are for fun.
+      if (this.mode() === 'daily') this.daily.report(this.battle.state.winner === 0);
     }
   }
 
   protected rematch(): void {
     const player = this.player();
     const opponent = this.opponent();
-    if (player && opponent) this.beginBattle(player, opponent);
+    if (!player || !opponent) return;
+    // A daily rematch replays the exact same seeded battle.
+    this.beginBattle(player, opponent, this.mode() === 'daily' ? this.daily.matchup.seed : Date.now());
   }
 
   protected newBattle(): void {
+    this.mode.set('free');
     this.battle = null;
     this.player.set(null);
     this.opponent.set(null);
