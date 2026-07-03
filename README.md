@@ -45,6 +45,9 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
   dazzle the judges against seeded rivals.
 - **Adventure (RPG)** — a top-down tile-world story with three gyms, quests,
   fishing, one-way ledges, shiny wilds, save slots and gamepad support.
+- **Odyssey** — an endless seeded roguelike march through eight biomes:
+  daze-catch every foe, level and evolve on the move, and permanently unlock
+  every caught species as a starter.
 - **Installable PWA** — web manifest, app icon and a service worker that caches the
   app shell, PokéAPI data and sprites for offline play.
 - **Offline-first** — every API response cached in IndexedDB; accessible skip link

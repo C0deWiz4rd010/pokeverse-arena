@@ -56,6 +56,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/world/world').then((m) => m.WorldComponent),
   },
   {
+    path: 'odyssey',
+    title: 'Odyssey · PokéVerse Arena',
+    loadComponent: () => import('./features/odyssey/odyssey').then((m) => m.OdysseyComponent),
+  },
+  {
     path: 'contest',
     title: 'Contest Hall · PokéVerse Arena',
     loadComponent: () => import('./features/contest/contest').then((m) => m.ContestComponent),

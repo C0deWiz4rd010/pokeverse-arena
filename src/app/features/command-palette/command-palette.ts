@@ -51,6 +51,7 @@ const PAGES: PageCmd[] = [
   { path: '/arena', label: 'Arena', icon: 'castle', hint: 'Gym leaders & badges', keywords: 'gym badge leader champion' },
   { path: '/tournaments', label: 'Tournaments', icon: 'trophy', hint: 'Brackets & standings', keywords: 'bracket cup elimination' },
   { path: '/spire', label: 'Ascension Spire', icon: 'mountain', hint: 'Roguelike climb', keywords: 'roguelike relic climb tower' },
+  { path: '/odyssey', label: 'Odyssey', icon: 'map-pin', hint: 'Endless biome roguelike', keywords: 'roguelike pokerogue waves catch endless biome' },
   { path: '/world', label: 'World Explorer', icon: 'map', hint: 'Regions & expeditions', keywords: 'region kanto expedition catch' },
   { path: '/contest', label: 'Contest Hall', icon: 'sparkles', hint: 'Poffins & appeal rounds', keywords: 'berry poffin beauty' },
   { path: '/adventure', label: 'Adventure', icon: 'scroll-text', hint: 'Top-down RPG story', keywords: 'rpg story overworld quest' },

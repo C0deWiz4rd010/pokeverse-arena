@@ -53,6 +53,7 @@ export class HomeComponent implements OnDestroy {
     { path: '/arena', icon: 'castle', title: 'Arena', text: 'Climb a designed gym ladder, then face the Champion Gauntlet for badges.', accent: 'var(--type-rock)' },
     { path: '/tournaments', icon: 'trophy', title: 'Tournaments', text: 'Single-elim, round-robin & Swiss formats with seeding, standings and prizes.', accent: 'var(--accent-3)' },
     { path: '/spire', icon: 'mountain', title: 'Ascension Spire', text: 'A seeded roguelike climb — relics, shops, bosses and meta-progression.', accent: 'var(--type-dragon)' },
+    { path: '/odyssey', icon: 'map-pin', title: 'Odyssey', text: 'An endless biome march — daze-catch every foe and grow your starter roster forever.', accent: 'var(--type-water)' },
     { path: '/world', icon: 'map', title: 'World Explorer', text: 'Roam regions, fill a per-region dex through animated catch expeditions.', accent: 'var(--type-grass)' },
     { path: '/contest', icon: 'sparkles', title: 'Contest Hall', text: 'A live appeal mini-game with combos, jamming, ranks and ribbons.', accent: 'var(--type-fairy)' },
     { path: '/adventure', icon: 'scroll-text', title: 'Adventure (RPG)', text: 'A classic tile-world story: pick a starter, catch in the grass, earn a badge.', accent: 'var(--type-ground)' },

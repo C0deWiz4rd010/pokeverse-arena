@@ -1,0 +1,148 @@
+<section class="container odyssey">
+  <pv-page-header
+    icon="map-pin"
+    title="Odyssey"
+    subtitle="An endless seeded march through eight biomes — catch, level, evolve, survive."
+  />
+
+  @if (svc.toast(); as t) { <p class="toast" role="status">{{ t }}</p> }
+  @if (svc.error(); as e) { <p class="err" role="alert">{{ e }}</p> }
+
+  @switch (svc.phase()) {
+    @case ('hub') {
+      <div class="hub glass">
+        <div class="hub-stats">
+          <div class="stat"><strong>{{ svc.meta().bestWave }}</strong><span>Best wave</span></div>
+          <div class="stat"><strong>{{ svc.meta().runs }}</strong><span>Runs</span></div>
+          <div class="stat"><strong>{{ svc.starters().length }}</strong><span>Starters unlocked</span></div>
+          <div class="stat"><strong>{{ svc.meta().totalCaught }}</strong><span>Total catches</span></div>
+        </div>
+        <p class="hub-lore">
+          Waves never end — they only get taller. Every defeated foe is <em>dazed</em> for one
+          catch window, and everything you catch is unlocked as a starter, forever.
+        </p>
+        <div class="hub-actions">
+          <button class="btn btn-primary" type="button" (click)="svc.startNewRun(false)">
+            <pv-icon name="map-pin" /> Begin an Odyssey
+          </button>
+          <button class="btn" type="button" (click)="svc.startNewRun(true)" title="Same seed for everyone today">
+            <pv-icon name="sun" /> Daily march
+          </button>
+        </div>
+      </div>
+    }
+
+    @case ('starter') {
+      <div class="starter glass">
+        <h3>Choose your companion</h3>
+        <p class="hint">Level {{ 15 }}, five Poké Balls, no way back.</p>
+        <div class="roster">
+          @for (id of svc.starters(); track id) {
+            <button class="roster-mon" type="button" [disabled]="svc.busy()" (click)="svc.pickStarter(id)">
+              <img [src]="sprite(id)" [alt]="'#' + id" loading="lazy" width="68" height="68" />
+              <span>#{{ id }}</span>
+            </button>
+          }
+        </div>
+        @if (svc.busy()) { <pv-spinner label="Waking your companion…" /> }
+        <button class="btn ghost" type="button" (click)="svc.backToHub()">Back</button>
+      </div>
+    }
+
+    @case ('wave') {
+      @if (svc.spec(); as s) {
+        <div class="wave glass" [style.--tint]="s.biome.tint">
+          <header class="wave-head">
+            <span class="wave-no">Wave {{ s.wave }}</span>
+            <h3>{{ s.biome.name }}</h3>
+            <span class="wave-kind" [class.boss]="s.kind === 'boss'" [class.elite]="s.kind === 'elite'">{{ kindLabel(s.kind) }}</span>
+          </header>
+          <div class="foes">
+            @for (id of s.species; track $index) {
+              <div class="foe">
+                <img [src]="sprite(id)" [alt]="'#' + id" loading="lazy" width="72" height="72" />
+                <span>Lv {{ s.level }}</span>
+              </div>
+            }
+          </div>
+          <button class="btn btn-primary fight" type="button" [disabled]="svc.busy()" (click)="svc.fight()">
+            <pv-icon name="swords" /> {{ svc.busy() ? 'Scouting…' : 'Engage!' }}
+          </button>
+          <button class="btn ghost" type="button" (click)="svc.abandon()">Abandon run</button>
+        </div>
+        <ng-container *ngTemplateOutlet="party" />
+      }
+    }
+
+    @case ('battle') {
+      @if (svc.setup(); as setup) {
+        <pv-tournament-match [setup]="setup" (finished)="svc.onBattleFinished($event)" />
+      }
+    }
+
+    @case ('catch') {
+      @if (svc.daze(); as d) {
+        <div class="catch glass">
+          <h3>{{ titleCase(d.name) }} is dazed!</h3>
+          <img class="dazed" [src]="d.sprite" [alt]="d.name" width="140" height="140" />
+          <p class="hint">Catch chance {{ pct(d.chance) }}% · {{ svc.balls() }} ball{{ svc.balls() === 1 ? '' : 's' }} left</p>
+          <div class="catch-actions">
+            <button class="btn btn-primary" type="button" [disabled]="svc.balls() <= 0 || svc.busy()" (click)="svc.throwBall()">
+              <pv-icon name="target" /> Throw a ball
+            </button>
+            <button class="btn ghost" type="button" [disabled]="svc.busy()" (click)="svc.skipCatch()">Let it flee</button>
+          </div>
+        </div>
+        <ng-container *ngTemplateOutlet="party" />
+      }
+    }
+
+    @case ('reward') {
+      <div class="reward glass">
+        <h3>The road provides</h3>
+        <div class="reward-cards">
+          @for (r of svc.rewards(); track r.label) {
+            <button class="reward-card" type="button" [disabled]="svc.busy()" (click)="svc.chooseReward(r)">
+              <strong>{{ r.label }}</strong>
+              <span>{{ r.desc }}</span>
+            </button>
+          }
+        </div>
+      </div>
+      <ng-container *ngTemplateOutlet="party" />
+    }
+
+    @case ('lost') {
+      <div class="lost glass">
+        <h3>The march ends at wave {{ svc.wave() }}</h3>
+        @if (svc.wave() >= svc.meta().bestWave && svc.wave() > 0) { <p class="pb">🏅 New personal best!</p> }
+        @if (svc.runUnlocks().length) {
+          <p>New starters unlocked this run:</p>
+          <div class="unlocks">
+            @for (id of svc.runUnlocks(); track id) {
+              <img [src]="sprite(id)" [alt]="'#' + id" width="56" height="56" />
+            }
+          </div>
+        } @else {
+          <p class="hint">No new species this time — the roster awaits your next march.</p>
+        }
+        <button class="btn btn-primary" type="button" (click)="svc.backToHub()">Back to camp</button>
+      </div>
+    }
+  }
+</section>
+
+<ng-template #party>
+  @if (svc.partyView().length) {
+    <div class="party glass">
+      <span class="party-balls" title="Poké Balls"><pv-icon name="target" /> {{ svc.balls() }}</span>
+      @for (p of svc.partyView(); track p.mon.id + '-' + $index) {
+        <div class="pm" [class.down]="p.hpPct <= 0" [title]="titleCase(p.mon.name) + ' · Lv ' + p.mon.level">
+          <img [src]="p.mon.sprite" [alt]="p.mon.name" loading="lazy" />
+          <span class="pm-lv">L{{ p.mon.level }}</span>
+          <span class="pm-bar"><span class="pm-fill" [class.low]="p.hpPct <= 25" [style.width.%]="p.hpPct"></span></span>
+        </div>
+      }
+    </div>
+  }
+</ng-template>

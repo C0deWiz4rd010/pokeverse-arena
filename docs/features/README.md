@@ -27,6 +27,7 @@ For the high-level plan and milestone status, see
 | 13 | Ascension Spire (seeded roguelike climb) | [spire.md](spire.md) | ✅ |
 | 14 | Trainer Profile (progression backbone, achievements, accent themes) | [profile.md](profile.md) | ✅ |
 | 15 | ⌘K Command Palette (global search, actions, recents) | [command-palette.md](command-palette.md) | ✅ |
+| 16 | Odyssey (endless biome roguelike, daze-catch, starter unlocks) | [odyssey.md](odyssey.md) | ✅ |
 
 ## Deep Systems Overhaul (v2)
 

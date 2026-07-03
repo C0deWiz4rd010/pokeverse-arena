@@ -43,6 +43,7 @@ export class App {
     { path: '/arena', label: 'Arena', icon: 'castle' },
     { path: '/tournaments', label: 'Tournaments', icon: 'trophy' },
     { path: '/spire', label: 'Spire', icon: 'mountain' },
+    { path: '/odyssey', label: 'Odyssey', icon: 'map-pin' },
     { path: '/world', label: 'World', icon: 'map' },
     { path: '/contest', label: 'Contest', icon: 'sparkles' },
     { path: '/adventure', label: 'Adventure', icon: 'scroll-text' },

@@ -4,6 +4,28 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.7.0 — 2026-07-03
+
+### Added
+
+- **Odyssey** (`/odyssey`) — a new, PokéRogue-inspired **endless roguelike**
+  mode, complementing the Spire's fixed climb:
+  - **Eight cycling biomes** (ten waves each, +15 foe levels per full lap),
+    each with its own species pool, tint and a wave-10 **guardian boss**;
+    elite packs every 5th wave; AI tier scales basic → strong → elite.
+  - **Daze-catch**: winning a wave opens one catch window on the lead foe
+    (65/45/25% per ball by wave kind, balls are scarce). Catches join the
+    team level-matched *and* permanently **unlock the species as a starter**
+    (`odyssey:meta`) — the collection is the meta-progression.
+  - **Growth**: the team levels after every wave and **auto-evolves** past
+    evolution thresholds (live chain lookup, cache-first); HP carries between
+    waves as max-HP fractions (no free healing).
+  - **Seeded reward drafts** (heal / ball cache / Rare Candy / held item) and
+    a **Daily march** seed shared by everyone.
+  - Fights reuse the shared `pv-tournament-match` component, so the full
+    engine depth applies. Pure wave/meta logic in `game/odyssey/` (11 specs).
+  - Wired into the nav, home grid and the ⌘K palette (try "pokerogue").
+
 ## v1.6.0 — 2026-07-03
 
 Adventure (RPG) overhaul, part 1 — "Angler, Ledges & Wild Luck".
