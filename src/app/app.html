@@ -58,6 +58,8 @@
   >v{{ version }}</a>
 </footer>
 
+<pv-toasts />
+
 @defer (on idle) {
   <pv-command-palette [open]="paletteOpen()" (closed)="paletteOpen.set(false)" />
 }

@@ -4,7 +4,9 @@ import { APP_VERSION } from './core/version';
 import { ThemeService } from './core/theme/theme.service';
 import { IconComponent } from './core/ui/icon/icon';
 import type { IconName } from './core/ui/icon/icons.data';
+import { ToastsComponent } from './core/ui/toast/toasts';
 import { CommandPaletteComponent } from './features/command-palette/command-palette';
+import { AchievementWatcherService } from './features/profile/achievement-watcher.service';
 
 interface NavItem {
   path: string;
@@ -15,7 +17,7 @@ interface NavItem {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, CommandPaletteComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ToastsComponent, CommandPaletteComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
@@ -26,6 +28,7 @@ interface NavItem {
 export class App {
   /** Instantiated here so the persisted accent palette applies at startup. */
   private readonly theme = inject(ThemeService);
+  private readonly achievements = inject(AchievementWatcherService);
 
   protected readonly menuOpen = signal(false);
   protected readonly paletteOpen = signal(false);
@@ -45,6 +48,10 @@ export class App {
     { path: '/adventure', label: 'Adventure', icon: 'scroll-text' },
     { path: '/profile', label: 'Profile', icon: 'crown' },
   ];
+
+  constructor() {
+    this.achievements.start();
+  }
 
   /** ⌘K / Ctrl+K opens the command palette from anywhere. */
   protected onGlobalKey(event: KeyboardEvent): void {

@@ -12,6 +12,10 @@ The connective layer that unifies progress from every system into one identity.
   progression.
 - **An achievements wall** — 10 milestones evaluated by pure predicates over the
   aggregate state, shown locked/unlocked.
+- **Achievement unlock toasts** (v1.3.0) — `AchievementWatcherService`
+  re-aggregates progression on every navigation (plus a 30 s poll), diffs the
+  unlocked ids against a persisted "seen" set and celebrates the delta with a
+  global toast. First run baselines silently; a reset re-arms the toasts.
 - **Appearance picker** (v1.2.0) — five accent palettes (Aurora, Ember,
   Verdant, Sakura, Solar) applied app-wide via `ThemeService` and persisted;
   see [app-shell.md](app-shell.md#theme).
@@ -25,6 +29,9 @@ The connective layer that unifies progress from every system into one identity.
 | `features/profile/profile.service.ts` | Aggregates arena/spire/tournament state into one snapshot; persists identity. |
 | `features/profile/profile.ts/.html/.scss` | Identity card, rank, appearance picker, records grid, achievements wall. |
 | `core/theme/theme.service.ts` | Accent palettes + persistence; overrides `--accent*` tokens on `<html>`. |
+| `features/profile/achievement-watcher.service.ts` | Unlock detection: navigation + poll triggers, seen-set persistence, toast dispatch. |
+| `features/profile/achievement-diff.ts` (+ spec) | Pure unlocked-vs-seen diff (`diffUnlocked`). |
+| `core/ui/toast/` | Global `ToastService` + `pv-toasts` stack rendered by the shell. |
 | `core/models/profile.spec.ts` | Achievement evaluation + rank thresholds. |
 
 ## How it works

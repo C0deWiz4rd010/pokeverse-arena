@@ -4,6 +4,24 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.3.0 — 2026-07-03
+
+### Added
+
+- **Achievement unlock toasts** — earning any of the ten achievements now pops
+  a celebratory toast (gold gradient icon, name + description) no matter which
+  system earned it. `AchievementWatcherService` re-aggregates progression on
+  every navigation plus a slow 30 s poll, diffs the unlocked set against a
+  persisted "seen" list (`pv:achievements:seen`) and toasts only the delta.
+  The very first run baselines silently, so pre-existing progress doesn't
+  spam; a progress reset re-arms the toasts. Pure diff logic
+  (`achievement-diff.ts`) is unit-tested.
+- **Global toast system** (`src/app/core/ui/toast/`) — a reusable
+  `ToastService` + `pv-toasts` stack (bottom-right, `aria-live="polite"`,
+  click to dismiss, auto-dismiss after 6 s, capped at 4). Feature-local inline
+  toasts (Spire, World, RPG) are unchanged; this is for cross-cutting
+  notifications.
+
 ## v1.2.0 — 2026-07-03
 
 ### Added

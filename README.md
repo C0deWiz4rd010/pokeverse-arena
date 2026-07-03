@@ -20,6 +20,8 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
   by name/number — fully keyboard-driven.
 - **Accent themes** — five curated color palettes (Aurora, Ember, Verdant,
   Sakura, Solar), switchable on the Trainer Profile and persisted.
+- **Achievement toasts** — unlocking any milestone pops a celebratory
+  notification, no matter which mode earned it.
 - **Interactive Pokédex** — search, filter, infinite scroll, shiny toggle, base-stat
   radar, abilities, moves, evolution tree, compare — with shimmer skeleton loading.
 - **Type Lab** — interactive type chart, attacker/defender calculator, team

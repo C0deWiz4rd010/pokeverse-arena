@@ -16,6 +16,9 @@ every feature.
 - Hosts the **⌘K command palette** trigger (topbar search pill + global
   `Ctrl+K` listener) — see [command-palette.md](command-palette.md).
 - Applies the persisted **accent theme** at startup via `ThemeService`.
+- Renders the global **toast stack** (`pv-toasts`) and starts the
+  **achievement watcher** so unlocks anywhere in the app get celebrated — see
+  [profile.md](profile.md).
 
 ## Files
 
