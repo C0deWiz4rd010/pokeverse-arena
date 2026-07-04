@@ -31,7 +31,20 @@ Route: `/odyssey`.
   exactly like the Spire.
 - **Meta-progression** (`odyssey:meta`): best wave, runs, total catches and
   the **unlocked starter roster** (base: Bulbasaur/Charmander/Squirtle/Pikachu).
+  Surfaced on the Trainer Profile (two records rows + three achievements:
+  Wayfarer / Endless Marcher / Roster Builder) and feeds the rank score.
 - **Daily march** — a per-day seed for a shared challenge.
+
+### Economy & relics (v1.8.0)
+
+- **Coins** are earned per wave (scaling with wave + kind) and spent at a
+  **wandering trader** that appears after each guardian falls: restock balls,
+  buy a heal, grab a held item, or purchase one of two **relics**.
+- **Relics** are the Spire's run-long boons, reused here — held relics boost the
+  live team each fight (`applyRelicsToTeam`) and show as chips under the party.
+- **Guardian fields** — every biome boss imposes a persistent battlefield from
+  turn one (its biome's terrain or weather), shown on the wave preview and
+  handed to the shared match via `setup.field`.
 
 ## Files
 

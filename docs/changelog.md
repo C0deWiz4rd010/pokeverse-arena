@@ -4,6 +4,28 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.8.0 — 2026-07-04
+
+Odyssey deep pass — economy, relics, guardian fields & profile ties.
+
+### Added
+
+- **Coins & wandering trader** — clearing a wave now pays coins (scaling with
+  wave + kind). After every **guardian** falls, a seeded shop appears: restock
+  Poké Balls, buy a team heal, pick up a held item, or buy one of two **relics**
+  (`coinsForWave` + `generateOdysseyShop`, unit-tested).
+- **Relics** — the Odyssey borrows the Spire's run-long relic system (Lucky
+  Coin, Vitamin Boost, Leftovers Aura, Swift Feather, Guardian Shell,
+  Berserker Band, Focus Charm). Held relics tint the party bar as chips and
+  boost the team via `applyRelicsToTeam` each fight.
+- **Guardian field conditions** — each biome's boss imposes a persistent
+  battlefield from turn one (Grassy/Psychic/Electric Terrain, Rain, Sun, Sand,
+  Snow), shown on the wave preview and passed to the match via `setup.field`.
+- **Profile integration** — `ProfileState` gains `odysseyBestWave` +
+  `odysseyUnlocked`; two records rows and three achievements (**Wayfarer**
+  wave 10, **Endless Marcher** wave 30, **Roster Builder** 12 starters), and
+  Odyssey depth now feeds the rank score.
+
 ## v1.7.0 — 2026-07-03
 
 ### Added

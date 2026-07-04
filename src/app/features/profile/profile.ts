@@ -40,6 +40,8 @@ export class ProfileComponent {
       { icon: 'sparkles' as const, label: 'Shiny catches', value: `${s.shinyCaught}` },
       { icon: 'wand-sparkles' as const, label: 'Contest ribbons', value: `${s.contestRibbons} / 5` },
       { icon: 'flame' as const, label: 'Daily streak', value: `${s.dailyStreak} (best ${s.dailyBest})` },
+      { icon: 'map-pin' as const, label: 'Odyssey wave', value: `${s.odysseyBestWave}` },
+      { icon: 'egg' as const, label: 'Odyssey starters', value: `${s.odysseyUnlocked}` },
       { icon: 'zap' as const, label: 'Rivalry (W–L)', value: `${s.rivalWins}–${s.rivalLosses}` },
       { icon: 'dices' as const, label: 'Crystal-ball hits', value: `${s.pickemHits}` },
     ];

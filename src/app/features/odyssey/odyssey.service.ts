@@ -9,7 +9,9 @@ import { evolutionAt, levelUpEvolutions } from '../../game/rpg/evolution';
 import type { PlayerMatchSetup } from '../tournaments/tournaments.service';
 import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
 import {
+  coinsForWave,
   generateOdysseyRewards,
+  generateOdysseyShop,
   levelGain,
   loadOdysseyMeta,
   recordOdysseyRun,
@@ -18,10 +20,12 @@ import {
   waveSpec,
   type OdysseyMeta,
   type OdysseyReward,
+  type OdysseyShopEntry,
   type WaveSpec,
 } from '../../game/odyssey/odyssey';
+import { applyRelicsToTeam, coinMultiplier, relicById, type RelicId } from '../../game/spire/relics';
 
-export type OdysseyPhase = 'hub' | 'starter' | 'wave' | 'battle' | 'catch' | 'reward' | 'lost';
+export type OdysseyPhase = 'hub' | 'starter' | 'wave' | 'battle' | 'catch' | 'reward' | 'shop' | 'lost';
 
 const PARTY_CAP = 6;
 const START_LEVEL = 15;
@@ -63,10 +67,13 @@ export class OdysseyService {
   readonly meta = signal<OdysseyMeta>(loadOdysseyMeta());
   readonly wave = signal(0);
   readonly balls = signal(0);
+  readonly coins = signal(0);
+  readonly relics = signal<RelicId[]>([]);
   readonly isDaily = signal(false);
   readonly spec = signal<WaveSpec | null>(null);
   readonly setup = signal<PlayerMatchSetup | null>(null);
   readonly rewards = signal<OdysseyReward[]>([]);
+  readonly shop = signal<OdysseyShopEntry[]>([]);
   readonly daze = signal<DazeState | null>(null);
   /** Species (dex ids) newly unlocked during this run, for the summary. */
   readonly runUnlocks = signal<number[]>([]);
@@ -77,6 +84,8 @@ export class OdysseyService {
   private catchAttempt = 0;
   /** The foe team of the wave just fought (for the daze panel). */
   private lastFoe: Battler[] = [];
+  /** The relic-boosted team built for the active fight (for HP read-back). */
+  private activeTeam: Battler[] = [];
 
   readonly partyView = computed(() => {
     this.version();
@@ -89,6 +98,7 @@ export class OdysseyService {
   private readonly version = signal(0);
 
   readonly starters = computed(() => starterRoster(this.meta()));
+  readonly relicList = computed(() => this.relics().map((id) => relicById(id)).filter((r) => !!r));
 
   /* --------------------------------------------------------------- setup */
 
@@ -110,6 +120,8 @@ export class OdysseyService {
       this.party = [mon];
       this.hpFraction = [1];
       this.balls.set(START_BALLS);
+      this.coins.set(0);
+      this.relics.set([]);
       this.wave.set(0);
       this.version.update((v) => v + 1);
       await this.nextWave();
@@ -141,13 +153,18 @@ export class OdysseyService {
       ).filter((b): b is Battler => b !== null);
       if (!foeTeam.length) throw new Error('no foe');
       this.lastFoe = foeTeam;
-      const startHp = this.party.map((m, i) => Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)));
-      const player: Trainer = { id: 'player', name: 'You', title: 'Wanderer', avatar: avatar('Odyssey-You', true), team: this.party, isPlayer: true };
+      // Relics boost the live team for this fight; HP rides as fractions of the boosted max.
+      const playerTeam = applyRelicsToTeam(this.party, this.relics());
+      this.activeTeam = playerTeam;
+      const startHp = playerTeam.map((m, i) => Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)));
+      const player: Trainer = { id: 'player', name: 'You', title: 'Wanderer', avatar: avatar('Odyssey-You', true), team: playerTeam, isPlayer: true };
       const foeName = spec.kind === 'boss' ? `${spec.biome.name} Guardian` : spec.kind === 'elite' ? 'Elite Pack' : 'Wild Encounter';
       const foe: Trainer = { id: `w${spec.wave}`, name: foeName, title: spec.biome.name, avatar: avatar(`${spec.biome.id}-${spec.wave}`, spec.kind === 'boss'), team: foeTeam };
       const match: BracketMatch = { id: `ody-${spec.wave}`, round: 'final', slot: 0, a: player, b: foe, winner: null, played: false };
       const aiTier: AiTier = spec.wave < 10 ? 'basic' : spec.wave < 30 ? 'strong' : 'elite';
-      this.setup.set({ match, round: 'final', player, foe, playerTeam: this.party, foeTeam, aiTier, playerStartHp: startHp });
+      // Guardians impose their biome's field condition from turn one.
+      const field = spec.kind === 'boss' ? { weather: spec.biome.field.weather, terrain: spec.biome.field.terrain } : undefined;
+      this.setup.set({ match, round: 'final', player, foe, playerTeam, foeTeam, aiTier, playerStartHp: startHp, field, accent: spec.biome.tint });
       this.phase.set('battle');
     } catch {
       this.error.set('The wave scattered. Try again.');
@@ -159,7 +176,8 @@ export class OdysseyService {
 
   onBattleFinished(outcome: MatchOutcome): void {
     this.setup.set(null);
-    this.hpFraction = this.party.map((m, i) => Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)));
+    const ref = this.activeTeam.length === this.party.length ? this.activeTeam : this.party;
+    this.hpFraction = ref.map((m, i) => Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)));
     this.version.update((v) => v + 1);
     if (!outcome.playerWon) {
       this.endRun();
@@ -170,6 +188,7 @@ export class OdysseyService {
 
   private async afterVictory(): Promise<void> {
     const spec = this.spec()!;
+    this.addCoins(coinsForWave(spec.wave, spec.kind));
     this.busy.set(true);
     try {
       await this.levelUpTeam(levelGain(spec.kind));
@@ -262,15 +281,71 @@ export class OdysseyService {
         break;
       }
       case 'item': {
-        const idx = this.party.findIndex((m) => !m.item);
-        const target = idx >= 0 ? idx : 0;
-        this.party = this.party.map((m, i) => (i === target ? { ...m, item: r.payload as ItemId } : m));
-        this.version.update((v) => v + 1);
+        this.equipItem(r.payload as ItemId);
         break;
       }
+      case 'coins':
+        this.addCoins(Number(r.payload));
+        break;
     }
     this.rewards.set([]);
+    // A wandering trader camps beyond every fallen guardian.
+    if (this.spec()?.kind === 'boss') {
+      this.shop.set(generateOdysseyShop(this.wave(), this.seed));
+      this.phase.set('shop');
+      return;
+    }
     await this.nextWave();
+  }
+
+  /* ----------------------------------------------------------------- shop */
+
+  buy(entry: OdysseyShopEntry): void {
+    if (this.coins() < entry.cost) return;
+    this.coins.update((c) => c - entry.cost);
+    switch (entry.kind) {
+      case 'balls':
+        this.balls.update((b) => b + Number(entry.payload));
+        break;
+      case 'heal':
+        this.hpFraction = this.hpFraction.map((f) => Math.min(1, f + Number(entry.payload)));
+        this.version.update((v) => v + 1);
+        break;
+      case 'relic':
+        this.addRelic(entry.payload as RelicId);
+        break;
+      case 'item':
+        this.equipItem(entry.payload as ItemId);
+        break;
+    }
+    this.shop.update((s) => s.filter((e) => e !== entry));
+  }
+
+  async leaveShop(): Promise<void> {
+    this.shop.set([]);
+    await this.nextWave();
+  }
+
+  private addRelic(id: RelicId): void {
+    if (this.relics().includes(id)) {
+      this.addCoins(40);
+      this.toast.set('Duplicate relic — the trader refunds 40 coins.');
+      return;
+    }
+    this.relics.update((r) => [...r, id]);
+    this.toast.set(`Relic gained: ${relicById(id)?.name}`);
+  }
+
+  private equipItem(item: ItemId): void {
+    const idx = this.party.findIndex((m) => !m.item);
+    const target = idx >= 0 ? idx : 0;
+    this.party = this.party.map((m, i) => (i === target ? { ...m, item } : m));
+    this.version.update((v) => v + 1);
+  }
+
+  private addCoins(n: number): void {
+    if (n <= 0) return;
+    this.coins.update((c) => c + Math.round(n * coinMultiplier(this.relics())));
   }
 
   /* --------------------------------------------------------------- growth */

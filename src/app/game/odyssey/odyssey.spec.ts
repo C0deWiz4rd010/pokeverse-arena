@@ -4,9 +4,11 @@ import {
   BIOMES,
   WAVES_PER_BIOME,
   biomeForWave,
+  coinsForWave,
   defaultOdysseyMeta,
   foeLevel,
   generateOdysseyRewards,
+  generateOdysseyShop,
   levelGain,
   loopForWave,
   recordOdysseyRun,
@@ -71,6 +73,28 @@ describe('odyssey waves', () => {
     expect(r).toHaveLength(3);
     expect(new Set(r.map((x) => x.kind)).size).toBe(3);
     expect(generateOdysseyRewards(4, 'r')).toEqual(r);
+  });
+
+  it('pays coins that scale with wave and kind', () => {
+    expect(coinsForWave(1, 'wild')).toBeLessThan(coinsForWave(9, 'wild'));
+    expect(coinsForWave(10, 'boss')).toBeGreaterThan(coinsForWave(10, 'elite'));
+  });
+
+  it('every biome guardian imposes a field condition', () => {
+    for (const b of BIOMES) {
+      expect(b.field.label.length).toBeGreaterThan(0);
+      expect(!!b.field.weather || !!b.field.terrain).toBe(true);
+    }
+  });
+
+  it('stocks a seeded trader with two distinct relics and rising prices', () => {
+    const s = generateOdysseyShop(10, 'x');
+    expect(s).toHaveLength(5);
+    expect(generateOdysseyShop(10, 'x')).toEqual(s);
+    const relics = s.filter((e) => e.kind === 'relic').map((e) => e.payload);
+    expect(new Set(relics).size).toBe(2);
+    const later = generateOdysseyShop(40, 'x');
+    expect(later[0].cost).toBeGreaterThan(s[0].cost);
   });
 });
 

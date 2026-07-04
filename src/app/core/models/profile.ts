@@ -42,6 +42,9 @@ export interface ProfileState {
   /** Daily Challenge: live consecutive-day win streak and all-time best. */
   readonly dailyStreak: number;
   readonly dailyBest: number;
+  /** Odyssey roguelike: furthest wave reached and species unlocked as starters. */
+  readonly odysseyBestWave: number;
+  readonly odysseyUnlocked: number;
 }
 
 export interface Achievement {
@@ -73,6 +76,9 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'oracle', name: 'Crystal Oracle', desc: 'Hit a crystal-ball champion call.', icon: 'dices', test: (s) => s.pickemHits >= 1 },
   { id: 'daily-3', name: 'On Fire', desc: 'Reach a 3-day Daily Challenge streak.', icon: 'flame', test: (s) => s.dailyBest >= 3 },
   { id: 'daily-7', name: 'Eternal Flame', desc: 'Reach a 7-day Daily Challenge streak.', icon: 'sun', test: (s) => s.dailyBest >= 7 },
+  { id: 'odyssey-10', name: 'Wayfarer', desc: 'Reach wave 10 of the Odyssey.', icon: 'map-pin', test: (s) => s.odysseyBestWave >= 10 },
+  { id: 'odyssey-30', name: 'Endless Marcher', desc: 'Reach wave 30 of the Odyssey.', icon: 'mountain-snow', test: (s) => s.odysseyBestWave >= 30 },
+  { id: 'odyssey-roster', name: 'Roster Builder', desc: 'Unlock 12 Odyssey starters.', icon: 'egg', test: (s) => s.odysseyUnlocked >= 12 },
 ];
 
 export interface AchievementView {
@@ -110,7 +116,8 @@ export function progressScore(state: ProfileState): number {
     (state.arenaChampion ? 5 : 0) +
     state.adventureBadges * 2 +
     state.contestRibbons +
-    state.pickemHits
+    state.pickemHits +
+    Math.floor(state.odysseyBestWave / 10)
   );
 }
 

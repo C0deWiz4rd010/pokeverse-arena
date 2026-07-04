@@ -21,11 +21,22 @@ const base: ProfileState = {
   pickemHits: 0,
   dailyStreak: 0,
   dailyBest: 0,
+  odysseyBestWave: 0,
+  odysseyUnlocked: 0,
 };
 
 describe('profile achievements', () => {
   it('unlocks nothing for a fresh trainer', () => {
     expect(unlockedCount(base)).toBe(0);
+  });
+
+  it('unlocks odyssey milestones from wave depth and roster size', () => {
+    const ids = (s: Partial<typeof base>) =>
+      evaluateAchievements({ ...base, ...s }).filter((a) => a.unlocked).map((a) => a.achievement.id);
+    expect(ids({ odysseyBestWave: 10 })).toContain('odyssey-10');
+    expect(ids({ odysseyBestWave: 10 })).not.toContain('odyssey-30');
+    expect(ids({ odysseyBestWave: 30 })).toContain('odyssey-30');
+    expect(ids({ odysseyUnlocked: 12 })).toContain('odyssey-roster');
   });
 
   it('unlocks daily-streak milestones from the best streak', () => {

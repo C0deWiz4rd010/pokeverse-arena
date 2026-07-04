@@ -11,6 +11,7 @@ import {
 } from '../../core/models/profile';
 import { LEADER_LADDER } from '../../game/arena/gym-leaders';
 import { EMPTY_DAILY, currentStreak, dailyKey, type DailyRecord } from '../../game/daily/daily';
+import { loadOdysseyMeta } from '../../game/odyssey/odyssey';
 import { loadMeta } from '../../game/spire';
 import { loadHistory, loadRival } from '../../game/tournament';
 
@@ -68,6 +69,7 @@ export class ProfileService {
     const contestRibbons = this.save.read<string[]>('contest:ribbons', []).length;
     const rival = loadRival();
     const daily = this.save.read<DailyRecord>('daily:record', EMPTY_DAILY);
+    const odyssey = loadOdysseyMeta();
 
     return {
       badges,
@@ -89,6 +91,8 @@ export class ProfileService {
       pickemHits,
       dailyStreak: currentStreak(daily, dailyKey()),
       dailyBest: daily.best,
+      odysseyBestWave: odyssey.bestWave,
+      odysseyUnlocked: odyssey.unlocked.length,
     };
   }
 }

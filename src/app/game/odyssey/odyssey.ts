@@ -7,8 +7,18 @@
  * Pure logic + data — the feature service orchestrates, this module decides.
  */
 import { SeededRng } from '../../core/utils/rng';
+import type { ItemId, Terrain, Weather } from '../engine';
+import type { RelicId } from '../spire/relics';
 
 export type WaveKind = 'wild' | 'elite' | 'boss';
+
+/** A persistent battlefield condition a guardian imposes from turn one. */
+export interface BossField {
+  readonly weather?: Weather;
+  readonly terrain?: Terrain;
+  /** Short label for the wave preview ("Grassy Terrain", "Endless Rain"). */
+  readonly label: string;
+}
 
 export interface BiomeDef {
   readonly id: string;
@@ -19,17 +29,19 @@ export interface BiomeDef {
   readonly pool: readonly number[];
   /** The guardian fought on this biome's final wave. */
   readonly boss: number;
+  /** The field its guardian imposes for the whole fight. */
+  readonly field: BossField;
 }
 
 export const BIOMES: readonly BiomeDef[] = [
-  { id: 'meadow', name: 'Whisper Meadow', tint: '#63bc5a', pool: [16, 19, 10, 13, 43, 25, 29, 32, 39], boss: 143 },
-  { id: 'forest', name: 'Gloomtangle Forest', tint: '#2f855a', pool: [46, 48, 102, 114, 123, 127, 214, 543, 12], boss: 3 },
-  { id: 'cavern', name: 'Echo Cavern', tint: '#8b7355', pool: [41, 74, 95, 66, 111, 304, 293, 524, 50], boss: 208 },
-  { id: 'coast', name: 'Siren Coast', tint: '#4d90d5', pool: [72, 90, 116, 118, 120, 129, 278, 456, 54], boss: 130 },
-  { id: 'volcano', name: 'Cinderpeak', tint: '#e25822', pool: [58, 77, 126, 218, 322, 240, 631, 66, 104], boss: 6 },
-  { id: 'tundra', name: 'Frostveil Tundra', tint: '#73cec0', pool: [124, 215, 220, 361, 459, 582, 613, 87, 42], boss: 144 },
-  { id: 'ruins', name: 'Hollow Ruins', tint: '#7b6bb0', pool: [92, 200, 353, 355, 425, 562, 607, 63, 96], boss: 94 },
-  { id: 'roost', name: "Dragon's Roost", tint: '#0b6dc3', pool: [147, 371, 443, 610, 621, 704, 133, 123, 142], boss: 149 },
+  { id: 'meadow', name: 'Whisper Meadow', tint: '#63bc5a', pool: [16, 19, 10, 13, 43, 25, 29, 32, 39], boss: 143, field: { terrain: 'grassy', label: 'Grassy Terrain' } },
+  { id: 'forest', name: 'Gloomtangle Forest', tint: '#2f855a', pool: [46, 48, 102, 114, 123, 127, 214, 543, 12], boss: 3, field: { terrain: 'grassy', label: 'Grassy Terrain' } },
+  { id: 'cavern', name: 'Echo Cavern', tint: '#8b7355', pool: [41, 74, 95, 66, 111, 304, 293, 524, 50], boss: 208, field: { weather: 'sand', label: 'Sandstorm' } },
+  { id: 'coast', name: 'Siren Coast', tint: '#4d90d5', pool: [72, 90, 116, 118, 120, 129, 278, 456, 54], boss: 130, field: { weather: 'rain', label: 'Endless Rain' } },
+  { id: 'volcano', name: 'Cinderpeak', tint: '#e25822', pool: [58, 77, 126, 218, 322, 240, 631, 66, 104], boss: 6, field: { weather: 'sun', label: 'Blazing Sun' } },
+  { id: 'tundra', name: 'Frostveil Tundra', tint: '#73cec0', pool: [124, 215, 220, 361, 459, 582, 613, 87, 42], boss: 144, field: { weather: 'snow', label: 'Snowfall' } },
+  { id: 'ruins', name: 'Hollow Ruins', tint: '#7b6bb0', pool: [92, 200, 353, 355, 425, 562, 607, 63, 96], boss: 94, field: { terrain: 'psychic', label: 'Psychic Terrain' } },
+  { id: 'roost', name: "Dragon's Roost", tint: '#0b6dc3', pool: [147, 371, 443, 610, 621, 704, 133, 123, 142], boss: 149, field: { terrain: 'electric', label: 'Electric Terrain' } },
 ];
 
 /** Waves per biome (boss on the last one). */
@@ -87,9 +99,14 @@ export function levelGain(kind: WaveKind): number {
   return kind === 'boss' ? 3 : kind === 'elite' ? 2 : 1;
 }
 
+/** Coins earned for clearing a wave (before relic multipliers). */
+export function coinsForWave(wave: number, kind: WaveKind): number {
+  return 18 + wave * 3 + (kind === 'boss' ? 60 : kind === 'elite' ? 22 : 0);
+}
+
 /* -------------------------------------------------------------- rewards */
 
-export type OdysseyRewardKind = 'heal' | 'balls' | 'candy' | 'item';
+export type OdysseyRewardKind = 'heal' | 'balls' | 'candy' | 'item' | 'coins';
 
 export interface OdysseyReward {
   readonly kind: OdysseyRewardKind;
@@ -99,18 +116,56 @@ export interface OdysseyReward {
   readonly payload: number | string;
 }
 
-const ITEM_POOL = ['leftovers', 'sitrus-berry', 'lum-berry', 'muscle-band', 'wise-glasses', 'life-orb', 'choice-scarf'] as const;
+const ITEM_POOL: readonly ItemId[] = ['leftovers', 'sitrus-berry', 'lum-berry', 'muscle-band', 'wise-glasses', 'life-orb', 'choice-scarf'];
 
 /** Three distinct reward choices after a cleared wave (seeded). */
 export function generateOdysseyRewards(wave: number, seed: string): OdysseyReward[] {
   const rng = new SeededRng(`${seed}-reward-${wave}`);
+  const purse = 40 + wave * 4;
   const all: OdysseyReward[] = [
     { kind: 'heal', label: 'Take a breather', desc: 'The whole team recovers 40% HP.', payload: 0.4 },
     { kind: 'balls', label: 'Ball cache', desc: 'Pick up 2 Poké Balls.', payload: 2 },
     { kind: 'candy', label: 'Rare Candy', desc: 'One team member gains 2 extra levels.', payload: 2 },
     { kind: 'item', label: 'Found gear', desc: 'A held item for a bare-handed member.', payload: rng.pick([...ITEM_POOL]) },
+    { kind: 'coins', label: 'Coin purse', desc: `A pouch of ${purse} coins for the next trader.`, payload: purse },
   ];
   return rng.shuffle(all).slice(0, 3);
+}
+
+/* ----------------------------------------------------------------- shop */
+
+/** Relics a wandering trader may stock (a curated cut of the Spire registry). */
+export const ODYSSEY_RELIC_POOL: readonly RelicId[] = [
+  'lucky-coin', 'vitamin-boost', 'leftovers-aura', 'swift-feather', 'guardian-shell', 'berserker-band', 'focus-charm',
+];
+
+export type OdysseyShopKind = 'balls' | 'heal' | 'relic' | 'item';
+
+export interface OdysseyShopEntry {
+  readonly kind: OdysseyShopKind;
+  readonly label: string;
+  readonly desc: string;
+  readonly cost: number;
+  /** balls: count · heal: fraction · relic: RelicId · item: engine item id. */
+  readonly payload: number | string;
+}
+
+/**
+ * The wandering trader who appears after every guardian falls. Stock and
+ * prices are seeded per wave; prices climb slowly with depth.
+ */
+export function generateOdysseyShop(wave: number, seed: string): OdysseyShopEntry[] {
+  const rng = new SeededRng(`${seed}-shop-${wave}`);
+  const up = Math.floor(wave * 1.5);
+  const relic = rng.pick([...ODYSSEY_RELIC_POOL]);
+  const relic2 = rng.pick(ODYSSEY_RELIC_POOL.filter((r) => r !== relic));
+  return [
+    { kind: 'balls', label: '3 Poké Balls', desc: 'Restock the catching supply.', cost: 55 + up, payload: 3 },
+    { kind: 'heal', label: 'Herbal brew', desc: 'The whole team recovers 60% HP.', cost: 70 + up, payload: 0.6 },
+    { kind: 'relic', label: 'Relic', desc: 'A run-long boon.', cost: 150 + up * 2, payload: relic },
+    { kind: 'relic', label: 'Relic', desc: 'A run-long boon.', cost: 150 + up * 2, payload: relic2 },
+    { kind: 'item', label: 'Held gear', desc: 'Equipment for a bare-handed member.', cost: 95 + up, payload: rng.pick([...ITEM_POOL]) },
+  ];
 }
 
 /* ----------------------------------------------------------------- meta */

@@ -65,6 +65,9 @@
               </div>
             }
           </div>
+          @if (s.kind === 'boss') {
+            <p class="wave-field"><pv-icon name="sparkles" /> The guardian commands: <strong>{{ s.biome.field.label }}</strong></p>
+          }
           <button class="btn btn-primary fight" type="button" [disabled]="svc.busy()" (click)="svc.fight()">
             <pv-icon name="swords" /> {{ svc.busy() ? 'Scouting…' : 'Engage!' }}
           </button>
@@ -112,6 +115,26 @@
       <ng-container *ngTemplateOutlet="party" />
     }
 
+    @case ('shop') {
+      <div class="shop glass">
+        <header class="shop-head">
+          <h3>Wandering Trader</h3>
+          <span class="shop-coins"><pv-icon name="gem" /> {{ svc.coins() }}</span>
+        </header>
+        <p class="hint">The guardian has fallen — spend your coins before pressing on.</p>
+        <div class="shop-stock">
+          @for (e of svc.shop(); track $index) {
+            <button class="shop-item" type="button" [disabled]="svc.coins() < e.cost" (click)="svc.buy(e)">
+              <span class="si-body"><strong>{{ e.label }}</strong><span>{{ e.desc }}</span></span>
+              <span class="si-cost"><pv-icon name="gem" /> {{ e.cost }}</span>
+            </button>
+          }
+        </div>
+        <button class="btn btn-primary" type="button" (click)="svc.leaveShop()">Leave & continue</button>
+      </div>
+      <ng-container *ngTemplateOutlet="party" />
+    }
+
     @case ('lost') {
       <div class="lost glass">
         <h3>The march ends at wave {{ svc.wave() }}</h3>
@@ -136,6 +159,7 @@
   @if (svc.partyView().length) {
     <div class="party glass">
       <span class="party-balls" title="Poké Balls"><pv-icon name="target" /> {{ svc.balls() }}</span>
+      <span class="party-coins" title="Coins"><pv-icon name="gem" /> {{ svc.coins() }}</span>
       @for (p of svc.partyView(); track p.mon.id + '-' + $index) {
         <div class="pm" [class.down]="p.hpPct <= 0" [title]="titleCase(p.mon.name) + ' · Lv ' + p.mon.level">
           <img [src]="p.mon.sprite" [alt]="p.mon.name" loading="lazy" />
@@ -144,5 +168,12 @@
         </div>
       }
     </div>
+    @if (svc.relicList().length) {
+      <div class="relics glass" aria-label="Relics held">
+        @for (r of svc.relicList(); track r.id) {
+          <span class="relic-chip" [title]="r.name + ' — ' + r.blurb"><pv-icon [name]="r.icon" /> {{ r.name }}</span>
+        }
+      </div>
+    }
   }
 </ng-template>

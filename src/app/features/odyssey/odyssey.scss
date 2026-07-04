@@ -96,6 +96,58 @@
   img { image-rendering: pixelated; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.5)); }
 }
 .fight { min-width: 200px; }
+.wave-field {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--accent-3);
+  background: color-mix(in srgb, var(--accent-3) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-3) 35%, transparent);
+}
+
+/* ------------------------------------------------------------------ shop */
+.shop {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 1.3rem;
+  display: grid;
+  gap: 0.9rem;
+
+  h3 { margin: 0; }
+}
+.shop-head { display: flex; align-items: center; justify-content: space-between; }
+.shop-coins {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-weight: 700; color: var(--accent-3);
+}
+.shop-stock { display: grid; gap: 0.55rem; }
+.shop-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+
+  &:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--accent); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+.si-body { display: grid; gap: 0.15rem; }
+.si-body span { font-size: 0.8rem; color: var(--text-dim); }
+.si-cost {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  flex-shrink: 0; font-weight: 700; color: var(--accent-3);
+}
 
 /* ----------------------------------------------------------------- catch */
 .catch {
@@ -172,7 +224,29 @@
   flex-wrap: wrap;
   justify-content: center;
 }
-.party-balls { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 700; color: var(--accent-3); font-size: 0.85rem; }
+.party-balls,
+.party-coins { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 700; color: var(--accent-3); font-size: 0.85rem; }
+
+.relics {
+  max-width: 560px;
+  margin: 0.6rem auto 0;
+  padding: 0.55rem 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+.relic-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
+}
 .pm {
   display: grid;
   justify-items: center;
