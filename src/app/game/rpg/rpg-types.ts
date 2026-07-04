@@ -124,6 +124,8 @@ export interface EncounterEntry {
   readonly weight: number;
   /** Species capture rate 0–255 (higher = easier). Defaults applied in catch. */
   readonly catchRate?: number;
+  /** Restrict this entry to a time of day; omitted = appears at any hour. */
+  readonly time?: import('./time').TimeBand;
 }
 export interface EncounterZone {
   /** Probability per qualifying step that a wild encounter triggers (0–1). */

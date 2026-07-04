@@ -1,6 +1,7 @@
 /** Wild-encounter rolls over a tall-grass {@link EncounterZone}. Pure + seeded. */
 import type { SeededRng } from '../../core/utils/rng';
 import type { EncounterEntry, EncounterZone } from './rpg-types';
+import type { TimeBand } from './time';
 
 export interface WildRoll {
   readonly species: string;
@@ -19,13 +20,21 @@ export function pickEntry(table: readonly EncounterEntry[], rng: SeededRng): Enc
   return table[table.length - 1];
 }
 
+/** Entries available at `band` (time-restricted ones only when they match). */
+export function entriesForTime(table: readonly EncounterEntry[], band: TimeBand): EncounterEntry[] {
+  return table.filter((e) => !e.time || e.time === band);
+}
+
 /**
  * Roll a wild encounter for a grass step. Returns null when no encounter fires
- * (per the zone's `rate`), else the chosen species + level.
+ * (per the zone's `rate`), else the chosen species + level. Entries flagged for
+ * a time of day only appear in their band (defaults to the current clock).
  */
-export function rollEncounter(zone: EncounterZone, rng: SeededRng): WildRoll | null {
+export function rollEncounter(zone: EncounterZone, rng: SeededRng, band?: TimeBand): WildRoll | null {
   if (rng.next() >= zone.rate) return null;
-  const entry = pickEntry(zone.table, rng);
+  const table = band ? entriesForTime(zone.table, band) : zone.table;
+  if (!table.length) return null;
+  const entry = pickEntry(table, rng);
   const span = Math.max(0, entry.max - entry.min);
   const level = entry.min + Math.floor(rng.next() * (span + 1));
   return { species: entry.species, level, catchRate: entry.catchRate ?? 120 };

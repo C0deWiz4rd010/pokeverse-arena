@@ -15,7 +15,7 @@ const ROWS = [
   'TSSSRRRRRSSST',
   'TSSSHHDHHSSST',
   'TSSSSSSSSSSST',
-  'TTTTTTTTTTTTT',
+  'TTTTTTPTTTTTT',
 ];
 
 export const SUNREACH: MapDef = {
@@ -32,8 +32,13 @@ export const SUNREACH: MapDef = {
     { x: 10, y: 3, to: 'mart', toX: 4, toY: 4, toFacing: 'up' },
     // Sunreach Gym (bottom building).
     { x: 6, y: 9, to: 'gym3', toX: 4, toY: 7, toFacing: 'up' },
+    // South gate → Route 4, sealed until you hold the Knuckle Badge.
+    { x: 6, y: 11, to: 'route-4', toX: 5, toY: 1, toFacing: 'down', requiresBadge: 'Knuckle Badge' },
   ],
-  signs: [{ x: 6, y: 4, text: 'SUNREACH GYM — Leader Vala, the Blazing Fist.' }],
+  signs: [
+    { x: 6, y: 4, text: 'SUNREACH GYM — Leader Vala, the Blazing Fist.' },
+    { x: 5, y: 10, text: 'SOUTH — Route 4 to Mistfall. Knuckle Badge required.' },
+  ],
   npcs: [
     {
       id: 'Fisher Manu',

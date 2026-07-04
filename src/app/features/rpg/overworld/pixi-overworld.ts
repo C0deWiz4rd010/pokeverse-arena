@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import type { Direction, MapDef, TileKind, WeatherKind } from '../../../game/rpg/rpg-types';
+import { timeBand, type TimeBand } from '../../../game/rpg/time';
 import { OwPartyHudComponent } from './party-hud';
 import { CHAR_ART, GROUNDED, SHEET_URL, TILE_ART, TILE_PX, charIndex, frameRect, type Sheet, type TileArt } from './atlas';
 
@@ -40,7 +41,7 @@ const KEY_DIR: Record<string, Direction> = {
   template: `
     <div class="ow" #host>
       <div class="ow-mount" #mount></div>
-      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }</div> }
+      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }<span class="ow-wx" [title]="'It is ' + band()">{{ timeIcon() }}</span></div> }
       @if (banner(); as b) { <div class="ow-banner" aria-hidden="true">{{ b }}</div> }
       @if (svc.toast(); as t) { <div class="ow-toast" role="status">{{ t }}</div> }
       <pv-ow-party-hud />
@@ -151,6 +152,13 @@ export class PixiOverworldComponent implements OnDestroy {
 
   protected weatherIcon(w?: WeatherKind): string {
     return w === 'rain' ? '🌧' : w === 'snow' ? '❄' : w === 'sun' ? '☀' : w === 'sandstorm' ? '🌪' : '';
+  }
+
+  protected band(): TimeBand {
+    return timeBand();
+  }
+  protected timeIcon(): string {
+    return this.band() === 'night' ? '🌙' : '🌞';
   }
 
   /* ------------------------------------------------------------- setup */

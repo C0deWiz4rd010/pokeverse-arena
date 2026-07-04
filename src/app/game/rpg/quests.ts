@@ -22,6 +22,9 @@ export const QUESTS: readonly Quest[] = [
   { id: 'rival', title: 'Defeat your rival', hint: 'Blue waits on the Stonehollow square.', done: (g) => !!g.flags['beat-rival'] },
   { id: 'badge2', title: 'Earn the Boulder Badge', hint: 'Route 2 and the cave lead to Stonehollow.', done: (g) => g.badges.includes('Boulder Badge') },
   { id: 'badge3', title: 'Earn the Knuckle Badge', hint: 'Past the ranger, Route 3 leads to Sunreach.', done: (g) => g.badges.includes('Knuckle Badge') },
+  { id: 'badge4', title: 'Earn the Tide Badge', hint: 'South of Sunreach, Route 4 leads to Mistfall.', done: (g) => g.badges.includes('Tide Badge') },
+  // Night-only wilds (Route 4: zubat/hoothoot/murkrow) & fishing (chinchou/lapras).
+  { id: 'nightowl', title: 'Catch a nocturnal Pokémon', hint: 'Some species near Mistfall only appear after dark.', done: (g) => g.caught.some((id) => [41, 163, 198, 170, 131].includes(id)) },
   { id: 'party6', title: 'Assemble a full team of six', hint: 'Catch and carry six Pokémon at once.', done: (g) => g.party.length >= 6 },
   { id: 'dex10', title: 'Register 10 caught species', hint: 'The tall grass changes route to route.', done: (g) => g.caught.length >= 10 },
   { id: 'rod', title: 'Get the Old Rod', hint: 'Fisher Finn idles by the Verdant Town pond.', done: (g) => !!g.flags['got-rod'] },

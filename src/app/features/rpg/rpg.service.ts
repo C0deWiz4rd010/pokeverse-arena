@@ -10,6 +10,7 @@ import { DELTA, ahead, isTallGrass, ledgeLanding, signAt, tileAt, warpAt } from 
 import { canEnterRuntime, initNpcPositions, npcAtRuntime, stepWanderers, type NpcPositions } from '../../game/rpg/npc-walk';
 import { TILE } from '../../game/rpg/tiles';
 import { rollEncounter } from '../../game/rpg/encounters';
+import { timeBand } from '../../game/rpg/time';
 import { FIELD_STEP_INTERVAL, applyFieldPoison } from '../../game/rpg/field';
 import { ITEMS, bagIdForHeld } from '../../game/rpg/items-catalog';
 import { titleCase } from '../../core/ui/format';
@@ -177,7 +178,8 @@ export class RpgService {
     if (!g.badges.includes('Hive Badge')) return '▶ Head south to Route 1 → the Oakhaven Gym';
     if (!g.badges.includes('Boulder Badge')) return '▶ Through Route 2 & the cave → the Stonehollow Gym';
     if (!g.badges.includes('Knuckle Badge')) return '▶ South past the ranger → Route 3 → the Sunreach Gym';
-    return '★ Three badges! Champion of the demo — explore freely!';
+    if (!g.badges.includes('Tide Badge')) return '▶ South from Sunreach → Route 4 → the Mistfall Gym';
+    return '★ Four badges! Champion of the demo — explore freely!';
   });
 
   /** Build a Pokémon from species/level and add it to the party (or box if full). */
@@ -368,7 +370,7 @@ export class RpgService {
     // Roll a wild encounter — tall grass, or every step in a cave (everywhere).
     if (!repelActive && (grass || m.encounter?.everywhere) && m.encounter && next.party.length > 0) {
       const rng = new SeededRng(`${Date.now()}-${t.x}-${t.y}-${Math.random()}`);
-      const roll = rollEncounter(m.encounter, rng);
+      const roll = rollEncounter(m.encounter, rng, timeBand());
       if (roll) {
         if (!next.flags['first-battle']) this.setFlag('first-battle');
         this.startEncounter({

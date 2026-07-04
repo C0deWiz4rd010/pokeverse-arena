@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SeededRng } from '../../core/utils/rng';
-import { rollEncounter } from './encounters';
+import { entriesForTime, rollEncounter } from './encounters';
+import { timeBand } from './time';
 import type { EncounterZone } from './rpg-types';
 
 const zone: EncounterZone = {
@@ -28,5 +29,36 @@ describe('rollEncounter', () => {
     const a = rollEncounter(zone, new SeededRng('seed'));
     const b = rollEncounter(zone, new SeededRng('seed'));
     expect(a).toEqual(b);
+  });
+});
+
+describe('time-of-day encounters', () => {
+  const timed: EncounterZone = {
+    rate: 1,
+    table: [
+      { species: 'hoothoot', min: 3, max: 5, weight: 1, time: 'night' },
+      { species: 'pidgey', min: 3, max: 5, weight: 1, time: 'day' },
+      { species: 'rattata', min: 3, max: 5, weight: 1 },
+    ],
+  };
+
+  it('classifies the clock into day/night bands', () => {
+    expect(timeBand(6)).toBe('day');
+    expect(timeBand(12)).toBe('day');
+    expect(timeBand(19)).toBe('day');
+    expect(timeBand(20)).toBe('night');
+    expect(timeBand(3)).toBe('night');
+  });
+
+  it('filters entries to the active band, keeping untimed ones', () => {
+    expect(entriesForTime(timed.table, 'day').map((e) => e.species)).toEqual(['pidgey', 'rattata']);
+    expect(entriesForTime(timed.table, 'night').map((e) => e.species)).toEqual(['hoothoot', 'rattata']);
+  });
+
+  it('never rolls a night-only species during the day', () => {
+    for (let i = 0; i < 30; i++) {
+      const r = rollEncounter(timed, new SeededRng('d' + i), 'day');
+      expect(r!.species).not.toBe('hoothoot');
+    }
   });
 });

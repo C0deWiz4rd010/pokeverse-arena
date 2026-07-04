@@ -4,6 +4,32 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.9.0 — 2026-07-04
+
+Adventure (RPG) overhaul, part 2 — "The Misted Coast".
+
+### Added
+
+- **New region beyond Sunreach** — a badge-gated south gate (needs the
+  **Knuckle Badge**) opens **Route 4**, the rain-swept **Mistfall Town** built
+  around a tidal bay, and the **Mistfall Gym** — Leader Nerida (Water) and the
+  fourth demo badge, the **Tide Badge**. Route 4 adds a line-of-sight Ranger
+  and Mistfall a Swimmer trainer, ground items, and bay **fishing** (day/night
+  tables including a rare night **Lapras**).
+- **Day/night encounters** — `EncounterEntry.time` restricts a wild to `'day'`
+  or `'night'`; `rollEncounter` filters the table by the current band
+  (`timeBand`, pure + unit-tested). Route 4 fields sun-lovers (Psyduck,
+  Meowth, Staryu) by day and nocturnals (Zubat, Hoothoot, Murkrow) after dark;
+  the overworld header shows a 🌞/🌙 badge so the clock is legible.
+- **Quests** — two new milestones: *Earn the Tide Badge* and *Catch a
+  nocturnal Pokémon*; the objective banner now points to Mistfall after the
+  third badge.
+
+### Notes
+
+- The map-registry integrity spec validates the three new maps (dimensions,
+  warp targets, NPC/sign/item bounds) in CI.
+
 ## v1.8.0 — 2026-07-04
 
 Odyssey deep pass — economy, relics, guardian fields & profile ties.

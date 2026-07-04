@@ -142,3 +142,18 @@ seen/caught dex, badges, whiteout respawn, and the interior-return door.
   bob/hop), water sparkle glints, an animated **area-name banner** on every
   map entry (initial-entry bug found by verification and fixed).
 - **Gamepad**: stick/d-pad walks, A interacts, B menu, X runs (Pixi renderer).
+
+## v2.6 — The Misted Coast
+
+- **New region**: a badge-gated (Knuckle Badge) south gate from Sunreach opens
+  **Route 4** → **Mistfall Town** (tidal bay, Center/Mart) → the **Mistfall
+  Gym** (Leader Nerida, Water; the **Tide Badge** — fourth demo badge). Adds a
+  line-of-sight Ranger, a Swimmer trainer, ground items and bay fishing.
+- **Day/night encounters**: `EncounterEntry.time` = `'day'`/`'night'` and
+  `rollEncounter` filters the table by `timeBand()` (pure, unit-tested). Route 4
+  fields sun-lovers by day, nocturnals after dark; the overworld header shows a
+  🌞/🌙 badge. Mistfall's bay fishing has its own day/night table (rare night
+  Lapras).
+- **Quests**: *Earn the Tide Badge* and *Catch a nocturnal Pokémon*; the
+  objective banner points to Mistfall after the third badge. The map-registry
+  spec covers the three new maps.
