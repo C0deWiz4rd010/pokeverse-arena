@@ -4,6 +4,35 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.14.0 — 2026-07-12
+
+Home page decluttered — a phone now sees the whole landing page in a third of
+the scroll — plus a daily silhouette game and a stamped Trainer Card.
+
+### Changed
+
+- **Mobile home redesign** (~4600 px → ~1500 px page height at 375 px width):
+  - The **3D hero orb is desktop-only** — below `lg` it's hidden *and* the
+    WebGL scene is never initialized (saves a context + ~320 px of scroll
+    before any content).
+  - The **feature grid becomes a dense two-column launcher** on phones (icon +
+    title only; descriptions and "Explore →" return at `md`). Thirteen big
+    cards were the bulk of the scroll height.
+  - The **"Today" strip is a horizontal swipe row** with scroll-snap on
+    mobile (three cards at ≥900 px), and the **dashboard chips scroll in one
+    row** instead of wrapping four deep.
+  - Tighter hero paddings/lead; section titles scale down on phones.
+
+### Added
+
+- **Daily silhouette** — a third "Today" card plays *Who's that Pokémon?*
+  right on the landing page: a seeded, blacked-out sprite of the day; the
+  first tap fades the colours in, the second opens its detail page. Zero API
+  calls, like the rest of the strip.
+- **Trainer Card stamp** — the shareable card now carries a tilted, dashed
+  "LAB SPECIAL of the day" rubber stamp with both seeded donor sprites, so
+  every card is unique to its day.
+
 ## v1.13.0 — 2026-07-12
 
 Today at a glance + a shareable Trainer Card.

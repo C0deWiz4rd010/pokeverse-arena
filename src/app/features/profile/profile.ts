@@ -6,6 +6,8 @@ import { ThemeService } from '../../core/theme/theme.service';
 import { ToastService } from '../../core/ui/toast/toast.service';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { APP_VERSION } from '../../core/version';
+import { dailyFusionPair } from '../../game/fusion/fusion';
+import { dailySeed } from '../../core/utils/rng';
 import { renderTrainerCard } from './trainer-card';
 
 @Component({
@@ -103,6 +105,7 @@ export class ProfileComponent {
     try {
       const s = this.svc.state();
       const t = this.theme.current();
+      const special = dailyFusionPair(dailySeed('fusion'));
       const blob = await renderTrainerCard({
         name: this.svc.identity().name,
         title: this.svc.identity().title,
@@ -117,6 +120,7 @@ export class ProfileComponent {
           { label: 'Fusions', value: `${s.fusionsRegistered}` },
         ],
         favoriteIds: [...this.dex.favorites()].slice(0, 3),
+        specialIds: [special.head, special.body],
         accent: t.accent,
         accent2: t.accent2,
         accent3: t.accent3,

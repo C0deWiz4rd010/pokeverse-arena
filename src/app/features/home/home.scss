@@ -4,9 +4,9 @@
   display: grid;
   grid-template-columns: 1fr;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
   min-height: auto;
-  padding: 1.5rem 0;
+  padding: 1rem 0 0.5rem;
   text-align: center;
 }
 @include up(lg) {
@@ -37,9 +37,12 @@
 }
 .lead {
   color: var(--text-dim);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   max-width: 46ch;
-  margin: 1rem auto 1.6rem;
+  margin: 0.7rem auto 1.1rem;
+}
+@include up(lg) {
+  .lead { font-size: 1.05rem; margin: 1rem auto 1.6rem; }
 }
 .cta { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
 @include up(lg) {
@@ -47,7 +50,10 @@
   .cta { justify-content: flex-start; }
 }
 
+/* The 3D orb is a desktop luxury — on phones it cost ~320px of scroll and a
+   WebGL context before any content. Hidden below lg (init is skipped too). */
 .hero-visual {
+  display: none;
   position: relative;
   aspect-ratio: 1;
   width: 100%;
@@ -57,7 +63,7 @@
   order: -1;
 }
 @include up(lg) {
-  .hero-visual { max-width: 460px; order: 0; }
+  .hero-visual { display: block; max-width: 460px; order: 0; }
 }
 .poster {
   position: absolute;
@@ -83,21 +89,39 @@
 }
 
 /* ---------------------------------------------------------------- today */
-.today { margin-top: 1.5rem; }
+.today { margin-top: 1rem; }
+/* Mobile: one swipeable snap row (no vertical cost per card); desktop: 3-up. */
 .today-grid {
   display: grid;
-  gap: 0.8rem;
-  grid-template-columns: 1fr;
-  @media (min-width: 720px) { grid-template-columns: 1fr 1fr; }
+  gap: 0.7rem;
+  grid-auto-flow: column;
+  grid-auto-columns: min(86%, 330px);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.4rem;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  @media (min-width: 900px) {
+    grid-auto-flow: row;
+    grid-auto-columns: unset;
+    grid-template-columns: repeat(3, 1fr);
+    overflow: visible;
+    padding-bottom: 0;
+  }
 }
 .today-card {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0.75rem 1rem;
+  gap: 0.7rem;
+  padding: 0.7rem 0.9rem;
   color: var(--text);
+  scroll-snap-align: start;
   animation: rise 0.5s ease both;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-3px);
@@ -127,8 +151,8 @@
   gap: 0.05rem;
   min-width: 0;
 
-  small { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-faint); }
-  strong { font-size: 0.92rem; line-height: 1.25; }
+  small { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-faint); white-space: nowrap; }
+  strong { font-size: 0.9rem; line-height: 1.25; }
 }
 .tc-meta { font-size: 0.75rem; color: var(--text-dim); }
 .tc-sprites {
@@ -143,34 +167,64 @@
 }
 .tc-go { flex: none; font-weight: 800; color: var(--text-faint); transition: transform 0.15s ease, color 0.15s ease; }
 .today-card:hover .tc-go { color: var(--accent); transform: translateX(3px); }
-@media (max-width: 420px) {
-  .tc-sprites { display: none; }
+
+/* Narrow cards in the swipe row: give the copy room to breathe. */
+@media (max-width: 899px) {
+  .tc-go { display: none; }
+  .tc-sprites img { width: 36px; height: 36px; }
+  .who-card .tc-sprites img { width: 44px; height: 44px; }
 }
 
-.features { padding: 3rem 0 1rem; }
+/* Daily silhouette: blacked-out sprite until the first tap reveals it. */
+.who-card { border-color: color-mix(in srgb, var(--accent) 30%, var(--glass-border)); }
+.who-card:hover { border-color: color-mix(in srgb, var(--accent) 62%, transparent); }
+.who-card .tc-flair { background: linear-gradient(135deg, #5a5366, #2a2440); color: var(--accent); }
+.who-card .tc-sprites img {
+  width: 52px;
+  height: 52px;
+  filter: brightness(0) saturate(0) drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 40%, transparent));
+  transition: filter 0.4s ease;
+}
+.who-card.revealed .tc-sprites img { filter: none; }
+
+.features { padding: 1.6rem 0 1rem; }
+@include up(md) { .features { padding: 3rem 0 1rem; } }
 .section-title {
   text-align: center;
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.35rem;
+  margin-bottom: 1rem;
 }
+@include up(md) { .section-title { font-size: 1.8rem; margin-bottom: 1.5rem; } }
+
+/* Mobile: a dense two-column launcher (icon + title only) — the 13 big cards
+   were the bulk of the landing page's scroll height. Full cards return ≥md. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+@include up(md) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
 }
 .feature {
   display: block;
-  padding: 1.3rem;
+  padding: 0.75rem 0.85rem;
   transition: transform 0.18s ease, border-color 0.18s ease;
 }
+@include up(md) { .feature { padding: 1.3rem; } }
 .feature:hover {
   transform: translateY(-4px);
   border-color: var(--accent);
 }
-.f-icon { font-size: 2rem; }
-.feature h3 { margin: 0.6rem 0 0.3rem; }
-.feature p { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 0.8rem; }
-.go { color: var(--accent); font-weight: 700; font-size: 0.85rem; }
+.f-icon { font-size: 1.35rem; }
+.feature h3 { margin: 0.35rem 0 0; font-size: 0.9rem; }
+.feature p, .go { display: none; }
+@include up(md) {
+  .f-icon { font-size: 2rem; }
+  .feature h3 { margin: 0.6rem 0 0.3rem; font-size: 1.17rem; }
+  .feature p { display: block; color: var(--text-dim); font-size: 0.9rem; margin: 0 0 0.8rem; }
+  .go { display: inline; color: var(--accent); font-weight: 700; font-size: 0.85rem; }
+}
 
 /* ============================ Home v2 ============================ */
 
@@ -217,7 +271,18 @@
   padding: 0.2rem 0.7rem; border-radius: 999px; font-weight: 800; font-size: 0.8rem;
   color: #0b0a1f; background: linear-gradient(135deg, var(--accent-3), #ffe39a);
 }
-.dash-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; }
+/* Mobile: one swipeable row instead of a tall wrap — desktop wraps as before. */
+.dash-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+  justify-content: flex-start;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+@include up(md) { .dash-chips { flex-wrap: wrap; justify-content: center; overflow: visible; } }
 @include up(lg) { .dash-chips { justify-content: flex-start; } }
 .dash-chip {
   display: inline-flex; align-items: center; gap: 0.3rem;

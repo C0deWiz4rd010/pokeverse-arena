@@ -43,7 +43,7 @@
     <a class="glass today-card daily-card" routerLink="/battle" [queryParams]="{ daily: '1' }">
       <span class="tc-flair" aria-hidden="true"><pv-icon name="flame" /></span>
       <span class="tc-copy">
-        <small>Daily Challenge · {{ daily.today }}</small>
+        <small>Daily Challenge</small>
         <strong>
           @if (daily.wonToday()) { Cleared — streak safe ✓ }
           @else if (daily.playedToday()) { Attempt spent — rematch for fun }
@@ -58,6 +58,19 @@
       </span>
       <span class="tc-go" aria-hidden="true">→</span>
     </a>
+
+    <button class="glass today-card who-card" type="button" [class.revealed]="whoRevealed()" (click)="onWho()">
+      <span class="tc-flair" aria-hidden="true"><pv-icon name="ghost" /></span>
+      <span class="tc-copy">
+        <small>Who's that Pokémon?</small>
+        <strong>{{ whoRevealed() ? 'Revealed — tap to open!' : 'Daily silhouette — tap it!' }}</strong>
+        <span class="tc-meta">A new mystery every day</span>
+      </span>
+      <span class="tc-sprites" aria-hidden="true">
+        <img [src]="sprite(who)" alt="" loading="lazy" />
+      </span>
+      <span class="tc-go" aria-hidden="true">{{ whoRevealed() ? '→' : '?' }}</span>
+    </button>
 
     <a class="glass today-card lab-card" routerLink="/fusion" [queryParams]="{ head: special.head, body: special.body }">
       <span class="tc-flair" aria-hidden="true"><pv-icon name="flask-conical" /></span>

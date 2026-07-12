@@ -66,3 +66,6 @@ chips, and up to three favourite Pokémon artworks (loaded `crossOrigin` so
 the canvas stays exportable; a drawn Poké-orb stands in when there are no
 favourites). Shared via the Web Share API when the platform offers it,
 otherwise downloaded as `trainer-card.png` with a confirming toast.
+
+v1.14 stamps each card with a tilted, dashed **"LAB SPECIAL of the day"**
+seal showing both seeded donor sprites — cards become day-unique keepsakes.

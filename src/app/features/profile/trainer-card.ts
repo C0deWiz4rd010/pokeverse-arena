@@ -1,4 +1,4 @@
-import { officialArtwork } from '../../core/api/pokeapi-endpoints';
+import { SPRITE_BASE, officialArtwork } from '../../core/api/pokeapi-endpoints';
 
 /**
  * Trainer Card renderer — draws a shareable 1200×630 PNG of the trainer's
@@ -16,6 +16,8 @@ export interface TrainerCardData {
   readonly stats: readonly { label: string; value: string }[];
   /** Up to three favourite Pokémon ids, drawn as artwork on the right. */
   readonly favoriteIds: readonly number[];
+  /** Today's Lab-Special donor pair, stamped in the corner (omit to skip). */
+  readonly specialIds?: readonly [number, number];
   readonly accent: string;
   readonly accent2: string;
   readonly accent3: string;
@@ -168,6 +170,34 @@ export async function renderTrainerCard(data: TrainerCardData): Promise<Blob | n
     ctx.beginPath();
     ctx.arc(cx, cy, 34, 0, Math.PI * 2);
     ctx.stroke();
+  }
+
+  /* ---- rubber stamp: today's Lab Special pair, tilted, bottom-right ---- */
+  if (data.specialIds) {
+    const [imgA, imgB] = await Promise.all(
+      data.specialIds.map((id) => loadImage(`${SPRITE_BASE}/pokemon/${id}.png`)),
+    );
+    ctx.save();
+    ctx.translate(W - 172, H - 158);
+    ctx.rotate(-0.1);
+    ctx.globalAlpha = 0.92;
+    ctx.strokeStyle = data.accent3;
+    ctx.lineWidth = 4;
+    ctx.setLineDash([9, 7]);
+    ctx.beginPath();
+    ctx.arc(0, 0, 78, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    if (imgA) ctx.drawImage(imgA, -64, -50, 70, 70);
+    if (imgB) ctx.drawImage(imgB, -8, -44, 70, 70);
+    ctx.fillStyle = data.accent3;
+    ctx.font = '800 15px "Segoe UI", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('LAB SPECIAL', 0, 48);
+    ctx.font = '700 12px "Segoe UI", system-ui, sans-serif';
+    ctx.fillText('of the day', 0, 64);
+    ctx.textAlign = 'left';
+    ctx.restore();
   }
 
   /* ---- footer (right-aligned, clear of the stat chips) ---- */

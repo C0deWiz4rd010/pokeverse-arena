@@ -54,3 +54,18 @@ content one tap away:
 
 Both cards read only local/seeded state (`DailyService`, `dailyFusionPair`)
 and id-addressed sprite URLs — the landing page still makes no API calls.
+
+v1.14 added a third card — **Who's that Pokémon?**: a seeded daily silhouette
+(sprite under `brightness(0)`); tap one reveals, tap two opens the detail
+page. Still zero API calls.
+
+## Mobile declutter (v1.14)
+
+At 375 px the landing page dropped from ~4600 px to ~1500 px tall:
+
+- The 3D orb is `display: none` below `lg`, and `initHero` checks the
+  viewport so the WebGL scene never even starts on phones.
+- The feature grid renders as a dense two-column icon+title launcher below
+  `md` (descriptions + "Explore →" return on larger screens).
+- The Today strip becomes a scroll-snap swipe row; the dashboard chips
+  scroll horizontally in a single row.

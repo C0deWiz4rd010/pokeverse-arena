@@ -9,12 +9,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { ProfileService } from '../profile/profile.service';
 import { DailyService } from '../battle/daily.service';
 import { dailyFusionPair } from '../../game/fusion/fusion';
-import { dailySeed } from '../../core/utils/rng';
+import { SeededRng, dailySeed } from '../../core/utils/rng';
 import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import type { IconName } from '../../core/ui/icon/icons.data';
 
@@ -45,9 +45,19 @@ const REDUCED_MOTION =
 export class HomeComponent implements OnDestroy {
   private readonly profile = inject(ProfileService);
   protected readonly daily = inject(DailyService);
+  private readonly router = inject(Router);
 
   /** Today's seeded Fusion Lab pair — same for every trainer. */
   protected readonly special = dailyFusionPair(dailySeed('fusion'));
+
+  /** Daily "Who's that Pokémon?" silhouette — first tap reveals, second opens. */
+  protected readonly who = new SeededRng(dailySeed('whos-that')).int(1, 1025);
+  protected readonly whoRevealed = signal(false);
+
+  protected onWho(): void {
+    if (!this.whoRevealed()) this.whoRevealed.set(true);
+    else void this.router.navigate(['/pokemon', this.who]);
+  }
 
   protected sprite(id: number): string {
     return `${SPRITE_BASE}/pokemon/${id}.png`;
@@ -103,7 +113,9 @@ export class HomeComponent implements OnDestroy {
     this.profile.refresh();
     afterNextRender(() => {
       const canvas = this.heroCanvas()?.nativeElement;
-      if (REDUCED_MOTION || !canvas) return;
+      // The orb is display:none below lg — skip the WebGL scene entirely there.
+      const desktop = typeof matchMedia === 'undefined' || matchMedia('(min-width: 1024px)').matches;
+      if (REDUCED_MOTION || !desktop || !canvas) return;
       void this.initHero(canvas);
     });
   }
