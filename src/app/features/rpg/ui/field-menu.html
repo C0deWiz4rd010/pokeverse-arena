@@ -86,6 +86,19 @@
       @if (dexView().badges.length) {
         <p class="dex-badges">@for (b of dexView().badges; track b) { <span class="badge">🏅 {{ b }}</span> }</p>
       }
+      @if (svc.nuzlocke() && fallenView().length) {
+        <div class="fm-memorial">
+          <p class="mem-title">💀 In memoriam</p>
+          <div class="mem-grid">
+            @for (f of fallenView(); track $index) {
+              <span class="mem-mon" [title]="f.name + ' · fell at Lv' + f.level">
+                <img [src]="f.sprite" [alt]="f.name" loading="lazy" />
+                <small>{{ f.name }} · Lv{{ f.level }}</small>
+              </span>
+            }
+          </div>
+        </div>
+      }
       <div class="dex-grid">
         @for (m of dexView().mons; track m.id) {
           <span class="dex-mon"><img [src]="m.sprite" [alt]="'#' + m.id" loading="lazy" /></span>

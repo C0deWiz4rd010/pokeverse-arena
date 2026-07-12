@@ -4,6 +4,21 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.16.0 — 2026-07-12
+
+Nuzlocke honors — a memorial in the field menu and profile achievements.
+
+### Added
+
+- **In memoriam** — on Nuzlocke saves the field menu's Dex tab shows the
+  memorial: every fallen partner as a grayscale sprite with name and the
+  level it fell at, framed by a dashed mourning border.
+- **Nuzlocke achievements** — `ProfileState.nuzlockeBadges` (the most
+  Adventure badges held on any single Nuzlocke slot; all three save slots
+  are scanned) drives **Survivor** (first badge on a Nuzlocke run) and
+  **Iron Grit** (all four demo badges on one run), plus a *Nuzlocke badges*
+  Records row. 25 achievements total.
+
 ## v1.15.0 — 2026-07-12
 
 💀 **Nuzlocke mode** for the Adventure (RPG) — the classic hardcore challenge,

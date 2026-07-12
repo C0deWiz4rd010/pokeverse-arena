@@ -24,6 +24,7 @@ const base: ProfileState = {
   odysseyBestWave: 0,
   odysseyUnlocked: 0,
   fusionsRegistered: 0,
+  nuzlockeBadges: 0,
 };
 
 describe('profile achievements', () => {
@@ -38,6 +39,15 @@ describe('profile achievements', () => {
     expect(ids({ odysseyBestWave: 10 })).not.toContain('odyssey-30');
     expect(ids({ odysseyBestWave: 30 })).toContain('odyssey-30');
     expect(ids({ odysseyUnlocked: 12 })).toContain('odyssey-roster');
+  });
+
+  it('unlocks Nuzlocke milestones from the best nuzlocke badge count', () => {
+    const ids = (s: Partial<typeof base>) =>
+      evaluateAchievements({ ...base, ...s }).filter((a) => a.unlocked).map((a) => a.achievement.id);
+    expect(ids({ nuzlockeBadges: 1 })).toContain('nuz-survivor');
+    expect(ids({ nuzlockeBadges: 1 })).not.toContain('nuz-iron');
+    expect(ids({ nuzlockeBadges: 4 })).toContain('nuz-iron');
+    expect(ids({})).not.toContain('nuz-survivor');
   });
 
   it('unlocks daily-streak milestones from the best streak', () => {

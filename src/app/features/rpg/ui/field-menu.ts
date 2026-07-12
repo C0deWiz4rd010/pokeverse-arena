@@ -51,6 +51,15 @@ export class FieldMenuComponent {
     })),
   );
 
+  /** Nuzlocke memorial — the fallen, grayed out in the Dex tab. */
+  protected readonly fallenView = computed(() =>
+    this.svc.fallen().map((f) => ({
+      name: titleCase(f.nickname ?? f.species),
+      level: f.level,
+      sprite: `${SPRITE_BASE}/pokemon/${f.dexId}.png`,
+    })),
+  );
+
   protected readonly boxView = computed(() =>
     this.svc.box().map((m, i) => ({
       i,

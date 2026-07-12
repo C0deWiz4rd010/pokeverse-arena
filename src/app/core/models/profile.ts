@@ -47,6 +47,8 @@ export interface ProfileState {
   readonly odysseyUnlocked: number;
   /** Fusions registered in the Fusion Dex. */
   readonly fusionsRegistered: number;
+  /** Most Adventure gym badges held on any single Nuzlocke save. */
+  readonly nuzlockeBadges: number;
 }
 
 export interface Achievement {
@@ -83,6 +85,8 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'odyssey-roster', name: 'Roster Builder', desc: 'Unlock 12 Odyssey starters.', icon: 'egg', test: (s) => s.odysseyUnlocked >= 12 },
   { id: 'fusion-first', name: 'Mad Scientist', desc: 'Register your first fusion in the Fusion Dex.', icon: 'flask-conical', test: (s) => s.fusionsRegistered >= 1 },
   { id: 'fusion-10', name: 'Gene Weaver', desc: 'Register 10 fusions in the Fusion Dex.', icon: 'brain', test: (s) => s.fusionsRegistered >= 10 },
+  { id: 'nuz-survivor', name: 'Survivor', desc: 'Earn a gym badge on a Nuzlocke run.', icon: 'skull', test: (s) => s.nuzlockeBadges >= 1 },
+  { id: 'nuz-iron', name: 'Iron Grit', desc: 'Hold all four Adventure badges on a single Nuzlocke run.', icon: 'mountain-snow', test: (s) => s.nuzlockeBadges >= 4 },
 ];
 
 export interface AchievementView {

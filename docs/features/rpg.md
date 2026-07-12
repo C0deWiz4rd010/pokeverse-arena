@@ -189,3 +189,7 @@ Prof. Oak in the intro). State lives on the save as `RpgSave.nuzlocke`
   then ends the run instead of the free whiteout heal.
 - **Surfaces** — 💀 in the overworld location pill (both renderers), on the
   title-slot name, and a fallen counter on the slot card.
+- **v1.16 honors** — the field menu's Dex tab carries an *In memoriam*
+  strip (grayscale sprites + fell-at level), and the Trainer Profile scans
+  all three slots for `nuzlockeBadges`, unlocking **Survivor** (first badge
+  on a run) and **Iron Grit** (all four badges on one run).

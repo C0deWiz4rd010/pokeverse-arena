@@ -64,6 +64,11 @@ export class ProfileService {
 
     // Adventure (RPG), World Explorer, Contest Hall and the tournament rival.
     const rpg = this.save.read<{ badges?: string[]; caught?: number[] } | null>('rpg:save', null);
+    // Nuzlocke progress may live in any of the three RPG slots — take the best.
+    const nuzlockeBadges = ['rpg:save', 'rpg:save:2', 'rpg:save:3']
+      .map((k) => this.save.read<{ badges?: string[]; nuzlocke?: unknown } | null>(k, null))
+      .filter((g) => !!g?.nuzlocke)
+      .reduce((best, g) => Math.max(best, g?.badges?.length ?? 0), 0);
     const worldCaught = this.save.read<number[]>('world:caught', []).length;
     const shinyCaught = this.save.read<number[]>('world:shiny', []).length;
     const contestRibbons = this.save.read<string[]>('contest:ribbons', []).length;
@@ -95,6 +100,7 @@ export class ProfileService {
       odysseyBestWave: odyssey.bestWave,
       odysseyUnlocked: odyssey.unlocked.length,
       fusionsRegistered,
+      nuzlockeBadges,
     };
   }
 }

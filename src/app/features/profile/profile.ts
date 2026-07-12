@@ -51,6 +51,7 @@ export class ProfileComponent {
       { icon: 'zap' as const, label: 'Rivalry (W–L)', value: `${s.rivalWins}–${s.rivalLosses}` },
       { icon: 'dices' as const, label: 'Crystal-ball hits', value: `${s.pickemHits}` },
       { icon: 'flask-conical' as const, label: 'Fusions registered', value: `${s.fusionsRegistered}` },
+      { icon: 'skull' as const, label: 'Nuzlocke badges', value: `${s.nuzlockeBadges}` },
     ];
   });
 

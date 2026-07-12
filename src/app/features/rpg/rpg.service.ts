@@ -442,8 +442,10 @@ export class RpgService {
 
   /** Whether the active save is a Nuzlocke run. */
   readonly nuzlocke = computed(() => !!this.game()?.nuzlocke);
+  /** Memorial of lost partners (empty on classic saves). */
+  readonly fallen = computed<readonly FallenMon[]>(() => this.game()?.nuzlocke?.fallen ?? []);
   /** Partners lost so far (memorial size). */
-  readonly fallenCount = computed(() => this.game()?.nuzlocke?.fallen.length ?? 0);
+  readonly fallenCount = computed(() => this.fallen().length);
   /** Whether the *current* wild battle may throw balls (rule 1). */
   readonly nuzCatchAllowed = signal(true);
 

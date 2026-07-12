@@ -138,3 +138,35 @@
 .q-body { display: flex; flex-direction: column; gap: 0.1rem; }
 .q-title { font-weight: 700; font-size: 0.86rem; }
 .q-hint { font-size: 0.74rem; color: var(--text-dim); }
+
+/* ---- Nuzlocke memorial (Dex tab) ---- */
+.fm-memorial {
+  margin: 0.5rem 0 0.7rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed color-mix(in srgb, #a78bfa 40%, var(--glass-border));
+  background: rgba(0, 0, 0, 0.25);
+}
+.mem-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.mem-grid { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.mem-mon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+
+  img {
+    width: 40px;
+    height: 40px;
+    image-rendering: pixelated;
+    filter: grayscale(1) brightness(0.75);
+  }
+  small { font-size: 0.62rem; color: var(--text-faint); }
+}
