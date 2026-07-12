@@ -68,6 +68,7 @@ export class HomeComponent implements OnDestroy {
     if (!s.arenaChampion) return { label: 'Face the Champion Gauntlet', path: '/arena', icon: 'crown' };
     if (s.spireClears < 1) return { label: 'Conquer the Ascension Spire', path: '/spire', icon: 'mountain' };
     if (s.tournamentWins < 1) return { label: 'Win your first cup', path: '/tournaments', icon: 'trophy' };
+    if (s.fusionsRegistered < 1) return { label: 'Splice your first fusion', path: '/fusion', icon: 'flask-conical' };
     if (this.profile.unlocked() < this.profile.totalAchievements) return { label: 'Chase your next achievement', path: '/profile', icon: 'star' };
     return { label: 'Fill your living dex', path: '/world', icon: 'map' };
   });

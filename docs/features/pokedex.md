@@ -53,9 +53,12 @@ A deep interactivity + motion pass over the Pokédex.
   staggered entrance, a cursor-following sheen and a 3D pointer tilt; shiny-aware
   art that cross-fades to the animated Showdown sprite on hover.
 - **Quick-view popover.** An info button opens an anchored, animated card with
-  lazy, memoized stats / BST / abilities / flavour and a cry button.
+  lazy, memoized stats / BST / abilities / flavour, a cry button and a **Fuse**
+  chip into the Fusion Lab (head donor pre-filled).
 - **Shiny mode & cries.** Persisted ✨ toggle; a shared single-`Audio` CryService
-  (URLs by id) with a mute toggle.
+  (URLs by id) with a mute toggle. In shiny mode every card gets two twinkling
+  golden sparkles, de-synchronized per card by reusing the entrance-stagger
+  delay (pure CSS, reduced-motion safe).
 - **Filtering & search.** Multi-select types with Any/All (OR/AND), search by
   name / #id / #range / type, sort (#, name, gen, type, favorites, shuffle) and
   Gallery / Compact / List view modes — all pure + tested in `pokedex-filter.ts`.

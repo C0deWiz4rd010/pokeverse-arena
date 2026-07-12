@@ -34,6 +34,7 @@ export interface QuickviewRequest {
       [class.loaded]="loaded()"
       [class.hover]="hovering()"
       [class.fav]="favorite()"
+      [class.shiny]="shiny()"
       [class.compact]="layout() === 'compact'"
       [class.list]="layout() === 'list'"
       [style.--t1]="t1()"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fuseStats, fuseTypes, fusePokemon, fusionHueShift, spliceName } from './fusion';
+import { dailyFusionPair, fuseStats, fuseTypes, fusePokemon, fusionHueShift, spliceName } from './fusion';
 import type { Pokemon, PokemonStats } from '../../core/models/pokemon.model';
 
 const stats = (
@@ -93,6 +93,27 @@ describe('fusionHueShift', () => {
 
   it('stays within the shortest rotation range', () => {
     expect(Math.abs(fusionHueShift('fighting', 'grass'))).toBeLessThanOrEqual(180);
+  });
+});
+
+describe('dailyFusionPair', () => {
+  it('is deterministic for a given seed', () => {
+    expect(dailyFusionPair('fusion-2026-07-12')).toEqual(dailyFusionPair('fusion-2026-07-12'));
+  });
+
+  it('differs across seeds (different days)', () => {
+    expect(dailyFusionPair('fusion-2026-07-12')).not.toEqual(dailyFusionPair('fusion-2026-07-13'));
+  });
+
+  it('stays in range and never fuses a Pokémon with itself', () => {
+    for (let day = 1; day <= 60; day++) {
+      const { head, body } = dailyFusionPair(`fusion-2026-08-${day}`);
+      expect(head).toBeGreaterThanOrEqual(1);
+      expect(head).toBeLessThanOrEqual(1025);
+      expect(body).toBeGreaterThanOrEqual(1);
+      expect(body).toBeLessThanOrEqual(1025);
+      expect(body).not.toBe(head);
+    }
   });
 });
 

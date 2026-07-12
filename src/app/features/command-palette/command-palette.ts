@@ -16,6 +16,8 @@ import type { IconName } from '../../core/ui/icon/icons.data';
 import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import { RecentPokemonService } from '../../core/recent/recent-pokemon.service';
 import { titleCase } from '../../core/ui/format';
+import { dailySeed } from '../../core/utils/rng';
+import { dailyFusionPair } from '../../game/fusion/fusion';
 import { PokedexService } from '../pokedex/pokedex.service';
 
 /** One executable row in the palette (page link, action or Pokémon hit). */
@@ -156,6 +158,16 @@ export class CommandPaletteComponent {
         hint: 'Opens a random detail page',
         icon: 'dices',
         run: () => void this.router.navigate(['/pokemon', 1 + Math.floor(Math.random() * 1025)]),
+      },
+      {
+        key: 'act:special',
+        label: "Splice today's Lab Special",
+        hint: 'The seeded fusion of the day',
+        icon: 'wand-sparkles',
+        run: () => {
+          const { head, body } = dailyFusionPair(dailySeed('fusion'));
+          void this.router.navigate(['/fusion'], { queryParams: { head, body } });
+        },
       },
       {
         key: 'act:fuse',

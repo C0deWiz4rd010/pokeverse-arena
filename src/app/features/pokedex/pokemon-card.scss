@@ -124,6 +124,36 @@
 }
 .card.hover .art .anim { opacity: 1; }
 
+/* Shiny mode: two golden sparkles twinkle over the artwork, offset per card
+   via the entrance-stagger delay so the grid doesn't blink in unison. */
+.card.shiny .art { animation-delay: inherit; }
+.card.shiny .art::before,
+.card.shiny .art::after {
+  content: '✦';
+  position: absolute;
+  color: var(--accent-3);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent-3) 80%, transparent);
+  pointer-events: none;
+  animation: twinkle 2.4s ease-in-out infinite;
+  animation-delay: inherit;
+}
+.card.shiny .art::before {
+  top: 12%;
+  left: 14%;
+  font-size: 0.85rem;
+}
+.card.shiny .art::after {
+  bottom: 16%;
+  right: 12%;
+  font-size: 0.6rem;
+  color: #fff;
+  animation-duration: 3.1s;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.7) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(45deg); }
+}
+
 .name { font-weight: 700; font-size: 0.92rem; text-align: center; }
 .types { display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: center; }
 .types ::ng-deep .badge { padding: 0.12rem 0.45rem; font-size: 0.64rem; }

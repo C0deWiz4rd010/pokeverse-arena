@@ -44,6 +44,7 @@ export class ProfileComponent {
       { icon: 'egg' as const, label: 'Odyssey starters', value: `${s.odysseyUnlocked}` },
       { icon: 'zap' as const, label: 'Rivalry (W–L)', value: `${s.rivalWins}–${s.rivalLosses}` },
       { icon: 'dices' as const, label: 'Crystal-ball hits', value: `${s.pickemHits}` },
+      { icon: 'flask-conical' as const, label: 'Fusions registered', value: `${s.fusionsRegistered}` },
     ];
   });
 

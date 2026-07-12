@@ -56,6 +56,7 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
         <button class="chip" type="button" (click)="playCry()" [class.on]="cry.playing() === entry().id">
           <pv-icon name="volume-2" /> Cry
         </button>
+        <a class="chip" [routerLink]="['/fusion']" [queryParams]="{ head: entry().id }" title="Splice in the Fusion Lab"><pv-icon name="flask-conical" /> Fuse</a>
         <a class="chip primary" [routerLink]="['/pokemon', entry().id]"><pv-icon name="arrow-right" /> Full page</a>
       </div>
 

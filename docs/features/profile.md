@@ -50,3 +50,9 @@ tournament **rival head-to-head** and **crystal-ball hits** — 18 achievements
 total (Trail Blazer, Field Researcher, Registrar, Shiny Hunter, Stage Debut,
 Ribbon Royalty, Rival Slayer, Crystal Oracle join the original ten), with the
 rank score counting adventure badges, ribbons and oracle hits.
+
+Later versions added the **Daily Challenge** streaks (v1.4), **Odyssey** depth +
+starter roster (v1.8) and the **Fusion Lab** (v1.10/1.11): `fusionsRegistered`
+counts the persisted Fusion Dex, drives the *Mad Scientist* / *Gene Weaver*
+achievements, a *Fusions registered* Records row, and the Home "What's next"
+suggestion to splice your first fusion.

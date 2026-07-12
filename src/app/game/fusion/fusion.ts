@@ -107,6 +107,19 @@ export function fusionHueShift(headType: PokemonType, bodyType: PokemonType): nu
   return delta;
 }
 
+/**
+ * Deterministic donor pair for a given seed (e.g. `dailySeed('fusion')`) —
+ * the same "Lab Special" for every trainer on the same day. Head and body
+ * are guaranteed to differ.
+ */
+export function dailyFusionPair(seed: string, maxId = 1025): { head: number; body: number } {
+  const rng = new SeededRng(seed);
+  const head = rng.int(1, maxId);
+  let body = rng.int(1, maxId);
+  if (body === head) body = (body % maxId) + 1;
+  return { head, body };
+}
+
 const EPITHETS = [
   'the Twin-Soul Chimera', 'the Impossible Splice', 'the Gene-Woven Wonder',
   'the Laboratory Legend', 'the Double Helix', 'the Spliced Sovereign',

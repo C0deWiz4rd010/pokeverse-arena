@@ -5,6 +5,24 @@
     subtitle="Splice any two Pokémon into a brand-new species — head donor shapes the mind, body donor shapes the build."
   />
 
+  <!-- ------------------------------------------------- lab special -->
+  @if (special(); as sp) {
+    <button class="special glass" type="button" [class.active]="sp.active" (click)="loadSpecial()"
+      [title]="sp.active ? 'Loaded' : 'Load today\'s special'">
+      <span class="sp-flair" aria-hidden="true">🧪</span>
+      <span class="sp-copy">
+        <small>Today's Lab Special</small>
+        <strong>{{ sp.name }}</strong>
+        <span class="sp-parents">{{ sp.headName }} × {{ sp.bodyName }}</span>
+      </span>
+      <span class="sp-imgs" aria-hidden="true">
+        <img [src]="sprite(sp.head)" alt="" loading="lazy" />
+        <img [src]="sprite(sp.body)" alt="" loading="lazy" />
+      </span>
+      <span class="sp-go">{{ sp.active ? '✓ In the lab' : 'Splice it →' }}</span>
+    </button>
+  }
+
   <!-- ------------------------------------------------- donor pickers -->
   <section class="pickers glass" aria-label="Choose the two donors">
     <div class="picker" [class.filled]="lab.headId()">

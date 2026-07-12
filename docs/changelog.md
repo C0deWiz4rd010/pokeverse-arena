@@ -4,6 +4,31 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.11.0 — 2026-07-12
+
+Fusion Lab round 2 — the daily **Lab Special** — plus shiny sparkles in the
+Pokédex and deeper cross-app ties.
+
+### Added
+
+- **Today's Lab Special** — a seeded fusion of the day (`dailyFusionPair`,
+  pure + unit-tested, same pair for every trainer, head ≠ body guaranteed).
+  A golden banner on the Fusion Lab previews the spliced name and both donors
+  straight from the in-memory dex index (zero fetches) and loads the pair on
+  click; the ⌘K palette gains a "Splice today's Lab Special" action.
+- **Shiny sparkles** — with shiny mode on, every Pokédex card gets two
+  twinkling golden sparks over the artwork, de-synchronized per card by
+  reusing the grid's entrance-stagger delay (pure CSS, reduced-motion safe).
+- **Quickview → Fuse** — the Pokédex quick-view popover gains a *Fuse* chip
+  that sends the Pokémon into the lab as head donor.
+- **Profile** — a *Fusions registered* row in Records; the Home "What's next"
+  coach now suggests your first splice once you've won a cup.
+
+### Notes
+
+- `dailyFusionPair` reuses the shared `SeededRng` + `dailySeed` machinery the
+  Daily Challenge is built on — one seeding convention across the app.
+
 ## v1.10.0 — 2026-07-12
 
 ⚗️ **Fusion Lab** — a brand-new mode — plus a global UI/FX pass.

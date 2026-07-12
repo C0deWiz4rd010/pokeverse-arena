@@ -18,6 +18,8 @@ import { SPRITE_BASE, cryUrl, officialArtwork } from '../../core/api/pokeapi-end
 import { titleCase } from '../../core/ui/format';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { FusionService, type SavedFusion } from './fusion.service';
+import { dailyFusionPair, spliceName } from '../../game/fusion/fusion';
+import { dailySeed } from '../../core/utils/rng';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
 
 const REDUCED_MOTION =
@@ -63,6 +65,29 @@ export class FusionComponent {
   private lastCode: string | null = null;
 
   protected readonly fusion = this.lab.fusion;
+
+  /** Today's Lab Special — the same seeded pair for every trainer. The name
+   *  preview is spliced from the dex index alone, no fetches needed. */
+  protected readonly special = computed(() => {
+    const { head, body } = dailyFusionPair(dailySeed('fusion'));
+    const h = this.dex.entryById(head);
+    const b = this.dex.entryById(body);
+    if (!h || !b) return null;
+    return {
+      head,
+      body,
+      headName: titleCase(h.name),
+      bodyName: titleCase(b.name),
+      name: spliceName(h.name, b.name),
+      active: this.lab.headId() === head && this.lab.bodyId() === body,
+    };
+  });
+
+  protected loadSpecial(): void {
+    const s = this.special();
+    if (!s) return;
+    void this.lab.setPair(s.head, s.body);
+  }
 
   protected readonly headArt = computed(() => {
     const id = this.lab.headId();

@@ -9,6 +9,11 @@ shareable as a link and collectable in a persistent **Fusion Dex**.
 
 ## What it does
 
+- **Today's Lab Special** — a seeded daily pair (`dailyFusionPair` on
+  `dailySeed('fusion')`; head ≠ body guaranteed) shown as a golden banner that
+  previews the spliced name + both donors from the dex index alone (no
+  fetches) and loads the pair on click. Also reachable via the ⌘K action
+  *"Splice today's Lab Special"*.
 - **Two donor pickers** — search by name or `#id` over the in-memory Pokédex
   index (instant, offline-capable), with sprite-thumbnail suggestions, a
   random-dice button per slot, **Swap** (order matters — head↔body is a
@@ -61,7 +66,10 @@ shareable as a link and collectable in a persistent **Fusion Dex**.
 ## Integration across the app
 
 - **Pokémon detail** — a **Fuse** quick action (`#/fusion?head=<id>`) sends the
-  current Pokémon into the lab as the head donor.
+  current Pokémon into the lab as the head donor; the Pokédex **quick-view**
+  popover has the same chip.
+- **Home** — the "What's next" coach suggests your first splice once the
+  early arena/tournament milestones are done.
 - **⌘K Command Palette** — "Fusion Lab" page entry (keywords: fuse, splice,
   dna, hybrid, chimera) + a "Fuse two random Pokémon" action.
 - **Home** — a feature card in the grid; **shell nav** — its own entry.
