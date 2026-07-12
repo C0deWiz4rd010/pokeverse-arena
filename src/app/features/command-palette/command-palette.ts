@@ -53,6 +53,7 @@ const PAGES: PageCmd[] = [
   { path: '/spire', label: 'Ascension Spire', icon: 'mountain', hint: 'Roguelike climb', keywords: 'roguelike relic climb tower' },
   { path: '/odyssey', label: 'Odyssey', icon: 'map-pin', hint: 'Endless biome roguelike', keywords: 'roguelike pokerogue waves catch endless biome' },
   { path: '/world', label: 'World Explorer', icon: 'map', hint: 'Regions & expeditions', keywords: 'region kanto expedition catch' },
+  { path: '/fusion', label: 'Fusion Lab', icon: 'flask-conical', hint: 'Splice two Pokémon into one', keywords: 'fuse fusion splice dna hybrid chimera lab' },
   { path: '/contest', label: 'Contest Hall', icon: 'sparkles', hint: 'Poffins & appeal rounds', keywords: 'berry poffin beauty' },
   { path: '/adventure', label: 'Adventure', icon: 'scroll-text', hint: 'Top-down RPG story', keywords: 'rpg story overworld quest' },
   { path: '/profile', label: 'Trainer Profile', icon: 'crown', hint: 'Stats, saves & identity', keywords: 'trainer save stats' },
@@ -155,6 +156,19 @@ export class CommandPaletteComponent {
         hint: 'Opens a random detail page',
         icon: 'dices',
         run: () => void this.router.navigate(['/pokemon', 1 + Math.floor(Math.random() * 1025)]),
+      },
+      {
+        key: 'act:fuse',
+        label: 'Fuse two random Pokémon',
+        hint: 'A surprise trip to the Fusion Lab',
+        icon: 'flask-conical',
+        run: () =>
+          void this.router.navigate(['/fusion'], {
+            queryParams: {
+              head: 1 + Math.floor(Math.random() * 1025),
+              body: 1 + Math.floor(Math.random() * 1025),
+            },
+          }),
       },
       {
         key: 'act:shiny',

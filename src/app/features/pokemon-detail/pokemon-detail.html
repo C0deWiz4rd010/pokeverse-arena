@@ -71,6 +71,7 @@
             <pv-icon name="wrench" /> {{ addedToTeam() ? 'Added!' : teamFull() ? 'Team full' : 'Add to team' }}
           </button>
           <a class="btn ghost" [href]="'#/battle'"><pv-icon name="swords" /> Battle</a>
+          <a class="btn ghost" [href]="'#/fusion?head=' + s.pokemon.id" title="Splice this Pokémon in the Fusion Lab"><pv-icon name="flask-conical" /> Fuse</a>
         </div>
       </div>
 

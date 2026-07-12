@@ -33,6 +33,7 @@ export class App {
   protected readonly menuOpen = signal(false);
   protected readonly paletteOpen = signal(false);
   protected readonly scrolled = signal(false);
+  protected readonly showToTop = signal(false);
   protected readonly version = APP_VERSION;
 
   protected readonly nav: NavItem[] = [
@@ -45,6 +46,7 @@ export class App {
     { path: '/spire', label: 'Spire', icon: 'mountain' },
     { path: '/odyssey', label: 'Odyssey', icon: 'map-pin' },
     { path: '/world', label: 'World', icon: 'map' },
+    { path: '/fusion', label: 'Fusion', icon: 'flask-conical' },
     { path: '/contest', label: 'Contest', icon: 'sparkles' },
     { path: '/adventure', label: 'Adventure', icon: 'scroll-text' },
     { path: '/profile', label: 'Profile', icon: 'crown' },
@@ -65,6 +67,12 @@ export class App {
 
   protected onScroll(): void {
     this.scrolled.set(window.scrollY > 8);
+    this.showToTop.set(window.scrollY > 900);
+  }
+
+  protected scrollTop(): void {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
   }
 
   protected openPalette(): void {

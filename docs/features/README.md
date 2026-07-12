@@ -28,6 +28,7 @@ For the high-level plan and milestone status, see
 | 14 | Trainer Profile (progression backbone, achievements, accent themes) | [profile.md](profile.md) | ✅ |
 | 15 | ⌘K Command Palette (global search, actions, recents) | [command-palette.md](command-palette.md) | ✅ |
 | 16 | Odyssey (endless biome roguelike, daze-catch, starter unlocks) | [odyssey.md](odyssey.md) | ✅ |
+| 17 | ⚗️ Fusion Lab (deterministic splicing, Fusion Dex, share links) | [fusion-lab.md](fusion-lab.md) | ✅ |
 
 ## Deep Systems Overhaul (v2)
 

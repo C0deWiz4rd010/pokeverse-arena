@@ -92,9 +92,27 @@
   color: #0b0a1f;
   border: none;
   font-weight: 700;
+  position: relative;
+  overflow: hidden;
 }
 .btn-primary:hover {
   box-shadow: var(--glow) rgba(108, 224, 255, 0.55);
+}
+/* Light sweep across primary buttons on hover — pure CSS, GPU-cheap. */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+.btn-primary:hover::after {
+  transform: translateX(130%);
+  transition: transform 0.55s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary::after { display: none; }
 }
 
 .gradient-text {

@@ -23,6 +23,7 @@ const base: ProfileState = {
   dailyBest: 0,
   odysseyBestWave: 0,
   odysseyUnlocked: 0,
+  fusionsRegistered: 0,
 };
 
 describe('profile achievements', () => {

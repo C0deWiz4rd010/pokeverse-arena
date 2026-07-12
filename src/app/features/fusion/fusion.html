@@ -1,0 +1,171 @@
+<div class="container fusion-page">
+  <pv-page-header
+    icon="flask-conical"
+    title="Fusion Lab"
+    subtitle="Splice any two Pokémon into a brand-new species — head donor shapes the mind, body donor shapes the build."
+  />
+
+  <!-- ------------------------------------------------- donor pickers -->
+  <section class="pickers glass" aria-label="Choose the two donors">
+    <div class="picker" [class.filled]="lab.headId()">
+      <label class="slot-label" for="head-input">
+        <pv-icon name="brain" /> Head donor
+        <span class="slot-hint">name · mind · palette</span>
+      </label>
+      <div class="input-row">
+        <input
+          id="head-input"
+          type="search"
+          autocomplete="off"
+          placeholder="Search name or #id…"
+          [value]="headQuery()"
+          (input)="onQuery('head', $event)"
+          (focus)="activeSlot.set('head')"
+          (blur)="closeSuggestions()"
+        />
+        <button class="btn dice" type="button" title="Random head" (click)="randomize('head')">
+          <pv-icon name="dices" />
+        </button>
+      </div>
+      @if (activeSlot() === 'head' && suggestions('head').length) {
+        <ul class="suggest" role="listbox">
+          @for (s of suggestions('head'); track s.id) {
+            <li role="option" (mousedown)="pick('head', s)">
+              <img [src]="sprite(s.id)" alt="" loading="lazy" />
+              <span>{{ titleCase(s.name) }}</span>
+              <small>#{{ s.id }}</small>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="middle">
+      <button class="btn swap" type="button" title="Swap head & body" (click)="swap()">
+        <pv-icon name="refresh-cw" /> Swap
+      </button>
+      <button class="btn btn-primary surprise" type="button" (click)="surprise()">
+        <pv-icon name="wand-sparkles" /> Surprise fusion
+      </button>
+    </div>
+
+    <div class="picker" [class.filled]="lab.bodyId()">
+      <label class="slot-label" for="body-input">
+        <pv-icon name="dumbbell" /> Body donor
+        <span class="slot-hint">build · silhouette · speed</span>
+      </label>
+      <div class="input-row">
+        <input
+          id="body-input"
+          type="search"
+          autocomplete="off"
+          placeholder="Search name or #id…"
+          [value]="bodyQuery()"
+          (input)="onQuery('body', $event)"
+          (focus)="activeSlot.set('body')"
+          (blur)="closeSuggestions()"
+        />
+        <button class="btn dice" type="button" title="Random body" (click)="randomize('body')">
+          <pv-icon name="dices" />
+        </button>
+      </div>
+      @if (activeSlot() === 'body' && suggestions('body').length) {
+        <ul class="suggest" role="listbox">
+          @for (s of suggestions('body'); track s.id) {
+            <li role="option" (mousedown)="pick('body', s)">
+              <img [src]="sprite(s.id)" alt="" loading="lazy" />
+              <span>{{ titleCase(s.name) }}</span>
+              <small>#{{ s.id }}</small>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </section>
+
+  @if (lab.error(); as err) {
+    <p class="error glass">{{ err }}</p>
+  }
+
+  <!-- ------------------------------------------------- fusion stage -->
+  @if (fusion(); as f) {
+    <section class="stage" [class.merging]="phase() === 'merging'" [class.done]="phase() === 'done'" aria-live="polite">
+      <div class="parents" aria-hidden="true">
+        @if (headArt(); as art) { <img class="parent left" [src]="art" alt="" /> }
+        <span class="beam"></span>
+        @if (bodyArt(); as art) { <img class="parent right" [src]="art" alt="" /> }
+      </div>
+
+      <div class="result">
+        <span class="halo" aria-hidden="true" [style.--h1]="'var(--type-' + f.types[0] + ')'" [style.--h2]="'var(--type-' + f.types[f.types.length - 1] + ')'"></span>
+        @if (bodyArt(); as art) {
+          <img class="fused" [src]="art" [alt]="f.name" [style.filter]="fusedFilter()" />
+        }
+        @for (s of [1, 2, 3, 4, 5, 6]; track s) {
+          <span class="spark s{{ s }}" aria-hidden="true">✦</span>
+        }
+      </div>
+
+      <div class="identity">
+        <h2 class="fused-name gradient-text">{{ f.name }}</h2>
+        <p class="epithet">#{{ f.code }} · {{ f.epithet }}</p>
+        <div class="types">
+          @for (t of f.types; track t) { <pv-type-badge [type]="t" /> }
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="button" (click)="playCry()"><pv-icon name="volume-2" /> Chimera cry</button>
+        <button class="btn" type="button" (click)="share()"><pv-icon name="copy" /> Share</button>
+        <button class="btn" type="button" [class.saved]="lab.isSaved()" (click)="toggleSave()">
+          <pv-icon [name]="lab.isSaved() ? 'check' : 'flask-conical'" />
+          {{ lab.isSaved() ? 'In Fusion Dex' : 'Register' }}
+        </button>
+      </div>
+
+      <div class="sheet glass">
+        <div class="facts">
+          <span class="fact"><small>Ability</small><strong>{{ titleCase(f.ability) }}</strong></span>
+          <span class="fact"><small>Height</small><strong>{{ f.heightM }} m</strong></span>
+          <span class="fact"><small>Weight</small><strong>{{ f.weightKg }} kg</strong></span>
+          <span class="fact"><small>BST</small><strong>{{ f.bst }}</strong></span>
+        </div>
+        <div class="stats">
+          @for (row of statRows(); track row.label) {
+            <pv-stat-bar [label]="row.label" [value]="row.value" />
+          }
+        </div>
+      </div>
+    </section>
+  } @else if (lab.loading()) {
+    <section class="stage empty glass"><p>Splicing DNA…</p></section>
+  } @else {
+    <section class="stage empty glass">
+      <p class="empty-lead">⚗️ Pick a head and a body — or hit <strong>Surprise fusion</strong>.</p>
+      <p class="empty-sub">Same pair, same fusion, every time. Swap the donors for a whole different creature.</p>
+    </section>
+  }
+
+  <!-- ------------------------------------------------- fusion dex -->
+  @if (lab.dex().length) {
+    <section class="dex-section" aria-label="Your Fusion Dex">
+      <h2 class="section-title"><pv-icon name="book" /> Fusion Dex <span class="count">{{ lab.dex().length }}</span></h2>
+      <div class="dex-grid">
+        @for (entry of lab.dex(); track entry.code) {
+          <button class="dex-card glass" type="button" (click)="loadSaved(entry)" [title]="'Load ' + entry.name">
+            <img [src]="sprite(entry.bodyId)" [alt]="entry.name" [style.filter]="savedFilter(entry)" loading="lazy" />
+            <span class="dex-name">{{ entry.name }}</span>
+            <span class="dex-meta">#{{ entry.code }} · BST {{ entry.bst }}</span>
+            <span class="dex-types">
+              @for (t of entry.types; track t) { <pv-type-badge [type]="t" /> }
+            </span>
+            <span class="dex-remove" role="button" tabindex="0" aria-label="Remove from Fusion Dex"
+              (click)="removeSaved($event, entry.code)" (keydown.enter)="removeSaved($event, entry.code)">
+              <pv-icon name="x" />
+            </span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+</div>

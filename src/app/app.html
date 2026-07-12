@@ -58,6 +58,12 @@
   >v{{ version }}</a>
 </footer>
 
+@if (showToTop()) {
+  <button class="to-top glass" type="button" aria-label="Back to top" title="Back to top" (click)="scrollTop()">
+    <span class="to-top-arrow" aria-hidden="true">↑</span>
+  </button>
+}
+
 <pv-toasts />
 
 @defer (on idle) {

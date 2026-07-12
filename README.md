@@ -5,7 +5,7 @@
 **A modular Pokémon platform & browser game built on the [PokéAPI](https://pokeapi.co/).**
 
 Advanced interactive Pokédex · Type Lab · Team Builder · Turn-based Battles ·
-Arena · Tournaments · World Explorer · Berry Garden · Contests
+Arena · Tournaments · World Explorer · Fusion Lab · Berry Garden · Contests
 
 Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js** · **IndexedDB**
 
@@ -41,6 +41,10 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
   each 3-v-3 match yourself.
 - **World Explorer** — roam the nine regions, browse each one's native Pokédex and
   find where any Pokémon first appeared.
+- **Fusion Lab** — splice any two Pokémon into a brand-new species: spliced
+  name, blended typing, head/body-weighted stats, a re-tinted palette and a
+  two-voice chimera cry — deterministic, shareable via `?head=&body=` links and
+  collectable in a persistent Fusion Dex.
 - **Contest Hall** — blend berries into Poffins to raise contest conditions, then
   dazzle the judges against seeded rivals.
 - **Adventure (RPG)** — a top-down tile-world story with four gyms, quests,

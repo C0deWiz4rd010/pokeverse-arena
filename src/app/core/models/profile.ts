@@ -45,6 +45,8 @@ export interface ProfileState {
   /** Odyssey roguelike: furthest wave reached and species unlocked as starters. */
   readonly odysseyBestWave: number;
   readonly odysseyUnlocked: number;
+  /** Fusions registered in the Fusion Dex. */
+  readonly fusionsRegistered: number;
 }
 
 export interface Achievement {
@@ -79,6 +81,8 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'odyssey-10', name: 'Wayfarer', desc: 'Reach wave 10 of the Odyssey.', icon: 'map-pin', test: (s) => s.odysseyBestWave >= 10 },
   { id: 'odyssey-30', name: 'Endless Marcher', desc: 'Reach wave 30 of the Odyssey.', icon: 'mountain-snow', test: (s) => s.odysseyBestWave >= 30 },
   { id: 'odyssey-roster', name: 'Roster Builder', desc: 'Unlock 12 Odyssey starters.', icon: 'egg', test: (s) => s.odysseyUnlocked >= 12 },
+  { id: 'fusion-first', name: 'Mad Scientist', desc: 'Register your first fusion in the Fusion Dex.', icon: 'flask-conical', test: (s) => s.fusionsRegistered >= 1 },
+  { id: 'fusion-10', name: 'Gene Weaver', desc: 'Register 10 fusions in the Fusion Dex.', icon: 'brain', test: (s) => s.fusionsRegistered >= 10 },
 ];
 
 export interface AchievementView {

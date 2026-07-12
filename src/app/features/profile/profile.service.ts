@@ -70,6 +70,7 @@ export class ProfileService {
     const rival = loadRival();
     const daily = this.save.read<DailyRecord>('daily:record', EMPTY_DAILY);
     const odyssey = loadOdysseyMeta();
+    const fusionsRegistered = this.save.read<unknown[]>('fusion:dex', []).length;
 
     return {
       badges,
@@ -93,6 +94,7 @@ export class ProfileService {
       dailyBest: daily.best,
       odysseyBestWave: odyssey.bestWave,
       odysseyUnlocked: odyssey.unlocked.length,
+      fusionsRegistered,
     };
   }
 }

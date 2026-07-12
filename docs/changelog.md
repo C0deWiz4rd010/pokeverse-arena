@@ -4,6 +4,43 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.10.0 — 2026-07-12
+
+⚗️ **Fusion Lab** — a brand-new mode — plus a global UI/FX pass.
+
+### Added
+
+- **Fusion Lab** (`/fusion`) — splice any two Pokémon into a new species
+  ([full doc](features/fusion-lab.md)):
+  - Deterministic engine (`game/fusion/fusion.ts`, pure + 17 unit tests):
+    syllable-spliced **name**, head-primary + differing-body **typing**,
+    head/body **2:1-weighted stats** (mind vs. physique), seeded ability &
+    epithet, averaged height/weight.
+  - **Fused visual** — the body's artwork re-tinted toward the head's palette
+    via a type-hue `hue-rotate`, inside a spinning two-tone halo ring.
+  - **DNA-merge animation** — parents stream into a pulsing energy beam, the
+    fusion pops in with a spring reveal + spark burst (reduced-motion safe).
+  - **Chimera cry** — head's cry answered by the body's, pitched up.
+  - **Fusion Dex** — persist keepers, reload or remove them from a gallery;
+    registering pops the shared toast.
+  - **Share links** — the pair lives in the URL (`?head=6&body=150`); Share
+    copies a summary + deep link.
+- **Cross-app integration** — a **Fuse** quick action on the Pokémon detail
+  page, a Fusion Lab page + "Fuse two random Pokémon" action in the ⌘K
+  palette, a Home feature card, a nav entry, and two achievements
+  (**Mad Scientist**, **Gene Weaver**) via `ProfileState.fusionsRegistered`.
+- **Back-to-top FAB** — a glass floating button fades in after deep scroll on
+  any page (great for the infinite-scroll Pokédex) and smooth-scrolls up.
+- **Primary-button light sweep** — `.btn-primary` gets a hover shine sweep,
+  app-wide, pure CSS, disabled under reduced motion.
+
+### Fixed / tooling
+
+- `npm run shots` now covers **Fusion, Odyssey and Adventure**, and routes
+  with query params no longer crash the screenshot writer on Windows
+  (filename sanitization).
+- `package.json` version (stale at 1.7.0) re-synced with `core/version.ts`.
+
 ## v1.9.0 — 2026-07-04
 
 Adventure (RPG) overhaul, part 2 — "The Misted Coast".

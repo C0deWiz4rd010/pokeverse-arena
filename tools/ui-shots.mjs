@@ -17,9 +17,9 @@ import { fileURLToPath } from 'node:url';
 const BASE = process.env.SHOTS_BASE ?? 'http://localhost:4200';
 const OUT = fileURLToPath(new URL('../.ui-shots', import.meta.url));
 
-const ALL = ['#/', '#/pokedex', '#/type-lab', '#/team-builder', '#/battle', '#/arena', '#/tournaments', '#/spire', '#/world', '#/contest', '#/profile'];
+const ALL = ['#/', '#/pokedex', '#/type-lab', '#/team-builder', '#/battle', '#/arena', '#/tournaments', '#/spire', '#/odyssey', '#/world', '#/fusion', '#/contest', '#/adventure', '#/profile'];
 const routes = process.argv[2] ? process.argv[2].split(',') : ALL;
-const slug = (r) => (r === '#/' ? 'home' : r.replace('#/', '').replace(/\//g, '_'));
+const slug = (r) => (r === '#/' ? 'home' : r.replace('#/', '').replace(/[^a-z0-9-]+/gi, '_').replace(/^_+|_+$/g, ''));
 
 await mkdir(OUT, { recursive: true });
 
