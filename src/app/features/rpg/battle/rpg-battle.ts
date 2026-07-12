@@ -333,6 +333,11 @@ export class RpgBattleComponent extends BattlePresenterBase {
       this.svc.showToast("You can't catch another Trainer's Pokémon!");
       return;
     }
+    if (this.svc.nuzlocke() && !this.svc.nuzCatchAllowed()) {
+      this.append("Nuzlocke: this route's only catch chance is already spent!", 'faint');
+      this.menu.set('main');
+      return;
+    }
     if (!this.svc.consumeItem(ball)) return;
     this.menu.set('main');
     this.busy.set(true);
@@ -504,7 +509,11 @@ export class RpgBattleComponent extends BattlePresenterBase {
       updated.push(mon);
     }
 
-    this.svc.applyParty(updated);
+    // Nuzlocke permadeath: the fainted leave the party for the memorial.
+    const burial = this.svc.applyPartyWithBurial(updated);
+    for (const f of burial.lost) {
+      lines.push(`💀 ${titleCase(f.nickname ?? f.species)} (Lv${f.level}) fell in battle… gone forever.`);
+    }
 
     // Trainer payout + win flag (+ badge).
     if (won && !this.isWild()) {
@@ -527,7 +536,14 @@ export class RpgBattleComponent extends BattlePresenterBase {
       }
     }
 
-    if (!won && !ran && !updated.some((m) => m.currentHp > 0)) {
+    if (!won && !ran && !burial.survivors.some((m) => m.currentHp > 0)) {
+      if (this.svc.nuzlocke()) {
+        // Rule 3: no survivors — the run and its save end here.
+        this.append('Your whole party has fallen. The run ends here…', 'faint');
+        await this.wait(1400);
+        this.svc.nuzlockeGameOver();
+        return;
+      }
       // Whiteout: short beat, then heal + respawn.
       this.append('You are out of usable Pokémon…', 'faint');
       await this.wait(900);
@@ -551,7 +567,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
       const hp = Math.max(0, Math.min(m.maxHp, finalHp[i] ?? m.currentHp));
       return { ...m, currentHp: hp, status: hp <= 0 ? ('none' as const) : sides[i]?.status ?? m.status };
     });
-    this.svc.applyParty(updated);
+    const burial = this.svc.applyPartyWithBurial(updated);
 
     const mon = makePartyMon(foe.battler.name, foe.battler.id, this.foeLevel(), foe.maxHp);
     mon.currentHp = foe.currentHp;
@@ -560,6 +576,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
     const where = this.svc.addCaught(mon);
     this.resultLines.set([
       `${mon.shiny ? '✨ Shiny ' : ''}${titleCase(foe.battler.name)} was added to your ${where === 'party' ? 'team' : 'storage box'}!`,
+      ...burial.lost.map((f) => `💀 ${titleCase(f.nickname ?? f.species)} (Lv${f.level}) fell in battle… gone forever.`),
     ]);
   }
 

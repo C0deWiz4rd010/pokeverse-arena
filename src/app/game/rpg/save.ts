@@ -2,6 +2,7 @@
  * RPG save schema, defaults and validation. One blob persisted by SaveService
  * under `rpg:save`.
  */
+import { freshNuzlocke } from './nuzlocke';
 import type { RpgSave } from './rpg-types';
 
 export const RPG_SAVE_VERSION = 1;
@@ -11,11 +12,12 @@ export const START = { map: 'player-home', x: 3, y: 4, facing: 'down' as const }
 /** Default whiteout return point (home-town Pokémon Center area), aligned with the authored map. */
 export const DEFAULT_RESPAWN = { map: 'home-town', x: 9, y: 9 };
 
-export function defaultSave(name = 'Red'): RpgSave {
+export function defaultSave(name = 'Red', nuzlocke = false): RpgSave {
   return {
     v: RPG_SAVE_VERSION,
     created: Date.now(),
     name,
+    ...(nuzlocke ? { nuzlocke: freshNuzlocke() } : {}),
     map: START.map,
     x: START.x,
     y: START.y,

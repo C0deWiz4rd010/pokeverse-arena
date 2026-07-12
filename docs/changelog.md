@@ -4,6 +4,29 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.15.0 — 2026-07-12
+
+💀 **Nuzlocke mode** for the Adventure (RPG) — the classic hardcore challenge,
+opt-in per save slot.
+
+### Added
+
+- **Nuzlocke runs** — every empty save slot offers a *Nuzlocke* start next to
+  *New Adventure* (rules in the tooltip and in Prof. Oak's intro). The three
+  classic rules, enforced by a pure, unit-tested rules module
+  (`game/rpg/nuzlocke.ts`, 8 specs):
+  1. **One catch per route** — only the first wild battle on each map may
+     throw balls; the chance is spent when the battle starts, win, lose,
+     flee or catch (fishing counts). Later attempts get a battle-log refusal.
+  2. **Permadeath** — fainted partners leave the party for a **memorial**:
+     the battle result lists `💀 … fell in battle`, and the title-screen slot
+     shows the fallen count.
+  3. **Whiteout ends the run** — with no survivors the save is erased after
+     a farewell beat, with a global toast honouring the fallen.
+- **UI ties** — a 💀 marker in the overworld location HUD (both renderers)
+  and on the title-slot name; Nuzlocke state lives on the save
+  (`RpgSave.nuzlocke`), so classic saves are byte-compatible and unaffected.
+
 ## v1.14.0 — 2026-07-12
 
 Home page decluttered — a phone now sees the whole landing page in a third of

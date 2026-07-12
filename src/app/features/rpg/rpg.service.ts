@@ -14,6 +14,8 @@ import { timeBand } from '../../game/rpg/time';
 import { FIELD_STEP_INTERVAL, applyFieldPoison } from '../../game/rpg/field';
 import { ITEMS, bagIdForHeld } from '../../game/rpg/items-catalog';
 import { titleCase } from '../../core/ui/format';
+import { ToastService } from '../../core/ui/toast/toast.service';
+import { buryFainted, consumeEncounter } from '../../game/rpg/nuzlocke';
 import { defaultSave, isValidSave } from '../../game/rpg/save';
 import {
   PARTY_MAX,
@@ -27,7 +29,7 @@ import {
   takeHeldItem,
   withdrawFromBox,
 } from '../../game/rpg/party';
-import type { Direction, ItemId, MapDef, PartyMon, RpgSave, ScriptNode } from '../../game/rpg/rpg-types';
+import type { Direction, FallenMon, ItemId, MapDef, PartyMon, RpgSave, ScriptNode } from '../../game/rpg/rpg-types';
 
 const SAVE_KEY = 'rpg:save';
 
@@ -44,6 +46,8 @@ export type SlotInfo =
       readonly party: number;
       readonly topLevel: number;
       readonly map: string;
+      readonly nuzlocke: boolean;
+      readonly fallen: number;
     };
 
 /** A cinematic transition style played as a battle begins. */
@@ -109,6 +113,7 @@ export class RpgService {
   private readonly store = inject(SaveService);
   private readonly battle = inject(BattleService);
   private readonly api = inject(PokeApiClient);
+  private readonly globalToast = inject(ToastService);
   /** Evolutions queued by the last battle, played in the `evolve` phase. */
   readonly evolutions = signal<EvoEntry[]>([]);
 
@@ -154,15 +159,23 @@ export class RpgService {
 
   /* ------------------------------------------------------------- lifecycle */
 
-  newGame(name = 'Red', slot: 1 | 2 | 3 = this.slot()): void {
+  newGame(name = 'Red', slot: 1 | 2 | 3 = this.slot(), nuzlocke = false): void {
     this.slot.set(slot);
-    const g = defaultSave(name);
+    const g = defaultSave(name, nuzlocke);
     this.game.set(g);
     this.persist();
     this.phase.set('overworld');
     // Guided intro → choose a starter immediately (no hunting for the Lab).
     this.runScript([
       { say: 'Welcome to your PokéVerse adventure!' },
+      ...(nuzlocke
+        ? [
+            { say: '💀 This is a NUZLOCKE run. The rules are law:', speaker: 'Prof. Oak' },
+            { say: '1) Only the FIRST wild Pokémon on each route may be caught.' },
+            { say: '2) A fainted partner is gone forever.' },
+            { say: '3) If your whole party falls, the run — and this save — ends.' },
+          ]
+        : []),
       { say: 'Prof. Oak: Take one of these three partners — choose well!', speaker: 'Prof. Oak' },
       { starter: true },
     ]);
@@ -253,6 +266,8 @@ export class RpgService {
         party: g.party.length,
         topLevel: g.party.reduce((m, p) => Math.max(m, p.level), 0),
         map: getMap(g.map)?.name ?? g.map,
+        nuzlocke: !!g.nuzlocke,
+        fallen: g.nuzlocke?.fallen.length ?? 0,
       };
     });
   }
@@ -423,6 +438,48 @@ export class RpgService {
     this.persist();
   }
 
+  /* ------------------------------------------------------------- nuzlocke */
+
+  /** Whether the active save is a Nuzlocke run. */
+  readonly nuzlocke = computed(() => !!this.game()?.nuzlocke);
+  /** Partners lost so far (memorial size). */
+  readonly fallenCount = computed(() => this.game()?.nuzlocke?.fallen.length ?? 0);
+  /** Whether the *current* wild battle may throw balls (rule 1). */
+  readonly nuzCatchAllowed = signal(true);
+
+  /**
+   * Nuzlocke-aware party writeback: on a Nuzlocke save the fainted are moved
+   * to the memorial and leave the party; classic saves persist unchanged.
+   * Returns the survivors and whoever was lost (for the battle result lines).
+   */
+  applyPartyWithBurial(party: PartyMon[]): { survivors: PartyMon[]; lost: FallenMon[] } {
+    const g = this.game();
+    if (!g?.nuzlocke) {
+      this.applyParty(party);
+      return { survivors: party, lost: [] };
+    }
+    const r = buryFainted(g.nuzlocke, party);
+    this.game.set({ ...g, party: r.survivors, nuzlocke: r.state });
+    this.persist();
+    return { survivors: r.survivors, lost: r.lost };
+  }
+
+  /** Rule 3: the whole party fell — the run is over and the save is erased. */
+  nuzlockeGameOver(): void {
+    const fallen = this.fallenCount();
+    const name = this.game()?.name ?? 'Trainer';
+    this.deleteSlot(this.slot());
+    this.game.set(null);
+    this.battleSetup.set(null);
+    this.phase.set('title');
+    this.globalToast.show({
+      title: `${name}'s Nuzlocke run is over`,
+      text: `${fallen} partner${fallen === 1 ? '' : 's'} fell along the way. The save has been laid to rest — honor them with a fresh start.`,
+      icon: 'skull',
+      kind: 'info',
+    });
+  }
+
   /** Add a freshly-caught mon to the party (or box) and record the dex entry. */
   addCaught(mon: PartyMon): 'party' | 'box' {
     const g = this.game();
@@ -465,6 +522,19 @@ export class RpgService {
    * auto-clears once the battle scene has faded in behind it.
    */
   startEncounter(setup: BattleSetup): void {
+    // Nuzlocke rule 1: the first wild battle on a map is its only catch
+    // chance — spent the moment the battle starts, whatever its outcome.
+    const g = this.game();
+    if (setup.kind === 'wild' && g?.nuzlocke) {
+      const r = consumeEncounter(g.nuzlocke, g.map);
+      this.nuzCatchAllowed.set(r.catchAllowed);
+      if (r.state !== g.nuzlocke) {
+        this.game.set({ ...g, nuzlocke: r.state });
+        this.persist();
+      }
+    } else {
+      this.nuzCatchAllowed.set(true);
+    }
     this.battleSetup.set(setup);
     const styles: EncounterFx[] = setup.kind === 'trainer' ? ['alert'] : ['flash', 'spiral', 'split'];
     this.encounterFx.set(styles[Math.floor(Math.random() * styles.length)]);

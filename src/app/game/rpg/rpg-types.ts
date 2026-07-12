@@ -187,6 +187,22 @@ export interface MapDef {
 
 /* --------------------------------------------------------------------- save */
 
+/** A partner lost forever during a Nuzlocke run (memorial entry). */
+export interface FallenMon {
+  readonly species: string;
+  readonly nickname?: string;
+  readonly dexId: number;
+  readonly level: number;
+}
+
+/** Nuzlocke challenge state — its presence on a save marks the run as one. */
+export interface NuzlockeState {
+  /** Map ids whose single wild-catch chance has been used. */
+  readonly usedEncounters: readonly string[];
+  /** Partners lost to the permadeath rule. */
+  readonly fallen: readonly FallenMon[];
+}
+
 export interface RpgSave {
   v: number;
   created: number;
@@ -209,4 +225,6 @@ export interface RpgSave {
   doorReturn?: { map: string; x: number; y: number; facing: Direction };
   /** Remaining Repel steps (wild encounters are suppressed while > 0). */
   repelSteps?: number;
+  /** Nuzlocke challenge state (absent on classic saves). */
+  nuzlocke?: NuzlockeState;
 }

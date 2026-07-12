@@ -76,6 +76,10 @@
   .sc-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; margin-top: 0.25rem; }
   .btn { padding: 0.45rem 0.8rem; min-height: 2.3rem; font-size: 0.85rem; }
   .btn.danger { color: #ff8d98; border-color: color-mix(in srgb, #ff4d5e 40%, var(--glass-border)); }
+  .btn.nuz { color: var(--text-dim); border-color: color-mix(in srgb, #a78bfa 35%, var(--glass-border)); }
+  .btn.nuz:hover { color: #d7ccff; border-color: #a78bfa; }
+  .sc-nuz { font-size: 0.8rem; }
+  .sc-fallen { color: #ff8d98; }
 }
 
 .btn {

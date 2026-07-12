@@ -21,9 +21,12 @@
           <div class="slot-card" [class.empty]="s.empty">
             <span class="sc-head">Slot {{ s.slot }}</span>
             @if (!s.empty) {
-              <span class="sc-name">{{ s.name }}</span>
+              <span class="sc-name">{{ s.name }} @if (s.nuzlocke) { <span class="sc-nuz" title="Nuzlocke run">💀</span> }</span>
               <span class="sc-meta">{{ s.map }}</span>
               <span class="sc-meta">🏅 {{ s.badges }} · {{ s.party }} Pokémon · Lv{{ s.topLevel }}</span>
+              @if (s.nuzlocke && s.fallen > 0) {
+                <span class="sc-meta sc-fallen">💀 {{ s.fallen }} fallen</span>
+              }
               <div class="sc-actions">
                 <button class="btn primary" type="button" (click)="svc.continue(s.slot)"><pv-icon name="book" /> Continue</button>
                 <button class="btn ghost danger" type="button" (click)="onDelete(s.slot)">
@@ -34,6 +37,14 @@
               <span class="sc-meta dim">Empty</span>
               <button class="btn primary" type="button" (click)="svc.newGame('Red', s.slot)">
                 <pv-icon name="sparkles" /> New Adventure
+              </button>
+              <button
+                class="btn ghost nuz"
+                type="button"
+                title="Hardcore: only the first wild Pokémon per route may be caught, fainted partners are gone forever, and a full wipe erases the save."
+                (click)="svc.newGame('Red', s.slot, true)"
+              >
+                <pv-icon name="skull" /> Nuzlocke
               </button>
             }
           </div>

@@ -169,3 +169,23 @@ seen/caught dex, badges, whiteout respawn, and the interior-return door.
 - **Mobile battle fit** — compact field/log/commands so a full fight (field,
   log, four moves or the command grid) fits one phone screen without
   scrolling.
+
+## v2.8 — 💀 Nuzlocke mode (app v1.15)
+
+Opt-in per save slot (a second button on empty slots; rules restated by
+Prof. Oak in the intro). State lives on the save as `RpgSave.nuzlocke`
+(`usedEncounters` + `fallen` memorial), so classic saves are untouched.
+
+- **Rules module** — `game/rpg/nuzlocke.ts` is pure and unit-tested:
+  `consumeEncounter` (rule 1: one catch chance per map, spent at battle
+  start) and `buryFainted` (rule 2: split survivors from the fallen and
+  grow the memorial).
+- **Service** — `startEncounter` consumes the map's chance for wild battles
+  and exposes `nuzCatchAllowed`; `applyPartyWithBurial` replaces the plain
+  writeback on Nuzlocke saves; `nuzlockeGameOver` (rule 3) erases the slot
+  and pays respects via the global toast stack.
+- **Battle** — ball throws are refused in the log once the route's chance is
+  spent; result lines mourn each loss; a party wipe plays a farewell beat
+  then ends the run instead of the free whiteout heal.
+- **Surfaces** — 💀 in the overworld location pill (both renderers), on the
+  title-slot name, and a fallen counter on the slot card.

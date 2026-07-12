@@ -41,7 +41,7 @@ const KEY_DIR: Record<string, Direction> = {
   template: `
     <div class="ow" #host>
       <div class="ow-mount" #mount></div>
-      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }<span class="ow-wx" [title]="'It is ' + band()">{{ timeIcon() }}</span></div> }
+      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }<span class="ow-wx" [title]="'It is ' + band()">{{ timeIcon() }}</span>@if (svc.nuzlocke()) { <span class="ow-wx" title="Nuzlocke run">💀</span> }</div> }
       @if (banner(); as b) { <div class="ow-banner" aria-hidden="true">{{ b }}</div> }
       @if (svc.toast(); as t) { <div class="ow-toast" role="status">{{ t }}</div> }
       <pv-ow-party-hud />

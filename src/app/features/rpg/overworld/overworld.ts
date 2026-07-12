@@ -36,7 +36,7 @@ const KEY_DIR: Record<string, Direction> = {
       <canvas #cv class="ow-canvas"></canvas>
 
       @if (svc.map(); as m) {
-        <div class="ow-loc">{{ m.name }}</div>
+        <div class="ow-loc">{{ m.name }}@if (svc.nuzlocke()) { <span class="ow-wx" title="Nuzlocke run">💀</span> }</div>
       }
       @if (svc.toast(); as t) {
         <div class="ow-toast" role="status">{{ t }}</div>
