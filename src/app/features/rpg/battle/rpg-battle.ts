@@ -322,7 +322,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
     this.busy.set(true);
     this.append(`You used a ${def.name}.`);
     this.syncAll();
-    await sleep(420);
+    await this.wait(420);
     await this.passTurn();
   }
 
@@ -342,15 +342,15 @@ export class RpgBattleComponent extends BattlePresenterBase {
     const caught = attemptCatch(this.foeCatchRate, hpPct, foe.status, ball, new SeededRng(`catch-${Date.now()}-${Math.random()}`));
     for (let i = 0; i < 3; i++) {
       this.append('…');
-      await sleep(430);
+      await this.wait(430);
     }
     if (caught) {
       this.append(`Gotcha! ${titleCase(foe.battler.name)} was caught!`, 'win');
-      await sleep(500);
+      await this.wait(500);
       await this.finalizeCaught();
     } else {
       this.append(`Oh no! ${titleCase(foe.battler.name)} broke free!`);
-      await sleep(300);
+      await this.wait(300);
       await this.passTurn();
     }
   }
@@ -412,7 +412,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
     side.toxicCounter = 0;
     this.append(`${titleCase(side.battler.name)} was revived!`, 'switch');
     this.syncAll();
-    await sleep(420);
+    await this.wait(420);
     await this.passTurn();
   }
 
@@ -436,7 +436,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
       return;
     }
     if (tb.mustSwitch(1)) {
-      await sleep(350);
+      await this.wait(350);
       await this.playEvents(tb.autoForceSwitch(1));
       this.syncAll();
       if (tb.state.finished) {
@@ -530,7 +530,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
     if (!won && !ran && !updated.some((m) => m.currentHp > 0)) {
       // Whiteout: short beat, then heal + respawn.
       this.append('You are out of usable Pokémon…', 'faint');
-      await sleep(900);
+      await this.wait(900);
       this.svc.whiteout();
     }
   }

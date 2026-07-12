@@ -1,4 +1,4 @@
-<section class="battle">
+<section class="battle" [class.in-fight]="phase() === 'fighting' || phase() === 'done'">
   <pv-page-header
     icon="swords"
     title="Battle Arena"
@@ -74,6 +74,8 @@
 
             <!-- GPU effects layer (lazy PixiJS; no-op if unavailable) -->
             <pv-battle-fx />
+
+            <button class="speed-chip" type="button" (click)="cycleSpeed()" title="Battle speed" [attr.aria-label]="'Battle speed ' + speed() + '×'">{{ speed() }}×</button>
 
             <!-- Active field conditions (weather / terrain) -->
             <div class="field-overlay">

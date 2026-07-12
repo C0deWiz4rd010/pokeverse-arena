@@ -157,3 +157,15 @@ seen/caught dex, badges, whiteout respawn, and the interior-return door.
 - **Quests**: *Earn the Tide Badge* and *Catch a nocturnal Pokémon*; the
   objective banner points to Mistfall after the third badge. The map-registry
   spec covers the three new maps.
+
+## v2.7 — mobile & pacing quality-of-life (app v1.12)
+
+- **Battle speed 1×/2×/3×** — inherited from the shared presenter; the chip
+  sits top-left of the battle field (the foe box owns the top-right). Every
+  scripted beat (catch shakes, item use, whiteout) is speed-aware too.
+- **Touch run toggle** — a sticky 🏃 button joins A/B on the on-screen pad
+  (both renderers): touch players finally get the Shift-run (95 ms steps).
+  The canvas fallback renderer also learned keyboard Shift-run for parity.
+- **Mobile battle fit** — compact field/log/commands so a full fight (field,
+  log, four moves or the command grid) fits one phone screen without
+  scrolling.

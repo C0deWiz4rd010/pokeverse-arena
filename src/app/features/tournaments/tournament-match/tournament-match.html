@@ -18,6 +18,7 @@
   <div class="arena">
     <pv-weather-overlay [weather]="weather()" />
     <pv-battle-fx />
+    <button class="speed-chip" type="button" (click)="cycleSpeed()" title="Battle speed" [attr.aria-label]="'Battle speed ' + speed() + '×'">{{ speed() }}×</button>
 
     <div class="field-overlay">
       <pv-field-banner [weather]="engWeather()" [terrain]="engTerrain()" [weatherTurns]="wTurns()" [terrainTurns]="tTurns()" />

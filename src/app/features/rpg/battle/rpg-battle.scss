@@ -16,6 +16,9 @@
 /* Pixi attack/impact FX fills the field, behind the fighters. */
 pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 
+/* The foe box sits top-right, so the speed chip moves to the free top-left. */
+.rb-field .speed-chip { right: auto; left: 0.5rem; }
+
 .rb-loading { padding: 3rem 1rem; text-align: center; color: var(--text-dim); }
 
 /* ---- field ---- */
@@ -121,6 +124,18 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 
 .rb-result { display: grid; gap: 0.6rem; justify-items: center; text-align: center; padding: 0.4rem; }
 .rb-gains { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.2rem; font-size: 0.9rem; }
+
+/* ---- mobile: the whole fight (field + log + commands) fits one screen ---- */
+@media (max-width: 767px) {
+  .rb { padding: 0.55rem; gap: 0.5rem; }
+  .rb-field { min-height: 225px; gap: 0.4rem; padding: 0.45rem; }
+  .fighter .sprite { width: 78px; height: 78px; }
+  .info { min-width: 148px; padding: 0.35rem 0.55rem; }
+  .info .row strong { font-size: 0.85rem; }
+  .types ::ng-deep .badge { padding: 0.1rem 0.4rem; font-size: 0.6rem; }
+  .rb-log { max-height: 74px; font-size: 0.78rem; }
+  .cmd { min-height: 2.5rem; padding: 0.55rem 0.8rem; }
+}
 
 /* send-out / faint / floating numbers */
 .fighter .sprite.send-in { animation: rb-send 0.52s cubic-bezier(0.2, 0.8, 0.3, 1.2) both; }

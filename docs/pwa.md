@@ -13,6 +13,12 @@ mobile-first and keyboard-accessible throughout.
 | [src/index.html](../src/index.html) | Links the manifest + icons and the Apple PWA meta tags. |
 | [src/main.ts](../src/main.ts) | Registers `sw.js` on load — but never on the local dev server, so HMR is untouched. |
 
+The manifest deliberately sets **no `orientation` member** (v1.12): an
+explicit value like `"any"` lets an installed PWA rotate even when the user
+has the OS auto-rotate lock enabled (the manifest wins over the sensor
+setting on Android). Omitting it means the installed app follows the system
+rotation lock exactly like the browser does.
+
 ### Caching strategy
 
 The service worker avoids depending on hashed build filenames and instead uses

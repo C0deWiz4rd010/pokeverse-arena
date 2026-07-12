@@ -140,6 +140,14 @@
 }
 .ab-btn.a { background: color-mix(in srgb, var(--accent) 30%, #0b0a1f); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
 .ab-btn.b { background: color-mix(in srgb, var(--accent-2) 26%, #0b0a1f); border-color: color-mix(in srgb, var(--accent-2) 50%, transparent); }
+/* Sticky run toggle — lit while active (the touch counterpart of holding Shift). */
+.ab-btn.r { width: 2.4rem; height: 2.4rem; font-size: 0.95rem; opacity: 0.85; }
+.ab-btn.r.on {
+  background: color-mix(in srgb, var(--accent-3) 40%, #0b0a1f);
+  border-color: var(--accent-3);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-3) 55%, transparent);
+  opacity: 1;
+}
 
 .pad-btn:active,
 .ab-btn:active { transform: scale(0.94); }

@@ -4,6 +4,7 @@
   } @else {
     <div class="rb-field">
       <pv-battle-fx />
+      <button class="speed-chip" type="button" (click)="cycleSpeed()" title="Battle speed" [attr.aria-label]="'Battle speed ' + speed() + '×'">{{ speed() }}×</button>
       <!-- Foe -->
       <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1">
         @if (foeActive(); as foe) {

@@ -275,7 +275,7 @@ export class TournamentMatchComponent extends BattlePresenterBase {
     if (tb.state.finished) return this.end();
 
     if (tb.mustSwitch(1)) {
-      await sleep(350);
+      await this.wait(350);
       await this.playEvents(tb.autoForceSwitch(1));
       this.syncAll();
       if (tb.state.finished) return this.end();

@@ -53,6 +53,7 @@ const KEY_DIR: Record<string, Direction> = {
         <button class="pad-btn down" (pointerdown)="press('down', $event)" (pointerup)="release('down')" (pointerleave)="release('down')">▼</button>
       </div>
       <div class="ab" aria-hidden="true">
+        <button class="ab-btn r" [class.on]="touchRun()" (pointerdown)="toggleRun($event)" title="Run">🏃</button>
         <button class="ab-btn a" (pointerdown)="interact($event)">A</button>
         <button class="ab-btn b" (pointerdown)="svc.openMenu()">B</button>
       </div>
@@ -110,6 +111,8 @@ export class PixiOverworldComponent implements OnDestroy {
   private readonly baseStepMs = REDUCED ? 0 : 150;
   private stepDur = REDUCED ? 0 : 150;
   private running = false;
+  /** Sticky run toggle for touch players (keyboard holds Shift, gamepad holds X). */
+  protected readonly touchRun = signal(false);
   private frame = 0;
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
@@ -145,6 +148,10 @@ export class PixiOverworldComponent implements OnDestroy {
     if (this.svc.phase() === 'overworld') this.held.add(dir);
   }
   protected release(dir: Direction): void { this.held.delete(dir); }
+  protected toggleRun(ev?: Event): void {
+    ev?.preventDefault();
+    this.touchRun.update((v) => !v);
+  }
   protected interact(ev?: Event): void {
     ev?.preventDefault();
     if (this.svc.phase() === 'overworld') this.svc.interact();
@@ -604,7 +611,7 @@ export class PixiOverworldComponent implements OnDestroy {
           this.to = { x: np.x, y: np.y };
           this.t0 = performance.now();
           this.hopping = !!res.hopped;
-          this.stepDur = REDUCED ? 0 : res.hopped ? 260 : this.running || this.runningPad ? 95 : this.baseStepMs;
+          this.stepDur = REDUCED ? 0 : res.hopped ? 260 : this.running || this.runningPad || this.touchRun() ? 95 : this.baseStepMs;
           this.stepping = this.stepDur > 0;
           if (!this.stepping) { this.visX = np.x; this.visY = np.y; }
           this.spawnDust(before.x, before.y);

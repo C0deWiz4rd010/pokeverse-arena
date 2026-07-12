@@ -27,6 +27,19 @@ export interface FloatNum {
 
 export const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
+const SPEED_KEY = 'pv:battle:speed';
+const SPEEDS = [1, 2, 3] as const;
+export type BattleSpeed = (typeof SPEEDS)[number];
+
+function readSpeed(): BattleSpeed {
+  try {
+    const v = Number(localStorage.getItem(SPEED_KEY));
+    return (SPEEDS as readonly number[]).includes(v) ? (v as BattleSpeed) : 1;
+  } catch {
+    return 1;
+  }
+}
+
 export function effectivenessNote(mult: number): string | null {
   if (mult === 0) return "It doesn't affect the foe…";
   if (mult >= 2) return "It's super effective!";
@@ -81,6 +94,24 @@ export abstract class BattlePresenterBase {
     switch: 460, move: 520, miss: 440, damage: 500, heal: 340, note: 300, stage: 270, faint: 700, end: 280,
   };
 
+  /** Playback speed (1×/2×/3×) — divides every pacing beat; persisted app-wide. */
+  protected readonly speed = signal<BattleSpeed>(readSpeed());
+
+  protected cycleSpeed(): void {
+    const next = SPEEDS[(SPEEDS.indexOf(this.speed()) + 1) % SPEEDS.length];
+    this.speed.set(next);
+    try {
+      localStorage.setItem(SPEED_KEY, String(next));
+    } catch {
+      /* persistence is best-effort */
+    }
+  }
+
+  /** Speed-aware pause — use instead of `sleep` for anything the player waits on. */
+  protected wait(ms: number): Promise<void> {
+    return sleep(ms / this.speed());
+  }
+
   /* ------------------------------------------------------------- hooks */
 
   /** A side's active changed (switch resolved) — refresh sprites/HP from the engine. */
@@ -107,18 +138,18 @@ export abstract class BattlePresenterBase {
           this.pulseEnter(ev.side);
           this.onSwitched(ev.side);
           this.append(ev.text, 'switch');
-          await sleep(t.switch);
+          await this.wait(t.switch);
           break;
         case 'move':
           this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
           this.pendingType = this.moveType(ev.side, ev.move);
           this.fx()?.cast(ev.side, this.pendingType);
-          await sleep(t.move);
+          await this.wait(t.move);
           break;
         case 'miss':
           this.append(`${titleCase(ev.attacker)}'s attack missed!`);
           this.pendingType = null;
-          await sleep(t.miss);
+          await this.wait(t.miss);
           break;
         case 'damage': {
           this.flashSide.set(ev.side);
@@ -135,7 +166,7 @@ export abstract class BattlePresenterBase {
           }
           const note = effectivenessNote(ev.effectiveness);
           if (note) this.append(note, ev.effectiveness >= 2 ? 'super' : 'resist');
-          await sleep(t.damage);
+          await this.wait(t.damage);
           this.shakeSide.set(null);
           this.flashSide.set(null);
           this.critSide.set(null);
@@ -147,7 +178,7 @@ export abstract class BattlePresenterBase {
           if (gained > 0) this.spawnFloat(ev.side, `+${gained}`, 'heal');
           this.setHp(ev.side, ev.remainingHp);
           if (ev.text) this.append(ev.text);
-          await sleep(t.heal);
+          await this.wait(t.heal);
           break;
         }
         case 'status-set':
@@ -160,22 +191,22 @@ export abstract class BattlePresenterBase {
         case 'flinch':
         case 'status':
           if (ev.text) this.append(ev.text);
-          await sleep(t.note);
+          await this.wait(t.note);
           break;
         case 'stage-change':
           if (ev.text) this.append(ev.text);
-          await sleep(t.stage);
+          await this.wait(t.stage);
           break;
         case 'faint':
           this.append(`${titleCase(ev.name)} fainted!`, 'faint');
           this.onFainted(ev.side);
           this.faintSide.set(ev.side);
-          await sleep(t.faint);
+          await this.wait(t.faint);
           if (this.clearFaintAfterBeat) this.faintSide.set(null);
           break;
         case 'end':
           this.onEnd(ev.winner);
-          await sleep(t.end);
+          await this.wait(t.end);
           break;
         default:
           break;

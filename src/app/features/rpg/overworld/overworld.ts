@@ -5,6 +5,7 @@ import {
   OnDestroy,
   afterNextRender,
   inject,
+  signal,
   viewChild,
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
@@ -51,6 +52,7 @@ const KEY_DIR: Record<string, Direction> = {
         <button class="pad-btn down" (pointerdown)="press('down', $event)" (pointerup)="release('down')" (pointerleave)="release('down')">▼</button>
       </div>
       <div class="ab" aria-hidden="true">
+        <button class="ab-btn r" [class.on]="touchRun()" (pointerdown)="toggleRun($event)" title="Run">🏃</button>
         <button class="ab-btn a" (pointerdown)="interact($event)">A</button>
         <button class="ab-btn b" (pointerdown)="svc.openMenu()">B</button>
       </div>
@@ -83,9 +85,14 @@ export class OverworldComponent implements OnDestroy {
   private to = { x: 0, y: 0 };
   private t0 = 0;
   private readonly held = new Set<Direction>();
-  private readonly stepMs = REDUCED ? 0 : 140;
+  private readonly baseStepMs = REDUCED ? 0 : 140;
+  private stepDur = REDUCED ? 0 : 140;
+  private running = false;
+  /** Sticky run toggle for touch players (keyboard holds Shift). */
+  protected readonly touchRun = signal(false);
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
+    this.running = e.shiftKey;
     if (this.svc.phase() !== 'overworld') return; // a dialogue/starter overlay is active
     if (e.key === 'z' || e.key === 'Z' || e.key === 'Enter') {
       e.preventDefault();
@@ -104,6 +111,7 @@ export class OverworldComponent implements OnDestroy {
     }
   };
   private readonly onKeyUp = (e: KeyboardEvent): void => {
+    this.running = e.shiftKey;
     const dir = KEY_DIR[e.key];
     if (dir) this.held.delete(dir);
   };
@@ -140,6 +148,10 @@ export class OverworldComponent implements OnDestroy {
   protected release(dir: Direction): void {
     this.held.delete(dir);
   }
+  protected toggleRun(ev?: Event): void {
+    ev?.preventDefault();
+    this.touchRun.update((v) => !v);
+  }
   protected interact(ev?: Event): void {
     ev?.preventDefault();
     if (this.svc.phase() !== 'overworld') return;
@@ -174,7 +186,7 @@ export class OverworldComponent implements OnDestroy {
 
   private update(): void {
     if (this.stepping) {
-      const p = this.stepMs <= 0 ? 1 : Math.min(1, (performance.now() - this.t0) / this.stepMs);
+      const p = this.stepDur <= 0 ? 1 : Math.min(1, (performance.now() - this.t0) / this.stepDur);
       this.visX = this.from.x + (this.to.x - this.from.x) * p;
       this.visY = this.from.y + (this.to.y - this.from.y) * p;
       if (p >= 1) this.stepping = false;
@@ -197,7 +209,8 @@ export class OverworldComponent implements OnDestroy {
       this.from = { x: before.x, y: before.y };
       this.to = { x: np.x, y: np.y };
       this.t0 = performance.now();
-      this.stepping = this.stepMs > 0;
+      this.stepDur = REDUCED ? 0 : this.running || this.touchRun() ? 95 : this.baseStepMs;
+      this.stepping = this.stepDur > 0;
       if (!this.stepping) {
         this.visX = np.x;
         this.visY = np.y;

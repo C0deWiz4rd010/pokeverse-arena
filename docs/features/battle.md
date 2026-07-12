@@ -117,3 +117,16 @@ See [../plan.md](../plan.md) phases 0–3.
 by the quick battle, the tournament match and the RPG battle. Components
 override hooks (`onSwitched`, `onFainted`, `onImpact`, `onEnd`, timing table)
 instead of forking the pipeline.
+
+The presenter also owns the **battle speed** (v1.12): a persisted 1×/2×/3×
+setting (`pv:battle:speed`) that divides every pacing beat via the shared
+`wait()` helper. Each battle UI surfaces it as a small `.speed-chip` overlay
+on its arena (top-right; top-left in the RPG, whose foe box sits right), so
+one tap re-paces the quick battle, tournament matches *and* RPG fights alike.
+
+## Mobile fit pass (v1.12)
+
+Below 768 px a fight fits one screen with the moves in thumb reach: the page
+header hides once the battle starts (`.battle.in-fight`), sprites and info
+cards shrink, badge/HP-bar sizes tighten and the log caps at ~110 px. The RPG
+battle got the same treatment (field 225 px min, log 74 px, denser commands).

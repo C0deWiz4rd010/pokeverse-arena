@@ -4,6 +4,38 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.12.0 — 2026-07-12
+
+Mobile & pacing quality-of-life: the PWA respects the OS rotation lock, a
+whole fight fits one phone screen, battles play at 1×/2×/3×, and the RPG gets
+a touch run toggle.
+
+### Fixed
+
+- **Installed PWA no longer rotates against the OS rotation lock.** The
+  manifest declared `"orientation": "any"`, which overrides the system
+  auto-rotate setting in standalone mode on Android — the app kept rotating
+  even with the lock on. The member is now omitted, so the installed app
+  follows the system lock exactly like the browser; the service-worker cache
+  version was bumped (`v1` → `v2`) so installed clients pick the fix up.
+
+### Added
+
+- **Battle speed 1×/2×/3×** — the shared battle presenter owns a persisted
+  playback speed that divides every pacing beat; a small ×-chip on the arena
+  cycles it in the quick battle, tournament matches and RPG fights alike.
+  Scripted RPG beats (catch shakes, item use, whiteout) are speed-aware too.
+- **RPG touch run toggle** — a sticky 🏃 button joins A/B on the on-screen
+  pad in both overworld renderers; the canvas fallback also gained keyboard
+  Shift-run for parity.
+
+### Changed
+
+- **Mobile battle fit** — below 768 px the page header hides once a fight
+  starts, fighters/info cards/log tighten, and the full fight (arena, four
+  moves, log) fits one screen — no more scrolling to reach the attacks. The
+  RPG battle got the same compaction (field 225 px, log 74 px).
+
 ## v1.11.0 — 2026-07-12
 
 Fusion Lab round 2 — the daily **Lab Special** — plus shiny sparkles in the

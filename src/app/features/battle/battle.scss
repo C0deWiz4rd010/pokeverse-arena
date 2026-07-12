@@ -287,6 +287,32 @@
 .result h2 { font-size: 1.6rem; margin-bottom: 0.9rem; }
 .result-actions { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
 
+/* ---- mobile: everything about the fight fits one screen ----
+   The page header hides once the battle starts (the title has done its job),
+   fighters and info cards shrink, and the move grid stays within thumb reach
+   without scrolling. */
+@media (max-width: 767px) {
+  .battle { padding-top: 0.4rem; }
+  .battle.in-fight pv-page-header { display: none; }
+
+  .arena { gap: 0.4rem; padding: 0.45rem; }
+  .fighter { gap: 0.3rem; }
+  .fighter .sprite { width: 74px; height: 74px; }
+  .info { padding: 0.35rem 0.5rem; max-width: 215px; }
+  .info .row strong { font-size: 0.82rem; }
+  .info .types { margin: 0.2rem 0; }
+  .info .types ::ng-deep .badge { padding: 0.1rem 0.4rem; font-size: 0.6rem; }
+  .info .ability { font-size: 0.62rem; margin-top: 0.1rem; }
+  .hpbar { height: 13px; }
+  .hpbar .kp { font-size: 0.62rem; }
+
+  .stage { gap: 0.6rem; }
+  .stage-main { gap: 0.6rem; }
+  .moves { gap: 0.4rem; }
+  .log-lines { max-height: 110px; }
+  .result { padding: 1rem; }
+}
+
 /* ---- large view: log to the right, full-height & self-scrolling ---- */
 @include up(xl) {
   .battle { max-width: 1180px; }
