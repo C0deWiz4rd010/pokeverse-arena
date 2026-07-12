@@ -36,6 +36,10 @@
           <span class="rank-fill" [style.width.%]="p.pct"></span>
         </div>
       }
+
+      <button class="btn card-btn" type="button" [disabled]="rendering()" (click)="shareCard()">
+        <pv-icon name="download" /> {{ rendering() ? 'Rendering…' : 'Share Trainer Card' }}
+      </button>
     </div>
 
     <div class="id-ring" role="img" [attr.aria-label]="svc.completion() + '% of achievements unlocked'">

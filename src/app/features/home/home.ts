@@ -12,6 +12,10 @@ import {
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { ProfileService } from '../profile/profile.service';
+import { DailyService } from '../battle/daily.service';
+import { dailyFusionPair } from '../../game/fusion/fusion';
+import { dailySeed } from '../../core/utils/rng';
+import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import type { IconName } from '../../core/ui/icon/icons.data';
 
 interface FeatureCard {
@@ -40,6 +44,14 @@ const REDUCED_MOTION =
 })
 export class HomeComponent implements OnDestroy {
   private readonly profile = inject(ProfileService);
+  protected readonly daily = inject(DailyService);
+
+  /** Today's seeded Fusion Lab pair — same for every trainer. */
+  protected readonly special = dailyFusionPair(dailySeed('fusion'));
+
+  protected sprite(id: number): string {
+    return `${SPRITE_BASE}/pokemon/${id}.png`;
+  }
 
   private readonly heroCanvas = viewChild<ElementRef<HTMLCanvasElement>>('hero');
   protected readonly heroReady = signal(false);

@@ -40,3 +40,17 @@ first; at `lg` it becomes a two-column hero with copy beside the canvas.
   stagger in.
 - Animated gradient title + entrance motion; the 3D hero and reduced-motion
   fallback are unchanged.
+
+## "Today" strip (v1.13)
+
+Two compact cards between the hero and the feature grid put the day's seeded
+content one tap away:
+
+- **Daily Challenge** — state-aware copy (ready / cleared / attempt spent),
+  the live streak + best, and both matchup sprites, linking to
+  `/battle?daily=1`.
+- **Today's Lab Special** — the seeded fusion pair of the day with both donor
+  sprites, linking straight into the Fusion Lab.
+
+Both cards read only local/seeded state (`DailyService`, `dailyFusionPair`)
+and id-addressed sprite URLs — the landing page still makes no API calls.

@@ -56,3 +56,13 @@ starter roster (v1.8) and the **Fusion Lab** (v1.10/1.11): `fusionsRegistered`
 counts the persisted Fusion Dex, drives the *Mad Scientist* / *Gene Weaver*
 achievements, a *Fusions registered* Records row, and the Home "What's next"
 suggestion to splice your first fusion.
+
+## Trainer Card (v1.13)
+
+*Share Trainer Card* renders a 1200×630 PNG on an offscreen canvas
+(`trainer-card.ts` — pure DOM/canvas, no Angular): accent-palette border and
+corner glows, name/title, rank pill, achievement completion bar, six record
+chips, and up to three favourite Pokémon artworks (loaded `crossOrigin` so
+the canvas stays exportable; a drawn Poké-orb stands in when there are no
+favourites). Shared via the Web Share API when the platform offers it,
+otherwise downloaded as `trainer-card.png` with a confirming toast.

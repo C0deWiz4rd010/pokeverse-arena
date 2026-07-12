@@ -4,6 +4,29 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.13.0 — 2026-07-12
+
+Today at a glance + a shareable Trainer Card.
+
+### Added
+
+- **"Today" strip on Home** — two compact cards between the hero and the
+  feature grid: the **Daily Challenge** (state-aware copy — ready / cleared /
+  attempt spent — plus live streak and both matchup sprites) and **Today's
+  Lab Special** (both seeded donors), each one tap from playing. Sprites come
+  straight off the id-addressed CDN — zero API calls on the landing page.
+- **Trainer Card** — a *Share Trainer Card* button on the profile renders a
+  1200×630 PNG on an offscreen canvas: accent-palette border and glows, name,
+  title, rank pill, achievement bar, six record chips and up to three
+  favourite Pokémon artworks (a drawn Poké-orb when there are none). Uses the
+  Web Share API where available, otherwise downloads — verified end-to-end
+  with a scripted download check.
+
+### Changed
+
+- **Micro-polish** — text selection now uses the accent palette and the grey
+  mobile tap-flash is gone (`-webkit-tap-highlight-color: transparent`).
+
 ## v1.12.0 — 2026-07-12
 
 Mobile & pacing quality-of-life: the PWA respects the OS rotation lock, a

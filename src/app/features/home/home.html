@@ -38,6 +38,44 @@
   </div>
 </section>
 
+<section class="container today" aria-label="Today's challenges">
+  <div class="today-grid">
+    <a class="glass today-card daily-card" routerLink="/battle" [queryParams]="{ daily: '1' }">
+      <span class="tc-flair" aria-hidden="true"><pv-icon name="flame" /></span>
+      <span class="tc-copy">
+        <small>Daily Challenge · {{ daily.today }}</small>
+        <strong>
+          @if (daily.wonToday()) { Cleared — streak safe ✓ }
+          @else if (daily.playedToday()) { Attempt spent — rematch for fun }
+          @else { One counted attempt. Ready? }
+        </strong>
+        <span class="tc-meta">🔥 {{ daily.streak() }} streak · best {{ daily.best() }}</span>
+      </span>
+      <span class="tc-sprites" aria-hidden="true">
+        <img [src]="sprite(daily.matchup.playerId)" alt="" loading="lazy" />
+        <em>vs</em>
+        <img [src]="sprite(daily.matchup.opponentId)" alt="" loading="lazy" />
+      </span>
+      <span class="tc-go" aria-hidden="true">→</span>
+    </a>
+
+    <a class="glass today-card lab-card" routerLink="/fusion" [queryParams]="{ head: special.head, body: special.body }">
+      <span class="tc-flair" aria-hidden="true"><pv-icon name="flask-conical" /></span>
+      <span class="tc-copy">
+        <small>Today's Lab Special</small>
+        <strong>A fresh splice awaits</strong>
+        <span class="tc-meta">Same seeded pair for every trainer</span>
+      </span>
+      <span class="tc-sprites" aria-hidden="true">
+        <img [src]="sprite(special.head)" alt="" loading="lazy" />
+        <em>×</em>
+        <img [src]="sprite(special.body)" alt="" loading="lazy" />
+      </span>
+      <span class="tc-go" aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
 <section class="container features">
   <h2 class="section-title">Everything inside</h2>
   <div class="grid">

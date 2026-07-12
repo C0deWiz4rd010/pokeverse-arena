@@ -3,6 +3,10 @@ import { ProfileService } from './profile.service';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { ThemeService } from '../../core/theme/theme.service';
+import { ToastService } from '../../core/ui/toast/toast.service';
+import { PokedexService } from '../pokedex/pokedex.service';
+import { APP_VERSION } from '../../core/version';
+import { renderTrainerCard } from './trainer-card';
 
 @Component({
   selector: 'pv-profile',
@@ -84,5 +88,60 @@ export class ProfileComponent {
   protected saveEdit(): void {
     this.svc.setIdentity(this.nameDraft(), this.titleDraft());
     this.editing.set(false);
+  }
+
+  /* ------------------------------------------------------- trainer card */
+
+  private readonly toasts = inject(ToastService);
+  private readonly dex = inject(PokedexService);
+  protected readonly rendering = signal(false);
+
+  /** Render the shareable Trainer Card PNG, then share it (or download it). */
+  protected async shareCard(): Promise<void> {
+    if (this.rendering()) return;
+    this.rendering.set(true);
+    try {
+      const s = this.svc.state();
+      const t = this.theme.current();
+      const blob = await renderTrainerCard({
+        name: this.svc.identity().name,
+        title: this.svc.identity().title,
+        rank: this.svc.rank(),
+        completion: this.svc.completion(),
+        stats: [
+          { label: 'Badges', value: `${s.badges}/${s.totalBadges}` },
+          { label: 'Cups won', value: `${s.tournamentWins}` },
+          { label: 'Best streak', value: `${s.dailyBest}` },
+          { label: 'World dex', value: `${s.worldCaught}` },
+          { label: 'Spire clears', value: `${s.spireClears}` },
+          { label: 'Fusions', value: `${s.fusionsRegistered}` },
+        ],
+        favoriteIds: [...this.dex.favorites()].slice(0, 3),
+        accent: t.accent,
+        accent2: t.accent2,
+        accent3: t.accent3,
+        version: APP_VERSION,
+      });
+      if (!blob) throw new Error('canvas unavailable');
+
+      const file = new File([blob], 'trainer-card.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'My PokéVerse Trainer Card' });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'trainer-card.png';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        this.toasts.show({ title: 'Trainer Card saved', text: 'trainer-card.png is in your downloads.', icon: 'download', kind: 'info' });
+      }
+    } catch (err) {
+      if ((err as Error)?.name !== 'AbortError') {
+        this.toasts.show({ title: 'Could not create the card', text: 'Please try again.', icon: 'triangle-alert', kind: 'info' });
+      }
+    } finally {
+      this.rendering.set(false);
+    }
   }
 }

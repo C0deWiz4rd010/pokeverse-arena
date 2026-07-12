@@ -28,6 +28,14 @@ body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  /* Mobile: no grey tap flash — hover/active states carry the feedback. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Text selection in the accent palette instead of the browser default. */
+::selection {
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--text);
 }
 
 h1, h2, h3, h4 {

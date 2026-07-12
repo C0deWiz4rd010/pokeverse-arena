@@ -186,6 +186,21 @@
 }
 .link:hover { color: var(--text); }
 
+/* Trainer-Card share button — sits under the rank bar, never full-width. */
+.card-btn {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.2rem;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.card-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.card-btn:disabled { opacity: 0.6; cursor: progress; }
+
 @media (prefers-reduced-motion: reduce) {
   .rank-fill, .bar-fill, .ring-prog { transition: none; }
   .record:hover, .ach.on:hover { transform: none; }
