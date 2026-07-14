@@ -12,7 +12,34 @@ import { RpgService } from '../rpg.service';
 import type { Direction, MapDef, TileKind, WeatherKind } from '../../../game/rpg/rpg-types';
 import { timeBand, type TimeBand } from '../../../game/rpg/time';
 import { OwPartyHudComponent } from './party-hud';
-import { CHAR_ART, GROUNDED, SHEET_URL, TILE_ART, TILE_PX, charIndex, frameRect, type Sheet, type TileArt } from './atlas';
+import {
+  CHAR_SHEETS,
+  CHAR_WALK_FRAMES,
+  DOOR_OVERLAY,
+  GRASS,
+  GRASS_VARIANTS,
+  GROUNDED,
+  INDOOR_FLOOR,
+  LILY_PAD,
+  PINE,
+  SHEET_URL,
+  TALLGRASS_TUFT,
+  TILE_ART,
+  TILE_PX,
+  TREE_SOLO,
+  WATER_BASE,
+  WATER_DEEP,
+  WATER_GLINT,
+  WATER_RIPPLE,
+  charFrameRect,
+  charSheetUrl,
+  frameRect,
+  pathAutoIndex,
+  tileHash,
+  wallAutoIndex,
+  type Sheet,
+  type TileArt,
+} from './atlas';
 
 type Pixi = typeof import('pixi.js');
 type PApplication = import('pixi.js').Application;
@@ -28,11 +55,13 @@ const KEY_DIR: Record<string, Direction> = {
 };
 
 /**
- * High-end PixiJS (WebGL) overworld: real CC0 pixel tiles (Kenney Tiny Town /
- * Tiny Dungeon), animated water & tall grass, a follow camera and character
- * sprites. Movement/warps/interaction stay in {@link RpgService}; input mirrors
- * the canvas renderer (keyboard + on-screen pad). Falls back to the canvas
- * renderer (chosen by the shell) when WebGL or motion is unavailable.
+ * High-end PixiJS (WebGL) overworld on the CC0 **Ninja Adventure** art pack:
+ * auto-tiled paths and room walls, tree canopies that overlap the walkway,
+ * seeded grass variants and lily ponds, animated water & tall grass, a follow
+ * camera and characters with real 4-direction walk cycles. Movement/warps/
+ * interaction stay in {@link RpgService}; input mirrors the canvas renderer
+ * (keyboard + on-screen pad). Falls back to the canvas renderer (chosen by the
+ * shell) when WebGL or motion is unavailable.
  */
 @Component({
   selector: 'pv-pixi-overworld',
@@ -71,12 +100,17 @@ export class PixiOverworldComponent implements OnDestroy {
   private world!: PContainer;
   private tilesLayer!: PContainer;
   private entitiesLayer!: PContainer;
+  private canopyLayer!: PContainer;
   private destroyed = false;
 
   private frames = new Map<string, PTexture>();
-  private sheets: Record<Sheet, PTexture | null> = { town: null, dungeon: null };
+  private sheets: Record<Sheet, PTexture | null> = { world: null, interior: null, wall: null };
+  /** Character walk sheets (4 direction columns × walk-frame rows). */
+  private charBases = new Map<string, PTexture>();
+  /** Per-character animation state: sheet key, facing and gait. */
+  private charMeta = new Map<PContainer, { key: string; dir: Direction; moving: boolean }>();
   private waterTiles: { g: import('pixi.js').Graphics; glint?: import('pixi.js').Graphics; x: number; y: number }[] = [];
-  private grassTiles: { c: PContainer; blades: import('pixi.js').Graphics[] }[] = [];
+  private grassTiles: { c: PContainer; tufts: PSprite[] }[] = [];
   private player: PContainer | null = null;
   private builtMapId = '';
   private zoom = 3;
@@ -196,7 +230,9 @@ export class PixiOverworldComponent implements OnDestroy {
       this.tilesLayer = new this.PIXI.Container();
       this.entitiesLayer = new this.PIXI.Container();
       this.particlesLayer = new this.PIXI.Container();
-      this.world.addChild(this.tilesLayer, this.particlesLayer, this.entitiesLayer);
+      this.canopyLayer = new this.PIXI.Container();
+      // canopy sits above entities so players walk behind treetops
+      this.world.addChild(this.tilesLayer, this.particlesLayer, this.entitiesLayer, this.canopyLayer);
       app.stage.addChild(this.world);
       if (!REDUCED) this.buildFx();
 
@@ -215,19 +251,39 @@ export class PixiOverworldComponent implements OnDestroy {
 
   private async loadSheets(): Promise<void> {
     const pixi = this.PIXI!;
-    const urls = { town: new URL(SHEET_URL.town, document.baseURI).href, dungeon: new URL(SHEET_URL.dungeon, document.baseURI).href };
-    const [town, dungeon] = await Promise.all([pixi.Assets.load(urls.town), pixi.Assets.load(urls.dungeon)]);
-    for (const t of [town, dungeon] as PTexture[]) t.source.scaleMode = 'nearest';
-    this.sheets = { town, dungeon };
+    const abs = (u: string): string => new URL(u, document.baseURI).href;
+    const keys = Object.keys(CHAR_SHEETS);
+    const [world, interior, wall, ...chars] = (await Promise.all([
+      pixi.Assets.load(abs(SHEET_URL.world)),
+      pixi.Assets.load(abs(SHEET_URL.interior)),
+      pixi.Assets.load(abs(SHEET_URL.wall)),
+      ...keys.map((k) => pixi.Assets.load(abs(charSheetUrl(k)))),
+    ])) as PTexture[];
+    for (const t of [world, interior, wall, ...chars]) t.source.scaleMode = 'nearest';
+    this.sheets = { world, interior, wall };
+    keys.forEach((k, idx) => this.charBases.set(k, chars[idx]));
   }
 
   private texFor(sheet: Sheet, i: number): PTexture {
     const key = `${sheet}:${i}`;
     let t = this.frames.get(key);
     if (!t) {
-      const r = frameRect(i);
+      const r = frameRect(sheet, i);
       t = new this.PIXI!.Texture({ source: this.sheets[sheet]!.source, frame: new this.PIXI!.Rectangle(r.x, r.y, r.w, r.h) });
       this.frames.set(key, t);
+    }
+    return t;
+  }
+
+  /** Walk-frame texture of a character sheet (direction column × frame row). */
+  private charTex(key: string, dir: Direction, frame: number): PTexture {
+    const base = this.charBases.get(key) ?? this.charBases.get('boy')!;
+    const cacheKey = `char:${key}:${dir}:${frame % CHAR_WALK_FRAMES}`;
+    let t = this.frames.get(cacheKey);
+    if (!t) {
+      const r = charFrameRect(dir, frame);
+      t = new this.PIXI!.Texture({ source: base.source, frame: new this.PIXI!.Rectangle(r.x, r.y, r.w, r.h) });
+      this.frames.set(cacheKey, t);
     }
     return t;
   }
@@ -241,15 +297,22 @@ export class PixiOverworldComponent implements OnDestroy {
     this.showBanner(map.name);
     this.tilesLayer.removeChildren();
     this.entitiesLayer.removeChildren();
+    this.canopyLayer.removeChildren();
+    this.charMeta.clear();
     this.waterTiles = [];
     this.grassTiles = [];
 
-    const base: TileArt = map.outdoor ? TILE_ART.grass : TILE_ART.floor;
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
         const kind = map.tiles[y][x] as TileKind;
-        // ground underlay so decorations/walls sit on something
-        this.drawArt(base, x, y);
+        // ground underlay so decorations/walls sit on something; outdoor grass
+        // sprinkles seeded texture variants for a hand-planted meadow look
+        if (map.outdoor) {
+          const h = tileHash(x, y);
+          this.drawArt(h % 7 === 0 ? GRASS_VARIANTS[h % GRASS_VARIANTS.length] : GRASS, x, y);
+        } else {
+          this.drawArt(INDOOR_FLOOR, x, y);
+        }
         if (kind !== 'grass' && kind !== 'floor') this.drawTile(kind, x, y, map);
       }
     }
@@ -265,22 +328,80 @@ export class PixiOverworldComponent implements OnDestroy {
     const positions = this.svc.npcPos();
     for (const npc of map.npcs) {
       const at = positions[npc.id] ?? npc;
-      const s = this.makeChar(charIndex(npc.sprite), at.x, at.y);
+      const s = this.makeChar(npc.sprite, at.x, at.y, npc.facing);
       this.npcSprites.set(npc.id, s);
       this.entitiesLayer.addChild(s);
     }
     // player
-    this.player = this.makeChar(charIndex('boy'), this.visX, this.visY);
+    this.player = this.makeChar('boy', this.visX, this.visY, this.svc.player()?.facing ?? 'down');
     this.entitiesLayer.addChild(this.player);
 
     this.buildWeather(map.weather);
   }
 
+  /** True when the neighbor tile joins a path run (paths flow into doors). */
+  private joinsPath(map: MapDef, x: number, y: number): boolean {
+    const k = map.tiles[y]?.[x];
+    return k === 'path' || k === 'door';
+  }
+
   private drawTile(kind: TileKind, x: number, y: number, map: MapDef): void {
     const art = TILE_ART[kind];
     if ('proc' in art) {
-      if (art.proc === 'water') this.tilesLayer.addChild(this.makeWater(x, y));
+      if (art.proc === 'water') this.tilesLayer.addChild(this.makeWater(x, y, map));
       else this.tilesLayer.addChild(this.makeTallGrass(x, y));
+      return;
+    }
+    if (kind === 'path') {
+      const i = pathAutoIndex(
+        this.joinsPath(map, x, y - 1), this.joinsPath(map, x + 1, y),
+        this.joinsPath(map, x, y + 1), this.joinsPath(map, x - 1, y),
+      );
+      this.drawArt({ sheet: 'world', i }, x, y);
+      return;
+    }
+    if (kind === 'wall') {
+      const isWall = (tx: number, ty: number): boolean => map.tiles[ty]?.[tx] === 'wall';
+      const floorish = (tx: number, ty: number): boolean => {
+        const k = map.tiles[ty]?.[tx];
+        return k === 'floor' || k === 'rug' || k === 'counter' || k === 'door';
+      };
+      const i = wallAutoIndex(
+        isWall(x, y - 1), isWall(x + 1, y), isWall(x, y + 1), isWall(x - 1, y),
+        floorish(x + 1, y), floorish(x, y - 1),
+      );
+      this.drawArt({ sheet: 'wall', i }, x, y);
+      return;
+    }
+    if (kind === 'tree') {
+      const isTree = (tx: number): boolean => map.tiles[y]?.[tx] === 'tree';
+      let runStart = x;
+      while (isTree(runStart - 1)) runStart--;
+      let runEnd = x;
+      while (isTree(runEnd + 1)) runEnd++;
+      const runLen = runEnd - runStart + 1;
+      const offset = x - runStart;
+      // Rows alternate pine halves so pairs fuse into full conifers; isolated
+      // trunks and the odd tail of a row get the self-contained round tree.
+      if (runLen === 1 || (runLen % 2 === 1 && x === runEnd)) {
+        this.drawArt({ sheet: 'world', i: TREE_SOLO }, x, y);
+        return;
+      }
+      const right = offset % 2 === 1;
+      this.drawArt({ sheet: 'world', i: right ? PINE.botR : PINE.botL }, x, y);
+      const top = new this.PIXI!.Sprite(this.texFor('world', right ? PINE.topR : PINE.topL));
+      top.x = x * TILE_PX;
+      top.y = (y - 1) * TILE_PX;
+      this.canopyLayer.addChild(top); // crown overlaps the tile above, over entities
+      return;
+    }
+    if (kind === 'door') {
+      // outdoors the leaf sits in a house wall; indoors it lies on the floor
+      if (map.outdoor) this.drawArt(art, x, y);
+      const leaf = new this.PIXI!.Sprite(this.texFor('world', DOOR_OVERLAY));
+      leaf.x = x * TILE_PX;
+      leaf.y = y * TILE_PX;
+      this.tilesLayer.addChild(leaf);
       return;
     }
     // grounded decorations already have grass under them from the base pass
@@ -297,16 +418,30 @@ export class PixiOverworldComponent implements OnDestroy {
     this.tilesLayer.addChild(s);
   }
 
-  private makeWater(x: number, y: number): PContainer {
+  private makeWater(x: number, y: number, map: MapDef): PContainer {
     const pixi = this.PIXI!;
     const c = new pixi.Container();
     c.x = x * TILE_PX; c.y = y * TILE_PX;
-    const base = new pixi.Graphics().rect(0, 0, TILE_PX, TILE_PX).fill(0x2f6fd0);
-    const ripple = new pixi.Graphics().rect(0, 5, 8, 1.5).fill(0x6fb0ff).rect(6, 11, 8, 1.5).fill(0x5b95e6);
-    const glint = new pixi.Graphics().rect(0, 0, 2, 2).fill(0xe8f6ff);
+    const base = new pixi.Graphics().rect(0, 0, TILE_PX, TILE_PX).fill(WATER_BASE);
+    c.addChild(base);
+    // shorelines: a deep rim + a foam thread on every side that touches land
+    const water = (tx: number, ty: number): boolean => (map.tiles[ty]?.[tx] ?? 'water') === 'water';
+    const shore = new pixi.Graphics();
+    if (!water(x, y - 1)) shore.rect(0, 0, TILE_PX, 2.5).fill(WATER_DEEP).rect(0, 0, TILE_PX, 1).fill({ color: 0xe9fbff, alpha: 0.85 });
+    if (!water(x, y + 1)) shore.rect(0, TILE_PX - 2.5, TILE_PX, 2.5).fill(WATER_DEEP);
+    if (!water(x - 1, y)) shore.rect(0, 0, 2.5, TILE_PX).fill(WATER_DEEP);
+    if (!water(x + 1, y)) shore.rect(TILE_PX - 2.5, 0, 2.5, TILE_PX).fill(WATER_DEEP);
+    c.addChild(shore);
+    const h = tileHash(x, y);
+    if (h % 13 === 0 && water(x, y - 1) && water(x, y + 1) && water(x - 1, y) && water(x + 1, y)) {
+      // a lily pad drifts on calm open water (its baked bg matches WATER_BASE)
+      c.addChild(new pixi.Sprite(this.texFor('world', LILY_PAD)));
+    }
+    const ripple = new pixi.Graphics().rect(0, 5, 8, 1.5).fill(WATER_RIPPLE).rect(6, 11, 8, 1.5).fill({ color: WATER_RIPPLE, alpha: 0.7 });
+    const glint = new pixi.Graphics().rect(0, 0, 2, 2).fill(WATER_GLINT);
     glint.x = 3 + ((x * 7 + y * 13) % 10); glint.y = 2 + ((x * 5 + y * 3) % 9);
     glint.alpha = 0;
-    c.addChild(base, ripple, glint);
+    c.addChild(ripple, glint);
     this.waterTiles.push({ g: ripple, glint, x, y });
     return c;
   }
@@ -315,14 +450,15 @@ export class PixiOverworldComponent implements OnDestroy {
     const pixi = this.PIXI!;
     const c = new pixi.Container();
     c.x = x * TILE_PX; c.y = y * TILE_PX;
-    const base = new pixi.Sprite(this.texFor('town', 0));
-    c.addChild(base);
-    const blades: import('pixi.js').Graphics[] = [];
-    for (let i = 0; i < 4; i++) {
-      const b = new pixi.Graphics().rect(0, 0, 2, 7).fill(0x256b3d);
-      b.x = 2 + i * 4; b.y = 8; blades.push(b); c.addChild(b);
-    }
-    this.grassTiles.push({ c, blades });
+    const gArt = GRASS as Extract<TileArt, { sheet: Sheet }>;
+    c.addChild(new pixi.Sprite(this.texFor(gArt.sheet, gArt.i)));
+    // one tuft pivoted at its root so the sway reads natural
+    const tuft = new pixi.Sprite(this.texFor('world', TALLGRASS_TUFT));
+    tuft.anchor.set(0.5, 1);
+    tuft.x = TILE_PX / 2;
+    tuft.y = TILE_PX;
+    c.addChild(tuft);
+    this.grassTiles.push({ c, tufts: [tuft] });
     return c;
   }
 
@@ -336,22 +472,35 @@ export class PixiOverworldComponent implements OnDestroy {
     return c;
   }
 
-  /** A character = soft drop shadow + the atlas sprite, in one container. */
-  private makeChar(index: number, x: number, y: number): PContainer {
+  /** A character = soft drop shadow + a 4-direction walk sprite, in one container. */
+  private makeChar(key: string, x: number, y: number, facing: Direction = 'down'): PContainer {
     const pixi = this.PIXI!;
     const c = new pixi.Container();
     c.x = (x + 0.5) * TILE_PX;
     c.y = (y + 0.5) * TILE_PX;
     const shadow = new pixi.Graphics().ellipse(0, TILE_PX * 0.38, TILE_PX * 0.3, TILE_PX * 0.12).fill({ color: 0x000000, alpha: 0.32 });
-    const s = new pixi.Sprite(this.texFor('dungeon', index));
+    const s = new pixi.Sprite(this.charTex(key, facing, 0));
     s.anchor.set(0.5, 0.5);
     c.addChild(shadow, s);
+    this.charMeta.set(c, { key, dir: facing, moving: false });
     return c;
   }
 
-  /** The atlas sprite inside a character container (for facing flips). */
+  /** The walk sprite inside a character container. */
   private charSprite(c: PContainer | null): PSprite | null {
     return (c?.children[1] as PSprite | undefined) ?? null;
+  }
+
+  /** Point a character in a direction and step its walk cycle (frame 0 = idle). */
+  private poseChar(c: PContainer | null, dir: Direction | null, moving: boolean): void {
+    if (!c) return;
+    const meta = this.charMeta.get(c);
+    const s = this.charSprite(c);
+    if (!meta || !s) return;
+    meta.dir = dir ?? meta.dir;
+    meta.moving = moving;
+    const frame = moving && !REDUCED ? Math.floor(this.frame / 7) % CHAR_WALK_FRAMES : 0;
+    s.texture = this.charTex(meta.key, meta.dir, frame);
   }
 
   /* ------------------------------------------------------------- effects */
@@ -584,10 +733,16 @@ export class PixiOverworldComponent implements OnDestroy {
       if (!p) continue;
       const tx = (p.x + 0.5) * TILE_PX;
       const ty = (p.y + 0.5) * TILE_PX;
-      s.x += (tx - s.x) * ease;
-      s.y += (ty - s.y) * ease;
+      const dx = tx - s.x;
+      const dy = ty - s.y;
+      s.x += dx * ease;
+      s.y += dy * ease;
       if (Math.abs(tx - s.x) < 0.4) s.x = tx;
       if (Math.abs(ty - s.y) < 0.4) s.y = ty;
+      // wanderers face their travel direction and cycle walk frames mid-glide
+      const gliding = Math.abs(dx) + Math.abs(dy) > 1.2;
+      const dir: Direction | null = !gliding ? null : Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
+      this.poseChar(s, dir, gliding);
     }
   }
 
@@ -604,7 +759,7 @@ export class PixiOverworldComponent implements OnDestroy {
         const before = this.svc.player();
         const res = this.svc.commitStep(dir);
         const np = this.svc.player();
-        if (np && this.player) this.flipFace(dir);
+        if (np && this.player) this.poseChar(this.player, dir, false);
         if (res.warped && np) { this.visX = np.x; this.visY = np.y; }
         else if (res.moved && before && np) {
           this.from = { x: before.x, y: before.y };
@@ -623,26 +778,21 @@ export class PixiOverworldComponent implements OnDestroy {
     if (this.player) {
       this.player.x = (this.visX + 0.5) * TILE_PX;
       this.player.y = (this.visY + 0.5) * TILE_PX;
-      // The sprite bobs (or arcs over a ledge); the shadow stays grounded.
+      // Real walk frames while stepping; the sprite arcs over ledges while the
+      // shadow stays grounded.
+      this.poseChar(this.player, null, this.stepping);
       const s = this.charSprite(this.player);
       if (s && !REDUCED) {
         if (this.stepping && this.hopping) {
           const t = Math.min(1, (performance.now() - this.t0) / Math.max(1, this.stepDur));
           s.y = -Math.sin(t * Math.PI) * 7;
         } else {
-          s.y = this.stepping ? -Math.abs(Math.sin(this.frame / 4)) * 1.5 : 0;
+          s.y = this.stepping ? -Math.abs(Math.sin(this.frame / 5)) * 1 : 0;
         }
       }
     }
   }
   private hopping = false;
-
-  private flipFace(dir: Direction): void {
-    const s = this.charSprite(this.player);
-    if (!s) return;
-    if (dir === 'left') s.scale.x = -1;
-    else if (dir === 'right') s.scale.x = 1;
-  }
 
   private nextDir(): Direction | null {
     for (const d of ['up', 'down', 'left', 'right'] as const) if (this.held.has(d) || this.padDirs.has(d)) return d;
@@ -699,8 +849,8 @@ export class PixiOverworldComponent implements OnDestroy {
       }
     }
     for (const g of this.grassTiles) {
-      const sway = Math.sin(t / 18 + g.c.x) * 0.6;
-      for (const b of g.blades) b.skew.x = sway;
+      const sway = Math.sin(t / 22 + g.c.x * 0.08);
+      g.tufts.forEach((tuft, i) => { tuft.skew.x = sway * (i === 0 ? 0.12 : -0.09); });
     }
   }
 

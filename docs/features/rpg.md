@@ -23,10 +23,11 @@ Route: `/adventure` ([rpg.ts](../../src/app/features/rpg/rpg.ts)).
 - `rpg.service.ts` — state hub: phase, the `RpgSave` signal, movement/warps/
   interaction, the dialogue script VM, encounters, bag/money/flags, battle setup,
   whiteout. Persists to `rpg:save` via `SaveService`.
-- `overworld/pixi-overworld.ts` — **PixiJS (WebGL) renderer** with Kenney **CC0**
-  pixel tilesets (Tiny Town outdoors / Tiny Dungeon interiors + characters, in
-  `public/rpg/`, mapped by `atlas.ts`): real tilemap, follow camera, character
-  sprites, **procedural animated water & tall grass**, plus an action-RPG FX layer
+- `overworld/pixi-overworld.ts` — **PixiJS (WebGL) renderer** on the **CC0
+  Ninja Adventure** pack by pixel-boy & AAA (in `public/rpg/`, mapped by
+  `atlas.ts`; see v3.0 below): auto-tiled paths and room walls, tree canopies
+  above walkers, characters with real 4-direction walk cycles, follow camera,
+  **procedural animated water & tall grass**, plus an action-RPG FX layer
   (vignette + player light, day/night tint with fireflies, step/leaf particles,
   screen-shake). Keyboard + on-screen D-pad/A-B input.
 - `overworld/overworld.ts` — the original shape-drawn `<canvas>` renderer, kept as
@@ -193,3 +194,22 @@ Prof. Oak in the intro). State lives on the save as `RpgSave.nuzlocke`
   strip (grayscale sprites + fell-at level), and the Trainer Profile scans
   all three slots for `nuzlockeBadges`, unlocking **Survivor** (first badge
   on a run) and **Iron Grit** (all four badges on one run).
+
+## v3.0 — 🎨 the Ninja Adventure art overhaul (app v1.18)
+
+The Pixi overworld moved from Kenney's Tiny sheets to the **CC0 Ninja
+Adventure** pack (pixel-boy & AAA; `public/rpg/LICENSE.md`):
+
+- **Autotiling** — `atlas.ts` grew pure, spec-covered `pathAutoIndex` /
+  `wallAutoIndex`: rounded 3×3-blob dirt roads on grass, and interiors framed
+  by real room walls (1-thick runs face the floor via side hints).
+- **Depth** — tree rows fuse alternating pine halves into two-tile conifers;
+  their crowns render on a canopy layer *above* entities, so the player walks
+  behind treetops. Isolated trunks fall back to a round tree.
+- **Living ground** — seeded grass variants (`tileHash`), pack-art tall-grass
+  tufts with procedural sway, water re-tinted to the pack palette with
+  deep-rim + foam shorelines and lily pads on calm water; doors are drawn as
+  standalone leaf overlays.
+- **Walk cycles** — all seven character keys (hero, girl, prof, nurse, clerk,
+  leader, oldman) use 4-direction × 4-frame sheets; NPC wanderers face their
+  travel direction mid-glide. The canvas fallback renderer is unchanged.

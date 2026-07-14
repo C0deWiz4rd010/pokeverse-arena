@@ -4,6 +4,45 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.18.0 — 2026-07-15
+
+🎨 **Adventure art overhaul** — the RPG overworld moves to the gorgeous CC0
+**Ninja Adventure** pack (pixel-boy & AAA) with autotiling and real walk cycles.
+
+### Changed
+
+- **New tilesets** (`public/rpg/tilesets/nj-*.png`, CC0 — see LICENSE.md):
+  a 28-column outdoor master sheet (houses with doors, trees, fences, signs,
+  props), patterned interior floors and room-frame walls. The old Kenney
+  sheets are retired with thanks.
+- **Autotiled paths & walls** — `pathAutoIndex`/`wallAutoIndex` (pure,
+  unit-tested) pick rounded 3×3-blob tiles from same-kind neighbor masks, so
+  dirt roads get rounded corners on grass and interiors read as framed rooms;
+  1-thick wall runs face their side toward the floor via hints.
+- **Trees with depth** — tree rows fuse alternating pine halves into full
+  two-tile-tall conifers whose crowns land on a **canopy layer above
+  entities** (you walk behind treetops); isolated trunks and odd row ends use
+  a self-contained round tree.
+- **Living ground** — seeded grass texture variants (`tileHash`), tall grass
+  as swaying tufts from the pack, water re-tinted to the pack's palette
+  (#72C4E6) with **deep-rim + foam shorelines** and the occasional lily pad
+  on calm open water.
+- **Real 4-direction walk cycles** — every character sheet carries
+  down/up/left/right columns × 4 walk frames; the player animates while
+  stepping (and faces on blocked bumps), wandering NPCs face their travel
+  direction and cycle frames mid-glide. Seven distinct villagers: hero, girl,
+  professor, nurse, straw-hat clerk, gym leader, elder.
+- **Doors as overlays** — a standalone door leaf on house walls outdoors and
+  on the floor indoors, so entrances read at a glance.
+
+### Verification
+
+- 378/378 unit tests (11 new: blob autotiling incl. floor-side hints, frame
+  rects per sheet, char frame layout, tile hash).
+- Playwright drove a fresh adventure (intro → starter → overworld walk →
+  town tour) on desktop + a mobile new-game run — 0 console errors; bedroom,
+  town and mobile screenshots inspected.
+
 ## v1.17.0 — 2026-07-14
 
 🧬 **Secret chimera bosses** — the Fusion Lab escapes into the Ascension Spire.
