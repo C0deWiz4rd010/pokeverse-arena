@@ -16,6 +16,9 @@ const DEX_MAX = 1025;
 
 const FOE_NAMES = ['Wanderer Kade', 'Seeker Iyla', 'Ronin Vex', 'Adept Sol', 'Nomad Bryn', 'Drifter Wren'];
 const BOSS_NAMES = ['Warden of Ash', 'The Tide Sovereign', 'Stormcaller Prime', 'The Hollow Crown'];
+const CHIMERA_KEEPERS = ['Geneweaver Syl', 'Dr. Helix', 'The Splice Warden', 'Curator Myx'];
+/** A stitched-together tease for chimera boss doors — hints, never spoils. */
+const CHIMERA_BLURB = 'A guardian of the floor. Something in there sounds… stitched together.';
 
 const NODE_META: Record<SpireNodeType, { label: string; icon: IconName; blurb: string }> = {
   battle: { label: 'Battle', icon: 'swords', blurb: 'A challenger blocks the stair.' },
@@ -41,17 +44,37 @@ export function foeLevel(floor: number, boss: boolean, ascension = 0): number {
   return 28 + floor * 3 + (boss ? 6 : 0) + ascension * 4;
 }
 
+/**
+ * Seeded chance (in %) that a boss floor's guardian is a secret chimera keeper.
+ * The first boss stays classic so early climbs teach the vanilla fight; the
+ * summit carries the best odds — a run has roughly a 1-in-2 shot at meeting one.
+ */
+export function chimeraChance(floor: number): number {
+  if (floor < 10) return 0;
+  return floor >= TOTAL_FLOORS ? 40 : 25;
+}
+
 /** Build a CPU encounter for a floor. */
 export function generateFoe(floor: number, seed: string | number, boss = false, ascension = 0): FoeSpec {
   const rng = new SeededRng(`foe-${seed}-${floor}-${boss ? 'b' : 'n'}`);
-  const count = boss ? 4 : 3;
+  const chimera = boss && rng.int(1, 100) <= chimeraChance(floor);
+  // A chimera keeper fields 3 regular mons — the fused ace is appended as #4.
+  const count = boss && !chimera ? 4 : 3;
   const species = Array.from({ length: count }, () => rng.int(1, DEX_MAX));
+  let fusion: FoeSpec['fusion'];
+  if (chimera) {
+    const head = rng.int(1, DEX_MAX);
+    let body = rng.int(1, DEX_MAX);
+    if (body === head) body = (body % DEX_MAX) + 1;
+    fusion = { head, body };
+  }
   return {
-    name: boss ? rng.pick(BOSS_NAMES) : rng.pick(FOE_NAMES),
+    name: boss ? (chimera ? rng.pick(CHIMERA_KEEPERS) : rng.pick(BOSS_NAMES)) : rng.pick(FOE_NAMES),
     species,
     level: foeLevel(floor, boss, ascension),
     aiTier: boss ? 'elite' : aiTierForFloor(floor),
     boss,
+    ...(fusion ? { fusion } : {}),
   };
 }
 
@@ -73,7 +96,8 @@ export function generateFloorChoices(floor: number, seed: string | number, ascen
 
 function node(type: SpireNodeType, floor: number, foe?: FoeSpec): SpireNode {
   const m = NODE_META[type];
-  return { id: `${type}-${floor}`, type, label: m.label, icon: m.icon, blurb: m.blurb, foe };
+  const blurb = foe?.fusion ? CHIMERA_BLURB : m.blurb;
+  return { id: `${type}-${floor}`, type, label: m.label, icon: m.icon, blurb, foe };
 }
 
 /** A reward draft after winning a fight. */

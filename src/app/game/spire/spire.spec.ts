@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BOSS_FLOORS,
   TOTAL_FLOORS,
+  chimeraChance,
   foeLevel,
   generateFloorChoices,
   generateFoe,
@@ -10,7 +11,7 @@ import {
   isBossFloor,
 } from './spire';
 import { applyRelicsToTeam, coinMultiplier, relicById, rewardChoiceBonus } from './relics';
-import { defaultMeta, recordRun } from './meta';
+import { defaultMeta, recordChimeraWin, recordRun } from './meta';
 import type { Battler } from '../engine';
 
 function mon(name: string, item?: Battler['item']): Battler {
@@ -66,6 +67,37 @@ describe('spire generation', () => {
     expect(TOTAL_FLOORS).toBe(15);
     expect(isBossFloor(TOTAL_FLOORS)).toBe(true);
   });
+
+  it('rolls secret chimera keepers only on late boss floors, deterministically', () => {
+    expect(chimeraChance(5)).toBe(0);
+    expect(chimeraChance(10)).toBe(25);
+    expect(chimeraChance(15)).toBe(40);
+    // The first boss and regular fights never splice.
+    for (let i = 0; i < 40; i++) {
+      expect(generateFoe(5, `s${i}`, true).fusion).toBeUndefined();
+      expect(generateFoe(12, `s${i}`, false).fusion).toBeUndefined();
+    }
+    // Find a summit seed that rolls a chimera — seeded, so stable forever.
+    let seed = '';
+    for (let i = 0; i < 200 && !seed; i++) {
+      if (generateFoe(15, `s${i}`, true).fusion) seed = `s${i}`;
+    }
+    expect(seed).not.toBe('');
+    const foe = generateFoe(15, seed, true);
+    expect(foe).toEqual(generateFoe(15, seed, true));
+    expect(foe.species).toHaveLength(3); // the fused ace is the 4th slot
+    expect(foe.fusion!.head).not.toBe(foe.fusion!.body);
+    // The map node teases the splice without spoiling the boss.
+    const [node] = generateFloorChoices(15, seed);
+    expect(node.blurb).toContain('stitched');
+    // Classic bosses keep the vanilla 4-mon team and blurb.
+    let classicSeed = '';
+    for (let i = 0; i < 200 && !classicSeed; i++) {
+      if (!generateFoe(15, `c${i}`, true).fusion) classicSeed = `c${i}`;
+    }
+    expect(generateFoe(15, classicSeed, true).species).toHaveLength(4);
+    expect(generateFloorChoices(15, classicSeed)[0].blurb).not.toContain('stitched');
+  });
 });
 
 describe('relics', () => {
@@ -102,5 +134,14 @@ describe('spire meta', () => {
     expect(meta.clears).toBe(1);
     expect(meta.ascension).toBe(1);
     expect(meta.bankedCoins).toBe(520);
+  });
+
+  it('counts chimera wins and carries them through run records', () => {
+    let meta = recordChimeraWin(defaultMeta());
+    expect(meta.chimeraWins).toBe(1);
+    meta = recordRun(meta, 15, 100, true);
+    expect(meta.chimeraWins).toBe(1);
+    meta = recordChimeraWin(meta);
+    expect(meta.chimeraWins).toBe(2);
   });
 });

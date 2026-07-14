@@ -1,6 +1,7 @@
 import { SeededRng } from '../../core/utils/rng';
 import type { Pokemon, PokemonStats } from '../../core/models/pokemon.model';
 import type { PokemonType } from '../../core/utils/type-chart';
+import type { Battler } from '../engine';
 
 /**
  * Fusion Lab core — pure, deterministic splicing of two Pokémon into one.
@@ -126,6 +127,39 @@ const EPITHETS = [
   'the Hybrid Horizon', 'the Mended Myth', 'the Chromatic Chimera',
   'the Fused Frontier', 'the Patchwork Prodigy', 'the Synthesis Spirit',
 ];
+
+/**
+ * Fuse two battle-ready {@link Battler}s into one chimera, using the same
+ * head/body split as {@link fusePokemon}: head donates the mind (name prefix,
+ * primary type, HP/SpA/SpD and its moveset's front half), body donates the
+ * physique (Atk/Def/Speed, the artwork and its palette baseline). Moves are
+ * interleaved head-first and deduped to four. The synthetic id keeps chimeras
+ * out of the real dex range so UI `track` keys never collide with donors.
+ */
+export function fuseBattlers(head: Battler, body: Battler): Battler {
+  const types = fuseTypes(head.types, body.types);
+  const seen = new Set<string>();
+  const moves: Battler['moves'] = [];
+  const pool = [head.moves, body.moves];
+  for (let i = 0; moves.length < 4 && i < 8; i++) {
+    const move = pool[i % 2][Math.floor(i / 2)];
+    if (move && !seen.has(move.name)) {
+      seen.add(move.name);
+      moves.push(move);
+    }
+  }
+  return {
+    id: head.id * 10_000 + body.id,
+    name: spliceName(head.name, body.name),
+    level: Math.max(head.level, body.level),
+    types,
+    stats: fuseStats(head.stats, body.stats),
+    moves: moves.length ? moves : head.moves,
+    ability: head.ability ?? body.ability,
+    sprite: body.sprite,
+    hue: fusionHueShift(types[0], body.types[0] ?? 'normal'),
+  };
+}
 
 /** Deterministic fusion of two fully-loaded Pokémon (order matters: head, body). */
 export function fusePokemon(head: Pokemon, body: Pokemon): FusionResult {

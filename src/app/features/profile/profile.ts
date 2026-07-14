@@ -52,6 +52,7 @@ export class ProfileComponent {
       { icon: 'dices' as const, label: 'Crystal-ball hits', value: `${s.pickemHits}` },
       { icon: 'flask-conical' as const, label: 'Fusions registered', value: `${s.fusionsRegistered}` },
       { icon: 'skull' as const, label: 'Nuzlocke badges', value: `${s.nuzlockeBadges}` },
+      { icon: 'flask-conical' as const, label: 'Chimeras slain', value: `${s.chimeraWins}` },
     ];
   });
 

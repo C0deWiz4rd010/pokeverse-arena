@@ -16,9 +16,17 @@ A seeded, run-based climb that consumes the full depth of the battle engine.
   (Leftovers Aura, Focus/Sand/Mega charms).
 - **Shops** spend coins on items, relics and a Full Restore.
 - **Boss floors** (5, 10, 15) field tougher, larger teams at the elite AI tier.
-- **Meta-progression** persists: best depth, clears, banked coins and an
-  **ascension tier** that rises on each clear and makes the next climb harder.
-- **Daily run** option (a stable per-day seed) for a shared challenge.
+- **Secret chimera bosses (v1.17)** — floors 10 (25 %) and 15 (40 %) may swap
+  the guardian for a **Chimera Keeper** whose ace is a genuine Fusion-Lab
+  splice (`fuseBattlers`): spliced name, fused types/stats, an interleaved
+  four-move set and hue-shifted artwork, two levels above the team. The boss
+  door only *hints* ("…sounds stitched together"). Beating one pays bonus
+  coins and offers a unique **Tame** reward — the chimera joins your party.
+- **Meta-progression** persists: best depth, clears, banked coins, chimeras
+  slain and an **ascension tier** that rises on each clear and makes the next
+  climb harder.
+- **Daily run** option (a stable per-day seed) for a shared challenge —
+  including the same chimera roll for everyone.
 
 ## Files
 
@@ -46,5 +54,7 @@ A seeded, run-based climb that consumes the full depth of the battle engine.
 ## Reuse
 
 `SeededRng`, the battle engine + `TeamBattle`, `BattleService.buildBattler`,
-`pv-tournament-match`, the held-item registry. Meta surfaces in the Trainer
-Profile.
+`pv-tournament-match`, the held-item registry, and the Fusion Lab core
+(`game/fusion` `fuseBattlers`) for chimera bosses. Meta surfaces in the
+Trainer Profile (records row + **Chimera Slayer** / **Myth Hunter**
+achievements).

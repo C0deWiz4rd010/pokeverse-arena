@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { SeededRng, dailySeed } from '../../core/utils/rng';
 import type { Battler, ItemId } from '../../game/engine';
 import type { BracketMatch, Trainer } from '../../game/tournament';
+import { fuseBattlers } from '../../game/fusion/fusion';
 import {
   TOTAL_FLOORS,
   applyRelicsToTeam,
@@ -10,6 +11,7 @@ import {
   generateRewards,
   generateShop,
   loadMeta,
+  recordChimeraWin,
   recordRun,
   relicById,
   type FoeSpec,
@@ -72,6 +74,8 @@ export class SpireService {
   private pendingNode: SpireNode | null = null;
   /** The relic-boosted team built for the active fight (for HP read-back). */
   private activeTeam: Battler[] = [];
+  /** The fused ace of a chimera boss fight — recruitable once beaten. */
+  private pendingChimera: Battler | null = null;
 
   readonly relicList = computed(() => this.relics().map((id) => relicById(id)).filter((r) => !!r));
   readonly partyView = computed(() =>
@@ -114,6 +118,7 @@ export class SpireService {
   /* ---------------------------------------------------------------- map */
 
   private advanceFloor(): void {
+    this.pendingChimera = null;
     const next = this.floor() + 1;
     if (next > TOTAL_FLOORS) {
       this.endRun(true);
@@ -160,14 +165,19 @@ export class SpireService {
     this.error.set(null);
     try {
       const foeTeam = await this.buildFoe(foeSpec);
+      this.pendingChimera = foeSpec.fusion ? foeTeam[foeTeam.length - 1] : null;
       const playerTeam = applyRelicsToTeam(this.party, this.relics());
       this.activeTeam = playerTeam;
       const startHp = playerTeam.map((m, i) => Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)));
       const player: Trainer = { id: 'player', name: 'You', title: 'Climber', avatar: avatar('Spire-Ace', true), team: playerTeam, isPlayer: true };
-      const foe: Trainer = { id: foeSpec.name, name: foeSpec.name, title: foeSpec.boss ? 'Floor Guardian' : 'Challenger', avatar: avatar(foeSpec.name, foeSpec.boss), team: foeTeam };
+      const foeTitle = foeSpec.fusion ? 'Chimera Keeper' : foeSpec.boss ? 'Floor Guardian' : 'Challenger';
+      const foe: Trainer = { id: foeSpec.name, name: foeSpec.name, title: foeTitle, avatar: avatar(foeSpec.name, foeSpec.boss), team: foeTeam };
       const match: BracketMatch = { id: `spire-${this.floor()}`, round: 'final', slot: 0, a: player, b: foe, winner: null, played: false };
       this.pendingNode = node;
-      this.setup.set({ match, round: 'final', player, foe, playerTeam, foeTeam, aiTier: foeSpec.aiTier, playerStartHp: startHp });
+      const foeAce = this.pendingChimera
+        ? `"Behold ${this.pendingChimera.name} — my forbidden splice!"`
+        : undefined;
+      this.setup.set({ match, round: 'final', player, foe, playerTeam, foeTeam, aiTier: foeSpec.aiTier, playerStartHp: startHp, foeAce });
       this.phase.set('battle');
     } catch {
       this.error.set('The challenger never showed. Try the floor again.');
@@ -189,7 +199,23 @@ export class SpireService {
     const elite = this.pendingNode?.type === 'elite';
     const base = 25 + this.floor() * 6 + (boss ? 80 : elite ? 30 : 0);
     this.addCoins(base);
-    this.rewards.set(generateRewards(this.floor(), `${this.seed}-r${this.floor()}`, this.relics()));
+    let rewards = generateRewards(this.floor(), `${this.seed}-r${this.floor()}`, this.relics());
+    if (this.pendingChimera) {
+      // A beaten chimera can be tamed — the rarest draft in the Spire.
+      this.meta.set(recordChimeraWin(this.meta()));
+      this.addCoins(60);
+      rewards = [
+        {
+          kind: 'chimera',
+          label: `Tame ${this.pendingChimera.name}`,
+          icon: 'flask-conical',
+          blurb: 'The defeated chimera joins your party.',
+          payload: 0,
+        },
+        ...rewards,
+      ];
+    }
+    this.rewards.set(rewards);
     this.phase.set('reward');
   }
 
@@ -222,6 +248,9 @@ export class SpireService {
         break;
       case 'mon':
         void this.recruit(Number(option.payload));
+        break;
+      case 'chimera':
+        this.recruitChimera();
         break;
     }
   }
@@ -301,6 +330,21 @@ export class SpireService {
     this.toast.set(`${this.party[target].name} is now holding an item.`);
   }
 
+  /** Add the beaten chimera boss ace to the party, fully healed and itemless. */
+  private recruitChimera(): void {
+    const chimera = this.pendingChimera;
+    this.pendingChimera = null;
+    if (!chimera) return;
+    if (this.party.length >= PARTY_CAP) {
+      this.addCoins(90);
+      this.toast.set('Party full — the chimera dissolves into coins.');
+      return;
+    }
+    this.party = [...this.party, { ...chimera, item: undefined }];
+    this.hpFraction = [...this.hpFraction, 1];
+    this.toast.set(`${chimera.name} was tamed and joined your party!`);
+  }
+
   private async recruit(dex: number): Promise<void> {
     if (this.party.length >= PARTY_CAP) {
       this.addCoins(60);
@@ -344,6 +388,14 @@ export class SpireService {
       spec.species.map((id) => this.battle.buildBattler(id, spec.level).catch(() => null)),
     );
     const team = built.filter((b): b is Battler => b !== null);
+    if (spec.fusion) {
+      // The keeper's ace: both donors are built two levels hot, then spliced.
+      const [head, body] = await Promise.all([
+        this.battle.buildBattler(spec.fusion.head, spec.level + 2),
+        this.battle.buildBattler(spec.fusion.body, spec.level + 2),
+      ]);
+      team.push(fuseBattlers(head, body));
+    }
     if (!team.length) throw new Error('no foe');
     return team;
   }

@@ -49,6 +49,8 @@ export interface ProfileState {
   readonly fusionsRegistered: number;
   /** Most Adventure gym badges held on any single Nuzlocke save. */
   readonly nuzlockeBadges: number;
+  /** Secret chimera bosses defeated in the Ascension Spire. */
+  readonly chimeraWins: number;
 }
 
 export interface Achievement {
@@ -87,6 +89,8 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'fusion-10', name: 'Gene Weaver', desc: 'Register 10 fusions in the Fusion Dex.', icon: 'brain', test: (s) => s.fusionsRegistered >= 10 },
   { id: 'nuz-survivor', name: 'Survivor', desc: 'Earn a gym badge on a Nuzlocke run.', icon: 'skull', test: (s) => s.nuzlockeBadges >= 1 },
   { id: 'nuz-iron', name: 'Iron Grit', desc: 'Hold all four Adventure badges on a single Nuzlocke run.', icon: 'mountain-snow', test: (s) => s.nuzlockeBadges >= 4 },
+  { id: 'chimera-slayer', name: 'Chimera Slayer', desc: 'Defeat a secret chimera boss in the Spire.', icon: 'flask-conical', test: (s) => s.chimeraWins >= 1 },
+  { id: 'chimera-hunter', name: 'Myth Hunter', desc: 'Defeat 3 secret chimera bosses.', icon: 'crown', test: (s) => s.chimeraWins >= 3 },
 ];
 
 export interface AchievementView {

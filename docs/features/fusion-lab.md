@@ -75,6 +75,10 @@ shareable as a link and collectable in a persistent **Fusion Dex**.
 - **Home** — a feature card in the grid; **shell nav** — its own entry.
 - **Trainer Profile** — `fusionsRegistered` joins the aggregate `ProfileState`;
   two new achievements ride the existing watcher/toasts.
+- **Ascension Spire (v1.17)** — `fuseBattlers` turns two battle-ready donors
+  into a chimera `Battler` (spliced name, fused types/stats, interleaved
+  moves, hue-shifted body sprite via the UI-only `Battler.hue`) — the ace of
+  the Spire's **secret Chimera Keeper bosses**, tameable after victory.
 
 ## Key decisions
 

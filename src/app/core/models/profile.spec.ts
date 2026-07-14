@@ -25,6 +25,7 @@ const base: ProfileState = {
   odysseyUnlocked: 0,
   fusionsRegistered: 0,
   nuzlockeBadges: 0,
+  chimeraWins: 0,
 };
 
 describe('profile achievements', () => {
@@ -48,6 +49,15 @@ describe('profile achievements', () => {
     expect(ids({ nuzlockeBadges: 1 })).not.toContain('nuz-iron');
     expect(ids({ nuzlockeBadges: 4 })).toContain('nuz-iron');
     expect(ids({})).not.toContain('nuz-survivor');
+  });
+
+  it('unlocks chimera milestones from spire chimera wins', () => {
+    const ids = (s: Partial<typeof base>) =>
+      evaluateAchievements({ ...base, ...s }).filter((a) => a.unlocked).map((a) => a.achievement.id);
+    expect(ids({})).not.toContain('chimera-slayer');
+    expect(ids({ chimeraWins: 1 })).toContain('chimera-slayer');
+    expect(ids({ chimeraWins: 1 })).not.toContain('chimera-hunter');
+    expect(ids({ chimeraWins: 3 })).toContain('chimera-hunter');
   });
 
   it('unlocks daily-streak milestones from the best streak', () => {

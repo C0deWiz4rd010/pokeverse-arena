@@ -4,6 +4,38 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.17.0 — 2026-07-14
+
+🧬 **Secret chimera bosses** — the Fusion Lab escapes into the Ascension Spire.
+
+### Added
+
+- **Chimera keepers** — late boss floors (10: 25 %, summit: 40 %, seeded per
+  run, so daily climbs share the encounter) may swap the floor guardian for a
+  **Chimera Keeper** (Geneweaver Syl, Dr. Helix, The Splice Warden, Curator
+  Myx). Their ace is a real **fused Pokémon**: `fuseBattlers` (new in
+  `game/fusion/fusion.ts`) splices name, types, head/body-weighted stats and
+  an interleaved four-move set from two seeded donors, built two levels hot.
+  In battle it wears the body's artwork **hue-rotated toward the head's
+  palette** (new UI-only `Battler.hue`), and the keeper announces it with an
+  ace quip.
+- **Tell, don't spoil** — the boss door's blurb turns to *"Something in there
+  sounds… stitched together."*, and the hub rules line now carries the rumor.
+- **Tame the chimera** — beating a keeper pays +60 ₽ and puts a unique
+  **"Tame …"** card on top of the reward draft: the defeated chimera joins
+  your party at full HP (party full → it dissolves into coins).
+- **Meta + honors** — `SpireMeta.chimeraWins` (persisted, survives run
+  records) shows as an iridescent *Chimeras slain* stat on the hub once > 0,
+  a *Chimeras slain* Records row on the profile, and two achievements:
+  **Chimera Slayer** (first kill) and **Myth Hunter** (three). 27 total.
+
+### Verification
+
+- 367/367 unit tests (6 new: `fuseBattlers` splice/moves/id, chimera roll
+  determinism + floor gating, meta carry-through, achievement thresholds).
+- Playwright: scripted Spire run into a real floor-1 battle (sprites, trays,
+  moves render; 0 console errors) + hub/profile shots.
+
 ## v1.16.0 — 2026-07-12
 
 Nuzlocke honors — a memorial in the field menu and profile achievements.

@@ -90,6 +90,8 @@ export interface Battler {
   item?: ItemId;
   /** Sprite/artwork URL — used by the UI, ignored by the engine. */
   sprite?: string;
+  /** Palette hue-rotation in degrees for fused chimeras — UI only. */
+  hue?: number;
 }
 
 export type SideIndex = 0 | 1;

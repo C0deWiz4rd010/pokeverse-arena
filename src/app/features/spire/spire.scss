@@ -17,6 +17,13 @@
 }
 .meta-stat strong { font-size: 1.4rem; color: var(--accent-2); }
 .meta-stat span { font-size: 0.72rem; color: var(--text-dim); }
+/* Trophy row for the secret hunters — iridescent like a spliced palette. */
+.meta-stat.chimera {
+  grid-column: 1 / -1;
+  border-color: color-mix(in srgb, #c084fc 45%, var(--glass-border));
+  background: linear-gradient(120deg, color-mix(in srgb, #c084fc 12%, var(--glass)), color-mix(in srgb, #5be0c4 10%, var(--glass)));
+}
+.meta-stat.chimera strong { color: #c084fc; }
 .intro-actions { display: flex; gap: 0.6rem; justify-content: center; }
 
 /* ---- draft pool ---- */

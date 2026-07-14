@@ -19,6 +19,8 @@ export interface FoeSpec {
   readonly level: number;
   readonly aiTier: AiTier;
   readonly boss: boolean;
+  /** Secret chimera ace: fuse these two dex ids and append it to the team. */
+  readonly fusion?: { readonly head: number; readonly body: number };
 }
 
 export interface SpireNode {
@@ -31,7 +33,7 @@ export interface SpireNode {
   readonly foe?: FoeSpec;
 }
 
-export type RewardKind = 'mon' | 'item' | 'relic' | 'heal' | 'coins';
+export type RewardKind = 'mon' | 'item' | 'relic' | 'heal' | 'coins' | 'chimera';
 
 export interface RewardOption {
   readonly kind: RewardKind;
@@ -72,6 +74,8 @@ export interface SpireMeta {
   bankedCoins: number;
   /** Highest ascension tier unlocked. */
   ascension: number;
+  /** Secret chimera bosses defeated (lifetime). */
+  chimeraWins: number;
 }
 
 export interface RelicState {

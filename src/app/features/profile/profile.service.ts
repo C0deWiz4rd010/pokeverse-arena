@@ -101,6 +101,7 @@ export class ProfileService {
       odysseyUnlocked: odyssey.unlocked.length,
       fusionsRegistered,
       nuzlockeBadges,
+      chimeraWins: meta.chimeraWins,
     };
   }
 }

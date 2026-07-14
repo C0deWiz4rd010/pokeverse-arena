@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { dailyFusionPair, fuseStats, fuseTypes, fusePokemon, fusionHueShift, spliceName } from './fusion';
+import { dailyFusionPair, fuseBattlers, fuseStats, fuseTypes, fusePokemon, fusionHueShift, spliceName } from './fusion';
 import type { Pokemon, PokemonStats } from '../../core/models/pokemon.model';
+import type { Battler, BattleMove } from '../engine';
 
 const stats = (
   hp: number, attack: number, defense: number, spa: number, spd: number, speed: number,
@@ -114,6 +115,56 @@ describe('dailyFusionPair', () => {
       expect(body).toBeLessThanOrEqual(1025);
       expect(body).not.toBe(head);
     }
+  });
+});
+
+describe('fuseBattlers', () => {
+  const move = (name: string): BattleMove => ({ name, type: 'normal', power: 60, accuracy: 100, damageClass: 'physical' });
+  const battler = (partial: Partial<Battler>): Battler => ({
+    id: 6,
+    name: 'charizard',
+    level: 60,
+    types: ['fire', 'flying'],
+    stats: stats(180, 160, 150, 200, 170, 190),
+    moves: [move('flamethrower'), move('air-slash'), move('dragon-claw'), move('roost')],
+    sprite: 'charizard.png',
+    ...partial,
+  });
+
+  const head = battler({});
+  const body = battler({
+    id: 9,
+    name: 'blastoise',
+    level: 62,
+    types: ['water'],
+    stats: stats(180, 160, 190, 170, 200, 150),
+    moves: [move('surf'), move('flamethrower'), move('ice-beam'), move('shell-smash')],
+    sprite: 'blastoise.png',
+  });
+
+  it('splices name, fuses types/stats and wears the body sprite hue-shifted to the head', () => {
+    const chimera = fuseBattlers(head, body);
+    expect(chimera.name).toBe(spliceName('charizard', 'blastoise'));
+    expect(chimera.types).toEqual(fuseTypes(head.types, body.types));
+    expect(chimera.stats).toEqual(fuseStats(head.stats, body.stats));
+    expect(chimera.sprite).toBe('blastoise.png');
+    expect(chimera.hue).toBe(fusionHueShift('fire', 'water'));
+    expect(chimera.level).toBe(62);
+  });
+
+  it('interleaves both movesets head-first, deduped to four', () => {
+    const moves = fuseBattlers(head, body).moves.map((m) => m.name);
+    expect(moves).toHaveLength(4);
+    expect(new Set(moves).size).toBe(4);
+    expect(moves[0]).toBe('flamethrower');
+    expect(moves[1]).toBe('surf');
+    expect(moves).toContain('air-slash');
+  });
+
+  it('mints a synthetic id outside the real dex range', () => {
+    const chimera = fuseBattlers(head, body);
+    expect(chimera.id).toBe(60_009);
+    expect(chimera.id).toBeGreaterThan(1025);
   });
 });
 

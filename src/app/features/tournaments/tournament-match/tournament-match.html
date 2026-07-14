@@ -49,7 +49,7 @@
             </div>
           }
         </div>
-        <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foe.sprite" [alt]="foe.name" loading="lazy" />
+        <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foe.sprite" [alt]="foe.name" [style.filter]="foe.hue ? 'hue-rotate(' + foe.hue + 'deg)' : null" loading="lazy" />
       }
       @for (f of floats(); track f.id) {
         @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
@@ -63,7 +63,7 @@
         @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
       }
       @if (playerActive(); as me) {
-        <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="me.sprite" [alt]="me.name" loading="lazy" />
+        <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="me.sprite" [alt]="me.name" [style.filter]="me.hue ? 'hue-rotate(' + me.hue + 'deg)' : null" loading="lazy" />
         <div class="meta">
           <div class="name-row">
             <span class="name">{{ titleCase(me.name) }}</span>
@@ -100,7 +100,7 @@
           [title]="m.switchable ? 'Send out ' + titleCase(m.mon.name) : titleCase(m.mon.name)"
           (click)="onTraySelect(0, m.index)"
         >
-          <img [src]="m.mon.sprite" [alt]="m.mon.name" />
+          <img [src]="m.mon.sprite" [alt]="m.mon.name" [style.filter]="m.mon.hue ? 'hue-rotate(' + m.mon.hue + 'deg)' : null" />
           <span class="ball-hp"><span class="bh" [style.width.%]="(m.hp / m.maxHp) * 100"></span></span>
         </button>
       }
@@ -108,7 +108,7 @@
     <div class="tray foe-tray">
       <span class="tray-label">{{ setup().foe.name }}</span>
       @for (m of foeTray(); track m.mon.id) {
-        <img class="ball" [class.active]="m.active" [class.fainted]="m.fainted" [src]="m.mon.sprite" [alt]="m.mon.name" [title]="titleCase(m.mon.name)" />
+        <img class="ball" [class.active]="m.active" [class.fainted]="m.fainted" [src]="m.mon.sprite" [alt]="m.mon.name" [style.filter]="m.mon.hue ? 'hue-rotate(' + m.mon.hue + 'deg)' : null" [title]="titleCase(m.mon.name)" />
       }
     </div>
   </div>

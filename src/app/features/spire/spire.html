@@ -27,8 +27,11 @@
             <div class="meta-stat"><strong>{{ svc.meta().clears }}</strong><span>Clears</span></div>
             <div class="meta-stat"><strong>{{ svc.meta().ascension }}</strong><span>Ascension</span></div>
             <div class="meta-stat"><strong>{{ svc.meta().bankedCoins }}</strong><span>Banked ₽</span></div>
+            @if (svc.meta().chimeraWins > 0) {
+              <div class="meta-stat chimera"><strong>{{ svc.meta().chimeraWins }}</strong><span>Chimeras slain</span></div>
+            }
           </div>
-          <p class="muted">Climb {{ svc.totalFloors }} floors. HP carries between fights — there is no free healing. Pick your path, draft relics, and survive.</p>
+          <p class="muted">Climb {{ svc.totalFloors }} floors. HP carries between fights — there is no free healing. Pick your path, draft relics, and survive. Rumor says some guardians keep… stitched-together things.</p>
           <div class="intro-actions">
             <button class="btn" type="button" (click)="newRun()"><pv-icon name="dices" /> New Run</button>
             <button class="btn ghost" type="button" (click)="newDaily()"><pv-icon name="sparkles" /> Daily Run</button>
@@ -85,7 +88,7 @@
       <div class="party-bar">
         @for (p of svc.partyView(); track p.mon.id; let i = $index) {
           <div class="party-mon" [class.fainted]="p.hpPct <= 0">
-            <img [src]="p.mon.sprite" [alt]="p.mon.name" [title]="titleCase(p.mon.name)" loading="lazy" />
+            <img [src]="p.mon.sprite" [alt]="p.mon.name" [style.filter]="p.mon.hue ? 'hue-rotate(' + p.mon.hue + 'deg)' : null" [title]="titleCase(p.mon.name)" loading="lazy" />
             <span class="hp"><span class="fill" [class.low]="p.hpPct <= 30" [style.width.%]="p.hpPct"></span></span>
           </div>
         }

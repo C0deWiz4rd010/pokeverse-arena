@@ -8,7 +8,7 @@ import type { SpireMeta } from './spire-types';
 const KEY = 'spire:meta';
 
 export function defaultMeta(): SpireMeta {
-  return { bestDepth: 0, runs: 0, clears: 0, bankedCoins: 0, ascension: 0 };
+  return { bestDepth: 0, runs: 0, clears: 0, bankedCoins: 0, ascension: 0, chimeraWins: 0 };
 }
 
 export function loadMeta(): SpireMeta {
@@ -32,6 +32,7 @@ export function saveMeta(meta: SpireMeta): void {
 /** Fold a finished run into the meta record (returns a fresh object). */
 export function recordRun(meta: SpireMeta, depth: number, coins: number, cleared: boolean): SpireMeta {
   const next: SpireMeta = {
+    ...meta,
     bestDepth: Math.max(meta.bestDepth, depth),
     runs: meta.runs + 1,
     clears: meta.clears + (cleared ? 1 : 0),
@@ -46,6 +47,13 @@ export function recordRun(meta: SpireMeta, depth: number, coins: number, cleared
 /** Mark the start of a run. */
 export function startRun(meta: SpireMeta): SpireMeta {
   const next = { ...meta, runs: meta.runs + 1 };
+  saveMeta(next);
+  return next;
+}
+
+/** Chalk up a defeated secret chimera boss. */
+export function recordChimeraWin(meta: SpireMeta): SpireMeta {
+  const next = { ...meta, chimeraWins: meta.chimeraWins + 1 };
   saveMeta(next);
   return next;
 }
