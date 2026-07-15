@@ -90,6 +90,10 @@ export class RpgBattleComponent extends BattlePresenterBase {
   /** Wild battles allow catching/running; trainer battles won't. */
   protected readonly isWild = signal(true);
   protected readonly trainerName = signal<string | null>(null);
+  /** Faceset URL for the cinematic VS banner at trainer-battle start. */
+  protected readonly vsFace = signal<string | null>(null);
+  protected readonly vsShown = signal(false);
+  private vsTimer: ReturnType<typeof setTimeout> | null = null;
   /** Picking a fainted member to revive (Bag → Revive → Pokémon list). */
   protected readonly reviveMode = signal(false);
   private pendingRevive: ItemId | null = null;
@@ -204,6 +208,16 @@ export class RpgBattleComponent extends BattlePresenterBase {
 
   /* ------------------------------------------------------------- setup */
 
+  /** Flash the trainer's faceset as a VS banner while they walk on stage. */
+  private showVsBanner(portrait?: string): void {
+    const known = new Set(['boy', 'girl', 'prof', 'nurse', 'clerk', 'leader', 'oldman']);
+    if (!portrait || !known.has(portrait)) return;
+    this.vsFace.set(`rpg/facesets/nj-face-${portrait}.png`);
+    this.vsShown.set(true);
+    if (this.vsTimer) clearTimeout(this.vsTimer);
+    this.vsTimer = setTimeout(() => this.vsShown.set(false), 2400);
+  }
+
   private async begin(): Promise<void> {
     const setup = this.svc.battleSetup();
     const party = this.svc.party();
@@ -219,6 +233,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
       if (isTrainer && setup.team?.length) {
         foeTeam = await Promise.all(setup.team.map((t) => this.battleSvc.buildBattler(t.species, t.level, { levelMoves: true })));
         this.trainerName.set(setup.trainerName ?? 'Trainer');
+        this.showVsBanner(setup.portrait);
         this.trainerReward = setup.reward ?? 0;
         this.trainerFlag = setup.winFlag;
         this.trainerDefeat = setup.defeatText ?? '';

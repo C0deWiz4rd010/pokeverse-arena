@@ -4,6 +4,36 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.20.0 — 2026-07-15
+
+🎴 **Quickview 2.0 & VS banners** — the dex popover flips to a stat radar,
+and RPG trainers announce themselves face-first.
+
+### Added
+
+- **Quickview card flip** — a *Radar* chip flips the Pokédex popover
+  (rotateY, `preserve-3d`, instant under reduced motion) to a back face with
+  an **SVG stat radar**: a type-colored hexagon over 25/50/75/100 % rings,
+  labeled axes with raw values (HP at 12 o'clock), BST in the header, and a
+  ‹ chip to flip back. Radar geometry is pure math shared by rings, axes,
+  labels and the shape polygon.
+- **Quickview parallax** — the popover itself tilts subtly (5°) under the
+  pointer, matching the grid's holo cards.
+- **Trainer VS banner (RPG)** — trainer battles open with a cinematic pill:
+  the challenger's **faceset** plus "«Name» wants to battle!", sliding in
+  and fading after ~2.4 s. The character key rides `BattleSetup.portrait`,
+  fed by all three entry paths (interaction, line-of-sight spotting,
+  rematch).
+
+### Verification
+
+- 378/378 unit tests; production build clean.
+- Playwright: quickview opened on Charizard, front shot, flipped to the
+  radar (all six axes + BST verified readable; a clipped Back chip was found
+  and moved into the header before release) — 0 console errors. The VS
+  banner is template/AOT-covered; its portrait keys reuse the v1.19 faceset
+  set.
+
 ## v1.19.0 — 2026-07-15
 
 ✨ **Portraits, holo cards & staged battles** — JRPG dialogue faces, a 3D

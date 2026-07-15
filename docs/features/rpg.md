@@ -219,3 +219,7 @@ Adventure** pack (pixel-boy & AAA; `public/rpg/LICENSE.md`):
   outdoor maps drift **region-tinted ambient petals** (sakura at home, amber
   in the desert, mist by the coast), and the battle field grounds both
   fighters on **stage platforms**.
+- **v1.20 VS banner** — trainer battles open with a cinematic pill showing
+  the challenger's faceset + "«Name» wants to battle!" (slides in, fades
+  after ~2.4 s). The key travels on `BattleSetup.portrait` from all three
+  entry paths: interaction, line-of-sight spotting and rematches.

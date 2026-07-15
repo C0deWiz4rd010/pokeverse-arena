@@ -29,6 +29,48 @@
   animation: qv-pop 0.22s cubic-bezier(0.2, 1.3, 0.4, 1);
 }
 
+/* ---- 3D flip: front = profile, back = stat radar ---- */
+.flip {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+.flip.flipped { transform: rotateY(180deg); }
+.face.front { backface-visibility: hidden; }
+.face.back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+}
+.rd-head { display: flex; align-items: center; gap: 0.5rem; padding-right: 1.6rem; }
+.rd-head .qv-name { flex: 1; }
+.rd-bst { font-size: 0.8rem; color: var(--text-dim); white-space: nowrap; }
+.rd-bst strong { color: var(--t1); font-size: 0.95rem; }
+.rd-back { padding: 0.1rem 0.55rem; font-size: 1rem; line-height: 1.3; }
+.radar { width: 86%; margin-inline: auto; min-height: 0; }
+.radar .ring { fill: none; stroke: color-mix(in srgb, var(--text-faint) 30%, transparent); stroke-width: 0.7; }
+.radar .axis { stroke: color-mix(in srgb, var(--text-faint) 40%, transparent); stroke-width: 0.7; }
+.radar .shape {
+  fill: color-mix(in srgb, var(--t1) 38%, transparent);
+  stroke: var(--t1);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  animation: radar-in 0.45s ease both;
+  transform-origin: 90px 86px;
+}
+.radar .pt { fill: var(--t2); stroke: #fff; stroke-width: 0.7; }
+.radar .lbl { fill: var(--text-dim); font-size: 8.5px; font-weight: 700; }
+.rd-back { align-self: center; }
+@keyframes radar-in { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .flip { transition: none; }
+  .radar .shape { animation: none; }
+}
+
 .x {
   position: absolute;
   top: 0.5rem;

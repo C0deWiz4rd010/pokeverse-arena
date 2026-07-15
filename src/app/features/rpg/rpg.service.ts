@@ -77,6 +77,8 @@ export interface BattleSetup {
   readonly defeatText?: string;
   readonly badge?: string;
   readonly ending?: string;
+  /** Trainer-only: character key for the VS-banner faceset. */
+  readonly portrait?: string;
   /** Wild-only: a rare sparkling variant (kept for life when caught). */
   readonly shiny?: boolean;
   /** Wild-only: the encounter was reeled in with the Old Rod. */
@@ -152,6 +154,7 @@ export class RpgService {
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   /** Beaten trainer whose rematch offer is on screen (consumed by the script VM). */
   private pendingRematch: import('../../game/rpg/rpg-types').TrainerDef | null = null;
+  private pendingRematchPortrait: string | undefined;
   /** Runtime NPC positions (wanderers move; everyone else mirrors the map def). */
   readonly npcPos = signal<NpcPositions>({});
   private npcMapId: string | null = null;
@@ -429,7 +432,7 @@ export class RpgService {
         const tile = tileAt(m, tx, ty);
         if (!tile || !TILE[tile].walkable || npcAtRuntime(m, positions, tx, ty)) break;
         if (g.x === tx && g.y === ty) {
-          this.startTrainer(tr);
+          this.startTrainer(tr, npc.sprite);
           return;
         }
       }
@@ -646,12 +649,13 @@ export class RpgService {
         return;
       }
       if (npc.kind === 'trainer' && npc.trainer && !this.hasFlag(npc.trainer.flag)) {
-        this.startTrainer(npc.trainer);
+        this.startTrainer(npc.trainer, npc.sprite);
         return;
       }
       // Beaten trainers offer a rematch at half reward (badge/epilogue only once).
       if (npc.kind === 'trainer' && npc.trainer && this.hasFlag(npc.trainer.flag)) {
         this.pendingRematch = npc.trainer;
+        this.pendingRematchPortrait = npc.sprite;
         this.runScript([
           { say: `${npc.trainer.name}: Back again? I've been training for a rematch!`, speaker: npc.trainer.name },
           {
@@ -824,7 +828,7 @@ export class RpgService {
           intro: 'Show me how much stronger you have become!',
           badge: undefined,
           ending: undefined,
-        });
+        }, this.pendingRematchPortrait);
       }
       return;
     }
@@ -850,7 +854,7 @@ export class RpgService {
 
   /* ---------------------------------------------------------- trainer */
 
-  startTrainer(trainer: import('../../game/rpg/rpg-types').TrainerDef): void {
+  startTrainer(trainer: import('../../game/rpg/rpg-types').TrainerDef, portrait?: string): void {
     if (!trainer.team.length) return;
     this.showToast(`${trainer.name}: ${trainer.intro}`, 3200);
     this.startEncounter({
@@ -865,6 +869,7 @@ export class RpgService {
       defeatText: trainer.defeat,
       badge: trainer.badge,
       ending: trainer.ending,
+      portrait,
     });
   }
 

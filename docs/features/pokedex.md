@@ -93,3 +93,12 @@ plane (`translateZ` under `preserve-3d`). Loaded artwork idles on a gentle,
 per-card-staggered levitation loop. Everything is disabled under
 `prefers-reduced-motion`, and the sheen/holo layers are `pointer-events: none`
 so nothing steals taps.
+
+## Quickview 2.0 (v1.20)
+
+The popover gained a subtle 5-degree pointer parallax and a card flip: the
+*Radar* chip rotates it (preserve-3d; instant under reduced motion) to an SVG
+stat radar - a type-colored hexagon over 25/50/75/100 % rings with labeled
+axes and raw values (HP at 12 o'clock), BST in the header and a back chip.
+The radar geometry (rings, axes, labels, shape) shares one pure point
+function, so the polygon always matches its axes.
