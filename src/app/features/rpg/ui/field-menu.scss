@@ -2,15 +2,25 @@
 
 .fm {
   display: grid; gap: 0.8rem;
+  min-width: 0; max-width: 100%;
   border-radius: var(--radius); border: 1px solid var(--glass-border);
-  background: var(--glass); padding: 1rem;
+  background: var(--glass); padding: 0.8rem;
+  @include up(sm) { padding: 1rem; }
 }
-.fm-head { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
-.fm-tabs { display: inline-flex; gap: 0.4rem; }
+.fm-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.7rem; min-width: 0; }
+/* tabs scroll in one snap row on phones instead of pushing the menu wide */
+.fm-tabs {
+  display: flex; gap: 0.4rem; max-width: 100%;
+  overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar { display: none; }
+}
 .fm-tabs button {
   appearance: none; cursor: pointer; font: inherit; font-weight: 700;
-  padding: 0.4rem 0.9rem; border-radius: 999px; color: var(--text-dim);
+  padding: 0.4rem 0.75rem; border-radius: 999px; color: var(--text-dim);
   background: transparent; border: 1px solid var(--glass-border);
+  white-space: nowrap; scroll-snap-align: start;
+  @include up(sm) { padding: 0.4rem 0.9rem; }
 }
 .fm-tabs button.on { color: #0b0a1f; background: linear-gradient(135deg, var(--accent), var(--accent-2)); border: none; }
 .fm-money { font-weight: 800; color: var(--accent-3); }

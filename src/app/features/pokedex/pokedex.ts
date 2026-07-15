@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PokedexService } from './pokedex.service';
 import { PokemonCardComponent, type QuickviewRequest } from './pokemon-card';
 import { PokemonQuickviewComponent } from './pokemon-quickview';
@@ -50,11 +50,12 @@ const VIEWS: { id: DexView; label: string; glyph: string }[] = [
     WhosThatComponent,
     PageHeaderComponent,
     IconComponent,
+    RouterLink,
   ],
   templateUrl: './pokedex.html',
   styleUrl: './pokedex.scss',
   host: {
-    '(document:keydown.escape)': 'closeQuickview()',
+    '(document:keydown.escape)': 'closeOverlays()',
     '(document:keydown)': 'onKey($event)',
     '(window:scroll)': 'onScroll()',
   },
@@ -163,6 +164,13 @@ export class PokedexComponent {
 
   protected closeQuickview(): void {
     this.quickview.set(null);
+  }
+
+  /** Escape dismisses whichever overlay is open (quick-view, compare, game). */
+  protected closeOverlays(): void {
+    this.closeQuickview();
+    this.showCompare.set(false);
+    this.showGame.set(false);
   }
 
   /* ------------------------------------------------------- keyboard nav */

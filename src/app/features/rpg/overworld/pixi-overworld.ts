@@ -455,14 +455,22 @@ export class PixiOverworldComponent implements OnDestroy {
     const c = new pixi.Container();
     c.x = x * TILE_PX; c.y = y * TILE_PX;
     const gArt = GRASS as Extract<TileArt, { sheet: Sheet }>;
-    c.addChild(new pixi.Sprite(this.texFor(gArt.sheet, gArt.i)));
-    // one tuft pivoted at its root so the sway reads natural
-    const tuft = new pixi.Sprite(this.texFor('world', TALLGRASS_TUFT));
-    tuft.anchor.set(0.5, 1);
-    tuft.x = TILE_PX / 2;
-    tuft.y = TILE_PX;
-    c.addChild(tuft);
-    this.grassTiles.push({ c, tufts: [tuft] });
+    // a darker bed makes encounter grass unmistakable next to plain meadow
+    const bed = new pixi.Sprite(this.texFor(gArt.sheet, gArt.i));
+    bed.tint = 0x9fdc74;
+    c.addChild(bed);
+    // three staggered tufts fill the tile — the classic dense-thicket read
+    const tufts: PSprite[] = [];
+    for (const [ox, oy, scale] of [[-3.5, 0, 0.9], [4, 1, 1], [0.5, -3, 0.8]] as const) {
+      const tuft = new pixi.Sprite(this.texFor('world', TALLGRASS_TUFT));
+      tuft.anchor.set(0.5, 1);
+      tuft.x = TILE_PX / 2 + ox;
+      tuft.y = TILE_PX + oy;
+      tuft.scale.set(scale);
+      tufts.push(tuft);
+      c.addChild(tuft);
+    }
+    this.grassTiles.push({ c, tufts });
     return c;
   }
 

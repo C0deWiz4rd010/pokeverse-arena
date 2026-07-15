@@ -13,6 +13,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/pokedex/pokedex').then((m) => m.PokedexComponent),
   },
   {
+    path: 'showcase',
+    title: 'Pokédex Showcase · PokéVerse Arena',
+    loadComponent: () =>
+      import('./features/pokedex/showcase/showcase').then((m) => m.ShowcaseComponent),
+  },
+  {
     path: 'pokemon/:id',
     title: 'Pokémon · PokéVerse Arena',
     loadComponent: () =>

@@ -102,3 +102,15 @@ stat radar - a type-colored hexagon over 25/50/75/100 % rings with labeled
 axes and raw values (HP at 12 o'clock), BST in the header and a back chip.
 The radar geometry (rings, axes, labels, shape) shares one pure point
 function, so the polygon always matches its axes.
+
+## 3D Showcase - the second dex version (v2.0)
+
+The classic grid stays as-is; a "3D Showcase" chip in the toolbar (route
+`#/showcase`, also in the command palette) switches to an immersive
+one-Pokemon stage: type-colored scenery with orbiting dashed rings and a
+giant blurred artwork echo, pointer-parallax tilt + levitation on the
+artwork, the shared stat radar, the evolution chain (tap to jump), cry and
+shiny toggles, and prev/next via buttons, arrow keys or swipe. Deep-linkable
+via `?id=94`; mobile-first with zero horizontal overflow; all motion honours
+prefers-reduced-motion. The compare overlay additionally opens with overlaid
+color-coded stat polygons + legend (shared `stat-radar` geometry module).

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild, afterNextRender } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, inject, signal, viewChild, afterNextRender } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge';
 import { titleCase } from '../../../core/ui/format';
@@ -28,6 +28,16 @@ export class FieldMenuComponent {
   constructor() {
     // Move focus into the menu when it opens so keyboard/AT users land inside.
     afterNextRender(() => this.firstTab()?.nativeElement.focus());
+  }
+
+  /** Escape / X closes the menu again — mirrors the key that opened it. */
+  @HostListener('document:keydown', ['$event'])
+  protected onKey(e: KeyboardEvent): void {
+    if (e.key !== 'Escape' && e.key !== 'x' && e.key !== 'X') return;
+    const t = e.target as HTMLElement | null;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    e.preventDefault();
+    this.svc.closeMenu();
   }
   /** When using a bag item, the item awaiting a party target. */
   protected readonly pendingItem = signal<ItemId | null>(null);

@@ -9,6 +9,9 @@
   padding: 1rem 0 0.5rem;
   text-align: center;
 }
+/* the copy column must be shrinkable, or any non-wrapping child (like the
+   dash-chip scroll row) blows the whole page wider than the phone viewport */
+.hero-copy { min-width: 0; max-width: 100%; }
 @include up(lg) {
   .hero {
     grid-template-columns: 1.1fr 1fr;

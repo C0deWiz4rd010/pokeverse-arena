@@ -8,7 +8,7 @@
  *    immutable), so revisited Pokémon load instantly and work offline.
  */
 
-const VERSION = 'v2'; // bumped so installed clients refresh the cached shell + manifest (orientation fix)
+const VERSION = 'v3'; // v2.0: clears caches that predate the Ninja Adventure art swap
 const SHELL_CACHE = `pv-shell-${VERSION}`;
 const ASSET_CACHE = `pv-assets-${VERSION}`;
 const DATA_CACHE = `pv-data-${VERSION}`;

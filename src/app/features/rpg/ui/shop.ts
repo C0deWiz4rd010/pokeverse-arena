@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, inject } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import { ITEMS } from '../../../game/rpg/items-catalog';
 import { MART_STOCK, buyPrice } from '../../../game/rpg/shop';
@@ -34,6 +34,15 @@ import type { ItemId } from '../../../game/rpg/rpg-types';
 export class ShopComponent {
   protected readonly svc = inject(RpgService);
   protected readonly stock = MART_STOCK;
+
+  /** Escape / X leaves the shop, mirroring the field menu. */
+  @HostListener('document:keydown', ['$event'])
+  protected onKey(e: KeyboardEvent): void {
+    if (e.key === 'Escape' || e.key === 'x' || e.key === 'X') {
+      e.preventDefault();
+      this.svc.closeMenu();
+    }
+  }
 
   protected name(id: ItemId): string { return ITEMS[id].name; }
   protected desc(id: ItemId): string { return ITEMS[id].desc; }

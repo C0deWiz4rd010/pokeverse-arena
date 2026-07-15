@@ -1,0 +1,175 @@
+@use '../../../../styles/responsive' as *;
+
+:host { display: block; }
+
+/* ------------------------------------------------------------- stage */
+.stage {
+  --t1: var(--accent);
+  --t2: var(--accent-2);
+  position: relative;
+  min-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.6rem 0.4rem 2rem;
+  overflow: hidden;
+  border-radius: var(--radius);
+  isolation: isolate;
+}
+
+/* type-colored scenery behind everything */
+.scene { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.scene .glow {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(60% 45% at 50% 30%, color-mix(in srgb, var(--t1) 32%, transparent), transparent 70%),
+    radial-gradient(50% 40% at 70% 75%, color-mix(in srgb, var(--t2) 22%, transparent), transparent 70%);
+  transition: opacity 0.6s ease;
+}
+.scene .ring {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: min(74vw, 430px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--t1) 38%, transparent);
+  animation: orbit 26s linear infinite;
+}
+.scene .ring.r2 {
+  width: min(92vw, 560px);
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--t2) 18%, transparent);
+  animation-duration: 44s;
+  animation-direction: reverse;
+}
+/* the giant blurred artwork echo floods the scene with the Pokémon's palette */
+.scene .echo {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: min(120vw, 700px);
+  translate: -50% -50%;
+  filter: blur(70px) saturate(1.4);
+  opacity: 0.3;
+}
+@keyframes orbit { to { transform: rotate(360deg); } }
+
+/* ------------------------------------------------------------- bar */
+.bar { display: flex; align-items: center; gap: 0.6rem; }
+.ttl { flex: 1; text-align: center; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.78rem; color: var(--text-dim); }
+.chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.42rem 0.75rem; border-radius: 999px; cursor: pointer;
+  font: inherit; font-size: 0.82rem; font-weight: 700; text-decoration: none;
+  color: var(--text); background: var(--glass); border: 1px solid var(--glass-border);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.chip:hover { border-color: var(--t1); }
+.chip.on { color: #0b0a1f; background: linear-gradient(135deg, var(--t1), var(--t2)); border-color: transparent; }
+.jump { display: inline-flex; align-items: baseline; gap: 0.3rem; font-size: 0.78rem; color: var(--text-faint); }
+.jump input {
+  width: 4.2rem; padding: 0.35rem 0.5rem; font: inherit; font-weight: 700; text-align: right;
+  color: var(--text); background: var(--glass); border: 1px solid var(--glass-border); border-radius: 999px;
+}
+
+/* ------------------------------------------------------------- body */
+.body {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.2rem;
+}
+.nav {
+  z-index: 2;
+  width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  font-size: 1.5rem; line-height: 1; font-weight: 800; cursor: pointer;
+  color: var(--text); background: var(--glass); border: 1px solid var(--glass-border);
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+.nav:hover { border-color: var(--t1); transform: scale(1.08); }
+
+.art-wrap {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out;
+}
+.art {
+  width: min(64vw, 330px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  opacity: 0;
+  transform: translateY(16px) scale(0.92);
+  transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.55));
+  animation: levitate 4.2s ease-in-out infinite;
+}
+.art.loaded { opacity: 1; transform: none; }
+.body.entering .art { opacity: 0; }
+@keyframes levitate {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+
+.plate { display: grid; justify-items: center; gap: 0.15rem; transform: translateZ(30px); }
+.num { font-weight: 800; font-size: 0.8rem; color: color-mix(in srgb, var(--t1) 70%, var(--text-faint)); font-variant-numeric: tabular-nums; }
+.name { margin: 0; font-size: clamp(1.6rem, 6vw, 2.4rem); line-height: 1.1; }
+.genus { font-size: 0.85rem; color: var(--text-dim); }
+.types { display: flex; gap: 0.3rem; margin-top: 0.25rem; }
+
+/* ------------------------------------------------------------- panels */
+.panels {
+  display: grid;
+  gap: 0.7rem;
+  @include up(md) { grid-template-columns: 1.2fr 1fr; align-items: start; }
+}
+.panel {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--t1) 24%, var(--glass-border));
+  backdrop-filter: blur(6px);
+}
+.flavor { margin: 0 0 0.6rem; font-size: 0.92rem; line-height: 1.5; color: var(--text); }
+.quick-facts { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 0.7rem; }
+.quick-facts strong { color: var(--t1); }
+.actions { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.loading { margin: 0; color: var(--text-dim); text-align: center; }
+
+.radar-panel { display: grid; place-items: center; }
+.radar { width: min(280px, 74vw); }
+.radar .ring-l { fill: none; stroke: color-mix(in srgb, var(--text-faint) 30%, transparent); stroke-width: 0.7; }
+.radar .axis { stroke: color-mix(in srgb, var(--text-faint) 40%, transparent); stroke-width: 0.7; }
+.radar .lbl { fill: var(--text-dim); font-size: 8.5px; font-weight: 700; }
+.radar .shape {
+  fill: color-mix(in srgb, var(--t1) 38%, transparent);
+  stroke: var(--t1);
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+}
+
+.evo-panel { @include up(md) { grid-column: 1 / -1; } }
+.evo-title { display: block; margin-bottom: 0.35rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
+.evo { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.2rem; }
+.evo-stage { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.15rem; max-width: 12rem; }
+.evo-mon {
+  display: grid; place-items: center; width: 3rem; height: 3rem; padding: 0;
+  border-radius: 50%; cursor: pointer; background: transparent;
+  border: 1px solid transparent; transition: border-color 0.15s ease, background 0.15s ease;
+}
+.evo-mon img { width: 2.6rem; height: 2.6rem; image-rendering: pixelated; }
+.evo-mon:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--glass-border); }
+.evo-mon.cur { border-color: color-mix(in srgb, var(--t1) 75%, transparent); background: color-mix(in srgb, var(--t1) 14%, transparent); }
+.evo-arrow { color: var(--text-faint); font-weight: 800; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scene .ring, .scene .ring.r2, .art { animation: none; }
+  .art { opacity: 1; transform: none; transition: none; }
+  .art-wrap { transition: none; }
+}

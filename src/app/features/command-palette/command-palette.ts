@@ -56,6 +56,7 @@ const PAGES: PageCmd[] = [
   { path: '/odyssey', label: 'Odyssey', icon: 'map-pin', hint: 'Endless biome roguelike', keywords: 'roguelike pokerogue waves catch endless biome' },
   { path: '/world', label: 'World Explorer', icon: 'map', hint: 'Regions & expeditions', keywords: 'region kanto expedition catch' },
   { path: '/fusion', label: 'Fusion Lab', icon: 'flask-conical', hint: 'Splice two Pokémon into one', keywords: 'fuse fusion splice dna hybrid chimera lab' },
+  { path: '/showcase', label: 'Pokédex Showcase', icon: 'star', hint: 'Immersive 3D dex, one Pokémon at a time', keywords: 'showcase 3d dex immersive stage radar carousel' },
   { path: '/contest', label: 'Contest Hall', icon: 'sparkles', hint: 'Poffins & appeal rounds', keywords: 'berry poffin beauty' },
   { path: '/adventure', label: 'Adventure', icon: 'scroll-text', hint: 'Top-down RPG story', keywords: 'rpg story overworld quest' },
   { path: '/profile', label: 'Trainer Profile', icon: 'crown', hint: 'Stats, saves & identity', keywords: 'trainer save stats' },

@@ -23,6 +23,17 @@
   animation: cmp-pop 0.22s cubic-bezier(0.2, 1.3, 0.4, 1);
 }
 .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
+
+/* ---- overlaid stat radars ---- */
+.radar-wrap { display: grid; justify-items: center; gap: 0.2rem; margin-bottom: 0.9rem; }
+.radar { width: min(300px, 78vw); }
+.radar .ring { fill: none; stroke: color-mix(in srgb, var(--text-faint) 30%, transparent); stroke-width: 0.7; }
+.radar .axis { stroke: color-mix(in srgb, var(--text-faint) 40%, transparent); stroke-width: 0.7; }
+.radar .lbl { fill: var(--text-dim); font-size: 8.5px; font-weight: 700; }
+.radar .shape { stroke-width: 1.7; stroke-linejoin: round; mix-blend-mode: screen; }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem 0.9rem; }
+.leg { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; color: var(--text-dim); }
+.leg i { width: 0.7rem; height: 0.7rem; border-radius: 3px; }
 .head h2 { font-size: 1.3rem; }
 .x {
   display: grid; place-items: center; width: 1.9rem; height: 1.9rem;

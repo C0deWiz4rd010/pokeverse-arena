@@ -16,6 +16,10 @@ import { padId, titleCase } from '../../core/ui/format';
 import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import { defensiveProfile, POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import type { StatKey } from '../../core/utils/stat-calculator';
+import { RADAR_RINGS, RADAR_STATS, RADAR_VIEWBOX, labelPoint, radarPoint, shapePoints } from './stat-radar';
+
+/** Distinct polygon colors for up to four compared Pokémon. */
+const COMPARE_COLORS = ['#6ce0ff', '#ff5d73', '#ffd166', '#56e39f'];
 
 const STAT_ROWS: { key: StatKey; label: string }[] = [
   { key: 'hp', label: 'HP' },
@@ -42,6 +46,25 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
       @if (!mons().length) {
         <p class="loading">Loading…</p>
       } @else {
+        <!-- overlaid stat radars: one polygon per Pokémon, color-coded -->
+        <div class="radar-wrap">
+          <svg class="radar" [attr.viewBox]="viewBox" role="img" aria-label="Overlaid stat radars">
+            @for (ring of rings; track $index) { <polygon class="ring" [attr.points]="ring" /> }
+            @for (r of radarStats; track r.key; let i = $index) {
+              <line class="axis" x1="90" y1="86" [attr.x2]="axisPt(i).x" [attr.y2]="axisPt(i).y" />
+              <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">{{ r.label }}</text>
+            }
+            @for (m of mons(); track m.id; let i = $index) {
+              <polygon class="shape" [attr.points]="shape(m)" [attr.stroke]="color(i)" [style.fill]="fill(i)" />
+            }
+          </svg>
+          <div class="legend">
+            @for (m of mons(); track m.id; let i = $index) {
+              <span class="leg"><i [style.background]="color(i)"></i>{{ titleCase(m.name) }}</span>
+            }
+          </div>
+        </div>
+
         <div class="table" [style.--cols]="mons().length">
           <!-- header row -->
           <div class="corner"></div>
@@ -95,6 +118,28 @@ export class PokemonCompareComponent {
   protected readonly statRows = STAT_ROWS;
   protected readonly titleCase = titleCase;
   protected readonly padId = padId;
+
+  /* --- overlaid stat radar --- */
+  protected readonly viewBox = RADAR_VIEWBOX;
+  protected readonly rings = RADAR_RINGS;
+  protected readonly radarStats = RADAR_STATS;
+
+  protected axisPt(i: number): { x: number; y: number } {
+    return radarPoint(i, 1);
+  }
+  protected lblPt(i: number): { x: number; y: number } {
+    return labelPoint(i);
+  }
+  protected shape(m: QuickDetail): string {
+    return shapePoints(m.stats);
+  }
+  protected color(i: number): string {
+    return COMPARE_COLORS[i % COMPARE_COLORS.length];
+  }
+  /** Translucent fill derived from the stroke color. */
+  protected fill(i: number): string {
+    return `color-mix(in srgb, ${this.color(i)} 22%, transparent)`;
+  }
 
   protected readonly mons = signal<QuickDetail[]>([]);
 

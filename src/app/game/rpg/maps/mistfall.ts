@@ -12,7 +12,7 @@ const ROWS = [
   'TSSSSSSSSSSST',
   'TSS~~~~~~~SST',
   'TSS~~~~~~~SST',
-  'TSSSSSSSSSSST',
+  'TSSSSSSSSSSSP',
   'TSSSRRRRRSSST',
   'TSSSHHDHHSSST',
   'TSSSSSSSSSSST',
@@ -31,6 +31,8 @@ export const MISTFALL: MapDef = {
     { x: 3, y: 3, to: 'center', toX: 4, toY: 4, toFacing: 'up' },
     { x: 9, y: 3, to: 'mart', toX: 4, toY: 4, toFacing: 'up' },
     { x: 6, y: 9, to: 'gym4', toX: 4, toY: 8, toFacing: 'up' },
+    // East gate → Victory Pass, sealed until all four badges shine (v2.0).
+    { x: 12, y: 7, to: 'route-5', toX: 1, toY: 6, toFacing: 'right', requiresBadge: 'Tide Badge' },
   ],
   signs: [
     { x: 6, y: 4, text: 'MISTFALL GYM — Leader Nerida, Warden of the Tides.' },

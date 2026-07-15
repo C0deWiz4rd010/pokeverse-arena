@@ -4,6 +4,72 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.0.0 — 2026-07-15
+
+👑 **PokéVerse Arena 2.0** — the adventure gets its ending, the Pokédex gets
+a second (3D) identity, and a self-playthrough hunted down every reported bug.
+
+### Added
+
+- **The Elite finale (RPG endgame)** — three new maps close the story:
+  **Victory Pass** (Route 5, a snow-swept climb with Lv 26–30 wilds incl.
+  rare Snorlax/Lapras/Jynx and two sight-line Ace Trainers), **Crownspire
+  City** (fifth town: plaza, Center/Mart, lore NPCs) and the **Elite Hall**
+  — a no-healing gauntlet where Elite Rin (psychic) and Elite Kael
+  (dragon-fang) challenge on sight from *beside* the corridor (beaten elites
+  never block the path), and **Champion Aria** (Pidgeot/Rhydon/Arcanine/
+  Alakazam/Dragonite, Lv 32–35) waits on the dais. Beating her sets
+  `beat-champion`, pays 10 000 ₽ and rolls the Hall-of-Fame epilogue.
+  Mistfall's east gate opens with the Tide Badge; two new quests (16 total)
+  and the objective banner point the way.
+- **Pokédex Showcase (the "3D dex")** — a second dex *version* at
+  `#/showcase` (the classic grid is untouched; a **3D Showcase** chip in the
+  dex toolbar and a ⌘K entry switch): one Pokémon at a time on a
+  type-colored stage with orbiting rings, a giant blurred artwork echo,
+  pointer-parallax tilt + levitation, stat radar, evolution chain, cry and
+  shiny toggles, ‹ › / arrow-key / swipe navigation and a jump-to-number
+  field. Deep-linkable (`?id=94`), mobile-first, zero horizontal overflow.
+- **Compare radars** — the compare overlay opens with **overlaid stat
+  polygons** (up to four, color-coded with a legend, `screen`-blended) above
+  the classic table; geometry shared with the quickview via a new pure
+  `stat-radar` module.
+- **Evolution chain in the quickview** — stages with pixel sprites and the
+  current Pokémon ringed; branching families (Eevee) fan out inside their
+  stage; single-stage lines hide the strip. Memoized per species.
+
+### Fixed (found by playing the game myself)
+
+- **"No encounters in tall grass"** — encounter rolls were fine; the v1.18
+  art swap had made tall grass nearly indistinguishable from decorated
+  meadow. Encounter grass is now an unmistakable dense thicket: darker
+  tinted bed + three staggered, swaying tufts.
+- **Escape never closed the RPG field menu or shop** (only the Resume
+  button did) — both now close on Esc/X, matching the key that opens them.
+- **Field menu overflowed phone viewports** (tabs forced a ~560 px minimum
+  width; the HP bars and Resume button ran off-screen) — the menu is
+  shrinkable now with a swipeable tab row.
+- **Home page horizontal overflow on phones** — the progression chip row's
+  no-wrap scroll made the hero grid column wider than the viewport
+  (`.hero-copy` now has `min-width: 0`); the more chips you earned, the
+  wider the page got.
+- **`InvalidStateError` on every load** — Angular's view transition raced
+  the first paint; the initial navigation now skips it.
+- **Stale PWA caches** — the service worker version moved to `v3`, clearing
+  caches that predate the Ninja Adventure art swap.
+- **Compare/Who's-That ignored Escape** — one handler now dismisses
+  whichever dex overlay is open.
+
+### Verification
+
+- 378/378 unit tests (map-registry spec validates the three new maps);
+  production build clean.
+- **Self-playthrough**: scripted runs covered new game → starter → grass
+  battle *to the win* (incl. forced-switch after a recoil KO) → field-menu
+  tabs → save, plus a seeded 4-badge save that stormed the Elite Hall and
+  **beat Rin, Kael and Champion Aria back-to-back** — 0 console errors.
+  Mobile runs verified the menu fix, the showcase and the home page
+  (overflow gone).
+
 ## v1.20.0 — 2026-07-15
 
 🎴 **Quickview 2.0 & VS banners** — the dex popover flips to a stat radar,

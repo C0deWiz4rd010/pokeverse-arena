@@ -223,3 +223,26 @@ Adventure** pack (pixel-boy & AAA; `public/rpg/LICENSE.md`):
   the challenger's faceset + "«Name» wants to battle!" (slides in, fades
   after ~2.4 s). The key travels on `BattleSetup.portrait` from all three
   entry paths: interaction, line-of-sight spotting and rematches.
+
+## v3.1 — 👑 the Elite finale (app v2.0)
+
+The story gets its ending. Mistfall's **east gate** (Tide Badge) opens onto:
+
+- **Victory Pass (Route 5)** — a snow-swept switchback climb: Lv 26–30
+  wilds (sneasel/graveler/machoke; day Lapras, night Jynx, rare Snorlax),
+  two sight-line Ace Trainers, ledges and a stash of Hyper Potions.
+- **Crownspire City** — the fifth town: stone plaza, Center/Mart, a
+  gatekeeper who warns that the gauntlet has **no mid-run healing**, and
+  the Elite Hall.
+- **Elite Hall** — Elite **Rin** (psychic, Lv 30–31) and Elite **Kael**
+  (Lv 31–32) challenge on sight from *beside* the corridor, so their beaten
+  selves never block the way; **Champion Aria** (Pidgeot, Rhydon, Arcanine,
+  Alakazam, Dragonite Lv 35) waits on the rug dais. Victory sets
+  `beat-champion`, pays 10 000 ₽ and rolls the Hall-of-Fame epilogue; the
+  objective banner and two new quests (16 total) track the run.
+
+**v2.0 fixes from a scripted self-playthrough**: encounter tall grass is a
+dense, unmistakable thicket again (the v1.18 art swap had blurred the line
+to decorated meadow); Esc/X closes the field menu and shop; the field menu
+fits phone viewports (swipeable tab row, shrinkable card grid); beaten-elite
+placement bug caught in playtesting (they initially blocked the corridor).

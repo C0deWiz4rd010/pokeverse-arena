@@ -18,6 +18,9 @@ import { GYM3 } from './gym3';
 import { ROUTE_4 } from './route-4';
 import { MISTFALL } from './mistfall';
 import { GYM4 } from './gym4';
+import { ROUTE_5 } from './route-5';
+import { CROWNSPIRE } from './crownspire';
+import { ELITE_HALL } from './elite-hall';
 
 export const MAPS: Record<string, MapDef> = {
   [PLAYER_HOME.id]: PLAYER_HOME,
@@ -38,6 +41,9 @@ export const MAPS: Record<string, MapDef> = {
   [ROUTE_4.id]: ROUTE_4,
   [MISTFALL.id]: MISTFALL,
   [GYM4.id]: GYM4,
+  [ROUTE_5.id]: ROUTE_5,
+  [CROWNSPIRE.id]: CROWNSPIRE,
+  [ELITE_HALL.id]: ELITE_HALL,
 };
 
 export function getMap(id: string): MapDef | undefined {

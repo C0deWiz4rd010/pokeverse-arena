@@ -46,7 +46,7 @@ export const GYM4: MapDef = {
         defeat: 'You stood firm against the current. The Tide Badge is yours.',
         flag: 'beat-gym4',
         badge: 'Tide Badge',
-        ending: '🌊 Four badges! Mistfall bows to you. The horizon holds more — to be continued…',
+        ending: '🌊 Four badges! The east gate of Mistfall opens — Victory Pass climbs to Crownspire, where the Champion waits.',
       },
     },
   ],

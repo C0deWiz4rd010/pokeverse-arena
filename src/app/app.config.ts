@@ -26,8 +26,10 @@ export const appConfig: ApplicationConfig = {
       withHashLocation(),
       withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
       // Native cross-page fade (View Transitions API); browsers without support
-      // simply skip it, and the CSS respects prefers-reduced-motion.
-      withViewTransitions(),
+      // simply skip it, and the CSS respects prefers-reduced-motion. The initial
+      // navigation is skipped — starting a transition there races the first
+      // paint and logs an InvalidStateError abort.
+      withViewTransitions({ skipInitialTransition: true }),
     ),
   ],
 };

@@ -9,7 +9,8 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { PokedexDetailService, type QuickDetail } from './pokedex-detail.service';
+import { PokedexDetailService, type EvoStage, type QuickDetail } from './pokedex-detail.service';
+import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { CryService } from '../../core/audio/cry.service';
@@ -17,6 +18,7 @@ import { padId, titleCase, typeColorVar } from '../../core/ui/format';
 import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
 import type { StatKey } from '../../core/utils/stat-calculator';
+import { RADAR_MAX, RADAR_RINGS, labelPoint, radarPoint, shapePoints } from './stat-radar';
 
 const STAT_ROWS: { key: StatKey; label: string }[] = [
   { key: 'hp', label: 'HP' },
@@ -29,26 +31,6 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
 
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/** Radar geometry: hexagon around (90,86), radius 64, HP at 12 o'clock. */
-const RADAR_CX = 90;
-const RADAR_CY = 86;
-const RADAR_R = 64;
-const RADAR_MAX = 180;
-
-function radarPoint(i: number, frac: number): { x: number; y: number } {
-  const a = -Math.PI / 2 + (i * Math.PI) / 3;
-  return { x: RADAR_CX + Math.cos(a) * RADAR_R * frac, y: RADAR_CY + Math.sin(a) * RADAR_R * frac };
-}
-
-function ringPoints(frac: number): string {
-  return STAT_ROWS.map((_, i) => {
-    const p = radarPoint(i, frac);
-    return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
-  }).join(' ');
-}
-
-const RADAR_RINGS = [0.25, 0.5, 0.75, 1].map(ringPoints);
 
 /** A lazy, anchored quick-view popover for a Pokédex entry. */
 @Component({
@@ -106,6 +88,27 @@ const RADAR_RINGS = [0.25, 0.5, 0.75, 1].map(ringPoints);
             </div>
           } @else if (detail(); as d) {
             <p class="flavor">{{ d.flavor }}</p>
+            @if (evo(); as chain) {
+              @if (chain.length > 1) {
+                <div class="evo" aria-label="Evolution line">
+                  @for (stage of chain; track $index; let last = $last) {
+                    <div class="evo-stage">
+                      @for (s of stage; track s.id) {
+                        <a
+                          class="evo-mon"
+                          [class.cur]="s.id === entry().id"
+                          [routerLink]="['/pokemon', s.id]"
+                          [title]="titleCase(s.name) + (s.trigger ? ' · ' + s.trigger : '')"
+                        >
+                          <img [src]="evoSprite(s.id)" [alt]="s.name" loading="lazy" />
+                        </a>
+                      }
+                    </div>
+                    @if (!last) { <span class="evo-arrow" aria-hidden="true">›</span> }
+                  }
+                </div>
+              }
+            }
             <div class="stats">
               @for (r of statRows; track r.key) {
                 <div class="stat">
@@ -167,6 +170,13 @@ export class PokemonQuickviewComponent {
   protected readonly detail = signal<QuickDetail | null>(null);
   protected readonly error = signal(false);
   protected readonly loaded = signal(false);
+  /** Evolution family in stages (null while loading; single-stage lines hide). */
+  protected readonly evo = signal<EvoStage[][] | null>(null);
+  protected readonly titleCase = titleCase;
+
+  protected evoSprite(id: number): string {
+    return `${SPRITE_BASE}/pokemon/${id}.png`;
+  }
   /** Back face shows the stat radar; flipping is a plain rotateY toggle. */
   protected readonly flipped = signal(false);
   protected readonly rings = RADAR_RINGS;
@@ -199,8 +209,7 @@ export class PokemonQuickviewComponent {
 
   /** Labels sit just outside their axis tip. */
   protected lblPt(i: number): { x: number; y: number } {
-    const p = radarPoint(i, 1.22);
-    return { x: p.x, y: p.y + 3 };
+    return labelPoint(i);
   }
 
   protected statPt(i: number, d: QuickDetail): { x: number; y: number } {
@@ -210,11 +219,7 @@ export class PokemonQuickviewComponent {
 
   protected readonly radarShape = computed(() => {
     const d = this.detail();
-    if (!d) return '';
-    return STAT_ROWS.map((r, i) => {
-      const p = radarPoint(i, Math.min(1, d.stats[r.key] / RADAR_MAX));
-      return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
-    }).join(' ');
+    return d ? shapePoints(d.stats) : '';
   });
 
   protected num = () => padId(this.entry().id);
@@ -249,9 +254,14 @@ export class PokemonQuickviewComponent {
       this.detail.set(null);
       this.error.set(false);
       this.flipped.set(false);
+      this.evo.set(null);
       this.detailSvc.load(id).then(
         (d) => this.detail.set(d),
         () => this.error.set(true),
+      );
+      this.detailSvc.loadChain(id).then(
+        (chain) => this.evo.set(chain),
+        () => this.evo.set([]),
       );
     });
   }

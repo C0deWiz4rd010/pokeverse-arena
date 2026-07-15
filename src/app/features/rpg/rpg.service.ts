@@ -203,7 +203,8 @@ export class RpgService {
     if (!g.badges.includes('Boulder Badge')) return '▶ Through Route 2 & the cave → the Stonehollow Gym';
     if (!g.badges.includes('Knuckle Badge')) return '▶ South past the ranger → Route 3 → the Sunreach Gym';
     if (!g.badges.includes('Tide Badge')) return '▶ South from Sunreach → Route 4 → the Mistfall Gym';
-    return '★ Four badges! Champion of the demo — explore freely!';
+    if (!g.flags['beat-champion']) return '▶ East from Mistfall → Victory Pass → the Elite Hall';
+    return '👑 CHAMPION of PokéVerse! The Hall of Fame remembers you.';
   });
 
   /** Build a Pokémon from species/level and add it to the party (or box if full). */

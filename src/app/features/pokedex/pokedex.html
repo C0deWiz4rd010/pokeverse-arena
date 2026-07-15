@@ -103,6 +103,9 @@
       <button class="btn ghost game-btn" type="button" (click)="openGame()" [disabled]="store.count() < 3">
         <pv-icon name="sparkles" /> Who’s That?
       </button>
+      <a class="btn ghost showcase-btn" routerLink="/showcase" title="Immersive 3D showcase view">
+        <pv-icon name="star" /> 3D Showcase
+      </a>
     </div>
     <div class="views" role="group" aria-label="View mode">
       @for (v of views; track v.id) {

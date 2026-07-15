@@ -29,6 +29,8 @@ export const QUESTS: readonly Quest[] = [
   { id: 'dex10', title: 'Register 10 caught species', hint: 'The tall grass changes route to route.', done: (g) => g.caught.length >= 10 },
   { id: 'rod', title: 'Get the Old Rod', hint: 'Fisher Finn idles by the Verdant Town pond.', done: (g) => !!g.flags['got-rod'] },
   { id: 'hooked', title: 'Hook a wild Pokémon', hint: 'Face the water and press A with the Old Rod.', done: (g) => !!g.flags['hooked'] },
+  { id: 'elite', title: 'Defeat the Elite duo', hint: 'Victory Pass east of Mistfall climbs to Crownspire.', done: (g) => !!g.flags['beat-elite-1'] && !!g.flags['beat-elite-2'] },
+  { id: 'champion', title: 'Become the Champion', hint: 'Aria waits on the Elite Hall dais.', done: (g) => !!g.flags['beat-champion'] },
 ];
 
 export interface QuestEntry {
