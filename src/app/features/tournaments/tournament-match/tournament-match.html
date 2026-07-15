@@ -49,7 +49,7 @@
             </div>
           }
         </div>
-        <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foe.sprite" [alt]="foe.name" [style.filter]="foe.hue ? 'hue-rotate(' + foe.hue + 'deg)' : null" loading="lazy" />
+        <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foe.sprite" [alt]="foe.name" [style.filter]="foe.hue ? 'hue-rotate(' + foe.hue + 'deg) drop-shadow(0 8px 14px rgba(0,0,0,0.45))' : null" loading="lazy" />
       }
       @for (f of floats(); track f.id) {
         @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
@@ -63,7 +63,7 @@
         @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
       }
       @if (playerActive(); as me) {
-        <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="me.sprite" [alt]="me.name" [style.filter]="me.hue ? 'hue-rotate(' + me.hue + 'deg)' : null" loading="lazy" />
+        <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="me.sprite" [alt]="me.name" [style.filter]="me.hue ? 'hue-rotate(' + me.hue + 'deg) drop-shadow(0 8px 14px rgba(0,0,0,0.45))' : null" loading="lazy" />
         <div class="meta">
           <div class="name-row">
             <span class="name">{{ titleCase(me.name) }}</span>

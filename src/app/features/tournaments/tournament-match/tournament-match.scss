@@ -71,6 +71,18 @@
   overflow: hidden;
 
   @include up(md) { min-height: 380px; }
+
+  /* a faint horizon splits the far (foe) and near (player) stage halves */
+  &::after {
+    content: '';
+    position: absolute;
+    left: -5%;
+    right: -5%;
+    top: 52%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.13), transparent);
+    pointer-events: none;
+  }
 }
 
 .fighter {
@@ -82,6 +94,35 @@
 
   &.foe { justify-content: flex-end; }
   &.mine { justify-content: flex-start; align-self: end; }
+
+  /* elliptical stage platforms ground the fighters on phone and desktop */
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    width: 120px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--accent) 26%, transparent),
+      color-mix(in srgb, var(--accent) 9%, transparent) 62%,
+      transparent
+    );
+
+    @include up(md) { width: 160px; height: 38px; }
+  }
+  &.foe::before {
+    right: 0;
+    bottom: -4px;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--accent-2) 26%, transparent),
+      color-mix(in srgb, var(--accent-2) 9%, transparent) 62%,
+      transparent
+    );
+  }
+  &.mine::before { left: 0; bottom: -6px; }
 
   .sprite {
     width: 104px;

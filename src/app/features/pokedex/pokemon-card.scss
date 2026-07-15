@@ -30,15 +30,41 @@
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    200px 200px at var(--mx, 50%) var(--my, 0%),
-    color-mix(in srgb, var(--t1) 30%, transparent),
-    transparent 60%
+    220px 220px at var(--mx, 50%) var(--my, 0%),
+    rgba(255, 255, 255, 0.22),
+    color-mix(in srgb, var(--t1) 26%, transparent) 35%,
+    transparent 62%
   );
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
 }
-.card.hover .sheen { opacity: 0.8; }
+.card.hover .sheen { opacity: 0.9; }
+
+/* TCG-style holo foil: a pointer-angled rainbow that lights up under the
+   glare and blends additively — subtle on every card, loud on shiny/favs. */
+.holo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    calc(115deg + var(--ha, 0deg)),
+    transparent 18%,
+    rgba(255, 90, 120, 0.16) 34%,
+    rgba(255, 214, 102, 0.18) 44%,
+    rgba(91, 224, 138, 0.16) 54%,
+    rgba(102, 180, 255, 0.18) 64%,
+    rgba(192, 132, 252, 0.16) 74%,
+    transparent 88%
+  );
+  mask-image: radial-gradient(240px 240px at var(--mx, 50%) var(--my, 30%), #000 0%, transparent 75%);
+  mix-blend-mode: color-dodge;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.card.hover .holo { opacity: 0.7; }
+.card.shiny.hover .holo,
+.card.fav.hover .holo { opacity: 1; }
 
 .top {
   width: 100%;
@@ -93,6 +119,14 @@
   display: grid;
   place-items: center;
   margin-top: 0.4rem;
+  transform-style: preserve-3d;
+}
+/* the artwork gently levitates while idle (staggered per card via delay) */
+.card.loaded .art { animation: art-float 3.6s ease-in-out infinite; }
+.card.hover .art { animation-play-state: paused; }
+@keyframes art-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 .skeleton {
   position: absolute;
@@ -116,13 +150,19 @@
 }
 .card.loaded .art .still { opacity: 1; transform: none; }
 .card.hover .art .still { opacity: 0; }
-.card.hover .art .still { transform: translateZ(30px) scale(1.06); }
+.card.hover .art .still { transform: translateZ(34px) scale(1.06); }
 .art .anim {
   image-rendering: pixelated;
   opacity: 0;
-  transition: opacity 0.2s ease 0.05s;
+  transform: translateZ(0);
+  transition: opacity 0.2s ease 0.05s, transform 0.25s ease;
 }
-.card.hover .art .anim { opacity: 1; }
+.card.hover .art .anim { opacity: 1; transform: translateZ(34px) scale(1.08); }
+
+/* depth layers: name and types ride above the card plane while tilted */
+.name, .types { transition: transform 0.25s ease; }
+.card.hover .name { transform: translateZ(20px); }
+.card.hover .types { transform: translateZ(14px); }
 
 /* Shiny mode: two golden sparkles twinkle over the artwork, offset per card
    via the entrance-stagger delay so the grid doesn't blink in unison. */
@@ -183,8 +223,10 @@
 @keyframes card-in { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .card, .art img, .skeleton, .info { animation: none; transition: none; }
+  .card, .art, .art img, .skeleton, .info, .name, .types { animation: none; transition: none; }
   .card.loaded .art .still { opacity: 1; transform: none; }
+  .card.hover .name, .card.hover .types { transform: none; }
+  .sheen, .holo { display: none; }
   .info { opacity: 1; transform: none; }
 }
 

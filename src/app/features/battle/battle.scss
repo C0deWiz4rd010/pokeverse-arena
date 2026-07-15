@@ -125,6 +125,34 @@
   .fighter.foe { justify-self: end; }
   .fighter.mine { justify-self: start; }
 }
+/* elliptical stage platforms under both combatants */
+.fighter::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 116px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--accent) 24%, transparent),
+    color-mix(in srgb, var(--accent) 8%, transparent) 62%,
+    transparent
+  );
+
+  @include up(md) { width: 170px; height: 38px; }
+}
+.fighter.foe::before {
+  right: 0;
+  bottom: -4px;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--accent-2) 24%, transparent),
+    color-mix(in srgb, var(--accent-2) 8%, transparent) 62%,
+    transparent
+  );
+}
+.fighter.mine::before { left: 0; bottom: -6px; }
 
 .fighter .sprite {
   width: 96px;

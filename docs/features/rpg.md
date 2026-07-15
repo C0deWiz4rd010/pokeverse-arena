@@ -213,3 +213,9 @@ Adventure** pack (pixel-boy & AAA; `public/rpg/LICENSE.md`):
 - **Walk cycles** — all seven character keys (hero, girl, prof, nurse, clerk,
   leader, oldman) use 4-direction × 4-frame sheets; NPC wanderers face their
   travel direction mid-glide. The canvas fallback renderer is unchanged.
+- **v1.19 polish** — dialogue lines carry a **faceset portrait** of their
+  speaker (NPC interactions pass the character key into `runScript`; Prof.
+  Oak/Mom resolve statically; redundant "Name: " text prefixes are stripped),
+  outdoor maps drift **region-tinted ambient petals** (sakura at home, amber
+  in the desert, mist by the coast), and the battle field grounds both
+  fighters on **stage platforms**.

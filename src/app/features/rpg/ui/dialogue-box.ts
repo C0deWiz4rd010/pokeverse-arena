@@ -13,13 +13,19 @@ import { RpgService } from '../rpg.service';
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/** Character keys that ship a Ninja Adventure faceset in public/rpg/facesets. */
+const FACE_KEYS = new Set(['boy', 'girl', 'prof', 'nurse', 'clerk', 'leader', 'oldman']);
+
 /** Classic dialogue box with a typewriter reveal and choice options. */
 @Component({
   selector: 'pv-dialogue-box',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (svc.dialogue(); as d) {
-      <div class="dbox" (click)="onAdvance()">
+      <div class="dbox" [class.with-face]="!!faceUrl()" (click)="onAdvance()">
+        @if (faceUrl(); as f) {
+          <span class="face" aria-hidden="true"><img [src]="f" alt="" /></span>
+        }
         @if (d.speaker) { <span class="speaker">{{ d.speaker }}</span> }
         <p class="text">{{ shown() }}<span class="caret" [class.show]="!revealed()">▌</span></p>
 
@@ -46,11 +52,21 @@ export class DialogueBoxComponent implements OnDestroy {
 
   protected readonly hasChoices = computed(() => !!this.svc.dialogue()?.choices?.length);
 
+  /** Faceset portrait URL for known character keys (hidden for anything else). */
+  protected readonly faceUrl = computed(() => {
+    const key = this.svc.dialogue()?.portrait;
+    return key && FACE_KEYS.has(key) ? `rpg/facesets/nj-face-${key}.png` : null;
+  });
+
   constructor() {
     effect(() => {
       const d = this.svc.dialogue();
       this.stop();
       this.full = d?.text ?? '';
+      // the speaker label already names them — drop a redundant "Name: " prefix
+      if (d?.speaker && this.full.startsWith(`${d.speaker}: `)) {
+        this.full = this.full.slice(d.speaker.length + 2);
+      }
       if (!d) {
         this.shown.set('');
         this.revealed.set(false);

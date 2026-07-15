@@ -48,6 +48,7 @@ export interface QuickviewRequest {
       (pointerenter)="hovering.set(true)"
     >
       <span class="sheen" aria-hidden="true"></span>
+      <span class="holo" aria-hidden="true"></span>
 
       <div class="top">
         <span class="num">{{ id() }}</span>
@@ -133,7 +134,8 @@ export class PokemonCardComponent {
     if (REDUCED_MOTION) return '';
     const { rx, ry } = this.tilt();
     const lift = this.hovering() ? -6 : 0;
-    return `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(${lift}px)`;
+    const scale = this.hovering() ? 1.035 : 1;
+    return `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(${lift}px) scale(${scale})`;
   });
 
   constructor() {
@@ -151,9 +153,11 @@ export class PokemonCardComponent {
     const px = (event.clientX - r.left) / r.width;
     const py = (event.clientY - r.top) / r.height;
     this.hovering.set(true);
-    this.tilt.set({ rx: (0.5 - py) * 9, ry: (px - 0.5) * 9 });
+    this.tilt.set({ rx: (0.5 - py) * 12, ry: (px - 0.5) * 12 });
     el.style.setProperty('--mx', `${px * 100}%`);
     el.style.setProperty('--my', `${py * 100}%`);
+    // pointer angle drives the holo rainbow so it shifts as you sweep the card
+    el.style.setProperty('--ha', `${Math.round((px - 0.5) * 60 + (py - 0.5) * 40)}deg`);
   }
 
   protected onLeave(): void {

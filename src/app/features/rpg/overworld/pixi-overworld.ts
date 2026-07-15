@@ -130,6 +130,9 @@ export class PixiOverworldComponent implements OnDestroy {
   private weather: WeatherKind | null = null;
   private rain: { g: import('pixi.js').Graphics; vy: number; vx: number }[] = [];
   private snow: { s: PSprite; vy: number; ph: number }[] = [];
+  // --- ambient petals/leaves, tinted per region ---
+  private petalLayer: PContainer | null = null;
+  private petals: { g: import('pixi.js').Graphics; vx: number; vy: number; ph: number }[] = [];
   private shakeUntil = 0;
   private shakeMag = 0;
   /** npc id → container, so wanderers can glide to their runtime tile. */
@@ -337,6 +340,7 @@ export class PixiOverworldComponent implements OnDestroy {
     this.entitiesLayer.addChild(this.player);
 
     this.buildWeather(map.weather);
+    this.buildPetals(map);
   }
 
   /** True when the neighbor tile joins a path run (paths flow into doors). */
@@ -599,6 +603,53 @@ export class PixiOverworldComponent implements OnDestroy {
 
   /* ------------------------------------------------------------- weather */
 
+  /** Ambient petal/leaf tint per region — sakura at home, sand in the desert… */
+  private petalColor(mapId: string): number {
+    if (/home|verdant/.test(mapId)) return 0xffc2d6; // sakura pink
+    if (/sunreach|route-3/.test(mapId)) return 0xf3c877; // desert amber
+    if (/mistfall|route-4/.test(mapId)) return 0xa9d6ef; // sea mist
+    return 0x9fd77a; // fresh leaf green
+  }
+
+  /** A sparse pool of drifting petals gives outdoor maps a living breeze. */
+  private buildPetals(map: MapDef): void {
+    if (REDUCED || !this.app || !this.fx) return;
+    if (!this.petalLayer) {
+      this.petalLayer = new this.PIXI!.Container();
+      this.petalLayer.eventMode = 'none';
+      this.fx.addChild(this.petalLayer);
+    }
+    this.petalLayer.removeChildren();
+    this.petals = [];
+    if (!map.outdoor || map.weather === 'rain' || map.weather === 'snow' || map.weather === 'sandstorm') return;
+    const w = this.app.renderer.width / this.app.renderer.resolution;
+    const h = this.app.renderer.height / this.app.renderer.resolution;
+    const color = this.petalColor(map.id);
+    for (let i = 0; i < 10; i++) {
+      const g = new this.PIXI!.Graphics().roundRect(-2, -1.2, 4, 2.4, 1).fill({ color, alpha: 0.8 });
+      g.x = Math.random() * w;
+      g.y = Math.random() * h;
+      g.rotation = Math.random() * Math.PI;
+      this.petalLayer.addChild(g);
+      this.petals.push({ g, vx: -0.25 - Math.random() * 0.35, vy: 0.35 + Math.random() * 0.4, ph: Math.random() * 6.28 });
+    }
+  }
+
+  private updatePetals(): void {
+    if (REDUCED || !this.app || !this.petals.length) return;
+    const w = this.app.renderer.width / this.app.renderer.resolution;
+    const h = this.app.renderer.height / this.app.renderer.resolution;
+    for (const p of this.petals) {
+      p.g.x += p.vx + Math.sin(this.frame / 34 + p.ph) * 0.3;
+      p.g.y += p.vy;
+      p.g.rotation += 0.012;
+      if (p.g.y > h + 6 || p.g.x < -6) {
+        p.g.y = -6;
+        p.g.x = Math.random() * (w + 30);
+      }
+    }
+  }
+
   /** Rebuild the ambient weather field (rain streaks / drifting snow) for a map. */
   private buildWeather(kind: WeatherKind | undefined): void {
     if (REDUCED || !this.app || !this.weatherLayer) return;
@@ -720,6 +771,7 @@ export class PixiOverworldComponent implements OnDestroy {
     this.updateDayNight();
     this.updateAmbient();
     this.updateWeather();
+    this.updatePetals();
     this.updateNpcs();
     this.updateCamera();
   }

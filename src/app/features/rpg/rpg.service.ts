@@ -88,7 +88,15 @@ export interface DialogueState {
   readonly speaker?: string;
   readonly text: string;
   readonly choices?: readonly string[];
+  /** Character key for the speaker's faceset portrait (boy/girl/prof/…). */
+  readonly portrait?: string;
 }
+
+/** Well-known speakers whose lines run outside an NPC interaction. */
+const SPEAKER_PORTRAITS: Record<string, string> = {
+  'Prof. Oak': 'prof',
+  Mom: 'girl',
+};
 
 /** Result of attempting a step, so the overworld can animate / react. */
 export interface StepResult {
@@ -653,11 +661,11 @@ export class RpgService {
               { label: 'Not now', then: [{ say: `${npc.trainer.name}: Come find me when you're ready.`, speaker: npc.trainer.name }] },
             ],
           },
-        ]);
+        ], npc.sprite);
         return;
       }
       if (npc.script.length) {
-        this.runScript(npc.script);
+        this.runScript(npc.script, npc.sprite);
         return;
       }
       this.showToast(`${npc.id} has nothing to say.`);
@@ -729,8 +737,12 @@ export class RpgService {
 
   /* ----------------------------------------------------- dialogue VM */
 
+  /** The character key whose faceset accompanies the running script's lines. */
+  private scriptPortrait: string | null = null;
+
   /** Run a dialogue/event script; pauses on `say`/`choice`, executes the rest. */
-  runScript(nodes: readonly ScriptNode[]): void {
+  runScript(nodes: readonly ScriptNode[], portrait?: string): void {
+    this.scriptPortrait = portrait ?? null;
     this.scriptStack = [{ nodes, i: 0 }];
     this.phase.set('dialogue');
     this.advance();
@@ -763,7 +775,10 @@ export class RpgService {
 
   private execNode(node: ScriptNode): 'pause' | void {
     if ('say' in node) {
-      this.dialogue.set({ speaker: node.speaker, text: node.say });
+      const portrait = node.speaker
+        ? this.scriptPortrait ?? SPEAKER_PORTRAITS[node.speaker]
+        : undefined;
+      this.dialogue.set({ speaker: node.speaker, text: node.say, portrait });
       return 'pause';
     }
     if ('choice' in node) {

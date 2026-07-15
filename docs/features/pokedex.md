@@ -82,3 +82,14 @@ On phones the search/filter bar sticks below the app header (blurred +
 elevated), the 18 type chips collapse into one swipeable snap row, tap
 targets grow, a back-to-top FAB appears after two screens (reduced-motion
 aware, safe-area insets, lifts above the compare tray).
+
+## 3D holo cards (v1.19)
+
+Grid tiles are miniature TCG cards now: pointer/touch tilt runs at 12° with a
+hover scale, a **holo foil** (a pointer-angled rainbow masked at the glare,
+`color-dodge`-blended — brightest on shiny mode and favorites) sweeps the
+face, and real depth layers push artwork, name and type badges above the card
+plane (`translateZ` under `preserve-3d`). Loaded artwork idles on a gentle,
+per-card-staggered levitation loop. Everything is disabled under
+`prefers-reduced-motion`, and the sheen/holo layers are `pointer-events: none`
+so nothing steals taps.

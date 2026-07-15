@@ -4,6 +4,44 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v1.19.0 — 2026-07-15
+
+✨ **Portraits, holo cards & staged battles** — JRPG dialogue faces, a 3D
+Pokédex and grounded battle arenas on every screen size.
+
+### Added
+
+- **Dialogue portraits (RPG)** — the Ninja Adventure facesets
+  (`public/rpg/facesets/`, CC0) frame the speaker beside every dialogue line:
+  NPC interactions pass their character key through `runScript`, well-known
+  narrators (Prof. Oak, Mom) resolve via a static map, and a redundant
+  "Name: " text prefix is stripped since the label already names them.
+  Unknown keys (e.g. roaming-Pokémon NPCs) gracefully show no portrait.
+- **Ambient petals (RPG)** — outdoor maps breathe: ten drifting, slowly
+  spinning petals tinted per region (sakura pink at home/Verdant, desert
+  amber around Sunreach, sea mist near Mistfall, leaf green elsewhere);
+  suppressed during rain/snow/sandstorms and under reduced motion.
+
+### Changed
+
+- **Pokédex cards go 3D-holo** — deeper pointer tilt (12°) with hover scale,
+  a TCG-style **holo foil** (pointer-angled rainbow, masked at the glare,
+  `color-dodge`; loud on shiny/favorites), true depth layers
+  (artwork/name/types ride `translateZ` above the card plane) and an idle
+  **levitation** on the artwork, staggered per card. Touch drives the same
+  tilt; `prefers-reduced-motion` disables all of it.
+- **Battle stages** — elliptical, accent-lit **ground platforms** under both
+  combatants in the quick battle, tournament/spire matches (plus a faint
+  horizon line) and the RPG battle, sized for phone and desktop; the chimera
+  hue filter now keeps its drop shadow.
+
+### Verification
+
+- 378/378 unit tests; production build clean.
+- Playwright: Oak's portrait confirmed in a fresh intro, holo tilt shot on a
+  hovered dex card, quick battle shot on desktop (fog weather) and 375 px
+  mobile (one-screen fight intact) — 0 console errors across all runs.
+
 ## v1.18.0 — 2026-07-15
 
 🎨 **Adventure art overhaul** — the RPG overworld moves to the gorgeous CC0

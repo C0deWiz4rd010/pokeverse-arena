@@ -14,6 +14,7 @@ gorgeous pack.
   room-frame walls, from github.com/pixel-boy/NinjaAdventure (`content/map/`).
 - `tilesets/nj-char-*.png` — 16 px characters, 4 columns (down/up/left/right)
   × walk frames.
+- `facesets/nj-face-*.png` — 38 px dialogue portraits matching the characters.
 
 Earlier versions used Kenney's CC0 "Tiny Town" / "Tiny Dungeon" sheets
 (https://kenney.nl) — thanks to Kenney as well.
