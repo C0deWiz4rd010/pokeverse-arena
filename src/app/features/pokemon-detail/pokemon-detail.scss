@@ -23,7 +23,7 @@
 }
 
 /* ---- top nav ---- */
-.topnav { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 1rem; }
+.topnav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.4rem 0.6rem; margin-bottom: 1rem; min-width: 0; }
 .dexnav { display: flex; gap: 0.4rem; }
 .nav-btn {
   appearance: none;

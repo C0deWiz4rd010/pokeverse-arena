@@ -4,6 +4,34 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.0.1 — 2026-07-15
+
+📱 **Horizontal-overflow sweep** — a scripted scan of all 16 routes at 375 px
+*and* 320 px hunted down every mobile horizontal scroll.
+
+### Fixed
+
+- **Pokédex toolbar** (the reported bug): the *Who's That?* + *3D Showcase*
+  chips pushed the toolbar's min-content past the viewport, which silently
+  un-clamped the type-chip swipe row and made the whole page scroll
+  sideways. The toolbar and its left group now wrap (with slimmer chips
+  ≤480 px), and the dex root carries an `overflow-x: clip` guard.
+- **Topbar on ≤360 px phones** — brand + search + burger were 327 px of
+  min-content, so *every* route scrolled 7 px on an iPhone SE. Tighter
+  gaps/padding and the ARENA sub-brand steps aside below 360 px.
+- **Pokémon detail** — the Back/prev/next top nav couldn't wrap and widened
+  the page at 320 px.
+- **Global safety net** — the app's `main.content` now clips horizontal
+  overflow: an over-wide child can never widen the page again, while
+  internal swipe rows keep their own scrolling.
+
+### Verification
+
+- Playwright overflow sweep: 16 routes × {375 px, 320 px} → **32/32 clean**
+  (`scrollWidth === clientWidth`, 0 page errors); the mobile dex screenshot
+  confirms the wrapped toolbar reads naturally. 378/378 unit tests; clean
+  production build.
+
 ## v2.0.0 — 2026-07-15
 
 👑 **PokéVerse Arena 2.0** — the adventure gets its ending, the Pokédex gets

@@ -1,6 +1,8 @@
 @use '../../../styles/responsive' as *;
 
-.pokedex { padding: 1rem 0 3rem; }
+/* overflow-x: clip is the safety net — an over-wide child may clip at the
+   edge, but it can never widen the page into a horizontal scroll again */
+.pokedex { padding: 1rem 0 3rem; overflow-x: clip; }
 
 /* ---------------------------------------------------------------- controls */
 .controls {
@@ -155,7 +157,9 @@
 }
 
 /* ---------------------------------------------------------------- toolbar */
-.toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
+/* wrap on phones — a wide tb-left must never push the page past the viewport
+   (its min-content would also un-clamp the type-chip scroll row below) */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.7rem; margin-bottom: 0.8rem; min-width: 0; }
 .result-count { font-size: 0.82rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .views { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.25); }
 .view-btn {
@@ -272,7 +276,10 @@
 .pip.on .pip-fill { background: #0b0a1f; }
 
 /* ---------------------------------------------------------------- toolbar extras */
-.tb-left { display: flex; align-items: center; gap: 0.7rem; }
+.tb-left { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.7rem; min-width: 0; }
+@media (max-width: 480px) {
+  .tb-left .btn.ghost { padding: 0.35rem 0.6rem; font-size: 0.78rem; }
+}
 .btn.ghost {
   background: transparent;
   border: 1px solid var(--glass-border);

@@ -123,6 +123,14 @@
   color: var(--text-dim);
 }
 
+/* Ultra-narrow phones (≤360px): tighten the bar so it can never widen the
+   page — smaller gaps, slimmer brand, and the ARENA sub-brand steps aside. */
+@media (max-width: 360px) {
+  .topbar { gap: 0.5rem; padding-inline: 0.6rem; }
+  .brand { font-size: 1.05rem; gap: 0.35rem; min-width: 0; }
+  .brand-sub { display: none; }
+}
+
 /* Mobile-first: nav is a dropdown panel toggled by the burger. */
 .nav {
   position: absolute;
@@ -179,6 +187,9 @@
 .content {
   flex: 1;
   padding: 0.6rem;
+  /* Safety net: a too-wide child may clip at the edge, but it can never widen
+     the page into a horizontal scroll. Internal rows keep their own overflow. */
+  overflow-x: clip;
 }
 
 /* Floating "back to top" — appears once the page is deep-scrolled. */
