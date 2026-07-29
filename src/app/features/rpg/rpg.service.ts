@@ -16,6 +16,9 @@ import { ITEMS, bagIdForHeld } from '../../game/rpg/items-catalog';
 import { titleCase } from '../../core/ui/format';
 import { ToastService } from '../../core/ui/toast/toast.service';
 import { buryFainted, consumeEncounter } from '../../game/rpg/nuzlocke';
+import { bumpCombo, comboLabel, comboShinyMultiplier } from '../../game/rpg/combo';
+import { fishBiteBonus } from '../../game/rpg/boons';
+import { canForage, collectForage, forageDay, forageId, forageLoot } from '../../game/rpg/forage';
 import { defaultSave, isValidSave } from '../../game/rpg/save';
 import {
   PARTY_MAX,
@@ -405,7 +408,7 @@ export class RpgService {
           foeSpecies: roll.species,
           foeLevel: roll.level,
           foeCatchRate: roll.catchRate,
-          shiny: rng.chance(SHINY_ODDS),
+          shiny: rng.chance(SHINY_ODDS * this.shinyMultiplierFor(roll.species)),
         });
       }
     }
@@ -681,6 +684,8 @@ export class RpgService {
       this.showToast(sign);
       return;
     }
+    // A berry bush ahead — or underfoot (bushes sit on walkable grass)?
+    if (this.forageAt(t.x, t.y) || this.forageAt(g.x, g.y)) return;
     // Facing open water: cast the Old Rod (if we have it) and maybe hook a wild.
     if (tileAt(m, t.x, t.y) === 'water') this.tryFish(m);
   }
@@ -703,7 +708,9 @@ export class RpgService {
     this.fishTimer = setTimeout(() => {
       if (this.phase() !== 'overworld' || this.map()?.id !== m.id) return;
       const rng = new SeededRng(`fish-${Date.now()}-${Math.random()}`);
-      const roll = rollEncounter(m.fishing!, rng);
+      // Angler's Luck (Tide Badge) raises the bite rate.
+      const zone = { ...m.fishing!, rate: Math.min(0.95, m.fishing!.rate + fishBiteBonus(g.badges)) };
+      const roll = rollEncounter(zone, rng);
       if (!roll) {
         this.showToast('Not even a nibble.');
         return;
@@ -716,11 +723,74 @@ export class RpgService {
         foeLevel: roll.level,
         foeCatchRate: roll.catchRate,
         fishing: true,
-        shiny: rng.chance(SHINY_ODDS),
+        shiny: rng.chance(SHINY_ODDS * this.shinyMultiplierFor(roll.species)),
       });
     }, 900);
   }
   private fishTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /* ----------------------------------------------------- catch combos */
+
+  /** Shiny multiplier for a rolled species (bigger while it is the chain). */
+  private shinyMultiplierFor(species: string): number {
+    const combo = this.game()?.combo;
+    return combo && combo.species === species ? comboShinyMultiplier(combo.count) : 1;
+  }
+
+  /** HUD label for the running chain, e.g. "7× pidgey" (null when hidden). */
+  readonly comboHud = computed(() => comboLabel(this.game()?.combo));
+
+  /** A successful catch extends (or restarts) the chain. */
+  bumpCatchCombo(species: string): void {
+    const g = this.game();
+    if (!g) return;
+    const combo = bumpCombo(g.combo, species);
+    this.game.set({ ...g, combo });
+    this.persist();
+    if (combo.count >= 2) this.showToast(`🔗 Catch combo ${combo.count}×! Shiny odds rising…`, 2600);
+  }
+
+  /** A wild battle that ends without a catch snaps the chain. */
+  breakCatchCombo(): void {
+    const g = this.game();
+    if (!g?.combo) return;
+    if (g.combo.count >= 3) this.showToast(`The ${titleCase(g.combo.species)} combo broke…`, 2200);
+    this.game.set({ ...g, combo: undefined });
+    this.persist();
+  }
+
+  /* ---------------------------------------------------- forage spots */
+
+  /** Bumped whenever tiles change without a map switch (renderer redraws). */
+  readonly mapDirty = signal(0);
+
+  /** True when the bush at (x,y) still holds today's berry. */
+  canForageAt(x: number, y: number): boolean {
+    const g = this.game();
+    const m = this.map();
+    if (!g || !m?.forage?.some((f) => f.x === x && f.y === y)) return false;
+    return canForage(g.forage, forageId(m.id, x, y), forageDay());
+  }
+
+  /** Pick the bush at (x,y): seeded daily loot into the bag, spot spent. */
+  private forageAt(x: number, y: number): boolean {
+    const g = this.game();
+    const m = this.map();
+    if (!g || !m?.forage?.some((f) => f.x === x && f.y === y)) return false;
+    const id = forageId(m.id, x, y);
+    const day = forageDay();
+    if (!canForage(g.forage, id, day)) {
+      this.showToast('The bush is picked bare — try again tomorrow.');
+      return true;
+    }
+    const loot = forageLoot(id, day);
+    this.game.set({ ...g, forage: collectForage(g.forage, id, day) });
+    this.addItem(loot, 1);
+    this.showToast(`🫐 You foraged a ${ITEMS[loot].name}!`, 2600);
+    this.persist();
+    this.mapDirty.update((v) => v + 1);
+    return true;
+  }
 
   /* ------------------------------------------------------------- flags */
 

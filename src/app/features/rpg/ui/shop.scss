@@ -3,8 +3,12 @@
   border-radius: var(--radius); border: 1px solid var(--glass-border);
   background: var(--glass); padding: 1rem;
 }
-.shop-head { display: flex; align-items: center; justify-content: space-between; }
+.shop-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.3rem 0.7rem; }
 .shop-head strong { font-size: 1.1rem; }
+.boon {
+  font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 999px;
+  color: #0b0a1f; background: linear-gradient(135deg, var(--accent-3), #ffe39a);
+}
 .money { font-weight: 800; color: var(--accent-3); }
 .stock { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
 .item {

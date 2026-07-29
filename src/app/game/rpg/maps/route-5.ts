@@ -79,6 +79,7 @@ export const ROUTE_5: MapDef = {
     },
   ],
   items: [{ x: 11, y: 11, item: 'hyper-potion', qty: 2, flag: 'route5-hyperpotion' }],
+  forage: [{ x: 2, y: 1 }, { x: 10, y: 10 }],
   encounter: {
     rate: 0.3,
     table: [

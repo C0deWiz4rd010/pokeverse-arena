@@ -46,6 +46,10 @@ describe('map registry integrity', () => {
         expect(inBounds(m, it.x, it.y), `${m.id} item ${it.item}`).toBe(true);
         expect(TILE[tileAt(m, it.x, it.y)!].walkable, `${m.id} item ${it.item} reachable`).toBe(true);
       }
+      for (const f of m.forage ?? []) {
+        expect(inBounds(m, f.x, f.y), `${m.id} forage (${f.x},${f.y})`).toBe(true);
+        expect(TILE[tileAt(m, f.x, f.y)!].walkable, `${m.id} forage (${f.x},${f.y}) reachable`).toBe(true);
+      }
     }
   });
 

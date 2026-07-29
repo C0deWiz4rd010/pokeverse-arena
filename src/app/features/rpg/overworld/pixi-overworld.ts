@@ -70,7 +70,7 @@ const KEY_DIR: Record<string, Direction> = {
   template: `
     <div class="ow" #host>
       <div class="ow-mount" #mount></div>
-      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }<span class="ow-wx" [title]="'It is ' + band()">{{ timeIcon() }}</span>@if (svc.nuzlocke()) { <span class="ow-wx" title="Nuzlocke run">💀</span> }</div> }
+      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }<span class="ow-wx" [title]="'It is ' + band()">{{ timeIcon() }}</span>@if (svc.nuzlocke()) { <span class="ow-wx" title="Nuzlocke run">💀</span> }@if (svc.comboHud(); as ch) { <span class="ow-wx" title="Catch combo — keep catching the same species!">🔗 {{ ch }}</span> }</div> }
       @if (banner(); as b) { <div class="ow-banner" aria-hidden="true">{{ b }}</div> }
       @if (svc.toast(); as t) { <div class="ow-toast" role="status">{{ t }}</div> }
       <pv-ow-party-hud />
@@ -113,6 +113,7 @@ export class PixiOverworldComponent implements OnDestroy {
   private grassTiles: { c: PContainer; tufts: PSprite[] }[] = [];
   private player: PContainer | null = null;
   private builtMapId = '';
+  private builtDirty = 0;
   private zoom = 3;
 
   // --- effects (Phase B) ---
@@ -326,6 +327,10 @@ export class PixiOverworldComponent implements OnDestroy {
       if (flags[it.flag]) continue;
       this.entitiesLayer.addChild(this.makeBall(it.x, it.y));
     }
+    // daily berry bushes — ripe ones glow amber, picked ones sit dull
+    for (const f of map.forage ?? []) {
+      this.entitiesLayer.addChild(this.makeBush(f.x, f.y, this.svc.canForageAt(f.x, f.y)));
+    }
     // NPCs (runtime positions — wanderers glide between tiles)
     this.npcSprites.clear();
     const positions = this.svc.npcPos();
@@ -471,6 +476,27 @@ export class PixiOverworldComponent implements OnDestroy {
       c.addChild(tuft);
     }
     this.grassTiles.push({ c, tufts });
+    return c;
+  }
+
+  /** A forage berry bush: a tinted tuft, ripe ones topped with berry dots. */
+  private makeBush(x: number, y: number, ripe: boolean): PContainer {
+    const pixi = this.PIXI!;
+    const c = new pixi.Container();
+    c.x = x * TILE_PX; c.y = y * TILE_PX;
+    const tuft = new pixi.Sprite(this.texFor('world', TALLGRASS_TUFT));
+    tuft.anchor.set(0.5, 1);
+    tuft.x = TILE_PX / 2;
+    tuft.y = TILE_PX;
+    if (!ripe) { tuft.tint = 0x9aa39a; tuft.alpha = 0.75; }
+    c.addChild(tuft);
+    if (ripe) {
+      const berries = new pixi.Graphics()
+        .circle(5, 7, 1.6).fill(0xff5d73)
+        .circle(10, 5, 1.6).fill(0xff5d73)
+        .circle(8, 10, 1.6).fill(0xffd166);
+      c.addChild(berries);
+    }
     return c;
   }
 
@@ -766,9 +792,11 @@ export class PixiOverworldComponent implements OnDestroy {
   private tick(): void {
     if (!this.app) return;
     const m = this.svc.map();
-    if (m && m.id !== this.builtMapId) {
+    const dirty = this.svc.mapDirty();
+    if (m && (m.id !== this.builtMapId || dirty !== this.builtDirty)) {
       const p = this.svc.player();
       if (p) { this.visX = p.x; this.visY = p.y; this.stepping = false; }
+      this.builtDirty = dirty;
       this.rebuildMap();
     }
     this.frame++;

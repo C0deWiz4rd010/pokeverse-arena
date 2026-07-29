@@ -61,4 +61,5 @@ export const CROWNSPIRE: MapDef = {
     },
   ],
   items: [{ x: 11, y: 9, item: 'revive', qty: 1, flag: 'crownspire-revive' }],
+  forage: [{ x: 2, y: 7 }, { x: 10, y: 7 }],
 };

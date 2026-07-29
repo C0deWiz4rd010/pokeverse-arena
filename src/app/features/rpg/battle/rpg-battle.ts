@@ -32,6 +32,8 @@ import { SeededRng } from '../../../core/utils/rng';
 import { applyXp, shareXp, xpYield } from '../../../game/rpg/xp';
 import { firstAlive, makePartyMon } from '../../../game/rpg/party';
 import { attemptCatch, type RpgBallId } from '../../../game/rpg/catch';
+import { comboXpMultiplier } from '../../../game/rpg/combo';
+import { catchBonus, xpBonus } from '../../../game/rpg/boons';
 import { ITEMS, isBall } from '../../../game/rpg/items-catalog';
 import type { ItemId, PartyMon } from '../../../game/rpg/rpg-types';
 
@@ -250,6 +252,11 @@ export class RpgBattleComponent extends BattlePresenterBase {
         this.xpReward = xpYield(dto.base_experience ?? 64, setup.foeLevel);
         this.foeLevel.set(setup.foeLevel);
       }
+      // Hard Training (Knuckle Badge) + an active same-species catch combo pay bonus XP.
+      const combo = this.svc.game()?.combo;
+      const comboMult = !isTrainer && combo && setup.foeSpecies === combo.species ? comboXpMultiplier(combo.count) : 1;
+      this.xpReward = Math.round(this.xpReward * xpBonus(this.svc.badges()) * comboMult);
+
       foeTeam.forEach((f) => this.svc.markSeen(f.id));
 
       const playerBattlers = await Promise.all(party.map(async (m) => {
@@ -359,7 +366,9 @@ export class RpgBattleComponent extends BattlePresenterBase {
     const foe = tb.active(1);
     this.append(`You threw a ${ITEMS[ball].name}!`);
     const hpPct = foe.currentHp / foe.maxHp;
-    const caught = attemptCatch(this.foeCatchRate, hpPct, foe.status, ball, new SeededRng(`catch-${Date.now()}-${Math.random()}`));
+    // Keen Throw (Hive Badge) nudges every ball's odds.
+    const rate = Math.min(255, this.foeCatchRate * catchBonus(this.svc.badges()));
+    const caught = attemptCatch(rate, hpPct, foe.status, ball, new SeededRng(`catch-${Date.now()}-${Math.random()}`));
     for (let i = 0; i < 3; i++) {
       this.append('…');
       await this.wait(430);
@@ -482,6 +491,8 @@ export class RpgBattleComponent extends BattlePresenterBase {
     this.menu.set('done');
     this.busy.set(false);
     this.playerWon.set(won);
+    // A wild battle that ends without a catch snaps the catch combo.
+    if (this.isWild()) this.svc.breakCatchCombo();
 
     const party = this.svc.party();
     if (!tb || !party.length) {
@@ -589,6 +600,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
     mon.status = foe.status;
     if (this.svc.battleSetup()?.shiny) mon.shiny = true;
     const where = this.svc.addCaught(mon);
+    this.svc.bumpCatchCombo(this.svc.battleSetup()?.foeSpecies ?? foe.battler.name);
     this.resultLines.set([
       `${mon.shiny ? '✨ Shiny ' : ''}${titleCase(foe.battler.name)} was added to your ${where === 'party' ? 'team' : 'storage box'}!`,
       ...burial.lost.map((f) => `💀 ${titleCase(f.nickname ?? f.species)} (Lv${f.level}) fell in battle… gone forever.`),

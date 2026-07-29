@@ -183,6 +183,8 @@ export interface MapDef {
   readonly fishing?: EncounterZone;
   /** Ambient weather rendered by the overworld (particles + tint). */
   readonly weather?: WeatherKind;
+  /** Daily berry-bush spots (one seeded pickup per spot per day). */
+  readonly forage?: readonly { readonly x: number; readonly y: number }[];
 }
 
 /* --------------------------------------------------------------------- save */
@@ -227,4 +229,8 @@ export interface RpgSave {
   repelSteps?: number;
   /** Nuzlocke challenge state (absent on classic saves). */
   nuzlocke?: NuzlockeState;
+  /** Catch-combo chain (same-species streak boosting shiny odds + XP). */
+  combo?: import('./combo').CatchCombo;
+  /** Daily berry-bush pickups (spots refill at local midnight). */
+  forage?: import('./forage').ForageState;
 }

@@ -5,6 +5,7 @@ import { titleCase } from '../../../core/ui/format';
 import { ITEMS } from '../../../game/rpg/items-catalog';
 import { xpProgress } from '../../../game/rpg/xp';
 import { questLog, questProgress } from '../../../game/rpg/quests';
+import { activeBoons } from '../../../game/rpg/boons';
 import { SPRITE_BASE } from '../../../core/api/pokeapi-endpoints';
 import { itemName } from '../../../game/engine';
 import type { ItemId } from '../../../game/rpg/rpg-types';
@@ -60,6 +61,9 @@ export class FieldMenuComponent {
       held: m.heldItem ? itemName(m.heldItem) : null,
     })),
   );
+
+  /** Passive perks unlocked by the held badges (Dex tab). */
+  protected readonly boons = computed(() => activeBoons(this.svc.badges()));
 
   /** Nuzlocke memorial — the fallen, grayed out in the Dex tab. */
   protected readonly fallenView = computed(() =>

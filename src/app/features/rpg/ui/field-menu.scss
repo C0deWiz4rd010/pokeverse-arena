@@ -149,6 +149,21 @@
 .q-title { font-weight: 700; font-size: 0.86rem; }
 .q-hint { font-size: 0.74rem; color: var(--text-dim); }
 
+/* ---- Badge boons (Dex tab) ---- */
+.fm-boons {
+  margin: 0.4rem 0 0.3rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--accent-3) 35%, var(--glass-border));
+  background: rgba(0, 0, 0, 0.22);
+}
+.boon-row {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.5rem;
+  margin: 0 0 0.25rem; font-size: 0.8rem;
+}
+.boon-row strong { color: var(--accent-3); }
+.boon-row span { color: var(--text-dim); font-size: 0.74rem; }
+
 /* ---- Nuzlocke memorial (Dex tab) ---- */
 .fm-memorial {
   margin: 0.5rem 0 0.7rem;

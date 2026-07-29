@@ -32,6 +32,7 @@ export const ROUTE_1: MapDef = {
     { x: 5, y: 13, to: 'gym-town', toX: 6, toY: 1, toFacing: 'down' },
   ],
   signs: [{ x: 6, y: 4, text: 'ROUTE 1 — Oakhaven ahead. Watch the grass!' }],
+  forage: [{ x: 1, y: 4 }, { x: 9, y: 9 }],
   npcs: [
     {
       id: 'Lass Mia',

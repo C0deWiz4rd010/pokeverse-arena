@@ -110,6 +110,8 @@ export const HOME_TOWN: MapDef = {
     },
   ],
   items: [],
+  // Daily berry bushes by the pond and the south meadow.
+  forage: [{ x: 2, y: 9 }, { x: 13, y: 10 }],
   fishing: {
     rate: 0.75,
     table: [

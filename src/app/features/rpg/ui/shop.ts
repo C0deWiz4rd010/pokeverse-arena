@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import { ITEMS } from '../../../game/rpg/items-catalog';
 import { MART_STOCK, buyPrice } from '../../../game/rpg/shop';
+import { shopDiscount } from '../../../game/rpg/boons';
 import type { ItemId } from '../../../game/rpg/rpg-types';
 
 /** Poké Mart — buy items with the player's money. */
@@ -12,6 +13,7 @@ import type { ItemId } from '../../../game/rpg/rpg-types';
     <div class="shop">
       <header class="shop-head">
         <strong>Poké Mart</strong>
+        @if (discount() < 1) { <span class="boon" title="Boulder Badge boon">🪨 Haggler −10 %</span> }
         <span class="money">{{ svc.money() }} ₽</span>
       </header>
       <ul class="stock">
@@ -44,9 +46,12 @@ export class ShopComponent {
     }
   }
 
+  /** Haggler (Boulder Badge) trims every price by 10 %. */
+  protected readonly discount = computed(() => shopDiscount(this.svc.badges()));
+
   protected name(id: ItemId): string { return ITEMS[id].name; }
   protected desc(id: ItemId): string { return ITEMS[id].desc; }
-  protected price(id: ItemId): number { return buyPrice(id); }
+  protected price(id: ItemId): number { return Math.round(buyPrice(id) * this.discount()); }
   /** Key items are owned once — the Mart stops selling them after that. */
   protected soldOut(id: ItemId): boolean {
     return ITEMS[id].category === 'key' && this.svc.itemCount(id) > 0;

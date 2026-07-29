@@ -86,6 +86,14 @@
       @if (dexView().badges.length) {
         <p class="dex-badges">@for (b of dexView().badges; track b) { <span class="badge">🏅 {{ b }}</span> }</p>
       }
+      @if (boons().length) {
+        <div class="fm-boons">
+          <p class="mem-title">✨ Badge boons</p>
+          @for (b of boons(); track b.badge) {
+            <p class="boon-row"><strong>{{ b.name }}</strong><span>{{ b.desc }}</span></p>
+          }
+        </div>
+      }
       @if (svc.nuzlocke() && fallenView().length) {
         <div class="fm-memorial">
           <p class="mem-title">💀 In memoriam</p>
