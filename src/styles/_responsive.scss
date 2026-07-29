@@ -19,3 +19,29 @@ $breakpoints: (
     @content;
   }
 }
+
+/* Only below a breakpoint (max-width). Handy for mobile-only bottom nav. */
+@mixin below($name) {
+  $min: map.get($breakpoints, $name);
+  @if $min == null {
+    @error "Unknown breakpoint: #{$name}";
+  }
+  @media (max-width: ($min - 0.02px)) {
+    @content;
+  }
+}
+
+/* Safe-area inset helpers (iOS notch / Android gesture bar). Each adds the
+   env() inset on top of an optional base value so callers stay declarative. */
+@mixin safe-top($base: 0px) {
+  padding-top: calc(#{$base} + env(safe-area-inset-top, 0px));
+}
+@mixin safe-bottom($base: 0px) {
+  padding-bottom: calc(#{$base} + env(safe-area-inset-bottom, 0px));
+}
+@mixin safe-left($base: 0px) {
+  padding-left: calc(#{$base} + env(safe-area-inset-left, 0px));
+}
+@mixin safe-right($base: 0px) {
+  padding-right: calc(#{$base} + env(safe-area-inset-right, 0px));
+}

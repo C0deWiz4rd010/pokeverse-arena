@@ -25,6 +25,8 @@
   --glow: 0 0 18px;
 
   --header-h: 64px;
+  /* Mobile bottom tab-bar height (0 on desktop where the bar is hidden). */
+  --nav-h: 0px;
 }
 
 /* Official Pokemon type colors */
