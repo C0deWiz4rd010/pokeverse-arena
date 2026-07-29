@@ -79,6 +79,16 @@ import type { IconName } from '../icon/icons.data';
         color: var(--text-dim);
         line-height: 1.3;
       }
+      /* Small phones: the title alone carries the page — the subtitle's
+         explainer costs a text block of scroll on every feature. */
+      @media (max-width: 479px) {
+        :host {
+          margin-bottom: 0.6rem;
+        }
+        .sub {
+          display: none;
+        }
+      }
       @media (min-width: 768px) {
         .chip {
           width: 2.4rem;

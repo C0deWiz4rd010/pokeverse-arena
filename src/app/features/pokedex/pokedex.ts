@@ -90,6 +90,11 @@ export class PokedexComponent {
   protected readonly quickview = signal<QuickviewRequest | null>(null);
   protected readonly showCompare = signal(false);
   protected readonly showGame = signal(false);
+  /** Filter panels (stats/gen pips + type chips) — collapsed by default on
+   *  phones so the grid starts a full screen earlier. */
+  protected readonly filtersOpen = signal(
+    typeof matchMedia !== 'undefined' ? matchMedia('(min-width: 768px)').matches : true,
+  );
   private restored = false;
 
   private readonly sentinel = viewChild<ElementRef<HTMLElement>>('sentinel');

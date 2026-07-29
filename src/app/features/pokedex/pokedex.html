@@ -5,6 +5,7 @@
     [subtitle]="store.total() + ' of ' + store.count() + ' Pokémon · search, filter and dive in.'"
   />
 
+  @if (filtersOpen()) {
   <div class="dex-hud glass">
     <div class="hud-stats">
       <div class="hud-stat fav"><pv-icon name="heart" /> <strong>{{ store.favCount() }}</strong> <span>Favorites</span></div>
@@ -27,6 +28,7 @@
       </div>
     }
   </div>
+  }
 
   <div class="controls glass">
     <label class="search">
@@ -54,6 +56,10 @@
       }
     </select>
 
+    <button class="btn toggle filter-toggle" type="button" [class.on]="filtersOpen()" [attr.aria-expanded]="filtersOpen()" title="Show/hide filters" (click)="filtersOpen.set(!filtersOpen())">
+      <pv-icon name="clipboard-list" /> Filter
+      @if (store.activeFilterCount() > 0) { <span class="f-count">{{ store.activeFilterCount() }}</span> }
+    </button>
     <button class="btn toggle" type="button" [class.on]="store.shiny()" [attr.aria-pressed]="store.shiny()" title="Shiny mode" (click)="store.toggleShiny()">
       <pv-icon name="sparkles" /> Shiny
     </button>
@@ -62,6 +68,7 @@
     </button>
   </div>
 
+  @if (filtersOpen()) {
   <div class="types-row">
     <div class="types" role="group" aria-label="Filter by type">
       @for (t of types; track t) {
@@ -92,6 +99,7 @@
       }
     </div>
   </div>
+  }
 
   @if (!store.enriched() && store.count() > 0) {
     <p class="hint"><pv-icon name="sparkles" /> Loading types & generations…</p>
