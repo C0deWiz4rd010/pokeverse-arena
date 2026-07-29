@@ -1,6 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  afterNextRender,
   computed,
   effect,
   inject,
@@ -22,6 +24,8 @@ import { TeamBuilderService } from '../team-builder/team-builder.service';
 import { kgToLbs, metersToFeet, padId, titleCase } from '../../core/ui/format';
 import { animatedSprite, officialArtwork } from '../../core/api/pokeapi-endpoints';
 import { groupDefenses } from '../../core/utils/type-chart';
+import { onSwipe } from '../../core/ui/gestures';
+import { HapticsService } from '../../core/haptics/haptics.service';
 import type { AbilityInfo, LearnableMove, MoveInfo, PokemonStats } from '../../core/models/pokemon.model';
 
 type MoveTab = 'level-up' | 'machine' | 'egg' | 'tutor';
@@ -55,6 +59,8 @@ export class PokemonDetailComponent {
   private readonly team = inject(TeamBuilderService);
   private readonly location = inject(Location);
   private readonly router = inject(Router);
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly haptics = inject(HapticsService);
 
   protected readonly shiny = signal(false);
   protected readonly back = signal(false);
@@ -165,6 +171,18 @@ export class PokemonDetailComponent {
       this.expandedAbility.set(null);
       this.expandedMove.set(null);
       void this.store.load(id.toLowerCase()).then(() => this.onLoaded());
+    });
+
+    // Swipe left → next entry, swipe right → previous (mirrors ←/→ keys).
+    afterNextRender(() => {
+      onSwipe(
+        this.host.nativeElement,
+        ({ dir }) => {
+          if (dir === 'left') { this.haptics.fire('select'); this.go(this.nextId()); }
+          else if (dir === 'right') { this.haptics.fire('select'); this.go(this.prevId()); }
+        },
+        { threshold: 60 },
+      );
     });
   }
 
