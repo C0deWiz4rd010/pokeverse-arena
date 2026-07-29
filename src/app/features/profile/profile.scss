@@ -36,6 +36,67 @@
   box-shadow: 0 0 6px color-mix(in srgb, var(--t1) 60%, transparent);
 }
 
+/* ---------------------------------------------------------------- settings */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--glass-border)); }
+}
+.setting-info { display: flex; align-items: center; gap: 0.7rem; }
+.setting-icon {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--accent-3);
+}
+.setting-info strong { display: block; font-size: 0.95rem; }
+.setting-sub { display: block; color: var(--text-dim); font-size: 0.78rem; }
+.switch {
+  flex: none;
+  width: 2.8rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--glass-border);
+  transition: background 0.18s ease;
+  position: relative;
+}
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform 0.18s ease;
+}
+.setting-row.on .switch {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+}
+.setting-row.on .knob { transform: translateX(1.2rem); background: #0b0a1f; }
+@media (prefers-reduced-motion: reduce) {
+  .switch, .knob { transition: none; }
+}
+
 /* ---------------------------------------------------------------- ID card */
 .id-card {
   display: grid;

@@ -76,6 +76,27 @@
     }
   </div>
 
+  @if (haptics.supported) {
+    <h3 class="h">Feel</h3>
+    <button
+      type="button"
+      class="setting-row"
+      [class.on]="haptics.enabled()"
+      role="switch"
+      [attr.aria-checked]="haptics.enabled()"
+      (click)="haptics.toggle()"
+    >
+      <span class="setting-info">
+        <span class="setting-icon"><pv-icon name="zap" /></span>
+        <span>
+          <strong>Haptic feedback</strong>
+          <span class="setting-sub">Subtle vibrations on catches, hits &amp; taps</span>
+        </span>
+      </span>
+      <span class="switch" aria-hidden="true"><span class="knob"></span></span>
+    </button>
+  }
+
   <h3 class="h">Mastery</h3>
   <div class="mastery">
     @for (m of mastery(); track m.label) {

@@ -4,6 +4,7 @@ import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { ThemeService } from '../../core/theme/theme.service';
 import { ToastService } from '../../core/ui/toast/toast.service';
+import { HapticsService } from '../../core/haptics/haptics.service';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { APP_VERSION } from '../../core/version';
 import { dailyFusionPair } from '../../game/fusion/fusion';
@@ -20,6 +21,7 @@ import { renderTrainerCard } from './trainer-card';
 export class ProfileComponent {
   protected readonly svc = inject(ProfileService);
   protected readonly theme = inject(ThemeService);
+  protected readonly haptics = inject(HapticsService);
 
   protected readonly editing = signal(false);
   protected readonly nameDraft = signal('');
