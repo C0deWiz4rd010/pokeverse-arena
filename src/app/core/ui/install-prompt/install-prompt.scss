@@ -1,0 +1,68 @@
+@use '../../../../styles/responsive' as *;
+
+.install {
+  position: fixed;
+  left: 0.6rem;
+  right: 0.6rem;
+  /* Sit above the mobile tab-bar on phones; bottom-corner card on desktop. */
+  bottom: calc(0.7rem + var(--nav-h));
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 16px;
+  animation: install-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+
+  @include up(md) {
+    left: auto;
+    right: 1rem;
+    bottom: 1rem;
+    max-width: 24rem;
+  }
+}
+
+.ic {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 12px;
+  color: #0b0a1f;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+.msg {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.msg strong { color: var(--text); font-size: 0.92rem; }
+.go {
+  flex: none;
+  min-height: 2.3rem;
+  padding-inline: 0.9rem;
+}
+.x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.x:hover { color: var(--text); }
+
+@keyframes install-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .install { animation: none; }
+}
