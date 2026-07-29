@@ -12,6 +12,7 @@ import { RpgService } from '../rpg.service';
 import type { Direction } from '../../../game/rpg/rpg-types';
 import { OwPartyHudComponent } from './party-hud';
 import { VOID, drawBall, drawCharacter, drawTile } from './tile-renderer';
+import { HapticsService } from '../../../core/haptics/haptics.service';
 
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -36,7 +37,7 @@ const KEY_DIR: Record<string, Direction> = {
       <canvas #cv class="ow-canvas"></canvas>
 
       @if (svc.map(); as m) {
-        <div class="ow-loc">{{ m.name }}@if (svc.nuzlocke()) { <span class="ow-wx" title="Nuzlocke run">💀</span> }</div>
+        <div class="ow-loc">{{ m.name }}@if (svc.nuzlocke()) { <span class="ow-wx" title="Nuzlocke run">💀</span> }@if (svc.comboHud(); as ch) { <span class="ow-wx" title="Catch combo">🔗 {{ ch }}</span> }</div>
       }
       @if (svc.toast(); as t) {
         <div class="ow-toast" role="status">{{ t }}</div>
@@ -62,6 +63,7 @@ const KEY_DIR: Record<string, Direction> = {
 })
 export class OverworldComponent implements OnDestroy {
   protected readonly svc = inject(RpgService);
+  private readonly haptics = inject(HapticsService);
   private readonly wrap = viewChild.required<ElementRef<HTMLDivElement>>('wrap');
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('cv');
 
@@ -90,6 +92,58 @@ export class OverworldComponent implements OnDestroy {
   private running = false;
   /** Sticky run toggle for touch players (keyboard holds Shift). */
   protected readonly touchRun = signal(false);
+
+  /* Virtual-joystick drag state: dragging anywhere on the map steers the walker;
+     a quick tap without travel counts as an interact. */
+  private dragId = -1;
+  private dragActive = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private dragStartT = 0;
+  private dragDir: Direction | null = null;
+  private dragMoved = false;
+
+  private readonly DRAG_DEAD = 22;
+
+  private readonly onPointerDown = (e: PointerEvent): void => {
+    if (this.dragActive) return;
+    // Let the on-screen buttons and menu handle their own taps.
+    if ((e.target as HTMLElement)?.closest('.pad, .ab, .ow-menu')) return;
+    this.dragActive = true;
+    this.dragId = e.pointerId;
+    this.dragStartX = e.clientX;
+    this.dragStartY = e.clientY;
+    this.dragStartT = performance.now();
+    this.dragDir = null;
+    this.dragMoved = false;
+  };
+  private readonly onPointerMove = (e: PointerEvent): void => {
+    if (!this.dragActive || e.pointerId !== this.dragId) return;
+    const dx = e.clientX - this.dragStartX;
+    const dy = e.clientY - this.dragStartY;
+    if (Math.abs(dx) < this.DRAG_DEAD && Math.abs(dy) < this.DRAG_DEAD) return;
+    this.dragMoved = true;
+    const dir: Direction =
+      Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
+    if (dir !== this.dragDir) {
+      if (this.dragDir) this.held.delete(this.dragDir);
+      this.dragDir = dir;
+      this.held.add(dir);
+      this.haptics.fire('tap');
+    }
+  };
+  private readonly onPointerUp = (e: PointerEvent): void => {
+    if (e.pointerId !== this.dragId) return;
+    this.dragActive = false;
+    if (this.dragDir) this.held.delete(this.dragDir);
+    this.dragDir = null;
+    // A tap (barely moved, brief) interacts with what's in front of the player.
+    const quick = performance.now() - this.dragStartT < 260;
+    if (!this.dragMoved && quick && this.svc.phase() === 'overworld') {
+      this.haptics.fire('tap');
+      this.svc.interact();
+    }
+  };
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
     this.running = e.shiftKey;
@@ -129,6 +183,11 @@ export class OverworldComponent implements OnDestroy {
       window.addEventListener('keydown', this.onKeyDown);
       window.addEventListener('keyup', this.onKeyUp);
       window.addEventListener('resize', this.onResize);
+      const wrap = this.wrap().nativeElement;
+      wrap.addEventListener('pointerdown', this.onPointerDown);
+      wrap.addEventListener('pointermove', this.onPointerMove);
+      wrap.addEventListener('pointerup', this.onPointerUp);
+      wrap.addEventListener('pointercancel', this.onPointerUp);
       this.loop();
     });
   }
@@ -138,11 +197,17 @@ export class OverworldComponent implements OnDestroy {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
     window.removeEventListener('resize', this.onResize);
+    const wrap = this.wrap().nativeElement;
+    wrap.removeEventListener('pointerdown', this.onPointerDown);
+    wrap.removeEventListener('pointermove', this.onPointerMove);
+    wrap.removeEventListener('pointerup', this.onPointerUp);
+    wrap.removeEventListener('pointercancel', this.onPointerUp);
   }
 
   protected press(dir: Direction, ev?: Event): void {
     ev?.preventDefault();
     if (this.svc.phase() !== 'overworld') return;
+    this.haptics.fire('tap');
     this.held.add(dir);
   }
   protected release(dir: Direction): void {
@@ -150,11 +215,13 @@ export class OverworldComponent implements OnDestroy {
   }
   protected toggleRun(ev?: Event): void {
     ev?.preventDefault();
+    this.haptics.fire('select');
     this.touchRun.update((v) => !v);
   }
   protected interact(ev?: Event): void {
     ev?.preventDefault();
     if (this.svc.phase() !== 'overworld') return;
+    this.haptics.fire('tap');
     this.svc.interact();
   }
 
