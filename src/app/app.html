@@ -66,6 +66,9 @@
 
 <pv-toasts />
 
+<pv-bottom-nav [items]="nav" />
+<pv-install-prompt />
+
 @defer (on idle) {
   <pv-command-palette [open]="paletteOpen()" (closed)="paletteOpen.set(false)" />
 }

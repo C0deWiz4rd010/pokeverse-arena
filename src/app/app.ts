@@ -5,6 +5,8 @@ import { ThemeService } from './core/theme/theme.service';
 import { IconComponent } from './core/ui/icon/icon';
 import type { IconName } from './core/ui/icon/icons.data';
 import { ToastsComponent } from './core/ui/toast/toasts';
+import { BottomNavComponent } from './core/ui/bottom-nav/bottom-nav';
+import { InstallPromptComponent } from './core/ui/install-prompt/install-prompt';
 import { CommandPaletteComponent } from './features/command-palette/command-palette';
 import { AchievementWatcherService } from './features/profile/achievement-watcher.service';
 
@@ -17,7 +19,7 @@ interface NavItem {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ToastsComponent, CommandPaletteComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ToastsComponent, BottomNavComponent, InstallPromptComponent, CommandPaletteComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
@@ -48,6 +50,7 @@ export class App {
     { path: '/world', label: 'World', icon: 'map' },
     { path: '/fusion', label: 'Fusion', icon: 'flask-conical' },
     { path: '/contest', label: 'Contest', icon: 'sparkles' },
+    { path: '/showdown', label: 'Showdown', icon: 'dices' },
     { path: '/adventure', label: 'Adventure', icon: 'scroll-text' },
     { path: '/profile', label: 'Profile', icon: 'crown' },
   ];
