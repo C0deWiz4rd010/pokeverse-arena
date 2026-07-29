@@ -4,6 +4,55 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.1.0 — 2026-07-29
+
+📱 **Mobile-first overhaul & new arcade mode** — a thumb-friendly navigation
+rebuild, device haptics, swipe gestures everywhere, and a brand-new duel game.
+
+### Added
+
+- **Mobile bottom tab-bar** — phones now get a thumb-reachable tab-bar (Home ·
+  Dex · a raised Battle action · Quest · More) instead of the 13-item burger
+  dropdown. "More" opens a bottom sheet with every destination. Hidden at `md`+
+  where the header nav takes over.
+- **Stat Showdown** (`/showdown`) — a fast "higher-or-lower" duel: two Pokémon,
+  one random base stat, guess the winner and stack a streak. Tap, swipe or use
+  arrow keys; best streak persists and results are shareable. Teased on Home.
+- **Haptic feedback** — a `HapticsService` fires tuned vibration patterns on
+  catches, hits, taps and menu confirms (Vibration API). Respects reduced-motion
+  and a new **Feel** toggle in the Trainer Profile; hidden on unsupported
+  devices.
+- **PWA install prompt** — a dismissible add-to-home-screen banner (native
+  `beforeinstallprompt` on Chromium, manual Share-sheet hint on iOS); never
+  shown once installed or dismissed.
+
+### Changed
+
+- **RPG overworld touch controls** — the whole map is now a virtual joystick
+  (drag to steer, tap to interact), the on-screen D-pad grew to 48 px thumb
+  targets, and encounters/steps carry haptic feedback.
+- **Adventure field systems** — daily **forage** spots (seeded berry bushes
+  that refill at local midnight), **catch combos** (chain the same species for
+  better shiny odds and bonus XP), and **badge boons** (each gym badge grants a
+  passive field perk), surfaced in the field menu and shop.
+- **Pokédex** — the stats/gen pips and type-chip filters now collapse behind a
+  **Filter** toggle on phones so the grid starts a full screen earlier; the
+  page-header subtitle is hidden on the smallest screens.
+- **Pokémon detail** — swipe left/right to move to the next/previous entry
+  (mirrors the ←/→ keys), with a haptic tick.
+- **Safe-area aware shell** — a shared `--nav-h` token plus safe-area mixins
+  keep the topbar, content, back-to-top and install banner clear of notches and
+  the gesture bar.
+- **Contest** — the performer artwork is now fluid (`clamp`) and the berry
+  grid is overflow-guarded on small screens.
+
+### Verification
+
+- Full build green; **393/393** unit tests pass (incl. new Stat Showdown logic
+  specs).
+- UI-shots sweep extended to `/showdown` with an added hard assertion for
+  horizontal overflow at 320 px *and* 375 px across every route.
+
 ## v2.0.1 — 2026-07-15
 
 📱 **Horizontal-overflow sweep** — a scripted scan of all 16 routes at 375 px
