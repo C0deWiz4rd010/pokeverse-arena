@@ -1,0 +1,203 @@
+@use '../../../styles/responsive' as *;
+
+:host {
+  display: block;
+  width: min(920px, 100%);
+  margin-inline: auto;
+}
+
+/* ---- intro ---- */
+.intro {
+  padding: 1.4rem 1.2rem;
+  margin-top: 0.6rem;
+  text-align: center;
+}
+.intro .lead {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.9rem;
+}
+.rules {
+  list-style: none;
+  margin: 0 auto 1rem;
+  padding: 0;
+  max-width: 30rem;
+  display: grid;
+  gap: 0.5rem;
+  text-align: left;
+  color: var(--text-dim);
+  font-size: 0.92rem;
+}
+.best {
+  color: var(--text-dim);
+  margin: 0 0 1rem;
+}
+.best strong { color: var(--accent-3); }
+.big { min-height: 3rem; padding-inline: 1.6rem; }
+
+/* ---- hud ---- */
+.hud {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 0.6rem 0 0.4rem;
+}
+.chip {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.chip strong { color: var(--text); margin-left: 0.15rem; }
+
+.prompt {
+  text-align: center;
+  margin: 0.3rem 0 0.8rem;
+}
+.prompt .q {
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+.stat-label {
+  display: block;
+  font-size: clamp(1.3rem, 5vw, 1.9rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---- arena ---- */
+.arena {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+
+  @include up(md) {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.9rem 0.8rem 1rem;
+  min-height: 12rem;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.card:not(:disabled):hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border));
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.card:not(:disabled):active { transform: scale(0.98); }
+.card:disabled { cursor: default; }
+
+.art {
+  width: clamp(6.5rem, 30vw, 9.5rem);
+  height: clamp(6.5rem, 30vw, 9.5rem);
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+}
+.mon-name {
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.types {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.tap-hint {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+.value {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--text-dim);
+  animation: pop 0.3s ease both;
+}
+.value.hi { color: var(--success); }
+
+.card.win {
+  border-color: color-mix(in srgb, var(--success) 65%, transparent);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--success) 35%, transparent);
+}
+.card.lose { opacity: 0.55; }
+.card.picked { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Center VS token straddling the two cards. */
+.vs {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: #0b0a1f;
+  background: linear-gradient(135deg, var(--accent-3), var(--danger));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/* ---- skeleton ---- */
+.skeleton {
+  align-items: center;
+  justify-content: center;
+}
+.spin {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 3px solid var(--glass-border);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+
+/* ---- over ---- */
+.over {
+  margin-top: 0.9rem;
+  padding: 1.2rem;
+  text-align: center;
+}
+.over h2 { margin: 0 0 0.4rem; }
+.final strong { color: var(--accent-3); }
+.record { color: var(--success); font-weight: 800; }
+.over-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .value { animation: none; }
+  .spin { animation-duration: 1.6s; }
+  .card { transition: none; }
+}

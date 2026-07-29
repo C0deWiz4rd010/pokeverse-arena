@@ -77,6 +77,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/contest/contest').then((m) => m.ContestComponent),
   },
   {
+    path: 'showdown',
+    title: 'Stat Showdown · PokéVerse Arena',
+    loadComponent: () => import('./features/showdown/showdown').then((m) => m.ShowdownComponent),
+  },
+  {
     path: 'profile',
     title: 'Trainer Profile · PokéVerse Arena',
     loadComponent: () => import('./features/profile/profile').then((m) => m.ProfileComponent),
