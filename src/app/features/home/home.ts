@@ -54,6 +54,11 @@ export class HomeComponent implements OnDestroy {
   protected readonly who = new SeededRng(dailySeed('whos-that')).int(1, 1025);
   protected readonly whoRevealed = signal(false);
 
+  /** Two seeded faces to tease the Stat Showdown duel (cosmetic only). */
+  private readonly showdownRng = new SeededRng(dailySeed('showdown'));
+  protected readonly showdownA = this.showdownRng.int(1, 1025);
+  protected readonly showdownB = this.showdownRng.int(1, 1025);
+
   protected onWho(): void {
     if (!this.whoRevealed()) this.whoRevealed.set(true);
     else void this.router.navigate(['/pokemon', this.who]);
@@ -79,6 +84,7 @@ export class HomeComponent implements OnDestroy {
     { path: '/world', icon: 'map', title: 'World Explorer', text: 'Roam regions, fill a per-region dex through animated catch expeditions.', accent: 'var(--type-grass)' },
     { path: '/fusion', icon: 'flask-conical', title: 'Fusion Lab', text: 'Splice any two Pokémon into a new species — name, typing, stats & palette.', accent: 'var(--type-poison)' },
     { path: '/contest', icon: 'sparkles', title: 'Contest Hall', text: 'A live appeal mini-game with combos, jamming, ranks and ribbons.', accent: 'var(--type-fairy)' },
+    { path: '/showdown', icon: 'dices', title: 'Stat Showdown', text: 'A quick higher-or-lower duel — guess the stronger stat and stack a streak.', accent: 'var(--type-electric)' },
     { path: '/adventure', icon: 'scroll-text', title: 'Adventure (RPG)', text: 'A classic tile-world story: pick a starter, catch in the grass, earn a badge.', accent: 'var(--type-ground)' },
     { path: '/profile', icon: 'crown', title: 'Trainer Profile', text: 'Your rank, records and achievements across every mode, in one place.', accent: 'var(--accent-2)' },
   ];
