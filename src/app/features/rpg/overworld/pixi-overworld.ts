@@ -399,6 +399,12 @@ export class PixiOverworldComponent implements OnDestroy {
       return;
     }
     if (kind === 'tree') {
+      // a soft contact shadow grounds every trunk so forests gain depth
+      const sx = x * TILE_PX + TILE_PX / 2;
+      const shade = new this.PIXI!.Graphics()
+        .ellipse(sx, y * TILE_PX + TILE_PX * 0.9, TILE_PX * 0.34, TILE_PX * 0.12)
+        .fill({ color: 0x000000, alpha: 0.16 });
+      this.tilesLayer.addChild(shade);
       const isTree = (tx: number): boolean => map.tiles[y]?.[tx] === 'tree';
       let runStart = x;
       while (isTree(runStart - 1)) runStart--;
