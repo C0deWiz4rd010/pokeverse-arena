@@ -609,7 +609,9 @@ export class PixiOverworldComponent implements OnDestroy {
     let color = 0xffffff, alpha = 0, fire = 0;
     if (hr >= 21 || hr < 5) { color = 0x2a3b7a; alpha = 0.45; fire = 1; }       // night
     else if (hr >= 18) { color = 0xff9e5a; alpha = 0.28; fire = 0.4; }          // dusk
+    else if (hr >= 16) { color = 0xffdca8; alpha = 0.12; fire = 0.15; }         // golden hour
     else if (hr < 7) { color = 0x9a86c0; alpha = 0.22; fire = 0.3; }            // dawn
+    else if (hr < 9) { color = 0xcfe0ff; alpha = 0.1; fire = 0.1; }             // cool morning
     // ease toward target
     this.nightTint.tint = color;
     this.nightTint.alpha += (alpha - this.nightTint.alpha) * 0.04;

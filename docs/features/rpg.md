@@ -246,3 +246,29 @@ dense, unmistakable thicket again (the v1.18 art swap had blurred the line
 to decorated meadow); Esc/X closes the field menu and shop; the field menu
 fits phone viewports (swipeable tab row, shrinkable card grid); beaten-elite
 placement bug caught in playtesting (they initially blocked the corridor).
+
+## v3.2 — 🎨 the visual overhaul (app v2.2)
+
+A modern, cooler coat of paint across every rendering surface — see
+[`docs/rpg-visual-overhaul-plan.md`](../rpg-visual-overhaul-plan.md).
+
+- **Biome & time battle backdrops** — `.rb-field` binds a pure
+  `game/rpg/battle-scene.ts` `battleScene(map, band, fishing)` token
+  (meadow / water / cave / sand / snow / indoor, + a night flag) into a
+  layered background: a sky gradient, a rolling **scenery band** and a
+  sun/moon **orb**, re-tinted per scene and washed cool after dark. The
+  classifier is unit-tested; the component reads the current map + `timeBand`.
+- **Trainer look customization** — `RpgSave.appearance` (migration-safe,
+  defaults to `boy`) chooses the overworld character sheet. A picker in the
+  field menu's Pokémon tab uses the CC0 facesets as avatars; the Pixi renderer
+  live-swaps the player's walk sheet (all sheets are preloaded) and the canvas
+  fallback maps each look to body/cap colours. `RpgService.setAppearance`
+  persists it.
+- **Livelier overworld** — `atlas.ts` `GRASS_VARIANTS` grew colour-graded
+  tints and the Pixi renderer sprinkles them more often plus rare wildflowers
+  on open grass; the day/night cycle gained soft **golden-hour** and
+  **cool-morning** light bands.
+- **Prettier reduced-motion fallback** — `overworld/tile-renderer.ts` was
+  rebuilt with vertical gradients, textured grass/water/trees, layered houses/
+  roofs/doors and static speckle detail, so no-WebGL / reduced-motion players
+  get a genuinely nice map instead of flat rectangles.

@@ -133,10 +133,20 @@ Pure `evolution.ts` (+spec), cache-first chain lookup, `evolve` phase + overlay
   (pure quests.ts + spec), **a11y focus management** (field-menu dialog,
   FIGHT-cursor return), **canvas tile-layer offscreen cache**.
 
+### ✅ v3.2 — visual overhaul (shipped)
+- Biome/time-aware battle backdrops (pure `battle-scene.ts` + layered scene);
+  trainer **look customization** (`RpgSave.appearance`, field-menu picker,
+  live-swap in both renderers); livelier meadows (tinted grass variants +
+  wildflowers) and golden-hour/cool-morning day-night bands; a rebuilt,
+  gradient-rich **canvas fallback** so reduced-motion/no-WebGL looks good too.
+  See `docs/rpg-visual-overhaul-plan.md`.
+
 ### ▶ Next up
 - **Content**: town map / fly-lite between visited Centers, berry trees,
   day/night encounter shifts.
 - **Polish**: save export/import JSON, haptics on touch, RPG dex entry view.
+- **Visual (stretch)**: layer additional CC0 tileset packs (cliffs, props,
+  furniture) for even more overworld variety; Pixi bloom/colour-grade filters.
 
 ## Per-increment definition of done
 `npx ng build` clean · `npx vitest run` green (new pure logic covered) · Playwright

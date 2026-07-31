@@ -4,6 +4,30 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.2.0 — 2026-07-31
+
+🎨 **Adventure visual overhaul** — the RPG mode gets a modern, cooler coat of
+paint across the overworld, battles and even the reduced-motion fallback.
+
+### Added
+
+- **Biome & time-aware battle backdrops** — wild and trainer fights now open on a
+  layered scene (sky gradient + rolling scenery band + a sun/moon orb) chosen
+  from where you're standing: meadow, water, cave, sandstorm, snow or indoor,
+  with a cool night wash after dark.
+- **Trainer look customization** — pick your overworld appearance (Red, Leaf,
+  Ace or Blaze) from the field menu's Pokémon tab; the choice live-swaps in both
+  renderers and persists to your save.
+
+### Changed
+
+- **Livelier meadows** — the Pixi overworld now scatters tinted grass variants
+  and rare wildflowers for a hand-planted look, and the day/night cycle adds
+  soft golden-hour and cool-morning light bands.
+- **Prettier reduced-motion fallback** — the shape-drawn canvas overworld was
+  rebuilt with gradients, layered tiles and textured grass/water/trees, so
+  players without WebGL (or with reduced-motion) get a far nicer map.
+
 ## v2.1.0 — 2026-07-29
 
 📱 **Mobile-first overhaul & new arcade mode** — a thumb-friendly navigation
