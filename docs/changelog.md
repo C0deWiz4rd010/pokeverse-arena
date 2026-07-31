@@ -4,6 +4,22 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.2.2 — 2026-07-31
+
+🌦️ **Adventure depth & weather** — the overworld gains ground detail and battles
+now answer the sky.
+
+### Added
+
+- **Battle weather** — rain and snow from the map you're standing on now fall
+  over the fight (motion-safe; never underground or indoors), so encounters
+  match the overworld mood.
+- **Meadow depth** — seeded mossy rocks scatter across open grass and every tree
+  casts a soft contact shadow, so forests and fields read with real depth
+  instead of a flat carpet.
+- **Living combatants** — battle sprites breathe with a gentle idle bob between
+  turns (disabled under reduced-motion).
+
 ## v2.2.1 — 2026-07-31
 
 ✨ **Adventure ambience polish** — a follow-up pass that adds gentle motion and

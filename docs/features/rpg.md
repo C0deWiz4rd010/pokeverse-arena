@@ -277,3 +277,8 @@ A modern, cooler coat of paint across every rendering surface — see
   **colour-graded wildflowers** (scarlet, gold, blush, lavender) across meadows,
   and brought the battle backdrops to life with drifting clouds, a breathing
   sun/moon and swaying scenery — all skipped under reduced-motion.
+- **Depth & weather (v2.2.2)** — seeded **mossy rocks** dot the grass and every
+  tree casts a soft **contact shadow**; `battle-scene.ts` now carries the map's
+  **weather** through so rain and snow fall over the fight; and the combatants
+  gain a gentle **idle bob** between turns (all motion-safe; no weather
+  underground/indoors).
