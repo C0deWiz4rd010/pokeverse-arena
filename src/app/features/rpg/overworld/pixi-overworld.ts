@@ -16,6 +16,7 @@ import {
   CHAR_SHEETS,
   CHAR_WALK_FRAMES,
   DOOR_OVERLAY,
+  FLOWER_VARIANTS,
   GRASS,
   GRASS_VARIANTS,
   GROUNDED,
@@ -314,8 +315,9 @@ export class PixiOverworldComponent implements OnDestroy {
         if (map.outdoor) {
           const h = tileHash(x, y);
           this.drawArt(h % 4 === 0 ? GRASS_VARIANTS[h % GRASS_VARIANTS.length] : GRASS, x, y);
-          // sprinkle rare decorative flowers on open grass for a lived-in meadow
-          if (kind === 'grass' && h % 37 === 0) this.drawArt(TILE_ART.flower, x, y);
+          // sprinkle rare colour-graded wildflowers on open grass for a lived-in meadow
+          if (kind === 'grass' && h % 37 === 0)
+            this.drawArt(FLOWER_VARIANTS[(h >> 3) % FLOWER_VARIANTS.length], x, y);
         } else {
           this.drawArt(INDOOR_FLOOR, x, y);
         }

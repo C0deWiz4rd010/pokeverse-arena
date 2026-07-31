@@ -48,6 +48,19 @@ export const GRASS_VARIANTS: readonly TileArt[] = [
 ];
 export const INDOOR_FLOOR: TileArt = T('interior', I(1, 1));
 
+/**
+ * Colour-graded wildflowers scattered sparsely across open grass. All reuse the
+ * pack's blossom tile, re-tinted into a cottage-garden spread — scarlet, gold,
+ * blush pink and lavender — so meadows bloom with variety, not one repeated dot.
+ */
+export const FLOWER_VARIANTS: readonly TileArt[] = [
+  T('world', W(14, 9)),
+  T('world', W(14, 9), 0xff8f8f),
+  T('world', W(14, 9), 0xffe27a),
+  T('world', W(14, 9), 0xff9ec8),
+  T('world', W(14, 9), 0xc7a8ff),
+];
+
 export const TILE_ART: Record<TileKind, TileArt> = {
   grass: GRASS,
   tallgrass: { proc: 'tallgrass' },
