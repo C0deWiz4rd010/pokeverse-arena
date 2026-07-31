@@ -219,6 +219,13 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .fighter.mine .sprite { scale: -1 1; }
 .fighter.shake { animation: rb-shake 0.4s ease; }
 .fighter.flash .sprite { animation: rb-flash 0.4s ease; }
+/* a gentle idle bob keeps the combatants alive between turns (motion-safe;
+   send-in/faint states outrank this via specificity, so they still play) */
+@media (prefers-reduced-motion: no-preference) {
+  .fighter .sprite { animation: rb-idle 3.2s ease-in-out infinite; }
+  .fighter.foe .sprite { animation-delay: -1.6s; }
+}
+@keyframes rb-idle { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
 
 .info {
   display: grid; gap: 0.3rem; min-width: 168px;
