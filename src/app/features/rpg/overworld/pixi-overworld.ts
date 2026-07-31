@@ -426,6 +426,10 @@ export class PixiOverworldComponent implements OnDestroy {
       this.canopyLayer.addChild(top); // crown overlaps the tile above, over entities
       return;
     }
+    if (kind === 'rock' || kind === 'bush' || kind === 'stump') {
+      this.drawProp(kind, x, y);
+      return;
+    }
     if (kind === 'door') {
       // outdoors the leaf sits in a house wall; indoors it lies on the floor
       if (map.outdoor) this.drawArt(art, x, y);
@@ -520,6 +524,38 @@ export class PixiOverworldComponent implements OnDestroy {
       .ellipse(cx, base, rx, ry).fill(grey) // body
       .ellipse(cx - rx * 0.28, base - ry * 0.3, rx * 0.4, ry * 0.35).fill({ color: 0xffffff, alpha: 0.16 }); // top highlight
     if ((h % 5) === 0) g.ellipse(cx + rx * 0.2, base + ry * 0.2, rx * 0.5, ry * 0.35).fill({ color: 0x6faa5c, alpha: 0.5 }); // moss
+    this.tilesLayer.addChild(g);
+  }
+
+  /** Solid decorative obstacles authored into maps: a boulder, leafy bush or
+   *  cut stump. Drawn procedurally (no atlas guessing) over the grass base. */
+  private drawProp(kind: 'rock' | 'bush' | 'stump', x: number, y: number): void {
+    const pixi = this.PIXI!;
+    const px = x * TILE_PX, py = y * TILE_PX, cx = px + TILE_PX / 2;
+    const h = tileHash(x, y);
+    const g = new pixi.Graphics();
+    // shared ground shadow so props sit on the grass
+    g.ellipse(cx, py + TILE_PX * 0.86, TILE_PX * 0.38, TILE_PX * 0.13).fill({ color: 0x000000, alpha: 0.2 });
+    if (kind === 'rock') {
+      const grey = 0x8f949c + (h % 3) * 0x060606;
+      g.ellipse(cx, py + TILE_PX * 0.62, TILE_PX * 0.42, TILE_PX * 0.34).fill(grey)
+        .ellipse(cx - 2, py + TILE_PX * 0.5, TILE_PX * 0.18, TILE_PX * 0.14).fill({ color: 0xffffff, alpha: 0.18 })
+        .ellipse(cx + 2.5, py + TILE_PX * 0.68, TILE_PX * 0.2, TILE_PX * 0.16).fill({ color: 0x000000, alpha: 0.12 });
+      if (h % 3 === 0) g.ellipse(cx + 2, py + TILE_PX * 0.74, TILE_PX * 0.22, TILE_PX * 0.12).fill({ color: 0x6faa5c, alpha: 0.55 });
+    } else if (kind === 'bush') {
+      const lo = 0x3f8a4a, hi = 0x67b85f;
+      g.circle(cx - 3.5, py + TILE_PX * 0.6, 4.2).fill(lo)
+        .circle(cx + 3.5, py + TILE_PX * 0.6, 4.2).fill(lo)
+        .circle(cx, py + TILE_PX * 0.5, 5).fill(hi)
+        .circle(cx - 1.6, py + TILE_PX * 0.44, 1.8).fill({ color: 0xffffff, alpha: 0.14 });
+      if (h % 4 === 0) g.circle(cx + 2, py + TILE_PX * 0.56, 1.1).fill(0xff5d73).circle(cx - 2.5, py + TILE_PX * 0.62, 1.1).fill(0xffd166);
+    } else {
+      // stump: a short trunk ring with a cut top
+      const bark = 0x8a5a34, top = 0xc79461;
+      g.roundRect(cx - 4, py + TILE_PX * 0.5, 8, TILE_PX * 0.34, 2).fill(bark)
+        .ellipse(cx, py + TILE_PX * 0.5, 4.4, 2.4).fill(top)
+        .ellipse(cx, py + TILE_PX * 0.5, 2.2, 1.2).stroke({ width: 0.8, color: 0x8a5a34, alpha: 0.7 });
+    }
     this.tilesLayer.addChild(g);
   }
 

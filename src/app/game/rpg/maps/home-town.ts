@@ -3,9 +3,10 @@ import { parseTiles } from './legend';
 
 // 16×13 starter town. Top-left house = the player's home; a pond, a tall-grass
 // patch, plus Lab / Center / Mart buildings (interiors wired in later phases).
+// Corner rocks, bushes and stumps dress the edges without blocking any route.
 const ROWS = [
   'TTTTTTTTTTTTTTTT',
-  'TGGGGGGGGGGGGGGT',
+  'TGoGGGGGGGGGGoGT',
   'TGRRRGGGGGGRRRGT',
   'TGHDHGGGGGGHDHGT',
   'TGGGGG!GGGGGGGGT',
@@ -13,8 +14,8 @@ const ROWS = [
   'TGGGGG~~~~GGGGGT',
   'TGRRRGGGGGGRRRGT',
   'TGHDHGGGGGGHDHGT',
-  'TGGGGGGGGGGGGGGT',
-  'TGGGG,,,,,GGGGGT',
+  'TbGGGGGGGGGGGGbT',
+  'TuGGG,,,,,GGGGuT',
   'TGGGGGGGPGGGGGGT',
   'TTTTTTTTPTTTTTTT',
 ];

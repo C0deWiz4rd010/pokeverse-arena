@@ -28,7 +28,10 @@ export type TileKind =
   | 'counter'
   | 'roof'
   | 'house'
-  | 'fence';
+  | 'fence'
+  | 'rock'
+  | 'bush'
+  | 'stump';
 
 export type ItemId =
   | 'poke-ball'

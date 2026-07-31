@@ -19,6 +19,9 @@ export const LEGEND: Record<string, TileKind> = {
   '=': 'fence',
   f: 'flower',
   L: 'ledge',
+  o: 'rock',
+  b: 'bush',
+  u: 'stump',
 };
 
 /** Parse equal-length string rows into a row-major TileKind grid. */

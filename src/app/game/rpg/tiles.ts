@@ -26,6 +26,9 @@ export const TILE: Record<TileKind, TileMeta> = {
   roof: { walkable: false },
   house: { walkable: false },
   fence: { walkable: false },
+  rock: { walkable: false },
+  bush: { walkable: false },
+  stump: { walkable: false },
 };
 
 export function isWalkableTile(t: TileKind): boolean {

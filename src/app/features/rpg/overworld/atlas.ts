@@ -79,6 +79,11 @@ export const TILE_ART: Record<TileKind, TileArt> = {
   rug: T('interior', I(5, 1)),
   counter: T('world', W(25, 8)),
   ledge: T('world', W(12, 17)), // grass lip over a cliff face — the drop reads
+  // decorative obstacles — drawn procedurally in the renderers; the grass base
+  // pass sits underneath, so these entries are only a harmless fallback tile.
+  rock: GRASS,
+  bush: GRASS,
+  stump: GRASS,
 };
 
 /** Self-contained round tree for isolated trunks and odd row ends. */

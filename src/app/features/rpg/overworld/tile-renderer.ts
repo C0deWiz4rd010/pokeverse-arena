@@ -32,6 +32,9 @@ const TILE_COLORS: Record<TileKind, Palette> = {
   fence: { base: '#47a862', accent: '#8a6f4a', hi: '#a9865a', lo: '#6f5738' },
   flower: { base: '#47a862', hi: '#57bd72', lo: '#3c9455' },
   ledge: { base: '#47a862', accent: '#8a6a3f', hi: '#57bd72', lo: '#6b4a2a' },
+  rock: { base: '#47a862', accent: '#8f949c', hi: '#a7acb4', lo: '#6e737b' },
+  bush: { base: '#47a862', accent: '#3f8a4a', hi: '#67b85f', lo: '#2f6b39' },
+  stump: { base: '#47a862', accent: '#8a5a34', hi: '#c79461', lo: '#6b4426' },
 };
 
 function px(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string): void {
@@ -62,7 +65,7 @@ function hash01(x: number, y: number): number {
 export function drawTile(ctx: CanvasRenderingContext2D, kind: TileKind, dx: number, dy: number, ts: number, frame: number): void {
   const pal = TILE_COLORS[kind];
   // Outdoor tiles sit on grass; furniture/buildings sit on floor — fill a sensible base first.
-  const grounded: TileKind[] = ['tree', 'sign', 'flower', 'fence'];
+  const grounded: TileKind[] = ['tree', 'sign', 'flower', 'fence', 'rock', 'bush', 'stump'];
   if (grounded.includes(kind)) fillBase(ctx, TILE_COLORS.grass, dx, dy, ts);
   else fillBase(ctx, pal, dx, dy, ts);
 
@@ -189,6 +192,37 @@ export function drawTile(ctx: CanvasRenderingContext2D, kind: TileKind, dx: numb
       px(ctx, dx, dy + ts * 0.4, ts, ts * 0.12, pal.accent!);
       px(ctx, dx + ts * 0.2, dy + ts * 0.25, ts * 0.1, ts * 0.5, pal.accent!);
       px(ctx, dx + ts * 0.7, dy + ts * 0.25, ts * 0.1, ts * 0.5, pal.accent!);
+      break;
+    case 'rock': {
+      ctx.fillStyle = pal.hi!;
+      ctx.beginPath();
+      ctx.ellipse(dx + ts * 0.5, dy + ts * 0.6, ts * 0.32, ts * 0.26, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = pal.lo!;
+      ctx.beginPath();
+      ctx.ellipse(dx + ts * 0.56, dy + ts * 0.68, ts * 0.14, ts * 0.1, 0, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'bush': {
+      ctx.fillStyle = pal.lo!;
+      for (const [bx, by] of [[0.32, 0.6], [0.68, 0.6]] as const) {
+        ctx.beginPath();
+        ctx.arc(dx + ts * bx, dy + ts * by, ts * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = pal.hi!;
+      ctx.beginPath();
+      ctx.arc(dx + ts * 0.5, dy + ts * 0.5, ts * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'stump':
+      px(ctx, dx + ts * 0.34, dy + ts * 0.5, ts * 0.32, ts * 0.32, pal.accent!);
+      ctx.fillStyle = pal.hi!;
+      ctx.beginPath();
+      ctx.ellipse(dx + ts * 0.5, dy + ts * 0.5, ts * 0.2, ts * 0.1, 0, 0, Math.PI * 2);
+      ctx.fill();
       break;
     case 'wall':
       ctx.strokeStyle = pal.accent!;
