@@ -4,6 +4,25 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.2.4 — 2026-07-31
+
+📱 **Mobile-first polish** — a careful pass over every view to fix cramped
+spacing and clipped controls on phones.
+
+### Fixed
+
+- **Footer no longer hides behind the tab-bar** — the app shell now reserves the
+  bottom navigation's height, so the footer credits and version badge always sit
+  above the bar on both short and long pages.
+- **Ascension Spire stats** — the meta chips (Best depth / Clears / Ascension /
+  Banked ₽) now form a 2×2 grid on phones instead of a single row that clipped
+  the last chip.
+- **Team Builder controls** — the Type/Generation filters and the Random / Fill
+  team buttons stack into clean, full-width rows on phones instead of the roll
+  buttons overlapping the generation selector.
+- **Battle headroom** — during a fight the arena reserves space at the top so the
+  weather/terrain banner never lands on the opponent's info card on phones.
+
 ## v2.2.3 — 2026-07-31
 
 🏝️ **Shorelines & scenery props** — the coast comes alive and towns gain natural

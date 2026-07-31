@@ -10,7 +10,8 @@
 
 /* ---- intro / meta ---- */
 .intro { display: grid; gap: 1rem; max-width: 560px; margin-inline: auto; text-align: center; }
-.meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+.meta-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+@include up(md) { .meta-grid { grid-template-columns: repeat(4, 1fr); } }
 .meta-stat {
   display: grid; gap: 0.1rem; padding: 0.7rem;
   background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius);

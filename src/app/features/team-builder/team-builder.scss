@@ -28,15 +28,15 @@
 /* ---- discovery / random ---- */
 .discover {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.7rem;
   padding: 0.7rem;
   border-radius: var(--radius);
   margin-bottom: 1rem;
 }
 .discover .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; flex: 1; min-width: 0; }
-.discover .filter { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.74rem; color: var(--text-dim); }
+.discover .filter { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.74rem; color: var(--text-dim); flex: 1; min-width: 8.5rem; }
 .discover .filter select {
   padding: 0.45rem 0.6rem;
   border-radius: var(--radius-sm);
@@ -45,11 +45,19 @@
   color: var(--text);
   font: inherit;
   font-size: 0.82rem;
-  min-width: 8.5rem;
+  min-width: 0;
+  width: 100%;
 }
 .discover .filter select option { color: #111; }
 .discover .roll-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-@include up(sm) { .discover .filter select { min-width: 9.5rem; } }
+.discover .roll-actions .btn { flex: 1; justify-content: center; min-width: 8rem; }
+/* Roomier screens: filters and roll buttons share one aligned row again. */
+@include up(md) {
+  .discover { flex-direction: row; align-items: flex-end; }
+  .discover .filter { flex: 0 1 auto; }
+  .discover .filter select { min-width: 9.5rem; width: auto; }
+  .discover .roll-actions .btn { flex: 0 0 auto; }
+}
 
 .err {
   color: #fca5a5;

@@ -187,8 +187,8 @@
 .content {
   flex: 1;
   padding: 0.6rem;
-  /* Reserve room for the fixed mobile tab-bar so nothing hides behind it. */
-  padding-bottom: calc(0.6rem + var(--nav-h));
+  /* The host reserves the tab-bar height (see below), so content only needs
+     its usual breathing room here. */
   /* Safety net: a too-wide child may clip at the edge, but it can never widen
      the page into a horizontal scroll. Internal rows keep their own overflow. */
   overflow-x: clip;
@@ -197,7 +197,13 @@
 /* Phones show the bottom tab-bar instead of the burger dropdown. Reserve its
    height (bar + safe-area) via --nav-h and retire the burger below md. */
 @include below(md) {
-  :host { --nav-h: calc(4.6rem + env(safe-area-inset-bottom, 0px)); }
+  /* Reserve the fixed bottom tab-bar's height on the whole shell so the footer
+     (which lives outside .content) is pushed above the bar instead of hiding
+     behind it — on both short and tall pages. */
+  :host {
+    --nav-h: calc(4.6rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(--nav-h);
+  }
   .burger { display: none; }
 }
 

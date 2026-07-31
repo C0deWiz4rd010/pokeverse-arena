@@ -324,6 +324,9 @@
   .battle.in-fight pv-page-header { display: none; }
 
   .arena { gap: 0.4rem; padding: 0.45rem; }
+  /* Reserve headroom during a fight so the centered weather/terrain banner
+     never lands on top of the opponent's info card. */
+  .battle.in-fight .arena { padding-top: 2rem; }
   .fighter { gap: 0.3rem; }
   .fighter .sprite { width: 74px; height: 74px; }
   .info { padding: 0.35rem 0.5rem; max-width: 215px; }
