@@ -110,7 +110,7 @@ export class PixiOverworldComponent implements OnDestroy {
   private charBases = new Map<string, PTexture>();
   /** Per-character animation state: sheet key, facing and gait. */
   private charMeta = new Map<PContainer, { key: string; dir: Direction; moving: boolean }>();
-  private waterTiles: { g: import('pixi.js').Graphics; glint?: import('pixi.js').Graphics; x: number; y: number }[] = [];
+  private waterTiles: { g: import('pixi.js').Graphics; glint?: import('pixi.js').Graphics; foam?: import('pixi.js').Graphics; x: number; y: number }[] = [];
   private grassTiles: { c: PContainer; tufts: PSprite[] }[] = [];
   private player: PContainer | null = null;
   private builtMapId = '';
@@ -455,14 +455,18 @@ export class PixiOverworldComponent implements OnDestroy {
     c.x = x * TILE_PX; c.y = y * TILE_PX;
     const base = new pixi.Graphics().rect(0, 0, TILE_PX, TILE_PX).fill(WATER_BASE);
     c.addChild(base);
-    // shorelines: a deep rim + a foam thread on every side that touches land
+    // shorelines: a deep rim on every land side plus a bright foam thread that
+    // laps the edge (foam pulses in animateTiles for a living surf line)
     const water = (tx: number, ty: number): boolean => (map.tiles[ty]?.[tx] ?? 'water') === 'water';
     const shore = new pixi.Graphics();
-    if (!water(x, y - 1)) shore.rect(0, 0, TILE_PX, 2.5).fill(WATER_DEEP).rect(0, 0, TILE_PX, 1).fill({ color: 0xe9fbff, alpha: 0.85 });
-    if (!water(x, y + 1)) shore.rect(0, TILE_PX - 2.5, TILE_PX, 2.5).fill(WATER_DEEP);
-    if (!water(x - 1, y)) shore.rect(0, 0, 2.5, TILE_PX).fill(WATER_DEEP);
-    if (!water(x + 1, y)) shore.rect(TILE_PX - 2.5, 0, 2.5, TILE_PX).fill(WATER_DEEP);
-    c.addChild(shore);
+    const foam = new pixi.Graphics();
+    const FOAM = { color: 0xeafcff, alpha: 0.9 } as const;
+    const nN = !water(x, y - 1), nS = !water(x, y + 1), nW = !water(x - 1, y), nE = !water(x + 1, y);
+    if (nN) { shore.rect(0, 0, TILE_PX, 2.5).fill(WATER_DEEP); foam.rect(0, 0, TILE_PX, 1).fill(FOAM); }
+    if (nS) { shore.rect(0, TILE_PX - 2.5, TILE_PX, 2.5).fill(WATER_DEEP); foam.rect(0, TILE_PX - 1, TILE_PX, 1).fill(FOAM); }
+    if (nW) { shore.rect(0, 0, 2.5, TILE_PX).fill(WATER_DEEP); foam.rect(0, 0, 1, TILE_PX).fill(FOAM); }
+    if (nE) { shore.rect(TILE_PX - 2.5, 0, 2.5, TILE_PX).fill(WATER_DEEP); foam.rect(TILE_PX - 1, 0, 1, TILE_PX).fill(FOAM); }
+    c.addChild(shore, foam);
     const h = tileHash(x, y);
     if (h % 13 === 0 && water(x, y - 1) && water(x, y + 1) && water(x - 1, y) && water(x + 1, y)) {
       // a lily pad drifts on calm open water (its baked bg matches WATER_BASE)
@@ -473,7 +477,7 @@ export class PixiOverworldComponent implements OnDestroy {
     glint.x = 3 + ((x * 7 + y * 13) % 10); glint.y = 2 + ((x * 5 + y * 3) % 9);
     glint.alpha = 0;
     c.addChild(ripple, glint);
-    this.waterTiles.push({ g: ripple, glint, x, y });
+    this.waterTiles.push({ g: ripple, glint, foam: nN || nS || nW || nE ? foam : undefined, x, y });
     return c;
   }
 
@@ -986,6 +990,8 @@ export class PixiOverworldComponent implements OnDestroy {
         const ph = Math.sin(t / 90 + w.x * 2.7 + w.y * 1.9);
         w.glint.alpha = ph > 0.92 ? (ph - 0.92) * 11 : 0;
       }
+      // surf line laps the shore — a slow breathing pulse per edge tile
+      if (w.foam) w.foam.alpha = 0.6 + Math.sin(t / 18 + w.x * 1.3 + w.y * 0.7) * 0.32;
     }
     for (const g of this.grassTiles) {
       const sway = Math.sin(t / 22 + g.c.x * 0.08);
