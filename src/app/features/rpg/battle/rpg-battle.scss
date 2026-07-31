@@ -48,6 +48,15 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   background: linear-gradient(180deg, #6db6e8 0%, #a9dcc0 62%, #5aa06a 100%);
   transition: background 0.5s ease;
 }
+.rb-bg .sky::after {
+  content: '';
+  position: absolute;
+  inset: -10% -20%;
+  background: radial-gradient(38px 18px at 20% 26%, rgba(255, 255, 255, 0.7), transparent 70%),
+    radial-gradient(52px 22px at 46% 18%, rgba(255, 255, 255, 0.55), transparent 72%),
+    radial-gradient(40px 18px at 74% 30%, rgba(255, 255, 255, 0.6), transparent 70%);
+  opacity: 0.8;
+}
 .rb-bg .scenery {
   position: absolute;
   left: -5%;
@@ -70,6 +79,16 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   box-shadow: 0 0 34px 10px rgba(255, 226, 150, 0.55);
   transition: background 0.5s ease, box-shadow 0.5s ease;
 }
+
+/* gentle ambient life — clouds drift, the sun/moon breathes; motion-safe only */
+@media (prefers-reduced-motion: no-preference) {
+  .rb-bg .sky::after { animation: rb-clouds 26s linear infinite; }
+  .rb-bg .orb { animation: rb-orb 7s ease-in-out infinite; }
+  .rb-bg .scenery { animation: rb-sway 12s ease-in-out infinite; }
+}
+@keyframes rb-clouds { from { transform: translateX(-6%); } to { transform: translateX(6%); } }
+@keyframes rb-orb { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes rb-sway { 0%, 100% { transform: translateX(-1.5%); } 50% { transform: translateX(1.5%); } }
 
 /* meadow is the default sky above; the rest re-tint the three layers */
 .rb-field[data-scene='water'] .sky { background: linear-gradient(180deg, #5fb0e8 0%, #7fc9e6 50%, #2f7fd0 100%); }
@@ -96,6 +115,9 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   filter: none;
 }
 .rb-field[data-scene='cave'] .orb { background: radial-gradient(circle at 40% 40%, #bfe6ff, #6ab0e6 60%, rgba(106, 176, 230, 0)); box-shadow: 0 0 30px 8px rgba(120, 190, 240, 0.4); }
+/* no drifting clouds underground or inside — the sky isn't visible there */
+.rb-field[data-scene='cave'] .sky::after,
+.rb-field[data-scene='indoor'] .sky::after { content: none; }
 .rb-field[data-scene='indoor'] .sky { background: linear-gradient(180deg, #6b5340 0%, #8a6742 55%, #5c4632 100%); }
 .rb-field[data-scene='indoor'] .scenery {
   background: linear-gradient(180deg, #a68152 0%, #8a6742 100%);
