@@ -4,6 +4,22 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.2.1 — 2026-07-31
+
+✨ **Adventure ambience polish** — a follow-up pass that adds gentle motion and
+colour to the visual overhaul.
+
+### Added
+
+- **Living battle backdrops** — clouds drift across the sky, the sun/moon gently
+  breathes and the scenery band sways, so fights feel alive instead of static
+  (all disabled automatically under reduced-motion; hidden underground/indoors).
+
+### Changed
+
+- **Colour-graded wildflowers** — meadow blossoms now bloom in a cottage-garden
+  spread (scarlet, gold, blush pink, lavender) instead of one repeated dot.
+
 ## v2.2.0 — 2026-07-31
 
 🎨 **Adventure visual overhaul** — the RPG mode gets a modern, cooler coat of
