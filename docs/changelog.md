@@ -11,6 +11,9 @@ colour to the visual overhaul.
 
 ### Added
 
+- **Cinematic colour-grade** — the WebGL overworld now runs a subtle filmic
+  grade (richer greens/blues, a touch of contrast) for a warmer, more modern
+  look; skipped entirely under reduced-motion.
 - **Living battle backdrops** — clouds drift across the sky, the sun/moon gently
   breathes and the scenery band sways, so fights feel alive instead of static
   (all disabled automatically under reduced-motion; hidden underground/indoors).

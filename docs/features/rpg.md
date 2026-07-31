@@ -272,3 +272,8 @@ A modern, cooler coat of paint across every rendering surface — see
   rebuilt with vertical gradients, textured grass/water/trees, layered houses/
   roofs/doors and static speckle detail, so no-WebGL / reduced-motion players
   get a genuinely nice map instead of flat rectangles.
+- **Ambience pass (v2.2.1)** — a follow-up gave the WebGL overworld a subtle
+  **filmic colour-grade** (richer greens/blues + soft contrast), scattered
+  **colour-graded wildflowers** (scarlet, gold, blush, lavender) across meadows,
+  and brought the battle backdrops to life with drifting clouds, a breathing
+  sun/moon and swaying scenery — all skipped under reduced-motion.
