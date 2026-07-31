@@ -282,3 +282,6 @@ A modern, cooler coat of paint across every rendering surface — see
   **weather** through so rain and snow fall over the fight; and the combatants
   gain a gentle **idle bob** between turns (all motion-safe; no weather
   underground/indoors).
+- **Shorelines & props (v2.2.3)** — water edges lap the land with an animated
+  **foam** thread, and new decorative `rock`/`bush`/`stump` tiles (procedural in
+  both renderers, legend chars `o`/`b`/`u`) frame the starter town.

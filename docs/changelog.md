@@ -4,6 +4,21 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.2.3 — 2026-07-31
+
+🏝️ **Shorelines & scenery props** — the coast comes alive and towns gain natural
+clutter.
+
+### Added
+
+- **Living shorelines** — every water edge now laps the land with an animated
+  foam thread that breathes tile by tile (motion-safe), so ponds and coasts read
+  as real water meeting real ground.
+- **Decorative props** — new `rock`, `bush` and `stump` tiles (drawn
+  procedurally in both the WebGL and canvas renderers) dress the world; the
+  starter town is framed with corner boulders, shrubs and cut stumps. Maps can
+  place them with the `o`, `b` and `u` legend characters.
+
 ## v2.2.2 — 2026-07-31
 
 🌦️ **Adventure depth & weather** — the overworld gains ground detail and battles
