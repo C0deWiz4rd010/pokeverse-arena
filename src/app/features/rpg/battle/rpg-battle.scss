@@ -90,6 +90,29 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 @keyframes rb-orb { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @keyframes rb-sway { 0%, 100% { transform: translateX(-1.5%); } 50% { transform: translateX(1.5%); } }
 
+/* falling weather carried in from the overworld — off unless data-weather is set */
+.rb-bg .precip { position: absolute; inset: 0; opacity: 0; background-repeat: repeat; }
+.rb-field[data-weather='rain'] .precip {
+  opacity: 0.55;
+  background-image: repeating-linear-gradient(
+    102deg, rgba(190, 220, 255, 0) 0 6px, rgba(190, 220, 255, 0.5) 6px 7px);
+  background-size: 24px 24px;
+}
+.rb-field[data-weather='snow'] .precip {
+  opacity: 0.8;
+  background-image: radial-gradient(1.6px 1.6px at 20% 30%, #fff, transparent 60%),
+    radial-gradient(1.4px 1.4px at 60% 70%, #fff, transparent 60%),
+    radial-gradient(1.8px 1.8px at 80% 20%, #fff, transparent 60%),
+    radial-gradient(1.3px 1.3px at 40% 85%, #fff, transparent 60%);
+  background-size: 90px 90px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rb-field[data-weather='rain'] .precip { animation: rb-rain 0.7s linear infinite; }
+  .rb-field[data-weather='snow'] .precip { animation: rb-snow 6s linear infinite; }
+}
+@keyframes rb-rain { from { background-position: 0 0; } to { background-position: -5px 24px; } }
+@keyframes rb-snow { from { background-position: 0 0; } to { background-position: 12px 90px; } }
+
 /* meadow is the default sky above; the rest re-tint the three layers */
 .rb-field[data-scene='water'] .sky { background: linear-gradient(180deg, #5fb0e8 0%, #7fc9e6 50%, #2f7fd0 100%); }
 .rb-field[data-scene='water'] .scenery {

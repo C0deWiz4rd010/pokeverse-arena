@@ -2,8 +2,8 @@
   @if (loading()) {
     <div class="rb-loading">A wild Pokémon appeared…</div>
   } @else {
-    <div class="rb-field" [attr.data-scene]="scene().scene" [class.night]="scene().night">
-      <div class="rb-bg" aria-hidden="true"><span class="sky"></span><span class="scenery"></span><span class="orb"></span></div>
+    <div class="rb-field" [attr.data-scene]="scene().scene" [attr.data-weather]="scene().weather" [class.night]="scene().night">
+      <div class="rb-bg" aria-hidden="true"><span class="sky"></span><span class="scenery"></span><span class="orb"></span><span class="precip"></span></div>
       <pv-battle-fx />
       <button class="speed-chip" type="button" (click)="cycleSpeed()" title="Battle speed" [attr.aria-label]="'Battle speed ' + speed() + '×'">{{ speed() }}×</button>
       @if (vsShown() && vsFace(); as face) {
