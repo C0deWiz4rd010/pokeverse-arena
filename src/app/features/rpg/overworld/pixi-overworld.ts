@@ -328,6 +328,8 @@ export class PixiOverworldComponent implements OnDestroy {
           // sprinkle rare colour-graded wildflowers on open grass for a lived-in meadow
           if (kind === 'grass' && h % 37 === 0)
             this.drawArt(FLOWER_VARIANTS[(h >> 3) % FLOWER_VARIANTS.length], x, y);
+          // scatter the odd mossy rock elsewhere so meadows aren't a flat carpet
+          else if (kind === 'grass' && h % 53 === 0) this.drawRock(x, y, h);
         } else {
           this.drawArt(INDOOR_FLOOR, x, y);
         }
@@ -491,6 +493,24 @@ export class PixiOverworldComponent implements OnDestroy {
     }
     this.grassTiles.push({ c, tufts });
     return c;
+  }
+
+  /** A small mossy rock — pure decoration on the ground layer, no collision.
+   *  Tone/size are seeded from the tile hash so each boulder looks hand-placed. */
+  private drawRock(x: number, y: number, h: number): void {
+    const pixi = this.PIXI!;
+    const cx = x * TILE_PX + TILE_PX / 2;
+    const base = y * TILE_PX + TILE_PX * 0.72;
+    const big = (h & 1) === 0;
+    const rx = big ? 4.4 : 3.2;
+    const ry = big ? 3.0 : 2.2;
+    const grey = 0x8b8f96 + (h % 3) * 0x060606; // subtle tone variation
+    const g = new pixi.Graphics()
+      .ellipse(cx, base + ry * 0.9, rx * 1.1, ry * 0.5).fill({ color: 0x000000, alpha: 0.18 }) // ground shadow
+      .ellipse(cx, base, rx, ry).fill(grey) // body
+      .ellipse(cx - rx * 0.28, base - ry * 0.3, rx * 0.4, ry * 0.35).fill({ color: 0xffffff, alpha: 0.16 }); // top highlight
+    if ((h % 5) === 0) g.ellipse(cx + rx * 0.2, base + ry * 0.2, rx * 0.5, ry * 0.35).fill({ color: 0x6faa5c, alpha: 0.5 }); // moss
+    this.tilesLayer.addChild(g);
   }
 
   /** A forage berry bush: a tinted tuft, ripe ones topped with berry dots. */
