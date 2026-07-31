@@ -313,7 +313,9 @@ export class PixiOverworldComponent implements OnDestroy {
         // sprinkles seeded texture variants for a hand-planted meadow look
         if (map.outdoor) {
           const h = tileHash(x, y);
-          this.drawArt(h % 7 === 0 ? GRASS_VARIANTS[h % GRASS_VARIANTS.length] : GRASS, x, y);
+          this.drawArt(h % 4 === 0 ? GRASS_VARIANTS[h % GRASS_VARIANTS.length] : GRASS, x, y);
+          // sprinkle rare decorative flowers on open grass for a lived-in meadow
+          if (kind === 'grass' && h % 37 === 0) this.drawArt(TILE_ART.flower, x, y);
         } else {
           this.drawArt(INDOOR_FLOOR, x, y);
         }

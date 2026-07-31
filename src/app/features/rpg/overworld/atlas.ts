@@ -34,8 +34,18 @@ const T = (sheet: Sheet, i: number, tint?: number): TileArt => ({ sheet, i, tint
 
 /** Grass underlays most outdoor decorations so trees/flowers/signs sit on green. */
 export const GRASS: TileArt = T('world', W(22, 11));
-/** Occasional grass texture variant (speckled) for a living meadow. */
-export const GRASS_VARIANTS: readonly TileArt[] = [T('world', W(24, 11))];
+/**
+ * Occasional grass texture variants for a living, hand-planted meadow: the two
+ * pack grass tiles plus subtle colour-graded tints (pale sun-bleached patches,
+ * deeper shade, warm early-autumn) so no two clumps read exactly alike.
+ */
+export const GRASS_VARIANTS: readonly TileArt[] = [
+  T('world', W(24, 11)),
+  T('world', W(22, 11), 0xd6f0c6),
+  T('world', W(24, 11), 0xc2e6a8),
+  T('world', W(22, 11), 0xbfe0c4),
+  T('world', W(24, 11), 0xe6f0b8),
+];
 export const INDOOR_FLOOR: TileArt = T('interior', I(1, 1));
 
 export const TILE_ART: Record<TileKind, TileArt> = {
