@@ -124,6 +124,7 @@ export class PixiOverworldComponent implements OnDestroy {
   private vignette: PSprite | null = null;
   private light: PSprite | null = null;
   private nightTint: import('pixi.js').Graphics | null = null;
+  private grade: import('pixi.js').ColorMatrixFilter | null = null;
   private parts: { node: PContainer; vx: number; vy: number; life: number; max: number; grav: number }[] = [];
   private ambient: { s: PSprite; vx: number; vy: number; ph: number }[] = [];
   // --- weather (Phase C) ---
@@ -239,6 +240,15 @@ export class PixiOverworldComponent implements OnDestroy {
       // canopy sits above entities so players walk behind treetops
       this.world.addChild(this.tilesLayer, this.particlesLayer, this.entitiesLayer, this.canopyLayer);
       app.stage.addChild(this.world);
+      if (!REDUCED) {
+        // a gentle filmic colour-grade — richer greens/blues, a touch of contrast
+        const grade = new this.PIXI.ColorMatrixFilter();
+        grade.saturate(0.16, true);
+        grade.brightness(1.03, true);
+        grade.contrast(0.06, true);
+        this.grade = grade;
+        this.world.filters = [grade];
+      }
       if (!REDUCED) this.buildFx();
 
       window.addEventListener('keydown', this.onKeyDown);
