@@ -35,6 +35,8 @@ import { attemptCatch, type RpgBallId } from '../../../game/rpg/catch';
 import { comboXpMultiplier } from '../../../game/rpg/combo';
 import { catchBonus, xpBonus } from '../../../game/rpg/boons';
 import { ITEMS, isBall } from '../../../game/rpg/items-catalog';
+import { battleScene } from '../../../game/rpg/battle-scene';
+import { timeBand } from '../../../game/rpg/time';
 import type { ItemId, PartyMon } from '../../../game/rpg/rpg-types';
 
 interface MoveSlot { readonly move: BattleMove; readonly pp: number; readonly maxPp: number | null; }
@@ -103,6 +105,8 @@ export class RpgBattleComponent extends BattlePresenterBase {
   private readonly participants = new Set<number>();
 
   protected readonly fx = viewChild(BattleFxComponent);
+  /** Biome/time backdrop token for the battle field (meadow/cave/water/…, + night). */
+  protected readonly scene = computed(() => battleScene(this.svc.map(), timeBand(), !!this.svc.battleSetup()?.fishing));
   protected readonly foeAnim = computed(() => { const f = this.foeActive(); return f ? animatedSprite(f.id) : ''; });
   protected readonly playerAnim = computed(() => { const m = this.playerActive(); return m ? animatedSprite(m.id) : ''; });
 
