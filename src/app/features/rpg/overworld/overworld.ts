@@ -16,6 +16,13 @@ import { HapticsService } from '../../../core/haptics/haptics.service';
 
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+/** Player look → [body, cap] colours for the shape-drawn fallback renderer. */
+const LOOK_COLORS: Record<string, readonly [string, string]> = {
+  boy: ['#6ce0ff', '#c5524a'],
+  girl: ['#ff8fb8', '#e23b6b'],
+  clerk: ['#8de0a8', '#3f9d5a'],
+  leader: ['#ffcf6b', '#c46bff'],
+};
 const KEY_DIR: Record<string, Direction> = {
   ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
   w: 'up', s: 'down', a: 'left', d: 'right',
@@ -350,6 +357,7 @@ export class OverworldComponent implements OnDestroy {
     }
 
     // player at camera centre
-    drawCharacter(ctx, this.cssW / 2 - ts / 2, this.cssH / 2 - ts / 2, ts, player.facing);
+    const [body, cap] = LOOK_COLORS[this.svc.appearance()] ?? LOOK_COLORS['boy'];
+    drawCharacter(ctx, this.cssW / 2 - ts / 2, this.cssH / 2 - ts / 2, ts, player.facing, body, cap);
   }
 }

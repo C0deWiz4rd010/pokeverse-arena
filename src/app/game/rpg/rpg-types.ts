@@ -223,6 +223,8 @@ export interface RpgSave {
   badges: string[];
   /** Where a whiteout returns the player (last Pokémon Center). */
   respawn: { map: string; x: number; y: number };
+  /** Chosen player overworld look (character-sheet key; defaults to 'boy'). */
+  appearance?: string;
   /** Where an interior's exit door (`@return`) drops the player back outside. */
   doorReturn?: { map: string; x: number; y: number; facing: Direction };
   /** Remaining Repel steps (wild encounters are suppressed while > 0). */

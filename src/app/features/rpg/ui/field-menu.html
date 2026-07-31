@@ -15,6 +15,14 @@
   }
 
   @if (tab() === 'party') {
+    <div class="fm-look" role="group" aria-label="Trainer look">
+      <span class="fm-look-label">Look</span>
+      @for (l of looks; track l.key) {
+        <button type="button" class="look-btn" [class.on]="svc.appearance() === l.key" [attr.aria-pressed]="svc.appearance() === l.key" [title]="l.name" (click)="chooseLook(l.key)">
+          <img [src]="lookFace(l.key)" [alt]="l.name" />
+        </button>
+      }
+    </div>
     <div class="fm-party">
       @for (m of partyView(); track m.uid) {
         <div class="mon" [class.fainted]="m.fainted">

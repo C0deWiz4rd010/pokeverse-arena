@@ -343,7 +343,7 @@ export class PixiOverworldComponent implements OnDestroy {
       this.entitiesLayer.addChild(s);
     }
     // player
-    this.player = this.makeChar('boy', this.visX, this.visY, this.svc.player()?.facing ?? 'down');
+    this.player = this.makeChar(this.svc.appearance(), this.visX, this.visY, this.svc.player()?.facing ?? 'down');
     this.entitiesLayer.addChild(this.player);
 
     this.buildWeather(map.weather);
@@ -800,6 +800,15 @@ export class PixiOverworldComponent implements OnDestroy {
       if (p) { this.visX = p.x; this.visY = p.y; this.stepping = false; }
       this.builtDirty = dirty;
       this.rebuildMap();
+    }
+    // live-swap the player's look when customization changes (sheets preloaded)
+    if (this.player) {
+      const meta = this.charMeta.get(this.player);
+      const look = this.svc.appearance();
+      if (meta && meta.key !== look && this.charBases.has(look)) {
+        meta.key = look;
+        this.poseChar(this.player, null, this.stepping);
+      }
     }
     this.frame++;
     this.pollGamepad();

@@ -26,6 +26,20 @@ export class FieldMenuComponent {
   protected readonly tab = signal<Tab>('party');
   private readonly firstTab = viewChild<ElementRef<HTMLButtonElement>>('firstTab');
 
+  /** Selectable player looks (reuse the CC0 character facesets as avatars). */
+  protected readonly looks: readonly { readonly key: string; readonly name: string }[] = [
+    { key: 'boy', name: 'Red' },
+    { key: 'girl', name: 'Leaf' },
+    { key: 'clerk', name: 'Ace' },
+    { key: 'leader', name: 'Blaze' },
+  ];
+  protected lookFace(key: string): string {
+    return `rpg/facesets/nj-face-${key}.png`;
+  }
+  protected chooseLook(key: string): void {
+    this.svc.setAppearance(key);
+  }
+
   constructor() {
     // Move focus into the menu when it opens so keyboard/AT users land inside.
     afterNextRender(() => this.firstTab()?.nativeElement.focus());

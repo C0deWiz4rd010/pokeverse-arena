@@ -170,6 +170,16 @@ export class RpgService {
     const g = this.game();
     return g ? { x: g.x, y: g.y, facing: g.facing } : null;
   });
+  /** Chosen player overworld look (character-sheet key). */
+  readonly appearance = computed(() => this.game()?.appearance ?? 'boy');
+
+  /** Change the player's overworld look and persist it (live in both renderers). */
+  setAppearance(key: string): void {
+    const g = this.game();
+    if (!g || (g.appearance ?? 'boy') === key) return;
+    this.game.set({ ...g, appearance: key });
+    this.persist();
+  }
 
   /* ------------------------------------------------------------- lifecycle */
 
