@@ -10,15 +10,17 @@ const quickKo: BattleMove = { name: 'Quick KO', type: 'normal', power: 200, accu
 const bigKo: BattleMove = { name: 'Big KO', type: 'normal', power: 200, accuracy: 100, damageClass: 'physical' };
 const swordsDance: BattleMove = { name: 'Swords Dance', type: 'normal', power: 0, accuracy: 0, damageClass: 'status', boosts: { attack: 2 } };
 
-function battler(o: Partial<Battler>): Battler {
+const BASE_STATS = { hp: 150, attack: 120, defense: 80, 'special-attack': 120, 'special-defense': 80, speed: 100 };
+
+function battler(o: Omit<Partial<Battler>, 'stats'> & { stats?: Partial<Battler['stats']> } = {}): Battler {
   return {
     id: 1,
     name: 'Mon',
     level: 50,
     types: ['normal'],
-    stats: { hp: 150, attack: 120, defense: 80, 'special-attack': 120, 'special-defense': 80, speed: 100 },
     moves: [tackle],
     ...o,
+    stats: { ...BASE_STATS, ...o.stats },
   };
 }
 
@@ -60,18 +62,18 @@ describe('chooseAiMove', () => {
   });
 
   it('strong tier takes a guaranteed KO over chip damage', () => {
-    const c = ctx(battler({ moves: [tackle, bigKo] }), battler({ defense: 60 }), 40);
+    const c = ctx(battler({ moves: [tackle, bigKo] }), battler({ stats: { defense: 60 } }), 40);
     expect(chooseAiMove(c, 'strong')).toBe(1);
   });
 
   it('strong tier prefers a priority finisher when it KOs', () => {
-    const c = ctx(battler({ moves: [bigKo, quickKo] }), battler({ defense: 60 }), 40);
+    const c = ctx(battler({ moves: [bigKo, quickKo] }), battler({ stats: { defense: 60 } }), 40);
     expect(chooseAiMove(c, 'strong')).toBe(1); // quickKo has +1 priority
   });
 
   it('strong tier values setup when it cannot threaten a KO yet', () => {
     // Foe is a huge wall at full HP; chip is futile, so set up instead.
-    const c = ctx(battler({ moves: [tackle, swordsDance], attack: 60 }), battler({ defense: 250, hp: 600 }), 600);
+    const c = ctx(battler({ moves: [tackle, swordsDance], stats: { attack: 60 } }), battler({ stats: { defense: 250, hp: 600 } }), 600);
     expect(chooseAiMove(c, 'strong')).toBe(1);
   });
 });

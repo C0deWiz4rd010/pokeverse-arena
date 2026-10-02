@@ -361,7 +361,7 @@ export class Battle {
 
   /* ----------------------------------------------------- move sub-routines */
 
-  private tryAbsorb(side: SideIndex, defenderIndex: SideIndex, move: BattleMove, events: BattleEvent[]): boolean {
+  private tryAbsorb(_side: SideIndex, defenderIndex: SideIndex, move: BattleMove, events: BattleEvent[]): boolean {
     const defenderSide = this.state.sides[defenderIndex];
     const ability = abilityById(defenderSide.battler.ability);
     if (!ability?.absorb || ability.absorb.type !== move.type) return false;

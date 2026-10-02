@@ -9,7 +9,7 @@ function battler(bst: number, level = 50): Battler {
     name: 'mon',
     level,
     types: ['normal'],
-    stats: { hp: each, atk: each, def: each, spa: each, spd: each, spe: each },
+    stats: { hp: each, attack: each, defense: each, 'special-attack': each, 'special-defense': each, speed: each },
     moves: [],
   };
 }

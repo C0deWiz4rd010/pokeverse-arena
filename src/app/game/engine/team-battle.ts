@@ -175,7 +175,7 @@ export class TeamBattle {
   /** Indices of benched, non-fainted Pokémon a side could switch to. */
   benchedSwitches(side: SideIndex): number[] {
     return this.state.parties[side]
-      .map((s, i) => i)
+      .map((_s, i) => i)
       .filter((i) => i !== this.state.active[side] && this.state.parties[side][i].currentHp > 0);
   }
 

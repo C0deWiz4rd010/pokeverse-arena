@@ -1074,7 +1074,7 @@ export class RpgService {
     if (!mon) return 'No Pokémon there.';
     const t = { ...mon };
     const name = titleCase(t.nickname ?? t.species);
-    let msg = '';
+    let msg: string;
     if (def.held) {
       if (mon.heldItem === def.held) return `${name} is already holding that.`;
       const r = giveHeldItem(g.party, index, def.held);

@@ -41,12 +41,17 @@ const m = await ctx.newPage();
 m.on('console', (mm) => { if (mm.type() === 'error') errors.push(`${m.url()} :: ${mm.text()}`); });
 m.on('pageerror', (e) => errors.push(`${m.url()} :: PAGEERROR ${e.message}`));
 const overflow = [];
-for (const width of [320, 375]) {
-  await m.setViewportSize({ width, height: 780 });
+// viewport matrix: small phone, phone, phone landscape, tablet, laptop, desktop, ultrawide
+const MATRIX = [
+  { width: 320, height: 640 }, { width: 375, height: 780 }, { width: 844, height: 390 },
+  { width: 768, height: 1024 }, { width: 1280, height: 800 }, { width: 1920, height: 1080 }, { width: 2560, height: 1080 },
+];
+for (const { width, height } of MATRIX) {
+  await m.setViewportSize({ width, height });
   for (const r of routes) {
     await m.goto(`${BASE}/${r}`, { waitUntil: 'networkidle', timeout: 25000 }).catch(() => {});
     await m.waitForTimeout(1100);
-    if (width === 375) await m.screenshot({ path: `${OUT}/${slug(r)}_m.png`, fullPage: true });
+    await m.screenshot({ path: `${OUT}/${slug(r)}_${width}x${height}.png`, fullPage: true });
     const scrollW = await m.evaluate(() => document.scrollingElement.scrollWidth);
     if (scrollW > width + 1) overflow.push(`${slug(r)} @${width}px :: scrollWidth ${scrollW} > ${width}`);
   }

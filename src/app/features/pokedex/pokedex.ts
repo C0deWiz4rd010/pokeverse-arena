@@ -203,7 +203,7 @@ export class PokedexComponent {
       return;
     }
     const cols = this.columns(cards);
-    let next = i;
+    let next: number;
     switch (event.key) {
       case 'ArrowRight': next = i + 1; break;
       case 'ArrowLeft': next = i - 1; break;

@@ -30,7 +30,7 @@ import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge
 import { FieldBannerComponent } from '../../../core/ui/field-banner/field-banner';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { BattleFxComponent } from '../../battle/pixi/battle-fx';
-import { BattlePresenterBase, sleep } from '../../battle/battle-presenter';
+import { BattlePresenterBase } from '../../battle/battle-presenter';
 import { pickWeather, weatherForType, type Weather } from '../../../core/ui/weather-overlay/weather';
 import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';

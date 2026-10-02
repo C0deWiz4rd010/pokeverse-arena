@@ -60,7 +60,7 @@ describe('performance flow', () => {
 
   it('lets conditions from the Poffin mix boost matching appeals', () => {
     const cond = mixConditions([{ name: 'A', flavors: { spicy: 60, dry: 0, sweet: 0, bitter: 0, sour: 0 } }]);
-    let s = startPerformance('normal', 'cond');
+    const s = startPerformance('normal', 'cond');
     const out = appeal(s, 'cool', cond, 'cool', 'normal', 'cond').history[0];
     expect(out.condition).toBeGreaterThan(0);
   });

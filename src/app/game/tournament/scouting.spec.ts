@@ -9,7 +9,7 @@ function mon(types: PokemonType[]): Battler {
     name: 'mon',
     level: 50,
     types,
-    stats: { hp: 80, atk: 80, def: 80, spa: 80, spd: 80, spe: 80 },
+    stats: { hp: 80, attack: 80, defense: 80, 'special-attack': 80, 'special-defense': 80, speed: 80 },
     moves: [],
   };
 }

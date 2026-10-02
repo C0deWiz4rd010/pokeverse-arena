@@ -120,7 +120,7 @@ export function dailyNumber(key: string): number {
  * with 💥 replacing the square on a critical hit.
  */
 export function turnEmoji(events: readonly BattleEvent[]): string {
-  let mark = '⬜';
+  const mark = '⬜';
   let sawMove = false;
   for (const e of events) {
     if (e.kind === 'move' && e.side === 0) sawMove = true;

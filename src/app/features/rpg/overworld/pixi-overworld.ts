@@ -124,7 +124,6 @@ export class PixiOverworldComponent implements OnDestroy {
   private vignette: PSprite | null = null;
   private light: PSprite | null = null;
   private nightTint: import('pixi.js').Graphics | null = null;
-  private grade: import('pixi.js').ColorMatrixFilter | null = null;
   private parts: { node: PContainer; vx: number; vy: number; life: number; max: number; grav: number }[] = [];
   private ambient: { s: PSprite; vx: number; vy: number; ph: number }[] = [];
   // --- weather (Phase C) ---
@@ -246,7 +245,6 @@ export class PixiOverworldComponent implements OnDestroy {
         grade.saturate(0.16, true);
         grade.brightness(1.03, true);
         grade.contrast(0.06, true);
-        this.grade = grade;
         this.world.filters = [grade];
       }
       if (!REDUCED) this.buildFx();
@@ -864,7 +862,7 @@ export class PixiOverworldComponent implements OnDestroy {
     }
   }
 
-  private screenShake(mag = 5, ms = 240): void {
+  screenShake(mag = 5, ms = 240): void {
     this.shakeMag = mag;
     this.shakeUntil = performance.now() + ms;
   }

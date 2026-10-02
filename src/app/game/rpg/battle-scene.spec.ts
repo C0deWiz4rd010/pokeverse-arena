@@ -21,7 +21,7 @@ describe('battleScene', () => {
   });
 
   it('reads cave from an everywhere-encounter map', () => {
-    const everywhere = { chance: 1, table: [], everywhere: true } as MapDef['encounter'];
+    const everywhere = { rate: 1, table: [], everywhere: true } as MapDef['encounter'];
     expect(battleScene(map({ encounter: everywhere }), 'day').scene).toBe('cave');
   });
 
@@ -40,7 +40,7 @@ describe('battleScene', () => {
   });
 
   it('never rains underground or indoors', () => {
-    const everywhere = { chance: 1, table: [], everywhere: true } as MapDef['encounter'];
+    const everywhere = { rate: 1, table: [], everywhere: true } as MapDef['encounter'];
     expect(battleScene(map({ encounter: everywhere, weather: 'rain' }), 'day').weather).toBe('none');
     expect(battleScene(map({ outdoor: false, weather: 'rain' }), 'day').weather).toBe('none');
   });

@@ -84,7 +84,7 @@ function zeroCounts(): Record<ContestCategory, number> {
 }
 
 /** Begin a performance: seed three rivals and reset counters. */
-export function startPerformance(rank: ContestRank, seed: number | string): PerformanceState {
+export function startPerformance(_rank: ContestRank, seed: number | string): PerformanceState {
   const rng = new SeededRng(`perf-${seed}`);
   const rivals = rng.shuffle(RIVAL_NAMES).slice(0, 3).map((name) => ({ name, total: 0 }));
   return {

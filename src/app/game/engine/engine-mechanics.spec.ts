@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Battle } from './battle';
-import type { Battler, BattleMove } from './battle-types';
+import type { Battler, BattleEvent, BattleMove } from './battle-types';
 
 const tackle: BattleMove = { name: 'Tackle', type: 'normal', power: 40, accuracy: 100, damageClass: 'physical' };
 const weakTackle: BattleMove = { name: 'Tap', type: 'normal', power: 5, accuracy: 100, damageClass: 'physical' };
@@ -112,8 +112,11 @@ describe('weather as a damage mechanic', () => {
 
     const sun = new Battle(atkSun, foe(), 'wx');
     const clear = new Battle(atkClear, foe(), 'wx');
-    const sunDmg = sun.takeTurn(0).find((e) => e.kind === 'damage' && e.side === 1);
-    const clearDmg = clear.takeTurn(0).find((e) => e.kind === 'damage' && e.side === 1);
-    expect(sunDmg && clearDmg && sunDmg.amount > clearDmg.amount).toBe(true);
+    const foeDamage = (ev: BattleEvent[]) => ev.find((e) => e.kind === 'damage' && e.side === 1);
+    const sunDmg = foeDamage(sun.takeTurn(0));
+    const clearDmg = foeDamage(clear.takeTurn(0));
+    expect(
+      sunDmg?.kind === 'damage' && clearDmg?.kind === 'damage' && sunDmg.amount > clearDmg.amount,
+    ).toBe(true);
   });
 });

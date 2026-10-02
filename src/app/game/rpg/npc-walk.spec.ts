@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { MapDef, NpcDef } from './rpg-types';
 import { parseTiles } from './maps/legend';
-import { canEnterRuntime, initNpcPositions, npcAtRuntime, stepWanderers } from './npc-walk';
+import { canEnterRuntime, initNpcPositions, npcAtRuntime, stepWanderers, type NpcPositions } from './npc-walk';
 
 const npc = (o: Partial<NpcDef>): NpcDef => ({
   id: 'walker',
@@ -49,7 +49,7 @@ describe('wandering NPCs', () => {
 
   it('never leaves the home radius — blocked steps become a turn', () => {
     const map = mk([npc({ wander: 1 })]);
-    let pos = { walker: { x: 2, y: 3, facing: 'down' as const } }; // already at radius edge
+    let pos: NpcPositions = { walker: { x: 2, y: 3, facing: 'down' } }; // already at radius edge
     pos = stepWanderers(map, pos, { x: 0, y: 0 }, seq(0, 0.3)); // tries down → y 4 (out of range)
     expect(pos['walker']).toEqual({ x: 2, y: 3, facing: 'down' }); // turned, not moved
   });

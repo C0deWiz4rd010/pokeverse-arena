@@ -29,7 +29,7 @@ interface NavItem {
 })
 export class App {
   /** Instantiated here so the persisted accent palette applies at startup. */
-  private readonly theme = inject(ThemeService);
+  protected readonly theme = inject(ThemeService);
   private readonly achievements = inject(AchievementWatcherService);
 
   protected readonly menuOpen = signal(false);

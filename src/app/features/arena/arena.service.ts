@@ -18,7 +18,7 @@ import {
   buildLadder,
   starsFor,
 } from '../../game/arena/gym-progression';
-import { CHAMPION, GAUNTLET, gauntletUnlocked, type EliteTrainer } from '../../game/arena/elite-four';
+import { GAUNTLET, gauntletUnlocked, type EliteTrainer } from '../../game/arena/elite-four';
 import { BattleService } from '../battle/battle.service';
 import { TeamBuilderService } from '../team-builder/team-builder.service';
 import type { PlayerMatchSetup } from '../tournaments/tournaments.service';
