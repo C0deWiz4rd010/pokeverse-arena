@@ -1,5 +1,5 @@
 <section class="profile">
-  <pv-page-header icon="crown" title="Trainer Profile" subtitle="Your journey across every arena, cup and climb." />
+  <pv-page-header icon="crown" [title]="'Trainer Profile' | t" [subtitle]="'Your journey across every arena, cup and climb.' | t" />
 
   <header class="id-card">
     <div class="id-avatar" [attr.data-rank]="svc.rank()">
@@ -9,40 +9,40 @@
     <div class="id-main">
       @if (editing()) {
         <div class="id-edit">
-          <input type="text" [value]="nameDraft()" (input)="setName($event)" placeholder="Name" maxlength="20" />
-          <input type="text" [value]="titleDraft()" (input)="setTitle($event)" placeholder="Title" maxlength="28" />
-          <button class="btn" type="button" (click)="saveEdit()">Save</button>
+          <input type="text" [value]="nameDraft()" (input)="setName($event)" [attr.placeholder]="'Name' | t" maxlength="20" />
+          <input type="text" [value]="titleDraft()" (input)="setTitle($event)" [attr.placeholder]="'Title' | t" maxlength="28" />
+          <button class="btn" type="button" (click)="saveEdit()">{{ 'Save' | t }}</button>
         </div>
       } @else {
         <div class="id-name">
           <strong>{{ svc.identity().name }}</strong>
-          <button class="link" type="button" (click)="startEdit()"><pv-icon name="pencil" /> Edit</button>
+          <button class="link" type="button" (click)="startEdit()"><pv-icon name="pencil" /> {{ 'Edit' | t }}</button>
         </div>
-        <span class="id-title">{{ svc.identity().title }}</span>
+        <span class="id-title">{{ svc.identity().title | t }}</span>
       }
 
       <div class="rank-line">
-        <span class="rank-badge">{{ svc.rank() }}</span>
+        <span class="rank-badge">{{ svc.rank() | t }}</span>
         @if (svc.progress(); as p) {
           @if (p.next) {
-            <span class="rank-next">{{ p.toNext }} pts to {{ p.next }}</span>
+            <span class="rank-next">{{ '{0} pts to {1}' | t: [(p.toNext), (p.next)] }}</span>
           } @else {
-            <span class="rank-next maxed">Max rank reached</span>
+            <span class="rank-next maxed">{{ 'Max rank reached' | t }}</span>
           }
         }
       </div>
       @if (svc.progress(); as p) {
-        <div class="rank-bar" [attr.aria-label]="'Rank progress ' + p.pct + '%'">
+        <div class="rank-bar" [attr.aria-label]="'Rank progress {0}%' | t: [p.pct]">
           <span class="rank-fill" [style.width.%]="p.pct"></span>
         </div>
       }
 
       <button class="btn card-btn" type="button" [disabled]="rendering()" (click)="shareCard()">
-        <pv-icon name="download" /> {{ rendering() ? 'Rendering…' : 'Share Trainer Card' }}
+        <pv-icon name="download" /> {{ rendering() ? ('Rendering…' | t) : ('Share Trainer Card' | t) }}
       </button>
     </div>
 
-    <div class="id-ring" role="img" [attr.aria-label]="svc.completion() + '% of achievements unlocked'">
+    <div class="id-ring" role="img" [attr.aria-label]="'{0}% of achievements unlocked' | t: [svc.completion()]">
       <svg viewBox="0 0 40 40">
         <circle class="ring-track" cx="20" cy="20" r="15.915" />
         @if (svc.completion() > 0) {
@@ -57,8 +57,8 @@
     </div>
   </header>
 
-  <h3 class="h">Appearance</h3>
-  <div class="themes" role="group" aria-label="Accent color theme">
+  <h3 class="h">{{ 'Appearance' | t }}</h3>
+  <div class="themes" role="group" [attr.aria-label]="'Accent color theme' | t">
     @for (t of theme.themes; track t.id) {
       <button
         type="button"
@@ -70,14 +70,31 @@
         (click)="theme.setTheme(t.id)"
       >
         <span class="theme-dot" aria-hidden="true"></span>
-        {{ t.name }}
+        {{ t.name | t }}
         @if (theme.themeId() === t.id) { <pv-icon name="check" /> }
       </button>
     }
   </div>
 
+  <h3 class="h">{{ 'Language' | t }}</h3>
+  <div class="themes" role="group" [attr.aria-label]="'Language' | t">
+    @for (l of locales; track l.code) {
+      <button
+        type="button"
+        class="theme-chip lang-chip"
+        [class.on]="i18n.locale() === l.code"
+        [attr.aria-pressed]="i18n.locale() === l.code"
+        [attr.lang]="l.code"
+        (click)="i18n.set(l.code)"
+      >
+        {{ l.label }}
+        @if (i18n.locale() === l.code) { <pv-icon name="check" /> }
+      </button>
+    }
+  </div>
+
   @if (haptics.supported) {
-    <h3 class="h">Feel</h3>
+    <h3 class="h">{{ 'Feel' | t }}</h3>
     <button
       type="button"
       class="setting-row"
@@ -89,40 +106,40 @@
       <span class="setting-info">
         <span class="setting-icon"><pv-icon name="zap" /></span>
         <span>
-          <strong>Haptic feedback</strong>
-          <span class="setting-sub">Subtle vibrations on catches, hits &amp; taps</span>
+          <strong>{{ 'Haptic feedback' | t }}</strong>
+          <span class="setting-sub">{{ 'Subtle vibrations on catches, hits & taps' | t }}</span>
         </span>
       </span>
       <span class="switch" aria-hidden="true"><span class="knob"></span></span>
     </button>
   }
 
-  <h3 class="h">Mastery</h3>
+  <h3 class="h">{{ 'Mastery' | t }}</h3>
   <div class="mastery">
     @for (m of mastery(); track m.label) {
       <div class="bar-row">
         <span class="bar-icon"><pv-icon [name]="m.icon" /></span>
         <div class="bar-body">
-          <div class="bar-top"><span class="bar-label">{{ m.label }}</span><span class="bar-text">{{ m.text }}</span></div>
+          <div class="bar-top"><span class="bar-label">{{ m.label | t }}</span><span class="bar-text">{{ m.text | t }}</span></div>
           <div class="bar-track"><span class="bar-fill" [style.width.%]="m.pct"></span></div>
         </div>
       </div>
     }
   </div>
 
-  <h3 class="h">Records</h3>
+  <h3 class="h">{{ 'Records' | t }}</h3>
   <div class="records">
     @for (r of records(); track r.label) {
       <div class="record">
         <span class="rec-icon"><pv-icon [name]="r.icon" /></span>
-        <span class="rec-val">{{ r.value }}</span>
-        <span class="rec-label">{{ r.label }}</span>
+        <span class="rec-val">{{ r.value | t }}</span>
+        <span class="rec-label">{{ r.label | t }}</span>
       </div>
     }
   </div>
 
   <div class="ach-head">
-    <h3 class="h">Achievements</h3>
+    <h3 class="h">{{ 'Achievements' | t }}</h3>
     <span class="ach-count">{{ svc.unlocked() }} / {{ svc.totalAchievements }}</span>
   </div>
   <div class="achievements">
@@ -130,8 +147,8 @@
       <div class="ach" [class.on]="a.unlocked">
         <span class="ach-icon"><pv-icon [name]="a.achievement.icon" /></span>
         <div class="ach-text">
-          <strong>{{ a.achievement.name }}</strong>
-          <span>{{ a.achievement.desc }}</span>
+          <strong>{{ a.achievement.name | t }}</strong>
+          <span>{{ a.achievement.desc | t }}</span>
         </div>
         @if (a.unlocked) {
           <span class="ach-check"><pv-icon name="check" /></span>
@@ -142,13 +159,13 @@
     }
   </div>
 
-  <h3 class="h">Your data</h3>
+  <h3 class="h">{{ 'Your data' | t }}</h3>
   <div class="data-actions">
-    <button type="button" class="btn card-btn" (click)="exportSave()"><pv-icon name="download" /> Export save</button>
+    <button type="button" class="btn card-btn" (click)="exportSave()"><pv-icon name="download" /> {{ 'Export save' | t }}</button>
     <label class="btn card-btn import-btn">
-      <pv-icon name="upload" /> Import save
+      <pv-icon name="upload" /> {{ 'Import save' | t }}
       <input type="file" accept="application/json,.json" (change)="importSave($event)" hidden />
     </label>
   </div>
-  <p class="data-note">Saves live only in this browser. Export a backup before clearing site data or switching devices.</p>
+  <p class="data-note">{{ 'Saves live only in this browser. Export a backup before clearing site data or switching devices.' | t }}</p>
 </section>

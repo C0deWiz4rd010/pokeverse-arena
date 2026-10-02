@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { IconComponent } from '../icon/icon';
 import type { IconName } from '../icon/icons.data';
 import { SpinnerComponent } from '../spinner/spinner';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 /**
  * One consistent block for the three non-content states of a page:
@@ -11,7 +12,7 @@ import { SpinnerComponent } from '../spinner/spinner';
 @Component({
   selector: 'pv-state',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent, SpinnerComponent],
+  imports: [TranslatePipe, IconComponent, SpinnerComponent],
   template: `
     <div class="state" [class.glass]="card()" [attr.role]="kind() === 'error' ? 'alert' : null">
       @if (kind() === 'loading') {
@@ -20,7 +21,7 @@ import { SpinnerComponent } from '../spinner/spinner';
         <span class="icon" aria-hidden="true">
           <pv-icon [name]="icon() ?? (kind() === 'error' ? 'triangle-alert' : 'search')" [size]="28" />
         </span>
-        @if (title()) { <strong class="title">{{ title() }}</strong> }
+        @if (title()) { <strong class="title">{{ title() | t }}</strong> }
         @if (text()) { <p class="text">{{ text() }}</p> }
         @if (actionLabel()) {
           <button class="btn btn-primary" type="button" (click)="action.emit()">{{ actionLabel() }}</button>

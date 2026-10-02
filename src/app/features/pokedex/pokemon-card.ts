@@ -13,6 +13,7 @@ import { animatedSprite, officialArtwork } from '../../core/api/pokeapi-endpoint
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { IconComponent } from '../../core/ui/icon/icon';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 const REDUCED_MOTION =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -27,7 +28,7 @@ export interface QuickviewRequest {
 @Component({
   selector: 'pv-pokemon-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TypeBadgeComponent, IconComponent],
+  imports: [TranslatePipe, RouterLink, TypeBadgeComponent, IconComponent],
   template: `
     <a
       class="card"
@@ -53,13 +54,13 @@ export interface QuickviewRequest {
       <div class="top">
         <span class="num">{{ id() }}</span>
         <span class="badges">
-          @if (caught()) { <span class="dot caught" title="Caught in the World"><pv-icon name="check" /></span> }
+          @if (caught()) { <span class="dot caught" [attr.title]="'Caught in the World' | t"><pv-icon name="check" /></span> }
           <button
             class="fav-btn"
             type="button"
             [class.on]="favorite()"
             [attr.aria-pressed]="favorite()"
-            aria-label="Toggle favorite"
+            [attr.aria-label]="'Toggle favorite' | t"
             (click)="onFav($event)"
           >
             <pv-icon name="heart" />
@@ -90,15 +91,15 @@ export interface QuickviewRequest {
         </div>
       }
 
-      <button class="info" type="button" aria-label="Quick view" (click)="onInfo($event)">
+      <button class="info" type="button" [attr.aria-label]="'Quick view' | t" (click)="onInfo($event)">
         <pv-icon name="search" />
       </button>
       <button
         class="compare-btn"
         type="button"
         [class.on]="inCompare()"
-        aria-label="Add to compare"
-        title="Compare"
+        [attr.aria-label]="'Add to compare' | t"
+        [attr.title]="'Compare' | t"
         (click)="onCompare($event)"
       >⇄</button>
     </a>

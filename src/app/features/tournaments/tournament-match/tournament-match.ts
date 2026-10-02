@@ -35,6 +35,7 @@ import { pickWeather, weatherForType, type Weather } from '../../../core/ui/weat
 import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';
 import type { PlayerMatchSetup } from '../tournaments.service';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 interface StageChip {
   readonly label: string;
@@ -80,7 +81,7 @@ function stageChips(stages: Stages): StageChip[] {
 @Component({
   selector: 'pv-tournament-match',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, WeatherOverlayComponent, StatusBadgeComponent, FieldBannerComponent, MoveButtonComponent, BattleFxComponent],
+  imports: [TranslatePipe, TypeBadgeComponent, WeatherOverlayComponent, StatusBadgeComponent, FieldBannerComponent, MoveButtonComponent, BattleFxComponent],
   templateUrl: './tournament-match.html',
   styleUrl: './tournament-match.scss',
 })

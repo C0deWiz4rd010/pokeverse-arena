@@ -1,3 +1,4 @@
+import { I18nService } from '../../core/i18n/i18n.service';
 import { StateComponent } from '../../core/ui/state/state';
 import {
   ChangeDetectionStrategy,
@@ -27,6 +28,7 @@ import { groupDefenses } from '../../core/utils/type-chart';
 import { onSwipe } from '../../core/ui/gestures';
 import { HapticsService } from '../../core/haptics/haptics.service';
 import type { AbilityInfo, LearnableMove, MoveInfo, PokemonStats } from '../../core/models/pokemon.model';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 type MoveTab = 'level-up' | 'machine' | 'egg' | 'tutor';
 
@@ -38,7 +40,7 @@ const DEX_MAX = 1025;
 @Component({
   selector: 'pv-pokemon-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     StateComponent,
     StatRadarComponent,
     EvolutionTreeComponent,
@@ -53,6 +55,7 @@ const DEX_MAX = 1025;
 export class PokemonDetailComponent {
   readonly id = input.required<string>();
 
+  protected readonly i18n = inject(I18nService);
   protected readonly store = inject(PokemonDetailService);
   protected readonly cry = inject(CryService);
   private readonly dex = inject(PokedexService);

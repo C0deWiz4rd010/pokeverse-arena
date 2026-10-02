@@ -7,6 +7,7 @@ import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { TournamentMatchComponent } from '../tournaments/tournament-match/tournament-match';
 import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../core/ui/format';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 /**
  * Odyssey — the endless biome-march roguelike. Thin shell over
@@ -17,7 +18,7 @@ import { titleCase } from '../../core/ui/format';
 @Component({
   selector: 'pv-odyssey',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, PageHeaderComponent, IconComponent, SpinnerComponent, TournamentMatchComponent],
+  imports: [TranslatePipe, NgTemplateOutlet, PageHeaderComponent, IconComponent, SpinnerComponent, TournamentMatchComponent],
   templateUrl: './odyssey.html',
   styleUrl: './odyssey.scss',
 })

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { ProfileService } from './profile.service';
 import { SaveService } from '../../core/storage/save.service';
 import { ToastService } from '../../core/ui/toast/toast.service';
@@ -22,6 +23,7 @@ export class AchievementWatcherService {
   private readonly profile = inject(ProfileService);
   private readonly save = inject(SaveService);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(I18nService);
   private started = false;
 
   start(): void {
@@ -56,8 +58,8 @@ export class AchievementWatcherService {
       const a = ACHIEVEMENTS.find((x) => x.id === id);
       if (!a) continue;
       this.toast.show({
-        title: 'Achievement unlocked — ' + a.name,
-        text: a.desc,
+        title: `${this.i18n.t('Achievement unlocked')} — ${this.i18n.t(a.name)}`,
+        text: this.i18n.t(a.desc),
         icon: a.icon,
         kind: 'achievement',
       });

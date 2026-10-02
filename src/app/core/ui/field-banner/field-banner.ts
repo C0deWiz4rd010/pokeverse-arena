@@ -5,6 +5,7 @@ import {
   type Terrain,
   type Weather,
 } from '../../../game/engine';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 interface Chip {
   readonly label: string;
@@ -14,14 +15,15 @@ interface Chip {
 
 /** A compact banner showing the active battle weather/terrain and turns left. */
 @Component({
-  selector: 'pv-field-banner',
+    imports: [TranslatePipe],
+selector: 'pv-field-banner',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (chips().length) {
       <div class="field-banner" aria-live="polite">
         @for (c of chips(); track c.label) {
           <span class="chip" [class.weather]="c.kind === 'weather'" [class.terrain]="c.kind === 'terrain'">
-            {{ c.label }}
+            {{ c.label | t }}
             @if (c.turns > 0) { <small>{{ c.turns }}</small> }
           </span>
         }

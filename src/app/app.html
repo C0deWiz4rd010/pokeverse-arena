@@ -1,18 +1,28 @@
 <div class="aurora" aria-hidden="true"></div>
 
-<a class="skip-link" href="#main-content">Skip to main content</a>
+<a class="skip-link" href="#main-content">{{ 'Skip to main content' | t }}</a>
 
 <header class="topbar glass" [class.scrolled]="scrolled()">
   <a class="brand" routerLink="/" (click)="closeMenu()">
     <span class="brand-ball" aria-hidden="true"></span>
-    <span class="brand-text gradient-text">PokéVerse</span>
-    <span class="brand-sub">Arena</span>
+    <span class="brand-text gradient-text">{{ 'PokéVerse' | t }}</span>
+    <span class="brand-sub">{{ 'Arena' | t }}</span>
   </a>
 
-  <button class="palette-btn" type="button" (click)="openPalette()" title="Search & commands (Ctrl+K)" aria-label="Search and commands" aria-keyshortcuts="Control+K Meta+K">
+  <button
+    class="lang-btn"
+    type="button"
+    (click)="i18n.toggle()"
+    [attr.aria-label]="('Language' | t) + ': ' + (i18n.isGerman() ? 'Deutsch' : 'English')"
+    [attr.title]="'Switch language' | t"
+  >
+    <span aria-hidden="true">{{ i18n.isGerman() ? 'DE' : 'EN' }}</span>
+  </button>
+
+  <button class="palette-btn" type="button" (click)="openPalette()" [attr.title]="'Search & commands (Ctrl+K)' | t" [attr.aria-label]="'Search and commands' | t" aria-keyshortcuts="Control+K Meta+K">
     <pv-icon name="search" />
-    <span class="pb-label">Search…</span>
-    <kbd class="pb-kbd">Ctrl K</kbd>
+    <span class="pb-label">{{ 'Search…' | t }}</span>
+    <kbd class="pb-kbd">{{ 'Ctrl K' | t }}</kbd>
   </button>
 
   <button
@@ -21,21 +31,21 @@
     (click)="toggleMenu()"
     [attr.aria-expanded]="menuOpen()"
     aria-controls="site-nav"
-    aria-label="Toggle navigation"
+    [attr.aria-label]="'Toggle navigation' | t"
   >
     <span></span><span></span><span></span>
   </button>
 
-  <nav class="nav" id="site-nav" aria-label="Main" [class.open]="menuOpen()">
+  <nav class="nav" id="site-nav" [attr.aria-label]="'Main' | t" [class.open]="menuOpen()">
     @for (item of nav; track item.path) {
       <a
         [routerLink]="item.path"
         routerLinkActive="active"
-        [attr.title]="item.label"
+        [attr.title]="item.label | t"
         (click)="closeMenu()"
       >
         <span class="nav-icon" aria-hidden="true"><pv-icon [name]="item.icon" /></span>
-        <span class="nav-label">{{ item.label }}</span>
+        <span class="nav-label">{{ item.label | t }}</span>
       </a>
     }
   </nav>
@@ -47,21 +57,21 @@
 
 <footer class="footer">
   <span>
-    Data from
-    <a href="https://pokeapi.co" target="_blank" rel="noopener noreferrer">PokéAPI</a>
-    · Fan project · Built with Angular 22, PixiJS &amp; Three.js
+    {{ 'Data from' | t }}
+    <a href="https://pokeapi.co" target="_blank" rel="noopener noreferrer">{{ 'PokéAPI' | t }}</a>
+    {{ '· Fan project · Built with Angular 22, PixiJS & Three.js' | t }}
   </span>
   <a
     class="version"
     href="https://github.com/C0deWiz4rd010/pokeverse-arena"
     target="_blank"
     rel="noopener noreferrer"
-    aria-label="View source on GitHub"
+    [attr.aria-label]="'View source on GitHub' | t"
   >v{{ version }}</a>
 </footer>
 
 @if (showToTop()) {
-  <button class="to-top glass" type="button" aria-label="Back to top" title="Back to top" (click)="scrollTop()">
+  <button class="to-top glass" type="button" [attr.aria-label]="'Back to top' | t" [attr.title]="'Back to top' | t" (click)="scrollTop()">
     <span class="to-top-arrow" aria-hidden="true">↑</span>
   </button>
 }

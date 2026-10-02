@@ -30,6 +30,7 @@ import { PokedexService } from '../pokedex/pokedex.service';
 import { titleCase } from '../../core/ui/format';
 import { SeededRng } from '../../core/utils/rng';
 import { pickWeather, WEATHER_INFO, type Weather } from './battle-weather';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 type Phase = 'setup' | 'loading' | 'fighting' | 'done';
 
@@ -61,7 +62,7 @@ const STAGE_SHORT: Record<BoostableStat, string> = {
 @Component({
   selector: 'pv-battle',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     TypeBadgeComponent,
     SpinnerComponent,
     PageHeaderComponent,

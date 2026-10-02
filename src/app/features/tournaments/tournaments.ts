@@ -25,11 +25,12 @@ import {
   type BracketMatch,
   type ModeId,
 } from '../../game/tournament';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 @Component({
   selector: 'pv-tournaments',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     NgTemplateOutlet,
     TournamentMatchComponent,
     PageHeaderComponent,

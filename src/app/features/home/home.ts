@@ -17,6 +17,7 @@ import { dailyFusionPair } from '../../game/fusion/fusion';
 import { SeededRng, dailySeed } from '../../core/utils/rng';
 import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import type { IconName } from '../../core/ui/icon/icons.data';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 interface FeatureCard {
   path: string;
@@ -38,7 +39,7 @@ const REDUCED_MOTION =
 @Component({
   selector: 'pv-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, IconComponent],
+  imports: [TranslatePipe, RouterLink, IconComponent],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

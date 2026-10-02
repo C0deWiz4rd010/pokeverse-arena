@@ -18,6 +18,7 @@ import { POKEMON_TYPES, offensiveCoverage, type PokemonType } from '../../core/u
 import { animatedSprite } from '../../core/api/pokeapi-endpoints';
 import { NATURES, natureByName, natureSummary } from '../../core/utils/natures';
 import type { StatKey } from '../../core/utils/stat-calculator';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 const STAT_ROWS: { key: StatKey; label: string }[] = [
   { key: 'hp', label: 'HP' },
@@ -33,7 +34,7 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 @Component({
   selector: 'pv-team-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     StateComponent,TypeBadgeComponent, SpinnerComponent, PageHeaderComponent, IconComponent],
   templateUrl: './team-builder.html',
   styleUrl: './team-builder.scss',

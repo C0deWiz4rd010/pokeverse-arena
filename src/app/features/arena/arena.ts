@@ -11,6 +11,7 @@ import { titleCase } from '../../core/ui/format';
 import { bestLead, scoutMatchup, winOdds } from '../../game/tournament';
 import type { GymLeader } from '../../game/arena/gym-leaders';
 import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 interface ScoutMon {
   readonly species: string;
@@ -21,7 +22,7 @@ interface ScoutMon {
 @Component({
   selector: 'pv-arena',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, SpinnerComponent, TypeBadgeComponent, IconComponent, TournamentMatchComponent],
+  imports: [TranslatePipe, PageHeaderComponent, SpinnerComponent, TypeBadgeComponent, IconComponent, TournamentMatchComponent],
   templateUrl: './arena.html',
   styleUrl: './arena.scss',
 })

@@ -7,6 +7,7 @@ import {
 import { IconComponent } from '../icon/icon';
 import { SaveService } from '../../storage/save.service';
 import { HapticsService } from '../../haptics/haptics.service';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -23,27 +24,27 @@ interface BeforeInstallPromptEvent extends Event {
 @Component({
   selector: 'pv-install-prompt',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent],
+  imports: [TranslatePipe, IconComponent],
   host: {
     '(window:beforeinstallprompt)': 'onBeforeInstall($event)',
     '(window:appinstalled)': 'onInstalled()',
   },
   template: `
     @if (visible()) {
-      <div class="install glass" role="region" aria-label="Install app">
+      <div class="install glass" role="region" [attr.aria-label]="'Install app' | t">
         <span class="ic"><pv-icon name="download" /></span>
         <span class="msg">
-          <strong>Install PokéVerse Arena</strong>
+          <strong>{{ 'Install PokéVerse Arena' | t }}</strong>
           @if (ios()) {
-            <span>Tap Share, then “Add to Home Screen”.</span>
+            <span>{{ 'Tap Share, then “Add to Home Screen”.' | t }}</span>
           } @else {
-            <span>Play fullscreen, offline-ready, one tap away.</span>
+            <span>{{ 'Play fullscreen, offline-ready, one tap away.' | t }}</span>
           }
         </span>
         @if (!ios()) {
-          <button class="btn btn-primary go" type="button" (click)="install()">Install</button>
+          <button class="btn btn-primary go" type="button" (click)="install()">{{ 'Install' | t }}</button>
         }
-        <button class="x" type="button" aria-label="Dismiss" (click)="dismiss()"><pv-icon name="x" /></button>
+        <button class="x" type="button" [attr.aria-label]="'Dismiss' | t" (click)="dismiss()"><pv-icon name="x" /></button>
       </div>
     }
   `,

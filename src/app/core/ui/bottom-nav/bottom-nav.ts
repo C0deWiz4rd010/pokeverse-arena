@@ -10,6 +10,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IconComponent } from '../icon/icon';
 import type { IconName } from '../icon/icons.data';
 import { HapticsService } from '../../haptics/haptics.service';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 export interface BottomNavItem {
   path: string;
@@ -25,33 +26,33 @@ export interface BottomNavItem {
 @Component({
   selector: 'pv-bottom-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, IconComponent, ModalDirective],
+  imports: [TranslatePipe, RouterLink, RouterLinkActive, IconComponent, ModalDirective],
   template: `
-    <nav class="bnav glass" aria-label="Primary">
+    <nav class="bnav glass" [attr.aria-label]="'Primary' | t">
       <a class="bslot" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="tap()">
         <pv-icon name="home" [size]="22" />
-        <span>Home</span>
+        <span>{{ 'Home' | t }}</span>
       </a>
       <a class="bslot" routerLink="/pokedex" routerLinkActive="active" (click)="tap()">
         <pv-icon name="book" [size]="22" />
-        <span>Dex</span>
+        <span>{{ 'Dex' | t }}</span>
       </a>
-      <a class="bslot center" routerLink="/battle" routerLinkActive="active" (click)="tap()" aria-label="Battle">
+      <a class="bslot center" routerLink="/battle" routerLinkActive="active" (click)="tap()" [attr.aria-label]="'Battle' | t">
         <span class="orb"><pv-icon name="swords" [size]="24" /></span>
       </a>
       <a class="bslot" routerLink="/adventure" routerLinkActive="active" (click)="tap()">
         <pv-icon name="scroll-text" [size]="22" />
-        <span>Quest</span>
+        <span>{{ 'Quest' | t }}</span>
       </a>
-      <button class="bslot" type="button" (click)="openSheet()" [attr.aria-expanded]="sheet()" aria-label="More">
+      <button class="bslot" type="button" (click)="openSheet()" [attr.aria-expanded]="sheet()" [attr.aria-label]="'More' | t">
         <pv-icon name="grid" [size]="22" />
-        <span>More</span>
+        <span>{{ 'More' | t }}</span>
       </button>
     </nav>
 
     @if (sheet()) {
       <div class="sheet-scrim" role="presentation" (click)="closeSheet()"></div>
-      <div class="sheet glass" role="dialog" aria-label="All sections" pvModal (pvModalClose)="closeSheet()">
+      <div class="sheet glass" role="dialog" [attr.aria-label]="'All sections' | t" pvModal (pvModalClose)="closeSheet()">
         <div class="sheet-grip" aria-hidden="true"></div>
         <div class="sheet-grid">
           @for (item of items(); track item.path) {
@@ -62,7 +63,7 @@ export interface BottomNavItem {
               (click)="pick()"
             >
               <span class="sheet-icon"><pv-icon [name]="item.icon" [size]="22" /></span>
-              <span>{{ item.label }}</span>
+              <span>{{ item.label | t }}</span>
             </a>
           }
         </div>

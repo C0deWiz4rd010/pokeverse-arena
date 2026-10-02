@@ -21,6 +21,7 @@ import {
   shareText,
   statValue,
 } from '../../game/showdown/showdown-logic';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 const MAX_ID = 1025;
 
@@ -35,33 +36,33 @@ type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over';
 @Component({
   selector: 'pv-showdown',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, TypeBadgeComponent],
+  imports: [TranslatePipe, PageHeaderComponent, TypeBadgeComponent],
   host: { '(document:keydown)': 'onKey($event)' },
   template: `
-    <pv-page-header title="Stat Showdown" subtitle="Higher or lower — guess the stronger stat" icon="dices" />
+    <pv-page-header [title]="'Stat Showdown' | t" [subtitle]="'Higher or lower — guess the stronger stat' | t" icon="dices" />
 
     @if (phase() === 'intro') {
       <section class="intro glass">
-        <p class="lead">Two Pokémon. One stat. Pick the winner and stack your streak.</p>
+        <p class="lead">{{ 'Two Pokémon. One stat. Pick the winner and stack your streak.' | t }}</p>
         <ul class="rules">
-          <li>🎯 Tap the Pokémon you think wins the highlighted stat.</li>
-          <li>🔥 Every correct pick grows your streak.</li>
-          <li>💥 One miss ends the run — ties always count for you.</li>
+          <li>{{ '🎯 Tap the Pokémon you think wins the highlighted stat.' | t }}</li>
+          <li>{{ '🔥 Every correct pick grows your streak.' | t }}</li>
+          <li>{{ '💥 One miss ends the run — ties always count for you.' | t }}</li>
         </ul>
-        <p class="best">Best streak: <strong>{{ best() }}</strong></p>
-        <button class="btn btn-primary big" type="button" (click)="start()">Start Showdown</button>
+        <p class="best">{{ 'Best streak:' | t }} <strong>{{ best() }}</strong></p>
+        <button class="btn btn-primary big" type="button" (click)="start()">{{ 'Start Showdown' | t }}</button>
       </section>
     }
 
     @if (phase() !== 'intro') {
       <div class="hud">
-        <span class="chip">🔥 Streak <strong>{{ streak() }}</strong></span>
-        <span class="chip">🏅 Best <strong>{{ best() }}</strong></span>
+        <span class="chip">{{ '🔥 Streak' | t }} <strong>{{ streak() }}</strong></span>
+        <span class="chip">{{ '🏅 Best' | t }} <strong>{{ best() }}</strong></span>
       </div>
 
       <div class="prompt">
-        <span class="q">Which has the</span>
-        <span class="stat-label">{{ stat().label }}?</span>
+        <span class="q">{{ 'Which has the' | t }}</span>
+        <span class="stat-label">{{ stat().label | t }}?</span>
       </div>
 
       <div class="arena" [class.revealing]="phase() === 'reveal' || phase() === 'over'">
@@ -84,24 +85,24 @@ type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over';
               @if (revealed()) {
                 <span class="value" [class.hi]="sideWins(side)">{{ valueOf(m) }}</span>
               } @else {
-                <span class="tap-hint">Tap to pick</span>
+                <span class="tap-hint">{{ 'Tap to pick' | t }}</span>
               }
             </button>
           } @else {
             <div class="card glass skeleton"><span class="spin"></span></div>
           }
         }
-        <div class="vs" aria-hidden="true">VS</div>
+        <div class="vs" aria-hidden="true">{{ 'VS' | t }}</div>
       </div>
 
       @if (phase() === 'over') {
         <section class="over glass">
-          <h2>{{ streak() > 0 ? 'Run over!' : 'So close!' }}</h2>
-          <p class="final">You reached a streak of <strong>{{ streak() }}</strong>.</p>
-          @if (newBest()) { <p class="record">🏆 New personal best!</p> }
+          <h2>{{ streak() > 0 ? ('Run over!' | t) : ('So close!' | t) }}</h2>
+          <p class="final">{{ 'You reached a streak of' | t }} <strong>{{ streak() }}</strong>.</p>
+          @if (newBest()) { <p class="record">{{ '🏆 New personal best!' | t }}</p> }
           <div class="over-actions">
-            <button class="btn btn-primary" type="button" (click)="start()">Play again</button>
-            <button class="btn" type="button" (click)="share()">Share</button>
+            <button class="btn btn-primary" type="button" (click)="start()">{{ 'Play again' | t }}</button>
+            <button class="btn" type="button" (click)="share()">{{ 'Share' | t }}</button>
           </div>
         </section>
       }

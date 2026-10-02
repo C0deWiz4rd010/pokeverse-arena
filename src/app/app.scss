@@ -71,7 +71,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin-left: auto;
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--glass-border);
   border-radius: 999px;
@@ -87,6 +86,31 @@
     border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border));
     box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent);
   }
+  }
+}
+.lang-btn {
+  margin-left: auto;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  @include touch-target;
+  padding: 0 0.7rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+@include hover-capable {
+  .lang-btn:hover {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border));
   }
 }
 .pb-label { font-size: 0.85rem; }

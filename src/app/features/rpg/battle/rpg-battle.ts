@@ -38,6 +38,7 @@ import { ITEMS, isBall } from '../../../game/rpg/items-catalog';
 import { battleScene } from '../../../game/rpg/battle-scene';
 import { timeBand } from '../../../game/rpg/time';
 import type { ItemId, PartyMon } from '../../../game/rpg/rpg-types';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 interface MoveSlot { readonly move: BattleMove; readonly pp: number; readonly maxPp: number | null; }
 interface BagSlot { readonly id: ItemId; readonly name: string; readonly count: number; readonly ball: boolean; }
@@ -54,7 +55,7 @@ const REDUCED =
 @Component({
   selector: 'pv-rpg-battle',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, StatusBadgeComponent, MoveButtonComponent, BattleFxComponent],
+  imports: [TranslatePipe, TypeBadgeComponent, StatusBadgeComponent, MoveButtonComponent, BattleFxComponent],
   templateUrl: './rpg-battle.html',
   styleUrl: './rpg-battle.scss',
 })

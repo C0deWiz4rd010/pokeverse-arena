@@ -68,6 +68,8 @@ export interface SpeciesInfo {
   name: string;
   genus: string;
   flavorText: string;
+  /** German name / genus / Pokédex entry when PokéAPI has them (shown in the German UI). */
+  de: { name: string; genus: string; flavorText: string } | null;
   color: string;
   shape: string | null;
   habitat: string | null;
@@ -121,9 +123,17 @@ const STAT_KEYS: StatKey[] = [
   'hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed',
 ];
 
-function englishFlavor(entries: { flavor_text: string; language: { name: string } }[]): string {
-  const en = entries.find((e) => e.language.name === 'en');
-  return (en?.flavor_text ?? '').replace(/[\n\f\r]/g, ' ').trim();
+function flavorFor(entries: { flavor_text: string; language: { name: string } }[], lang: string): string {
+  // later games come last; prefer the newest entry in the language
+  const hit = [...entries].reverse().find((e) => e.language.name === lang);
+  return (hit?.flavor_text ?? '').replace(/[\n\f\r]/g, ' ').trim();
+}
+
+function localized(dto: PokemonSpeciesDto, lang: string): { name: string; genus: string; flavorText: string } | null {
+  const name = dto.names?.find((n) => n.language.name === lang)?.name ?? '';
+  const genus = dto.genera.find((g) => g.language.name === lang)?.genus ?? '';
+  const flavorText = flavorFor(dto.flavor_text_entries, lang);
+  return name || genus || flavorText ? { name, genus, flavorText } : null;
 }
 
 function englishEffect(entries: { effect: string; short_effect: string; language: { name: string } }[]): {
@@ -190,7 +200,8 @@ export function mapSpecies(dto: PokemonSpeciesDto): SpeciesInfo {
     id: dto.id,
     name: dto.name,
     genus: dto.genera.find((g) => g.language.name === 'en')?.genus ?? '',
-    flavorText: englishFlavor(dto.flavor_text_entries),
+    flavorText: flavorFor(dto.flavor_text_entries, 'en'),
+    de: localized(dto, 'de'),
     color: dto.color.name,
     shape: dto.shape?.name ?? null,
     habitat: dto.habitat?.name ?? null,

@@ -9,11 +9,12 @@ import {
   type Berry,
   type ContestCategory,
 } from '../../game/contest/contest';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 @Component({
   selector: 'pv-contest',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, SpinnerComponent, IconComponent],
+  imports: [TranslatePipe, PageHeaderComponent, SpinnerComponent, IconComponent],
   templateUrl: './contest.html',
   styleUrl: './contest.scss',
 })

@@ -4,6 +4,29 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.4.0 — 2026-10-02
+
+🇩🇪 **Deutsch / English + accessibility pass** (phase F of the polish plan).
+
+### Added
+
+- **German translation** of the whole interface — pages, tooltips, toasts, battle log,
+  NPC dialogue, quests, items, achievements, game data and the shareable Trainer Card.
+  The language follows the browser on first visit and switches instantly via the `DE | EN`
+  button or *Profile → Language*; the choice is remembered. See [docs/i18n.md](i18n.md).
+- German Pokédex entry and genus on the Pokémon detail page, quick view and showcase.
+- `tools/i18n-check.mjs` (runs in CI) and `tools/i18n-scan.mjs` keep translations complete.
+
+### Accessibility
+
+- Dialogs trap focus, close on Escape and return focus to the control that opened them
+  (compare, Who's That, "More" sheet, command palette, field menu).
+- Real buttons instead of clickable spans; HP bars expose `progressbar`; adventure map
+  canvases are labelled; toasts are `role=status`, pause on hover/focus and clear the tab-bar.
+- Type badges use dark or light text per type for WCAG-AA contrast; hover effects are limited to
+  devices that can hover (no sticky hover on touch).
+- ESLint's template accessibility rules are errors again.
+
 ## v2.3.0 — 2026-10-02
 
 🛠️ **Quality, resilience & responsive foundation** (phases A–E of the polish plan).

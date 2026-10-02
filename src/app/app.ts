@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from './core/version';
 import { ThemeService } from './core/theme/theme.service';
+import { I18nService } from './core/i18n/i18n.service';
 import { SaveService } from './core/storage/save.service';
 import { installImageFallback } from './core/ui/image-fallback';
 import { IconComponent } from './core/ui/icon/icon';
@@ -11,6 +12,7 @@ import { BottomNavComponent } from './core/ui/bottom-nav/bottom-nav';
 import { InstallPromptComponent } from './core/ui/install-prompt/install-prompt';
 import { CommandPaletteComponent } from './features/command-palette/command-palette';
 import { AchievementWatcherService } from './features/profile/achievement-watcher.service';
+import { TranslatePipe } from './core/i18n/translate.pipe';
 
 interface NavItem {
   path: string;
@@ -21,7 +23,7 @@ interface NavItem {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ToastsComponent, BottomNavComponent, InstallPromptComponent, CommandPaletteComponent],
+  imports: [TranslatePipe, RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ToastsComponent, BottomNavComponent, InstallPromptComponent, CommandPaletteComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
@@ -34,6 +36,7 @@ export class App {
   protected readonly theme = inject(ThemeService);
   private readonly achievements = inject(AchievementWatcherService);
   private readonly saves = inject(SaveService);
+  protected readonly i18n = inject(I18nService);
 
   protected readonly menuOpen = signal(false);
   protected readonly paletteOpen = signal(false);

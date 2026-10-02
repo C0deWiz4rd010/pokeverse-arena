@@ -4,31 +4,33 @@ import { ITEMS } from '../../../game/rpg/items-catalog';
 import { MART_STOCK, buyPrice } from '../../../game/rpg/shop';
 import { shopDiscount } from '../../../game/rpg/boons';
 import type { ItemId } from '../../../game/rpg/rpg-types';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 /** Poké Mart — buy items with the player's money. */
 @Component({
-  selector: 'pv-rpg-shop',
+    imports: [TranslatePipe],
+selector: 'pv-rpg-shop',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="shop">
       <header class="shop-head">
-        <strong>Poké Mart</strong>
-        @if (discount() < 1) { <span class="boon" title="Boulder Badge boon">🪨 Haggler −10 %</span> }
+        <strong>{{ 'Poké Mart' | t }}</strong>
+        @if (discount() < 1) { <span class="boon" [attr.title]="'Boulder Badge boon' | t">{{ '🪨 Haggler −10 %' | t }}</span> }
         <span class="money">{{ svc.money() }} ₽</span>
       </header>
       <ul class="stock">
         @for (id of stock; track id) {
           <li class="item">
-            <span class="name">{{ name(id) }}</span>
-            <span class="desc">{{ desc(id) }}</span>
+            <span class="name">{{ name(id) | t }}</span>
+            <span class="desc">{{ desc(id) | t }}</span>
             <span class="own">×{{ svc.itemCount(id) }}</span>
             <button type="button" class="buy" [disabled]="svc.money() < price(id) || soldOut(id)" (click)="buy(id)">
-              {{ soldOut(id) ? 'Owned' : price(id) + ' ₽' }}
+              {{ soldOut(id) ? ('Owned' | t) : price(id) + ' ₽' }}
             </button>
           </li>
         }
       </ul>
-      <button class="leave" type="button" (click)="svc.closeMenu()">Leave ›</button>
+      <button class="leave" type="button" (click)="svc.closeMenu()">{{ 'Leave ›' | t }}</button>
     </div>
   `,
   styleUrl: './shop.scss',

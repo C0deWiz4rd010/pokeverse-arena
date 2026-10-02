@@ -1,8 +1,8 @@
 <section class="battle" [class.in-fight]="phase() === 'fighting' || phase() === 'done'">
   <pv-page-header
     icon="swords"
-    title="Battle Arena"
-    subtitle="Seeded, type-accurate skirmishes. Pick a fighter or take on a random challenger."
+    [title]="'Battle Arena' | t"
+    [subtitle]="'Seeded, type-accurate skirmishes. Pick a fighter or take on a random challenger.' | t"
   />
 
   @switch (phase()) {
@@ -10,11 +10,11 @@
       <div class="setup-wrap">
         <div class="setup glass">
           <label class="field">
-            <span>Your Pokémon</span>
+            <span>{{ 'Your Pokémon' | t }}</span>
             <input
               type="text"
               list="dex-names"
-              placeholder="Name or # (leave blank for random)"
+              [attr.placeholder]="'Name or # (leave blank for random)' | t"
               [value]="playerInput()"
               (input)="setPlayerInput($event)"
               (keydown.enter)="start()"
@@ -24,35 +24,35 @@
             </datalist>
           </label>
           <div class="setup-actions">
-            <button class="btn" type="button" (click)="start()"><pv-icon name="swords" /> Fight</button>
-            <button class="btn ghost" type="button" (click)="surpriseMe()"><pv-icon name="dices" /> Surprise me</button>
+            <button class="btn" type="button" (click)="start()"><pv-icon name="swords" /> {{ 'Fight' | t }}</button>
+            <button class="btn ghost" type="button" (click)="surpriseMe()"><pv-icon name="dices" /> {{ 'Surprise me' | t }}</button>
           </div>
-          @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
-          <p class="hint">Both sides fight at level 50 with their strongest level-up moves.</p>
+          @if (error()) { <p class="err" role="alert">{{ error() | t }}</p> }
+          <p class="hint">{{ 'Both sides fight at level 50 with their strongest level-up moves.' | t }}</p>
         </div>
 
         <div class="daily glass">
           <div class="daily-head">
             <span class="daily-flame" aria-hidden="true"><pv-icon name="flame" /></span>
             <div class="daily-title">
-              <h3>Daily Challenge</h3>
-              <span class="daily-date">{{ daily.today }} · same matchup for every trainer</span>
+              <h3>{{ 'Daily Challenge' | t }}</h3>
+              <span class="daily-date">{{ '{0} · same matchup for every trainer' | t: [(daily.today)] }}</span>
             </div>
           </div>
           <div class="daily-stats">
-            <span class="d-stat"><strong>{{ daily.streak() }}</strong> streak</span>
-            <span class="d-stat"><strong>{{ daily.best() }}</strong> best</span>
-            <span class="d-stat"><strong>{{ daily.wins() }}</strong> wins</span>
+            <span class="d-stat"><strong>{{ daily.streak() }}</strong> {{ 'streak' | t }}</span>
+            <span class="d-stat"><strong>{{ daily.best() }}</strong> {{ 'best' | t }}</span>
+            <span class="d-stat"><strong>{{ daily.wins() }}</strong> {{ 'wins' | t }}</span>
           </div>
           @if (daily.wonToday()) {
-            <p class="daily-done"><pv-icon name="check" /> Cleared today — the streak is safe. Rematch just for fun?</p>
+            <p class="daily-done"><pv-icon name="check" /> {{ 'Cleared today — the streak is safe. Rematch just for fun?' | t }}</p>
           } @else if (daily.playedToday()) {
-            <p class="daily-done lost"><pv-icon name="heart-crack" /> Today's attempt is spent — new challenge tomorrow.</p>
+            <p class="daily-done lost"><pv-icon name="heart-crack" /> {{ 'Today\'s attempt is spent — new challenge tomorrow.' | t }}</p>
           } @else {
-            <p class="daily-hint">One counted attempt per day. Win to extend your streak!</p>
+            <p class="daily-hint">{{ 'One counted attempt per day. Win to extend your streak!' | t }}</p>
           }
           <button class="btn btn-primary" type="button" (click)="startDaily()">
-            <pv-icon name="flame" /> {{ daily.playedToday() ? 'Replay today’s battle' : 'Fight today’s battle' }}
+            <pv-icon name="flame" /> {{ daily.playedToday() ? ('Replay today’s battle' | t) : ('Fight today’s battle' | t) }}
           </button>
         </div>
       </div>
@@ -61,7 +61,7 @@
     @case ('loading') {
       <div class="loading">
         <pv-spinner />
-        <p>Entering the arena…</p>
+        <p>{{ 'Entering the arena…' | t }}</p>
       </div>
     }
 
@@ -75,7 +75,7 @@
             <!-- GPU effects layer (lazy PixiJS; no-op if unavailable) -->
             <pv-battle-fx />
 
-            <button class="speed-chip" type="button" (click)="cycleSpeed()" title="Battle speed" [attr.aria-label]="'Battle speed ' + speed() + '×'">{{ speed() }}×</button>
+            <button class="speed-chip" type="button" (click)="cycleSpeed()" [attr.title]="'Battle speed' | t" [attr.aria-label]="'Battle speed {0}×' | t: [speed()]">{{ speed() }}×</button>
 
             <!-- Active field conditions (weather / terrain) -->
             <div class="field-overlay">
@@ -91,32 +91,32 @@
             <!-- Opponent -->
             @if (opponent(); as o) {
               <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1" [class.crit]="critSide() === 1" [class.fainted]="winner() === 0">
-                @if (critSide() === 1) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
+                @if (critSide() === 1) { <span class="crit-burst" aria-hidden="true">{{ 'CRITICAL!' | t }}</span> }
                 <div class="info glass">
                   <div class="row">
                     <strong>{{ titleCase(o.name) }}</strong>
-                    <span class="lv">Lv{{ o.level }}</span>
+                    <span class="lv">{{ 'Lv{0}' | t: [(o.level)] }}</span>
                     @if (oppStatus() !== 'none') { <pv-status-badge [status]="oppStatus()" /> }
                   </div>
                   <div class="types">
                     @for (t of o.types; track t) { <pv-type-badge [type]="t" /> }
                   </div>
-                  @if (oppAbility()) { <span class="ability">{{ oppAbility() }}</span> }
+                  @if (oppAbility()) { <span class="ability">{{ oppAbility() | t }}</span> }
                   @if (oppStageChips().length) {
                     <div class="stages">
                       @for (c of oppStageChips(); track c.label) {
-                        <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span>
+                        <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label | t }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span>
                       }
                     </div>
                   }
-                  <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="oppHpPct()">
+                  <div class="hpbar" role="progressbar" [attr.aria-label]="'HP' | t" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="oppHpPct()">
                     <span class="fill" [class.low]="oppHpPct() <= 25" [class.mid]="oppHpPct() > 25 && oppHpPct() <= 50" [style.width.%]="oppHpPct()"></span>
-                    <span class="kp">{{ oppHp() }} / {{ oppMaxHp() }} <small>KP</small></span>
+                    <span class="kp">{{ oppHp() }} / {{ oppMaxHp() }} <small>{{ 'KP' | t }}</small></span>
                   </div>
                 </div>
                 <img decoding="async" class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="o.sprite" [alt]="o.name" />
                 @for (f of floats(); track f.id) {
-                  @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
+                  @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text | t }}</span> }
                 }
               </div>
             }
@@ -126,29 +126,29 @@
               <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0" [class.crit]="critSide() === 0" [class.fainted]="winner() === 1">
                 <img decoding="async" class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="p.sprite" [alt]="p.name" />
                 @for (f of floats(); track f.id) {
-                  @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
+                  @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text | t }}</span> }
                 }
-                @if (critSide() === 0) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
+                @if (critSide() === 0) { <span class="crit-burst" aria-hidden="true">{{ 'CRITICAL!' | t }}</span> }
                 <div class="info glass">
                   <div class="row">
                     <strong>{{ titleCase(p.name) }}</strong>
-                    <span class="lv">Lv{{ p.level }}</span>
+                    <span class="lv">{{ 'Lv{0}' | t: [(p.level)] }}</span>
                     @if (playerStatus() !== 'none') { <pv-status-badge [status]="playerStatus()" /> }
                   </div>
                   <div class="types">
                     @for (t of p.types; track t) { <pv-type-badge [type]="t" /> }
                   </div>
-                  @if (playerAbility()) { <span class="ability">{{ playerAbility() }}</span> }
+                  @if (playerAbility()) { <span class="ability">{{ playerAbility() | t }}</span> }
                   @if (playerStageChips().length) {
                     <div class="stages">
                       @for (c of playerStageChips(); track c.label) {
-                        <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span>
+                        <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label | t }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span>
                       }
                     </div>
                   }
-                  <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="playerHpPct()">
+                  <div class="hpbar" role="progressbar" [attr.aria-label]="'HP' | t" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="playerHpPct()">
                     <span class="fill" [class.low]="playerHpPct() <= 25" [class.mid]="playerHpPct() > 25 && playerHpPct() <= 50" [style.width.%]="playerHpPct()"></span>
-                    <span class="kp">{{ playerHp() }} / {{ playerMaxHp() }} <small>KP</small></span>
+                    <span class="kp">{{ playerHp() }} / {{ playerMaxHp() }} <small>{{ 'KP' | t }}</small></span>
                   </div>
                 </div>
               </div>
@@ -179,27 +179,27 @@
               }
               <h2>
                 @if (outcomeWon()) {
-                  Victory! <pv-icon name="trophy" />
+                  {{ 'Victory!' | t }} <pv-icon name="trophy" />
                 } @else {
-                  Defeat <pv-icon name="heart-crack" />
+                  {{ 'Defeat' | t }} <pv-icon name="heart-crack" />
                 }
               </h2>
               <div class="result-actions">
                 @if (mode() === 'daily') {
-                  <button class="btn btn-primary" type="button" (click)="shareDaily()"><pv-icon name="copy" /> Share result</button>
+                  <button class="btn btn-primary" type="button" (click)="shareDaily()"><pv-icon name="copy" /> {{ 'Share result' | t }}</button>
                 }
-                <button class="btn" type="button" (click)="rematch()"><pv-icon name="rotate-ccw" /> Rematch</button>
-                <button class="btn ghost" type="button" (click)="newBattle()"><pv-icon name="swords" /> New battle</button>
+                <button class="btn" type="button" (click)="rematch()"><pv-icon name="rotate-ccw" /> {{ 'Rematch' | t }}</button>
+                <button class="btn ghost" type="button" (click)="newBattle()"><pv-icon name="swords" /> {{ 'New battle' | t }}</button>
               </div>
             </div>
           }
         </div>
 
         <aside class="log glass" aria-live="polite">
-          <h3 class="log-title"><pv-icon name="scroll-text" /> Battle Log</h3>
+          <h3 class="log-title"><pv-icon name="scroll-text" /> {{ 'Battle Log' | t }}</h3>
           <div class="log-lines" #logLines>
             @for (line of log(); track $index) {
-              <p [attr.data-tone]="line.tone">{{ line.text }}</p>
+              <p [attr.data-tone]="line.tone">{{ line.text | t }}</p>
             }
           </div>
         </aside>

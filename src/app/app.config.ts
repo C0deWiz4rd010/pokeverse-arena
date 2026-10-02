@@ -1,7 +1,9 @@
 import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
+  provideAppInitializer,
   provideZonelessChangeDetection,
+  inject,
 } from '@angular/core';
 import {
   provideRouter,
@@ -15,12 +17,18 @@ import {
 import { provideHttpClient, withFetch } from '@angular/common/http';
 
 import { routes } from './app.routes';
+import { TitleStrategy } from '@angular/router';
+import { I18nService } from './core/i18n/i18n.service';
+import { TranslatedTitleStrategy } from './core/i18n/translated-title.strategy';
 import { chunkAwareNavigationErrorHandler } from './core/update/chunk-error';
 import { IdlePreloadStrategy } from './core/update/idle-preload';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: TitleStrategy, useClass: TranslatedTitleStrategy },
+    // German visitors get the dictionary before the first paint (no English flash)
+    provideAppInitializer(() => inject(I18nService).ready()),
     provideZonelessChangeDetection(),
     provideHttpClient(withFetch()),
     provideRouter(

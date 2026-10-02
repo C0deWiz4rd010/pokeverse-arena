@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 /** Animated horizontal stat bar with a color that reflects the value. */
 @Component({
-  selector: 'pv-stat-bar',
+    imports: [TranslatePipe],
+selector: 'pv-stat-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="row">
-      <span class="label">{{ label() }}</span>
+      <span class="label">{{ label() | t }}</span>
       <span class="value">{{ value() }}</span>
       <div class="track">
         <div class="fill" [style.width.%]="pct()" [style.background]="color()"></div>

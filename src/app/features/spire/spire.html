@@ -1,15 +1,15 @@
 <section class="spire">
-  <pv-page-header icon="mountain" title="Ascension Spire" subtitle="A seeded roguelike climb. Carry your wounds, draft relics, and reach the summit." />
+  <pv-page-header icon="mountain" [title]="'Ascension Spire' | t" [subtitle]="'A seeded roguelike climb. Carry your wounds, draft relics, and reach the summit.' | t" />
 
-  @if (svc.error(); as err) { <p class="err" role="alert">{{ err }}</p> }
+  @if (svc.error(); as err) { <p class="err" role="alert">{{ err | t }}</p> }
 
   @switch (svc.phase()) {
     <!-- ───────────── setup / draft ───────────── -->
     @case ('setup') {
       @if (svc.busy()) {
-        <div class="state"><pv-spinner label="Preparing the spire…" /></div>
+        <div class="state"><pv-spinner [label]="'Preparing the spire…' | t" /></div>
       } @else if (svc.draftPool().length) {
-        <h3 class="h">Draft your starting trio ({{ picks().length }}/3)</h3>
+        <h3 class="h">{{ 'Draft your starting trio ({0}/3)' | t: [(picks().length)] }}</h3>
         <div class="pool">
           @for (mon of svc.draftPool(); track mon.id) {
             <button class="pick" type="button" [class.on]="isPicked(mon)" (click)="togglePick(mon)">
@@ -19,22 +19,22 @@
             </button>
           }
         </div>
-        <button class="btn" type="button" [disabled]="!canStart()" (click)="confirmStarters()">Begin the climb ›</button>
+        <button class="btn" type="button" [disabled]="!canStart()" (click)="confirmStarters()">{{ 'Begin the climb ›' | t }}</button>
       } @else {
         <div class="intro">
           <div class="meta-grid">
-            <div class="meta-stat"><strong>{{ svc.meta().bestDepth }}</strong><span>Best depth</span></div>
-            <div class="meta-stat"><strong>{{ svc.meta().clears }}</strong><span>Clears</span></div>
-            <div class="meta-stat"><strong>{{ svc.meta().ascension }}</strong><span>Ascension</span></div>
-            <div class="meta-stat"><strong>{{ svc.meta().bankedCoins }}</strong><span>Banked ₽</span></div>
+            <div class="meta-stat"><strong>{{ svc.meta().bestDepth }}</strong><span>{{ 'Best depth' | t }}</span></div>
+            <div class="meta-stat"><strong>{{ svc.meta().clears }}</strong><span>{{ 'Clears' | t }}</span></div>
+            <div class="meta-stat"><strong>{{ svc.meta().ascension }}</strong><span>{{ 'Ascension' | t }}</span></div>
+            <div class="meta-stat"><strong>{{ svc.meta().bankedCoins }}</strong><span>{{ 'Banked ₽' | t }}</span></div>
             @if (svc.meta().chimeraWins > 0) {
-              <div class="meta-stat chimera"><strong>{{ svc.meta().chimeraWins }}</strong><span>Chimeras slain</span></div>
+              <div class="meta-stat chimera"><strong>{{ svc.meta().chimeraWins }}</strong><span>{{ 'Chimeras slain' | t }}</span></div>
             }
           </div>
-          <p class="muted">Climb {{ svc.totalFloors }} floors. HP carries between fights — there is no free healing. Pick your path, draft relics, and survive. Rumor says some guardians keep… stitched-together things.</p>
+          <p class="muted">{{ 'Climb {0} floors. HP carries between fights — there is no free healing. Pick your path, draft relics, and survive. Rumor says some guardians keep… stitched-together things.' | t: [(svc.totalFloors)] }}</p>
           <div class="intro-actions">
-            <button class="btn" type="button" (click)="newRun()"><pv-icon name="dices" /> New Run</button>
-            <button class="btn ghost" type="button" (click)="newDaily()"><pv-icon name="sparkles" /> Daily Run</button>
+            <button class="btn" type="button" (click)="newRun()"><pv-icon name="dices" /> {{ 'New Run' | t }}</button>
+            <button class="btn ghost" type="button" (click)="newDaily()"><pv-icon name="sparkles" /> {{ 'Daily Run' | t }}</button>
           </div>
         </div>
       }
@@ -43,10 +43,10 @@
     <!-- ───────────── battle ───────────── -->
     @case ('battle') {
       @if (svc.setup(); as setup) {
-        <div class="hud-line">Floor {{ svc.floor() }} / {{ svc.totalFloors }}</div>
+        <div class="hud-line">{{ 'Floor {0} / {1}' | t: [(svc.floor()), (svc.totalFloors)] }}</div>
         <pv-tournament-match [setup]="setup" (finished)="onFinished($event)" />
       } @else {
-        <div class="state"><pv-spinner label="The challenger approaches…" /></div>
+        <div class="state"><pv-spinner [label]="'The challenger approaches…' | t" /></div>
       }
     }
 
@@ -54,32 +54,32 @@
     @case ('won') {
       <div class="finale win">
         <span class="crown"><pv-icon name="crown" /></span>
-        <h2>You reached the summit!</h2>
-        <p class="muted">The Ascension Spire is conquered. Ascension tier raised — the next climb will be harder.</p>
-        <button class="btn" type="button" (click)="svc.backToHub()">Return</button>
+        <h2>{{ 'You reached the summit!' | t }}</h2>
+        <p class="muted">{{ 'The Ascension Spire is conquered. Ascension tier raised — the next climb will be harder.' | t }}</p>
+        <button class="btn" type="button" (click)="svc.backToHub()">{{ 'Return' | t }}</button>
       </div>
     }
     @case ('lost') {
       <div class="finale loss">
         <span class="crown"><pv-icon name="heart-crack" /></span>
-        <h2>You fell on floor {{ svc.floor() }}</h2>
-        <p class="muted">The climb ends here — but your records stand. Try a new run.</p>
-        <button class="btn" type="button" (click)="svc.backToHub()">Return</button>
+        <h2>{{ 'You fell on floor {0}' | t: [(svc.floor())] }}</h2>
+        <p class="muted">{{ 'The climb ends here — but your records stand. Try a new run.' | t }}</p>
+        <button class="btn" type="button" (click)="svc.backToHub()">{{ 'Return' | t }}</button>
       </div>
     }
 
     <!-- ───────────── map / reward / shop (share the run HUD) ───────────── -->
     @default {
       <div class="run-hud">
-        <span class="hud-floor"><pv-icon name="mountain" /> Floor {{ svc.floor() }} / {{ svc.totalFloors }}</span>
+        <span class="hud-floor"><pv-icon name="mountain" /> {{ 'Floor {0} / {1}' | t: [(svc.floor()), (svc.totalFloors)] }}</span>
         <span class="hud-coins"><pv-icon name="gem" /> {{ svc.coins() }} ₽</span>
-        <button class="ghost small" type="button" (click)="svc.abandon()">Abandon</button>
+        <button class="ghost small" type="button" (click)="svc.abandon()">{{ 'Abandon' | t }}</button>
       </div>
 
-      <div class="climb" [attr.aria-label]="'Floor ' + svc.floor() + ' of ' + svc.totalFloors">
+      <div class="climb" [attr.aria-label]="'Floor {0} of {1}' | t: [svc.floor(), svc.totalFloors]">
         @for (s of climb(); track s.n) {
           <span class="step" [class.done]="s.done" [class.current]="s.current" [class.boss]="s.boss"
-            [title]="(s.boss ? 'Boss · ' : '') + 'Floor ' + s.n">
+            [title]="s.boss ? ('Boss · Floor {0}' | t: [s.n]) : ('Floor {0}' | t: [s.n])">
             @if (s.boss) { <pv-icon name="crown" /> }
           </span>
         }
@@ -89,7 +89,7 @@
         @for (p of svc.partyView(); track p.mon.id; let i = $index) {
           <div class="party-mon" [class.fainted]="p.hpPct <= 0">
             <img decoding="async" [src]="p.mon.sprite" [alt]="p.mon.name" [style.filter]="p.mon.hue ? 'hue-rotate(' + p.mon.hue + 'deg)' : null" [title]="titleCase(p.mon.name)" loading="lazy" />
-            <span class="hp" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="p.hpPct"><span class="fill" [class.low]="p.hpPct <= 30" [style.width.%]="p.hpPct"></span></span>
+            <span class="hp" role="progressbar" [attr.aria-label]="'HP' | t" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="p.hpPct"><span class="fill" [class.low]="p.hpPct <= 30" [style.width.%]="p.hpPct"></span></span>
           </div>
         }
       </div>
@@ -97,7 +97,7 @@
       @if (svc.relicList().length) {
         <div class="relic-bar">
           @for (r of svc.relicList(); track r!.id) {
-            <span class="relic" [title]="r!.blurb"><pv-icon [name]="r!.icon" /> {{ r!.name }}</span>
+            <span class="relic" [title]="r!.blurb"><pv-icon [name]="r!.icon" /> {{ r!.name | t }}</span>
           }
         </div>
       }
@@ -106,46 +106,46 @@
 
       @switch (svc.phase()) {
         @case ('map') {
-          <h3 class="h">Choose your path</h3>
+          <h3 class="h">{{ 'Choose your path' | t }}</h3>
           @if (svc.busy()) { <div class="state"><pv-spinner /></div> }
           <div class="nodes">
             @for (n of svc.choices(); track n.id) {
               <button class="node" type="button" [class]="n.type" (click)="chooseNode(n)" [disabled]="svc.busy()">
                 <span class="node-icon"><pv-icon [name]="n.icon" /></span>
-                <span class="node-label">{{ n.label }}</span>
-                <span class="node-blurb">{{ n.blurb }}</span>
-                @if (n.foe; as foe) { <span class="node-foe">{{ foe.name }} · Lv{{ foe.level }}</span> }
+                <span class="node-label">{{ n.label | t }}</span>
+                <span class="node-blurb">{{ n.blurb | t }}</span>
+                @if (n.foe; as foe) { <span class="node-foe">{{ '{0} · Lv{1}' | t: [(foe.name), (foe.level)] }}</span> }
               </button>
             }
           </div>
         }
 
         @case ('reward') {
-          <h3 class="h">Pick a reward</h3>
+          <h3 class="h">{{ 'Pick a reward' | t }}</h3>
           <div class="rewards">
             @for (r of svc.rewards(); track $index) {
               <button class="reward" type="button" (click)="chooseReward(r)">
                 <span class="r-icon"><pv-icon [name]="r.icon" /></span>
-                <span class="r-label">{{ r.label }}</span>
-                <span class="r-blurb">{{ r.blurb }}</span>
+                <span class="r-label">{{ r.label | t }}</span>
+                <span class="r-blurb">{{ r.blurb | t }}</span>
               </button>
             }
           </div>
-          <button class="ghost" type="button" (click)="svc.skipReward()">Skip reward</button>
+          <button class="ghost" type="button" (click)="svc.skipReward()">{{ 'Skip reward' | t }}</button>
         }
 
         @case ('shop') {
-          <h3 class="h">Shop</h3>
+          <h3 class="h">{{ 'Shop' | t }}</h3>
           <div class="shop">
             @for (e of svc.shop(); track $index) {
               <button class="shop-item" type="button" [disabled]="svc.coins() < e.cost" (click)="buy(e)">
                 <span class="s-icon"><pv-icon [name]="e.icon" /></span>
-                <span class="s-label">{{ e.label }}</span>
+                <span class="s-label">{{ e.label | t }}</span>
                 <span class="s-cost">{{ e.cost }} ₽</span>
               </button>
             }
           </div>
-          <button class="btn" type="button" (click)="svc.leaveShop()">Leave shop ›</button>
+          <button class="btn" type="button" (click)="svc.leaveShop()">{{ 'Leave shop ›' | t }}</button>
         }
       }
     }

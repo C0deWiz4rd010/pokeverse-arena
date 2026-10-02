@@ -1,31 +1,29 @@
 <section class="hero container">
   <div class="hero-copy">
-    <span class="eyebrow"><pv-icon name="zap" /> Gotta build 'em all</span>
+    <span class="eyebrow"><pv-icon name="zap" /> {{ 'Gotta build \'em all' | t }}</span>
     <h1>
-      Welcome to <span class="gradient-text">PokéVerse Arena</span>
+      {{ 'Welcome to' | t }} <span class="gradient-text">{{ 'PokéVerse Arena' | t }}</span>
     </h1>
     <p class="lead">
-      A modular Pokémon platform &amp; browser game powered by the PokéAPI.
-      Explore an advanced Pokédex, analyze type matchups, build dream teams and
-      battle them in a seeded, deterministic arena.
+      {{ 'A modular Pokémon platform & browser game powered by the PokéAPI. Explore an advanced Pokédex, analyze type matchups, build dream teams and battle them in a seeded, deterministic arena.' | t }}
     </p>
     <div class="cta">
-      <a class="btn btn-primary" routerLink="/pokedex">Open the Pokédex</a>
-      <a class="btn" routerLink="/battle">Start a Battle <pv-icon name="swords" /></a>
+      <a class="btn btn-primary" routerLink="/pokedex">{{ 'Open the Pokédex' | t }}</a>
+      <a class="btn" routerLink="/battle">{{ 'Start a Battle' | t }} <pv-icon name="swords" /></a>
     </div>
 
     <a class="next-step" [routerLink]="nextStep().path">
       <span class="ns-icon"><pv-icon [name]="nextStep().icon" /></span>
-      <span class="ns-text"><small>What's next</small><strong>{{ nextStep().label }}</strong></span>
+      <span class="ns-text"><small>{{ 'What\'s next' | t }}</small><strong>{{ nextStep().label | t }}</strong></span>
       <span class="ns-go" aria-hidden="true">→</span>
     </a>
 
-    <div class="dash" aria-label="Your progress">
-      <span class="dash-rank">{{ rank() }} Trainer</span>
+    <div class="dash" [attr.aria-label]="'Your progress' | t">
+      <span class="dash-rank">{{ '{0} Trainer' | t: [(rank())] }}</span>
       <div class="dash-chips">
         @for (c of stats(); track c.label) {
-          <span class="dash-chip" [title]="c.label">
-            <pv-icon [name]="c.icon" /> <strong>{{ c.value }}</strong> <small>{{ c.label }}</small>
+          <span class="dash-chip" [title]="c.label | t">
+            <pv-icon [name]="c.icon" /> <strong>{{ c.value }}</strong> <small>{{ c.label | t }}</small>
           </span>
         }
       </div>
@@ -38,22 +36,22 @@
   </div>
 </section>
 
-<section class="container today" aria-label="Today's challenges">
+<section class="container today" [attr.aria-label]="'Today\'s challenges' | t">
   <div class="today-grid">
     <a class="glass today-card daily-card" routerLink="/battle" [queryParams]="{ daily: '1' }">
       <span class="tc-flair" aria-hidden="true"><pv-icon name="flame" /></span>
       <span class="tc-copy">
-        <small>Daily Challenge</small>
+        <small>{{ 'Daily Challenge' | t }}</small>
         <strong>
-          @if (daily.wonToday()) { Cleared — streak safe ✓ }
-          @else if (daily.playedToday()) { Attempt spent — rematch for fun }
-          @else { One counted attempt. Ready? }
+          @if (daily.wonToday()) { {{ 'Cleared — streak safe ✓' | t }} }
+          @else if (daily.playedToday()) { {{ 'Attempt spent — rematch for fun' | t }} }
+          @else { {{ 'One counted attempt. Ready?' | t }} }
         </strong>
-        <span class="tc-meta">🔥 {{ daily.streak() }} streak · best {{ daily.best() }}</span>
+        <span class="tc-meta">{{ '🔥 {0} streak · best {1}' | t: [(daily.streak()), (daily.best())] }}</span>
       </span>
       <span class="tc-sprites" aria-hidden="true">
         <img decoding="async" [src]="sprite(daily.matchup.playerId)" alt="" loading="lazy" />
-        <em>vs</em>
+        <em>{{ 'vs' | t }}</em>
         <img decoding="async" [src]="sprite(daily.matchup.opponentId)" alt="" loading="lazy" />
       </span>
       <span class="tc-go" aria-hidden="true">→</span>
@@ -62,9 +60,9 @@
     <button class="glass today-card who-card" type="button" [class.revealed]="whoRevealed()" (click)="onWho()">
       <span class="tc-flair" aria-hidden="true"><pv-icon name="ghost" /></span>
       <span class="tc-copy">
-        <small>Who's that Pokémon?</small>
-        <strong>{{ whoRevealed() ? 'Revealed — tap to open!' : 'Daily silhouette — tap it!' }}</strong>
-        <span class="tc-meta">A new mystery every day</span>
+        <small>{{ 'Who\'s that Pokémon?' | t }}</small>
+        <strong>{{ whoRevealed() ? ('Revealed — tap to open!' | t) : ('Daily silhouette — tap it!' | t) }}</strong>
+        <span class="tc-meta">{{ 'A new mystery every day' | t }}</span>
       </span>
       <span class="tc-sprites" aria-hidden="true">
         <img decoding="async" [src]="sprite(who)" alt="" loading="lazy" />
@@ -75,9 +73,9 @@
     <a class="glass today-card lab-card" routerLink="/fusion" [queryParams]="{ head: special.head, body: special.body }">
       <span class="tc-flair" aria-hidden="true"><pv-icon name="flask-conical" /></span>
       <span class="tc-copy">
-        <small>Today's Lab Special</small>
-        <strong>A fresh splice awaits</strong>
-        <span class="tc-meta">Same seeded pair for every trainer</span>
+        <small>{{ 'Today\'s Lab Special' | t }}</small>
+        <strong>{{ 'A fresh splice awaits' | t }}</strong>
+        <span class="tc-meta">{{ 'Same seeded pair for every trainer' | t }}</span>
       </span>
       <span class="tc-sprites" aria-hidden="true">
         <img decoding="async" [src]="sprite(special.head)" alt="" loading="lazy" />
@@ -90,13 +88,13 @@
     <a class="glass today-card showdown-card" routerLink="/showdown">
       <span class="tc-flair" aria-hidden="true"><pv-icon name="dices" /></span>
       <span class="tc-copy">
-        <small>Stat Showdown</small>
-        <strong>Higher or lower — build a streak</strong>
-        <span class="tc-meta">🎯 Guess the stronger stat</span>
+        <small>{{ 'Stat Showdown' | t }}</small>
+        <strong>{{ 'Higher or lower — build a streak' | t }}</strong>
+        <span class="tc-meta">{{ '🎯 Guess the stronger stat' | t }}</span>
       </span>
       <span class="tc-sprites" aria-hidden="true">
         <img decoding="async" [src]="sprite(showdownA)" alt="" loading="lazy" />
-        <em>vs</em>
+        <em>{{ 'vs' | t }}</em>
         <img decoding="async" [src]="sprite(showdownB)" alt="" loading="lazy" />
       </span>
       <span class="tc-go" aria-hidden="true">→</span>
@@ -105,7 +103,7 @@
 </section>
 
 <section class="container features">
-  <h2 class="section-title">Everything inside</h2>
+  <h2 class="section-title">{{ 'Everything inside' | t }}</h2>
   <div class="grid">
     @for (f of features; track f.path; let i = $index) {
       <a
@@ -118,9 +116,9 @@
       >
         <span class="sheen" aria-hidden="true"></span>
         <span class="f-icon" aria-hidden="true"><pv-icon [name]="f.icon" /></span>
-        <h3>{{ f.title }}</h3>
-        <p>{{ f.text }}</p>
-        <span class="go">Explore →</span>
+        <h3>{{ f.title | t }}</h3>
+        <p>{{ f.text | t }}</p>
+        <span class="go">{{ 'Explore →' | t }}</span>
       </a>
     }
   </div>

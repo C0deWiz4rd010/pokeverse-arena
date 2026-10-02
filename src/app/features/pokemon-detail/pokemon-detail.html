@@ -4,19 +4,19 @@
   <div class="aurora" aria-hidden="true"></div>
 
   <nav class="topnav">
-    <button class="nav-btn" type="button" (click)="goBack()">← Back</button>
+    <button class="nav-btn" type="button" (click)="goBack()">{{ '← Back' | t }}</button>
     @if (s) {
       <div class="dexnav">
-        <button class="nav-btn" type="button" (click)="go(prevId())" title="Previous (←)">‹ #{{ prevId() }}</button>
-        <button class="nav-btn" type="button" (click)="go(nextId())" title="Next (→)">#{{ nextId() }} ›</button>
+        <button class="nav-btn" type="button" (click)="go(prevId())" [attr.title]="'Previous (←)' | t">‹ #{{ prevId() }}</button>
+        <button class="nav-btn" type="button" (click)="go(nextId())" [attr.title]="'Next (→)' | t">#{{ nextId() }} ›</button>
       </div>
     }
   </nav>
 
   @if (store.loading()) {
-    <pv-state kind="loading" title="Loading Pokémon…" [card]="false" />
+    <pv-state kind="loading" [title]="'Loading Pokémon…' | t" [card]="false" />
   } @else if (store.error()) {
-    <pv-state kind="error" title="Could not load this Pokémon" [text]="store.error() ?? ''" actionLabel="Try again" (action)="reload()" />
+    <pv-state kind="error" [title]="'Could not load this Pokémon' | t" [text]="store.error() ?? ''" [actionLabel]="'Try again' | t" (action)="reload()" />
   } @else if (s) {
     <div class="layout">
       <!-- ───────────────────────── HERO ───────────────────────── -->
@@ -25,10 +25,10 @@
           <span class="num">{{ padId(s.pokemon.id) }}</span>
           <div class="hero-actions">
             @if (s.pokemon.cry) {
-              <button class="icon-btn" type="button" (click)="playCry()" [class.pulse]="cry.playing() === s.pokemon.id" aria-label="Play cry"><pv-icon name="volume-2" /></button>
+              <button class="icon-btn" type="button" (click)="playCry()" [class.pulse]="cry.playing() === s.pokemon.id" [attr.aria-label]="'Play cry' | t"><pv-icon name="volume-2" /></button>
             }
-            <button class="icon-btn fav" type="button" [class.on]="isFavorite()" (click)="toggleFavorite()" [attr.aria-pressed]="isFavorite()" aria-label="Favorite"><pv-icon name="heart" /></button>
-            <button class="icon-btn" type="button" [class.on]="shiny()" (click)="toggleShiny()" [attr.aria-pressed]="shiny()" aria-label="Shiny"><pv-icon name="sparkles" /></button>
+            <button class="icon-btn fav" type="button" [class.on]="isFavorite()" (click)="toggleFavorite()" [attr.aria-pressed]="isFavorite()" [attr.aria-label]="'Favorite' | t"><pv-icon name="heart" /></button>
+            <button class="icon-btn" type="button" [class.on]="shiny()" (click)="toggleShiny()" [attr.aria-pressed]="shiny()" [attr.aria-label]="'Shiny' | t"><pv-icon name="sparkles" /></button>
           </div>
         </div>
 
@@ -46,32 +46,32 @@
 
         <div class="sprite-controls">
           @if (hasAnimated()) {
-            <button class="seg-btn" type="button" [class.on]="animated()" (click)="toggleAnimated()">{{ animated() ? 'Animated' : 'Static' }}</button>
+            <button class="seg-btn" type="button" [class.on]="animated()" (click)="toggleAnimated()">{{ animated() ? ('Animated' | t) : ('Still image' | t) }}</button>
           }
-          <button class="seg-btn" type="button" [class.on]="back()" (click)="toggleBack()">{{ back() ? 'Back' : 'Front' }}</button>
+          <button class="seg-btn" type="button" [class.on]="back()" (click)="toggleBack()">{{ back() ? ('Back' | t) : ('Front' | t) }}</button>
         </div>
 
         <h1>{{ titleCase(s.pokemon.name) }}</h1>
-        <p class="genus">{{ s.species.genus }}</p>
+        <p class="genus">{{ i18n.isGerman() && s.species.de?.genus ? s.species.de?.genus : s.species.genus }}</p>
 
         <div class="types">
           @for (t of s.pokemon.types; track t) { <pv-type-badge [type]="t" /> }
         </div>
 
         <div class="meta">
-          <div><span>Height</span><b>{{ s.pokemon.heightM }} m</b><small>{{ metersToFeet(s.pokemon.heightM) }}</small></div>
-          <div><span>Weight</span><b>{{ s.pokemon.weightKg }} kg</b><small>{{ kgToLbs(s.pokemon.weightKg) }}</small></div>
-          <div><span>BST</span><b class="bst">{{ bstShown() }}</b><small>base total</small></div>
+          <div><span>{{ 'Height' | t }}</span><b>{{ s.pokemon.heightM }} m</b><small>{{ metersToFeet(s.pokemon.heightM) }}</small></div>
+          <div><span>{{ 'Weight' | t }}</span><b>{{ '{0} kg' | t: [(s.pokemon.weightKg)] }}</b><small>{{ kgToLbs(s.pokemon.weightKg) }}</small></div>
+          <div><span>{{ 'BST' | t }}</span><b class="bst">{{ bstShown() }}</b><small>{{ 'base total' | t }}</small></div>
         </div>
 
-        @if (s.species.flavorText) { <p class="flavor">“{{ s.species.flavorText }}”</p> }
+        @if (s.species.flavorText) { <p class="flavor">“{{ i18n.isGerman() && s.species.de?.flavorText ? s.species.de?.flavorText : s.species.flavorText }}”</p> }
 
         <div class="quick-actions">
           <button class="btn" type="button" [disabled]="teamFull() || addedToTeam()" (click)="addToTeam()">
-            <pv-icon name="wrench" /> {{ addedToTeam() ? 'Added!' : teamFull() ? 'Team full' : 'Add to team' }}
+            <pv-icon name="wrench" /> {{ addedToTeam() ? ('Added!' | t) : teamFull() ? ('Team full' | t) : ('Add to team' | t) }}
           </button>
-          <a class="btn ghost" [href]="'#/battle'"><pv-icon name="swords" /> Battle</a>
-          <a class="btn ghost" [href]="'#/fusion?head=' + s.pokemon.id" title="Splice this Pokémon in the Fusion Lab"><pv-icon name="flask-conical" /> Fuse</a>
+          <a class="btn ghost" [href]="'#/battle'"><pv-icon name="swords" /> {{ 'Battle' | t }}</a>
+          <a class="btn ghost" [href]="'#/fusion?head=' + s.pokemon.id" [attr.title]="'Splice this Pokémon in the Fusion Lab' | t"><pv-icon name="flask-conical" /> {{ 'Fuse' | t }}</a>
         </div>
       </div>
 
@@ -80,7 +80,7 @@
         <!-- Type matchups -->
         @if (matchups(); as m) {
           <div class="card glass reveal">
-            <h2>Type matchups</h2>
+            <h2>{{ 'Type matchups' | t }}</h2>
             <div class="matchups">
               @if (m.x4.length) { <div class="mu x4"><span class="mu-x">×4</span><div class="mu-types">@for (t of m.x4; track t) { <pv-type-badge [type]="t" /> }</div></div> }
               @if (m.x2.length) { <div class="mu x2"><span class="mu-x">×2</span><div class="mu-types">@for (t of m.x2; track t) { <pv-type-badge [type]="t" /> }</div></div> }
@@ -93,7 +93,7 @@
 
         <!-- Base stats -->
         <div class="card glass reveal">
-          <h2>Base stats</h2>
+          <h2>{{ 'Base stats' | t }}</h2>
           <div class="stats-grid">
             <div class="bars">
               @for (st of statLabels; track st.key) {
@@ -102,7 +102,7 @@
                 </div>
               }
               <div class="bst-meter">
-                <span>Base stat total</span>
+                <span>{{ 'Base stat total' | t }}</span>
                 <div class="bst-track"><span class="bst-fill" [style.width.%]="revealed() ? (s.pokemon.baseStatTotal / 720) * 100 : 0"></span></div>
                 <strong>{{ bstShown() }}</strong>
               </div>
@@ -113,19 +113,19 @@
 
         <!-- Abilities -->
         <div class="card glass reveal">
-          <h2>Abilities</h2>
+          <h2>{{ 'Abilities' | t }}</h2>
           <div class="abilities">
             @for (a of s.pokemon.abilities; track a.name) {
               <div class="ability-wrap">
                 <button class="ability" type="button" [class.hidden]="a.isHidden" [class.open]="expandedAbility() === a.name" (click)="toggleAbility(a.name)">
-                  {{ titleCase(a.name) }}
-                  @if (a.isHidden) { <em>Hidden</em> }
+                  {{ titleCase(a.name) | t }}
+                  @if (a.isHidden) { <em>{{ 'Hidden' | t }}</em> }
                   <pv-icon name="arrow-right" />
                 </button>
                 @if (expandedAbility() === a.name) {
                   <p class="ability-effect">
                     @if (abilityInfo()[a.name]; as info) { {{ info.shortEffect || info.effect }} }
-                    @else { Loading… }
+                    @else { {{ 'Loading…' | t }} }
                   </p>
                 }
               </div>
@@ -135,57 +135,57 @@
 
         <!-- Profile -->
         <div class="card glass reveal">
-          <h2>Profile</h2>
+          <h2>{{ 'Profile' | t }}</h2>
           @if (gender(); as g) {
             <div class="gender">
-              <span class="g-label male">♂ {{ g.male }}%</span>
+              <span class="g-label male">♂ {{ g.male | t }}%</span>
               <div class="g-bar"><span class="g-male" [style.width.%]="g.male"></span><span class="g-female" [style.width.%]="g.female"></span></div>
-              <span class="g-label female">{{ g.female }}% ♀</span>
+              <span class="g-label female">{{ g.female | t }}% ♀</span>
             </div>
           } @else {
-            <p class="muted small">Genderless</p>
+            <p class="muted small">{{ 'Genderless' | t }}</p>
           }
 
           <div class="rate-row">
-            <span>Catch rate</span>
+            <span>{{ 'Catch rate' | t }}</span>
             <div class="rate-track"><span class="rate-fill" [style.width.%]="revealed() ? (s.species.captureRate / 255) * 100 : 0"></span></div>
             <strong>{{ s.species.captureRate }}</strong>
           </div>
           <div class="rate-row">
-            <span>Friendship</span>
+            <span>{{ 'Friendship' | t }}</span>
             <div class="rate-track"><span class="rate-fill warm" [style.width.%]="revealed() ? ((s.species.baseHappiness ?? 0) / 255) * 100 : 0"></span></div>
             <strong>{{ s.species.baseHappiness ?? '—' }}</strong>
           </div>
 
           <ul class="profile">
-            <li><span>Generation</span><b>{{ titleCase(s.species.generation) }}</b></li>
-            <li><span>Egg groups</span><b>{{ s.species.eggGroups.length ? '' : '—' }}@for (eg of s.species.eggGroups; track eg) { {{ titleCase(eg) }} }</b></li>
-            <li><span>Color</span><b>{{ titleCase(s.species.color) }}</b></li>
-            @if (s.species.habitat) { <li><span>Habitat</span><b>{{ titleCase(s.species.habitat) }}</b></li> }
+            <li><span>{{ 'Generation' | t }}</span><b>{{ titleCase(s.species.generation) }}</b></li>
+            <li><span>{{ 'Egg groups' | t }}</span><b>{{ s.species.eggGroups.length ? '' : '—' }}@for (eg of s.species.eggGroups; track eg) { {{ titleCase(eg) | t }} }</b></li>
+            <li><span>{{ 'Color' | t }}</span><b>{{ titleCase(s.species.color) }}</b></li>
+            @if (s.species.habitat) { <li><span>{{ 'Habitat' | t }}</span><b>{{ titleCase(s.species.habitat) }}</b></li> }
           </ul>
           <div class="flags">
-            @if (s.species.isLegendary) { <span class="flag legendary"><pv-icon name="star" /> Legendary</span> }
-            @if (s.species.isMythical) { <span class="flag mythical"><pv-icon name="sparkles" /> Mythical</span> }
-            @if (s.species.isBaby) { <span class="flag baby"><pv-icon name="baby" /> Baby</span> }
+            @if (s.species.isLegendary) { <span class="flag legendary"><pv-icon name="star" /> {{ 'Legendary' | t }}</span> }
+            @if (s.species.isMythical) { <span class="flag mythical"><pv-icon name="sparkles" /> {{ 'Mythical' | t }}</span> }
+            @if (s.species.isBaby) { <span class="flag baby"><pv-icon name="baby" /> {{ 'Baby' | t }}</span> }
           </div>
         </div>
 
         <!-- Evolution -->
         <div class="card glass reveal">
-          <h2>Evolution</h2>
+          <h2>{{ 'Evolution' | t }}</h2>
           @if (s.evolution.children.length) {
             <div class="evo-scroll"><pv-evolution-tree [node]="s.evolution" [currentId]="s.pokemon.id" /></div>
           } @else {
-            <p class="muted">This Pokémon does not evolve.</p>
+            <p class="muted">{{ 'This Pokémon does not evolve.' | t }}</p>
           }
         </div>
 
         <!-- Moves -->
         <div class="card glass reveal">
-          <h2>Moves</h2>
+          <h2>{{ 'Moves' | t }}</h2>
           <div class="tabs">
             @for (tab of moveTabs; track tab.id) {
-              <button type="button" class="tab" [class.active]="moveTab() === tab.id" (click)="moveTab.set(tab.id)">{{ tab.label }}</button>
+              <button type="button" class="tab" [class.active]="moveTab() === tab.id" (click)="moveTab.set(tab.id)">{{ tab.label | t }}</button>
             }
           </div>
           @if (visibleMoves().length) {
@@ -193,7 +193,7 @@
               @for (mv of visibleMoves(); track mv.name) {
                 <div class="move-wrap">
                   <button class="move" type="button" [class.open]="expandedMove() === mv.name" (click)="toggleMove(mv.name)">
-                    @if (moveTab() === 'level-up') { <span class="lvl">Lv {{ mv.levelLearnedAt }}</span> }
+                    @if (moveTab() === 'level-up') { <span class="lvl">{{ 'Lv {0}' | t: [(mv.levelLearnedAt)] }}</span> }
                     <span class="mname">{{ titleCase(mv.name) }}</span>
                     <pv-icon name="arrow-right" />
                   </button>
@@ -203,19 +203,19 @@
                         <div class="md-head">
                           <pv-type-badge [type]="info.type" />
                           <span class="md-class">{{ info.damageClass }}</span>
-                          <span class="md-stat">PWR {{ info.power ?? '—' }}</span>
-                          <span class="md-stat">ACC {{ info.accuracy ?? '—' }}</span>
-                          <span class="md-stat">PP {{ info.pp ?? '—' }}</span>
+                          <span class="md-stat">{{ 'PWR {0}' | t: [(info.power ?? '—')] }}</span>
+                          <span class="md-stat">{{ 'ACC {0}' | t: [(info.accuracy ?? '—')] }}</span>
+                          <span class="md-stat">{{ 'PP {0}' | t: [(info.pp ?? '—')] }}</span>
                         </div>
                         @if (info.effect) { <p class="md-effect">{{ info.effect }}</p> }
-                      } @else { <p class="md-effect">Loading…</p> }
+                      } @else { <p class="md-effect">{{ 'Loading…' | t }}</p> }
                     </div>
                   }
                 </div>
               }
             </div>
           } @else {
-            <p class="muted">No moves in this category.</p>
+            <p class="muted">{{ 'No moves in this category.' | t }}</p>
           }
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { I18nService } from '../../../core/i18n/i18n.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,6 +17,7 @@ import { CryService } from '../../../core/audio/cry.service';
 import { padId, titleCase, typeColorVar } from '../../../core/ui/format';
 import { SPRITE_BASE, officialArtwork } from '../../../core/api/pokeapi-endpoints';
 import { RADAR_RINGS, RADAR_STATS, RADAR_VIEWBOX, labelPoint, radarPoint, shapePoints } from '../stat-radar';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -31,7 +33,7 @@ const DEX_MAX = 1025;
 @Component({
   selector: 'pv-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TypeBadgeComponent, IconComponent],
+  imports: [TranslatePipe, RouterLink, TypeBadgeComponent, IconComponent],
   template: `
     <section
       class="stage"
@@ -50,8 +52,8 @@ const DEX_MAX = 1025;
       </div>
 
       <header class="bar">
-        <a class="chip" routerLink="/pokedex" title="Back to the classic Pokédex"><pv-icon name="book" /> Classic</a>
-        <span class="ttl">Showcase</span>
+        <a class="chip" routerLink="/pokedex" [attr.title]="'Back to the classic Pokédex' | t"><pv-icon name="book" /> {{ 'Classic' | t }}</a>
+        <span class="ttl">{{ 'Showcase' | t }}</span>
         <div class="jump">
           <input
             type="number"
@@ -59,14 +61,14 @@ const DEX_MAX = 1025;
             [max]="dexMax"
             [value]="id()"
             (change)="jump($any($event.target).valueAsNumber)"
-            aria-label="Jump to Pokédex number"
+            [attr.aria-label]="'Jump to Pokédex number' | t"
           />
           <span>/ {{ dexMax }}</span>
         </div>
       </header>
 
       <div class="body" [class.entering]="entering()">
-        <button class="nav prev" type="button" (click)="step(-1)" aria-label="Previous Pokémon">‹</button>
+        <button class="nav prev" type="button" (click)="step(-1)" [attr.aria-label]="'Previous Pokémon' | t">‹</button>
 
         <figure class="art-wrap" [style.transform]="tiltT()">
           <img decoding="async"
@@ -80,42 +82,42 @@ const DEX_MAX = 1025;
           <figcaption class="plate">
             <span class="num">{{ num() }}</span>
             <h1 class="name">{{ name() }}</h1>
-            @if (detail(); as d) { <span class="genus">{{ d.genus }}</span> }
+            @if (detail(); as d) { <span class="genus">{{ i18n.isGerman() && d.genusDe ? d.genusDe : d.genus }}</span> }
             <div class="types">
               @if (detail(); as d) { @for (t of d.types; track t) { <pv-type-badge [type]="t" /> } }
             </div>
           </figcaption>
         </figure>
 
-        <button class="nav next" type="button" (click)="step(1)" aria-label="Next Pokémon">›</button>
+        <button class="nav next" type="button" (click)="step(1)" [attr.aria-label]="'Next Pokémon' | t">›</button>
       </div>
 
       <div class="panels">
         @if (detail(); as d) {
           <div class="panel flavor-panel">
-            <p class="flavor">{{ d.flavor }}</p>
+            <p class="flavor">{{ i18n.isGerman() && d.flavorDe ? d.flavorDe : d.flavor }}</p>
             <div class="quick-facts">
               <span>{{ d.heightM }} m</span>
-              <span>{{ d.weightKg }} kg</span>
-              <span>BST <strong>{{ d.baseStatTotal }}</strong></span>
+              <span>{{ '{0} kg' | t: [(d.weightKg)] }}</span>
+              <span>{{ 'BST' | t }} <strong>{{ d.baseStatTotal }}</strong></span>
             </div>
             <div class="actions">
               <button class="chip" type="button" (click)="playCry()" [class.on]="cry.playing() === id()">
-                <pv-icon name="volume-2" /> Cry
+                <pv-icon name="volume-2" /> {{ 'Cry' | t }}
               </button>
               <button class="chip" type="button" (click)="shiny.set(!shiny())" [class.on]="shiny()">
-                <pv-icon name="sparkles" /> Shiny
+                <pv-icon name="sparkles" /> {{ 'Shiny' | t }}
               </button>
-              <a class="chip" [routerLink]="['/pokemon', id()]"><pv-icon name="arrow-right" /> Full page</a>
+              <a class="chip" [routerLink]="['/pokemon', id()]"><pv-icon name="arrow-right" /> {{ 'Full page' | t }}</a>
             </div>
           </div>
 
           <div class="panel radar-panel">
-            <svg class="radar" [attr.viewBox]="viewBox" role="img" [attr.aria-label]="'Stat radar for ' + name()">
+            <svg class="radar" [attr.viewBox]="viewBox" role="img" [attr.aria-label]="'Stat radar for {0}' | t: [name()]">
               @for (ring of rings; track $index) { <polygon class="ring-l" [attr.points]="ring" /> }
               @for (r of radarStats; track r.key; let i = $index) {
                 <line class="axis" x1="90" y1="86" [attr.x2]="axisPt(i).x" [attr.y2]="axisPt(i).y" />
-                <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">{{ r.label }} {{ d.stats[r.key] }}</text>
+                <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">{{ r.label | t }} {{ d.stats[r.key] }}</text>
               }
               <polygon class="shape" [attr.points]="shape(d)" />
             </svg>
@@ -124,7 +126,7 @@ const DEX_MAX = 1025;
           @if (evo(); as chain) {
             @if (chain.length > 1) {
               <div class="panel evo-panel">
-                <span class="evo-title">Evolution</span>
+                <span class="evo-title">{{ 'Evolution' | t }}</span>
                 <div class="evo">
                   @for (stage of chain; track $index; let last = $last) {
                     <div class="evo-stage">
@@ -141,7 +143,7 @@ const DEX_MAX = 1025;
             }
           }
         } @else {
-          <div class="panel"><p class="loading">Summoning…</p></div>
+          <div class="panel"><p class="loading">{{ 'Summoning…' | t }}</p></div>
         }
       </div>
     </section>
@@ -152,6 +154,7 @@ export class ShowcaseComponent {
   /** Deep link `?id=…` via router component-input binding. */
   readonly idParam = input<string | undefined>(undefined, { alias: 'id' });
 
+  protected readonly i18n = inject(I18nService);
   private readonly detailSvc = inject(PokedexDetailService);
   private readonly router = inject(Router);
   protected readonly cry = inject(CryService);

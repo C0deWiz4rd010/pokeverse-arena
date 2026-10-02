@@ -4,7 +4,7 @@
       class="cmd-panel glass"
       role="dialog"
       aria-modal="true"
-      aria-label="Command palette"
+      [attr.aria-label]="'Command palette' | t"
       pvModal
       (pvModalClose)="close()"
     >
@@ -17,19 +17,19 @@
           aria-expanded="true"
           aria-controls="cmd-list"
           [attr.aria-activedescendant]="flat().length ? 'cmd-opt-' + selected() : null"
-          placeholder="Search pages, actions or Pokémon…"
+          [attr.placeholder]="'Search pages, actions or Pokémon…' | t"
           autocomplete="off"
           spellcheck="false"
           [value]="query()"
           (input)="onInput($event)"
           (keydown)="onKeydown($event)"
         />
-        <kbd>Esc</kbd>
+        <kbd>{{ 'Esc' | t }}</kbd>
       </label>
 
-      <div class="cmd-list" id="cmd-list" role="listbox" aria-label="Results">
+      <div class="cmd-list" id="cmd-list" role="listbox" [attr.aria-label]="'Results' | t">
         @for (group of groups(); track group.title) {
-          <p class="cmd-group">{{ group.title }}</p>
+          <p class="cmd-group">{{ group.title | t }}</p>
           @for (item of group.items; track item.key) {
             <button
               type="button"
@@ -47,22 +47,22 @@
               } @else if (item.icon) {
                 <span class="cmd-icon" aria-hidden="true"><pv-icon [name]="item.icon" /></span>
               }
-              <span class="cmd-label">{{ item.label }}</span>
+              <span class="cmd-label">{{ item.label | t }}</span>
               @if (item.hint) {
-                <span class="cmd-hint">{{ item.hint }}</span>
+                <span class="cmd-hint">{{ item.hint | t }}</span>
               }
               <span class="cmd-go" aria-hidden="true">↵</span>
             </button>
           }
         } @empty {
-          <p class="cmd-empty">No matches — try a Pokémon name or “arena”.</p>
+          <p class="cmd-empty">{{ 'No matches — try a Pokémon name or “arena”.' | t }}</p>
         }
       </div>
 
       <footer class="cmd-foot" aria-hidden="true">
-        <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
-        <span><kbd>↵</kbd> open</span>
-        <span><kbd>Esc</kbd> close</span>
+        <span><kbd>↑</kbd><kbd>↓</kbd> {{ 'navigate' | t }}</span>
+        <span><kbd>↵</kbd> {{ 'open' | t }}</span>
+        <span><kbd>{{ 'Esc' | t }}</kbd> {{ 'close' | t }}</span>
       </footer>
     </div>
   </div>

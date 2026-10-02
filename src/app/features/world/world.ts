@@ -6,11 +6,12 @@ import { IconComponent } from '../../core/ui/icon/icon';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { regionDexCount, type Region } from '../../game/world/regions';
 import type { BallId } from '../../game/world/encounters';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 @Component({
   selector: 'pv-world',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, PageHeaderComponent, SpinnerComponent, IconComponent],
+  imports: [TranslatePipe, RouterLink, PageHeaderComponent, SpinnerComponent, IconComponent],
   templateUrl: './world.html',
   styleUrl: './world.scss',
 })

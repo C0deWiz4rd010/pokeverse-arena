@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { I18nService } from '../../i18n/i18n.service';
 import { TypeBadgeComponent } from '../type-badge/type-badge';
 import { IconComponent } from '../icon/icon';
 import type { IconName } from '../icon/icons.data';
@@ -6,6 +7,7 @@ import { titleCase, typeColorVar } from '../format';
 import type { BattleMove, DamageClass } from '../../../game/engine';
 import { effectivenessRuled, type BattleRules } from '../../../game/engine/rules';
 import type { PokemonType } from '../../utils/type-chart';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 interface EffInfo {
   readonly mult: number;
@@ -28,7 +30,7 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
 @Component({
   selector: 'pv-move-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, IconComponent],
+  imports: [TranslatePipe, TypeBadgeComponent, IconComponent],
   template: `
     <button
       class="mv"
@@ -41,7 +43,7 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
       <span class="mv-glow" aria-hidden="true"></span>
 
       <span class="mv-head">
-        <span class="mv-name">{{ label() }}</span>
+        <span class="mv-name">{{ label() | t }}</span>
         @if (hotkey() !== null) { <kbd class="mv-key" aria-hidden="true">{{ hotkey() }}</kbd> }
         <span class="mv-cat" [attr.data-cat]="move().damageClass" [title]="cat().label">
           <pv-icon [name]="cat().icon" />
@@ -51,8 +53,8 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
       <span class="mv-foot">
         <pv-type-badge [type]="move().type" />
         <span class="mv-stats">
-          <span class="stat" title="Power"><pv-icon name="sword" /> {{ move().power || '—' }}</span>
-          <span class="stat" title="Accuracy"><pv-icon name="target" /> {{ accLabel() }}</span>
+          <span class="stat" [attr.title]="'Power' | t"><pv-icon name="sword" /> {{ move().power || '—' }}</span>
+          <span class="stat" [attr.title]="'Accuracy' | t"><pv-icon name="target" /> {{ accLabel() }}</span>
         </span>
       </span>
 
@@ -64,22 +66,22 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
         <span class="tip-head">
           <span class="tip-icon" aria-hidden="true"><pv-icon [name]="cat().icon" /></span>
           <span class="tip-titles">
-            <span class="tip-title">{{ label() }}</span>
-            <span class="tip-sub">{{ titleCase(move().type) }} · {{ cat().label }}</span>
+            <span class="tip-title">{{ label() | t }}</span>
+            <span class="tip-sub">{{ titleCase(move().type) | t }} · {{ cat().label | t }}</span>
           </span>
         </span>
 
         <span class="tip-desc">{{ blurb() }}</span>
 
         <span class="tip-grid">
-          <span class="cell"><i>Power</i><b>{{ move().power || '—' }}</b></span>
-          <span class="cell"><i>Accuracy</i><b>{{ accLabel() }}</b></span>
-          @if (ppLabel()) { <span class="cell"><i>PP</i><b>{{ ppLabel() }}</b></span> }
-          @if (priorityLabel()) { <span class="cell"><i>Priority</i><b>{{ priorityLabel() }}</b></span> }
+          <span class="cell"><i>{{ 'Power' | t }}</i><b>{{ move().power || '—' }}</b></span>
+          <span class="cell"><i>{{ 'Accuracy' | t }}</i><b>{{ accLabel() }}</b></span>
+          @if (ppLabel()) { <span class="cell"><i>{{ 'PP' | t }}</i><b>{{ ppLabel() }}</b></span> }
+          @if (priorityLabel()) { <span class="cell"><i>{{ 'Priority' | t }}</i><b>{{ priorityLabel() }}</b></span> }
         </span>
 
         @if (eff(); as e) {
-          <span class="tip-eff" [attr.data-tier]="e.tier">{{ effShort(e.mult) }} · {{ e.label }}</span>
+          <span class="tip-eff" [attr.data-tier]="e.tier">{{ effShort(e.mult) }} · {{ e.label | t }}</span>
         }
       </span>
     </button>
@@ -96,6 +98,7 @@ export class MoveButtonComponent {
 
   readonly picked = output<void>();
 
+  private readonly i18n = inject(I18nService);
   protected readonly titleCase = titleCase;
   protected readonly color = computed(() => typeColorVar(this.move().type));
   protected readonly cat = computed(() => CAT_META[this.move().damageClass]);
@@ -121,19 +124,20 @@ export class MoveButtonComponent {
   /** A short scouting blurb generated from the move's profile. */
   protected readonly blurb = computed(() => {
     const mv = this.move();
-    const type = titleCase(mv.type);
+    const t = (text: string, params?: readonly unknown[]) => this.i18n.t(text, params);
+    const type = t(titleCase(mv.type));
     if (mv.damageClass === 'status' || mv.power <= 0) {
-      return `A ${type}-type status move — sways the battle without dealing direct damage.`;
+      return t('A {0}-type status move — sways the battle without dealing direct damage.', [type]);
     }
     const punch =
-      mv.power >= 120 ? 'a devastating'
-      : mv.power >= 90 ? 'a powerful'
-      : mv.power >= 60 ? 'a solid'
-      : 'a quick';
-    const acc = mv.accuracy === 0 ? ' and never misses' : mv.accuracy < 85 ? ' but risky to land' : '';
-    const first = (mv.priority ?? 0) > 0 ? ' It strikes first in a pinch.' : '';
-    const kind = this.cat().label.toLowerCase();
-    return `A ${type}-type ${kind} move — ${punch} hit${acc}.${first}`;
+      mv.power >= 120 ? 'a devastating hit'
+      : mv.power >= 90 ? 'a powerful hit'
+      : mv.power >= 60 ? 'a solid hit'
+      : 'a quick hit';
+    const acc = mv.accuracy === 0 ? t(' and never misses') : mv.accuracy < 85 ? t(' but risky to land') : '';
+    const first = (mv.priority ?? 0) > 0 ? t(' It strikes first in a pinch.') : '';
+    const kind = t(this.cat().label).toLowerCase();
+    return `${t('A {0}-type {1} move', [type, kind])} — ${t(punch)}${acc}.${first}`;
   });
 
   /** Live effectiveness against the defender, when its types are provided. */
@@ -151,8 +155,14 @@ export class MoveButtonComponent {
   protected readonly ariaLabel = computed(() => {
     const mv = this.move();
     const e = this.eff();
-    const base = `${this.label()}, ${this.cat().label} ${titleCase(mv.type)} move, power ${mv.power || 'none'}`;
-    return e && e.tier !== 'neutral' ? `${base}, ${e.label}` : base;
+    const t = (text: string, params?: readonly unknown[]) => this.i18n.t(text, params);
+    const base = t('{0}, {1} {2} move, power {3}', [
+      this.label(),
+      t(this.cat().label),
+      t(titleCase(mv.type)),
+      mv.power || t('none'),
+    ]);
+    return e && e.tier !== 'neutral' ? `${base}, ${t(e.label)}` : base;
   });
 
   protected effShort(mult: number): string {

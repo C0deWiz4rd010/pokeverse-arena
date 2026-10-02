@@ -26,6 +26,7 @@ await mkdir(OUT, { recursive: true });
 const errors = [];
 const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+if (process.env.SHOTS_LOCALE) await ctx.addInitScript((l) => localStorage.setItem('pv:locale', l), process.env.SHOTS_LOCALE);
 const page = await ctx.newPage();
 page.on('console', (m) => { if (m.type() === 'error') errors.push(`${page.url()} :: ${m.text()}`); });
 page.on('pageerror', (e) => errors.push(`${page.url()} :: PAGEERROR ${e.message}`));

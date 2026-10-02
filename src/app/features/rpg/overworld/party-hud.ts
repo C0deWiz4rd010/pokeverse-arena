@@ -4,6 +4,7 @@ import { titleCase } from '../../../core/ui/format';
 import { STATUS_INFO } from '../../../game/engine';
 import type { StatusCondition } from '../../../game/engine';
 import type { PartyMon } from '../../../game/rpg/rpg-types';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 /**
  * Compact overworld party HUD: a stacked strip of the current team showing each
@@ -11,13 +12,14 @@ import type { PartyMon } from '../../../game/rpg/rpg-types';
  * Pixi and canvas overworld renderers so the readout is identical.
  */
 @Component({
-  selector: 'pv-ow-party-hud',
+    imports: [TranslatePipe],
+selector: 'pv-ow-party-hud',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (svc.party().length) {
-      <div class="party-hud" aria-label="Party status">
+      <div class="party-hud" [attr.aria-label]="'Party status' | t">
         @for (m of svc.party(); track m.uid) {
-          <div class="ph-mon" [class.fainted]="m.currentHp <= 0" [title]="label(m) + ' · Lv ' + m.level">
+          <div class="ph-mon" [class.fainted]="m.currentHp <= 0" [title]="'{0} · Lv {1}' | t: [label(m), m.level]">
             <span class="ph-top">
               <span class="ph-name">{{ label(m) }}</span>
               <span class="ph-lvl">L{{ m.level }}</span>
@@ -31,7 +33,7 @@ import type { PartyMon } from '../../../game/rpg/rpg-types';
               ></span>
             </span>
             @if (m.status !== 'none') {
-              <span class="ph-status" [style.--sc]="color(m.status)">{{ tag(m.status) }}</span>
+              <span class="ph-status" [style.--sc]="color(m.status)">{{ tag(m.status) | t }}</span>
             }
           </div>
         }

@@ -1,3 +1,4 @@
+import { I18nService } from '../../core/i18n/i18n.service';
 import { ModalDirective } from '../../core/ui/modal/modal';
 import {
   ChangeDetectionStrategy,
@@ -20,6 +21,7 @@ import { titleCase } from '../../core/ui/format';
 import { dailySeed } from '../../core/utils/rng';
 import { dailyFusionPair } from '../../game/fusion/fusion';
 import { PokedexService } from '../pokedex/pokedex.service';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 /** One executable row in the palette (page link, action or Pokémon hit). */
 interface PaletteItem {
@@ -73,7 +75,7 @@ const MAX_POKEMON_HITS = 8;
 @Component({
   selector: 'pv-command-palette',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent, ModalDirective],
+  imports: [TranslatePipe, IconComponent, ModalDirective],
   templateUrl: './command-palette.html',
   styleUrl: './command-palette.scss',
 })
@@ -81,6 +83,7 @@ export class CommandPaletteComponent {
   private readonly router = inject(Router);
   private readonly dex = inject(PokedexService);
   private readonly recent = inject(RecentPokemonService);
+  private readonly i18n = inject(I18nService);
 
   readonly open = input.required<boolean>();
   readonly closed = output<void>();
@@ -118,7 +121,12 @@ export class CommandPaletteComponent {
     }
 
     const pages = PAGES.filter(
-      (p) => !q || p.label.toLowerCase().includes(q) || p.keywords.includes(q),
+      (p) =>
+        !q ||
+        p.label.toLowerCase().includes(q) ||
+        this.i18n.t(p.label).toLowerCase().includes(q) ||
+        p.keywords.includes(q) ||
+        this.i18n.t(p.keywords).includes(q),
     ).map<PaletteItem>((p) => ({
       key: 'page:' + p.path,
       label: p.label,
@@ -128,7 +136,9 @@ export class CommandPaletteComponent {
     }));
     if (pages.length) groups.push({ title: 'Go to', items: pages });
 
-    const actions = this.actionItems().filter((a) => !q || a.label.toLowerCase().includes(q));
+    const actions = this.actionItems().filter(
+      (a) => !q || a.label.toLowerCase().includes(q) || this.i18n.t(a.label).toLowerCase().includes(q),
+    );
     if (actions.length) groups.push({ title: 'Actions', items: actions });
 
     if (q.length >= 2) {

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { ProfileService } from './profile.service';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { IconComponent } from '../../core/ui/icon/icon';
+import { I18nService, LOCALES } from '../../core/i18n/i18n.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { ToastService } from '../../core/ui/toast/toast.service';
 import { HapticsService } from '../../core/haptics/haptics.service';
@@ -12,17 +13,20 @@ import { dailySeed } from '../../core/utils/rng';
 import { renderTrainerCard } from './trainer-card';
 import { buildBackup, parseBackup } from '../../core/storage/backup';
 import { safeSet } from '../../core/storage/safe-storage';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 @Component({
   selector: 'pv-profile',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, IconComponent],
+  imports: [TranslatePipe, PageHeaderComponent, IconComponent],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class ProfileComponent {
   protected readonly svc = inject(ProfileService);
   protected readonly theme = inject(ThemeService);
+  protected readonly i18n = inject(I18nService);
+  protected readonly locales = LOCALES;
   protected readonly haptics = inject(HapticsService);
 
   protected readonly editing = signal(false);
@@ -114,16 +118,17 @@ export class ProfileComponent {
       const special = dailyFusionPair(dailySeed('fusion'));
       const blob = await renderTrainerCard({
         name: this.svc.identity().name,
-        title: this.svc.identity().title,
-        rank: this.svc.rank(),
+        title: this.i18n.t(this.svc.identity().title),
+        rank: this.i18n.t(this.svc.rank()),
+        t: (text, params) => this.i18n.t(text, params),
         completion: this.svc.completion(),
         stats: [
-          { label: 'Badges', value: `${s.badges}/${s.totalBadges}` },
-          { label: 'Cups won', value: `${s.tournamentWins}` },
-          { label: 'Best streak', value: `${s.dailyBest}` },
-          { label: 'World dex', value: `${s.worldCaught}` },
-          { label: 'Spire clears', value: `${s.spireClears}` },
-          { label: 'Fusions', value: `${s.fusionsRegistered}` },
+          { label: this.i18n.t('Badges'), value: `${s.badges}/${s.totalBadges}` },
+          { label: this.i18n.t('Cups won'), value: `${s.tournamentWins}` },
+          { label: this.i18n.t('Best streak'), value: `${s.dailyBest}` },
+          { label: this.i18n.t('World dex'), value: `${s.worldCaught}` },
+          { label: this.i18n.t('Spire clears'), value: `${s.spireClears}` },
+          { label: this.i18n.t('Fusions'), value: `${s.fusionsRegistered}` },
         ],
         favoriteIds: [...this.dex.favorites()].slice(0, 3),
         specialIds: [special.head, special.body],

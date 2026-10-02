@@ -1,3 +1,4 @@
+import { I18nService } from '../../core/i18n/i18n.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,6 +20,7 @@ import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
 import type { StatKey } from '../../core/utils/stat-calculator';
 import { RADAR_MAX, RADAR_RINGS, labelPoint, radarPoint, shapePoints } from './stat-radar';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 const STAT_ROWS: { key: StatKey; label: string }[] = [
   { key: 'hp', label: 'HP' },
@@ -36,7 +38,7 @@ const REDUCED =
 @Component({
   selector: 'pv-pokemon-quickview',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TypeBadgeComponent, IconComponent],
+  imports: [TranslatePipe, RouterLink, TypeBadgeComponent, IconComponent],
   template: `
     <div class="backdrop" role="presentation" (click)="close.emit()"></div>
     <div
@@ -49,9 +51,9 @@ const REDUCED =
       (pointermove)="onTilt($event)"
       (pointerleave)="resetTilt()"
       role="dialog"
-      [attr.aria-label]="name() + ' quick view'"
+      [attr.aria-label]="'{0} quick view' | t: [name()]"
     >
-      <button class="x" type="button" (click)="close.emit()" aria-label="Close"><pv-icon name="x" /></button>
+      <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t"><pv-icon name="x" /></button>
 
       <div class="flip" [class.flipped]="flipped()">
         <div class="face front" [attr.aria-hidden]="flipped()">
@@ -63,7 +65,7 @@ const REDUCED =
             <div class="qv-id">
               <span class="num">{{ num() }}</span>
               <strong class="qv-name">{{ name() }}</strong>
-              @if (detail(); as d) { <span class="genus">{{ d.genus }}</span> }
+              @if (detail(); as d) { <span class="genus">{{ i18n.isGerman() && d.genusDe ? d.genusDe : d.genus }}</span> }
               <div class="qv-types">
                 @for (t of entry().types; track t) { <pv-type-badge [type]="t" /> }
               </div>
@@ -72,26 +74,26 @@ const REDUCED =
 
           <div class="qv-actions">
             <button class="chip" type="button" (click)="playCry()" [class.on]="cry.playing() === entry().id">
-              <pv-icon name="volume-2" /> Cry
+              <pv-icon name="volume-2" /> {{ 'Cry' | t }}
             </button>
-            <button class="chip" type="button" (click)="flipped.set(true)" [disabled]="!detail()" title="Stat radar">
-              <pv-icon name="star" /> Radar
+            <button class="chip" type="button" (click)="flipped.set(true)" [disabled]="!detail()" [attr.title]="'Stat radar' | t">
+              <pv-icon name="star" /> {{ 'Radar' | t }}
             </button>
-            <a class="chip" [routerLink]="['/fusion']" [queryParams]="{ head: entry().id }" title="Splice in the Fusion Lab"><pv-icon name="flask-conical" /> Fuse</a>
-            <a class="chip primary" [routerLink]="['/pokemon', entry().id]"><pv-icon name="arrow-right" /> Full page</a>
+            <a class="chip" [routerLink]="['/fusion']" [queryParams]="{ head: entry().id }" [attr.title]="'Splice in the Fusion Lab' | t"><pv-icon name="flask-conical" /> {{ 'Fuse' | t }}</a>
+            <a class="chip primary" [routerLink]="['/pokemon', entry().id]"><pv-icon name="arrow-right" /> {{ 'Full page' | t }}</a>
           </div>
 
           @if (error()) {
-            <p class="qv-err">Couldn’t load details.</p>
+            <p class="qv-err">{{ 'Couldn’t load details.' | t }}</p>
           } @else if (!detail()) {
             <div class="qv-skel">
               @for (r of statRows; track r.key) { <span class="bar-skel"></span> }
             </div>
           } @else if (detail(); as d) {
-            <p class="flavor">{{ d.flavor }}</p>
+            <p class="flavor">{{ i18n.isGerman() && d.flavorDe ? d.flavorDe : d.flavor }}</p>
             @if (evo(); as chain) {
               @if (chain.length > 1) {
-                <div class="evo" aria-label="Evolution line">
+                <div class="evo" [attr.aria-label]="'Evolution line' | t">
                   @for (stage of chain; track $index; let last = $last) {
                     <div class="evo-stage">
                       @for (s of stage; track s.id) {
@@ -113,15 +115,15 @@ const REDUCED =
             <div class="stats">
               @for (r of statRows; track r.key) {
                 <div class="stat">
-                  <span class="s-label">{{ r.label }}</span>
+                  <span class="s-label">{{ r.label | t }}</span>
                   <span class="s-val">{{ d.stats[r.key] }}</span>
                   <span class="s-track"><span class="s-fill" [style.width.%]="pct(d.stats[r.key])" [style.background]="statColor(d.stats[r.key])"></span></span>
                 </div>
               }
-              <div class="bst"><span>BST</span><strong>{{ d.baseStatTotal }}</strong></div>
+              <div class="bst"><span>{{ 'BST' | t }}</span><strong>{{ d.baseStatTotal }}</strong></div>
             </div>
             <div class="meta">
-              <span>{{ d.heightM }} m · {{ d.weightKg }} kg</span>
+              <span>{{ '{0} m · {1} kg' | t: [(d.heightM), (d.weightKg)] }}</span>
               <span class="abilities">{{ abilities(d) }}</span>
             </div>
           }
@@ -130,17 +132,17 @@ const REDUCED =
         <div class="face back" [attr.aria-hidden]="!flipped()">
           @if (detail(); as d) {
             <header class="rd-head">
-              <button class="chip rd-back" type="button" (click)="flipped.set(false)" aria-label="Back to profile">‹</button>
+              <button class="chip rd-back" type="button" (click)="flipped.set(false)" [attr.aria-label]="'Back to profile' | t">‹</button>
               <strong class="qv-name">{{ name() }}</strong>
-              <span class="rd-bst">BST <strong>{{ d.baseStatTotal }}</strong></span>
+              <span class="rd-bst">{{ 'BST' | t }} <strong>{{ d.baseStatTotal }}</strong></span>
             </header>
-            <svg class="radar" viewBox="0 0 180 176" role="img" [attr.aria-label]="'Stat radar for ' + name()">
+            <svg class="radar" viewBox="0 0 180 176" role="img" [attr.aria-label]="'Stat radar for {0}' | t: [name()]">
               @for (ring of rings; track $index) {
                 <polygon class="ring" [attr.points]="ring" />
               }
               @for (r of statRows; track r.key; let i = $index) {
                 <line class="axis" x1="90" y1="86" [attr.x2]="axisPt(i).x" [attr.y2]="axisPt(i).y" />
-                <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">{{ r.label }} {{ d.stats[r.key] }}</text>
+                <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">{{ r.label | t }} {{ d.stats[r.key] }}</text>
               }
               <polygon class="shape" [attr.points]="radarShape()" />
               @for (r of statRows; track r.key; let i = $index) {
@@ -148,7 +150,7 @@ const REDUCED =
               }
             </svg>
             <div class="meta">
-              <span>{{ d.heightM }} m · {{ d.weightKg }} kg</span>
+              <span>{{ '{0} m · {1} kg' | t: [(d.heightM), (d.weightKg)] }}</span>
               <span class="abilities">{{ abilities(d) }}</span>
             </div>
           }
@@ -164,6 +166,7 @@ export class PokemonQuickviewComponent {
   readonly shiny = input<boolean>(false);
   readonly close = output<void>();
 
+  protected readonly i18n = inject(I18nService);
   private readonly detailSvc = inject(PokedexDetailService);
   protected readonly cry = inject(CryService);
   protected readonly statRows = STAT_ROWS;

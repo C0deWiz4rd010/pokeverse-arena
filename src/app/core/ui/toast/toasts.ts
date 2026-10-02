@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ToastService } from './toast.service';
 import { IconComponent } from '../icon/icon';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 /** Fixed bottom-right stack rendering the global {@link ToastService} queue. */
 @Component({
   selector: 'pv-toasts',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent],
+  imports: [TranslatePipe, IconComponent],
   template: `
     <div class="stack" role="status" aria-live="polite">
       @for (t of svc.toasts(); track t.id) {
@@ -19,12 +20,12 @@ import { IconComponent } from '../icon/icon';
           (mouseleave)="svc.resume(t.id)"
           (focus)="svc.pause(t.id)"
           (blur)="svc.resume(t.id)"
-          title="Dismiss"
+          [attr.title]="'Dismiss' | t"
         >
           <span class="t-icon" aria-hidden="true"><pv-icon [name]="t.icon" /></span>
           <span class="t-body">
-            <strong>{{ t.title }}</strong>
-            @if (t.text) { <span class="t-text">{{ t.text }}</span> }
+            <strong>{{ t.title | t }}</strong>
+            @if (t.text) { <span class="t-text">{{ t.text | t }}</span> }
           </span>
         </button>
       }

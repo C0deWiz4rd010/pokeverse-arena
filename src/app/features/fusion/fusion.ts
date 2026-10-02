@@ -21,6 +21,7 @@ import { FusionService, type SavedFusion } from './fusion.service';
 import { dailyFusionPair, spliceName } from '../../game/fusion/fusion';
 import { dailySeed } from '../../core/utils/rng';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 const REDUCED_MOTION =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -39,7 +40,7 @@ type Slot = 'head' | 'body';
 @Component({
   selector: 'pv-fusion',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, TypeBadgeComponent, StatBarComponent, IconComponent],
+  imports: [TranslatePipe, PageHeaderComponent, TypeBadgeComponent, StatBarComponent, IconComponent],
   templateUrl: './fusion.html',
   styleUrl: './fusion.scss',
 })

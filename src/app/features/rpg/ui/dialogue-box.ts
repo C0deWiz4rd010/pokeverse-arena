@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -18,7 +19,8 @@ const FACE_KEYS = new Set(['boy', 'girl', 'prof', 'nurse', 'clerk', 'leader', 'o
 
 /** Classic dialogue box with a typewriter reveal and choice options. */
 @Component({
-  selector: 'pv-dialogue-box',
+    imports: [TranslatePipe],
+selector: 'pv-dialogue-box',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (svc.dialogue(); as d) {
@@ -27,14 +29,14 @@ const FACE_KEYS = new Set(['boy', 'girl', 'prof', 'nurse', 'clerk', 'leader', 'o
         @if (faceUrl(); as f) {
           <span class="face" aria-hidden="true"><img decoding="async" [src]="f" alt="" /></span>
         }
-        @if (d.speaker) { <span class="speaker">{{ d.speaker }}</span> }
+        @if (d.speaker) { <span class="speaker">{{ d.speaker | t }}</span> }
         <p class="text">{{ shown() }}<span class="caret" [class.show]="!revealed()">▌</span></p>
 
         @if (d.choices && revealed()) {
           <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
           <div class="choices" role="group" (click)="$event.stopPropagation()">
             @for (c of d.choices; track $index; let i = $index) {
-              <button type="button" (click)="choose(i)">{{ c }}</button>
+              <button type="button" (click)="choose(i)">{{ c | t }}</button>
             }
           </div>
         } @else if (revealed()) {

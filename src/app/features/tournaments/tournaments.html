@@ -1,17 +1,17 @@
 <section class="container page">
   <pv-page-header
     icon="trophy"
-    title="Tournaments"
-    subtitle="Pick a format, then climb a 16-trainer bracket to the final. You play your matches — the rest of the field resolves itself." />
+    [title]="'Tournaments' | t"
+    [subtitle]="'Pick a format, then climb a 16-trainer bracket to the final. You play your matches — the rest of the field resolves itself.' | t" />
 
   @switch (svc.status()) {
     <!-- ───────────────────────────── mode select ───────────────────────────── -->
     @case ('idle') {
       @if (svc.error(); as err) {
-        <p class="error" role="alert">{{ err }}</p>
+        <p class="error" role="alert">{{ err | t }}</p>
       }
 
-      <div class="format-picker" role="radiogroup" aria-label="Tournament format">
+      <div class="format-picker" role="radiogroup" [attr.aria-label]="'Tournament format' | t">
         @for (f of formats; track f.id) {
           <button
             class="format-card"
@@ -21,21 +21,21 @@
             [class.on]="selectedFormat() === f.id"
             (click)="setFormat(f.id)"
           >
-            <span class="fmt-head"><pv-icon [name]="f.icon" /> {{ f.name }}</span>
-            <span class="fmt-tag">{{ f.tagline }}</span>
-            <span class="fmt-desc">{{ f.description }}</span>
+            <span class="fmt-head"><pv-icon [name]="f.icon" /> {{ f.name | t }}</span>
+            <span class="fmt-tag">{{ f.tagline | t }}</span>
+            <span class="fmt-desc">{{ f.description | t }}</span>
           </button>
         }
       </div>
 
-      <h3 class="section-h">Choose a mode</h3>
+      <h3 class="section-h">{{ 'Choose a mode' | t }}</h3>
       <div class="modes">
         @for (m of modes; track m.id) {
           <button class="mode-card" type="button" (click)="start(m.id)">
             <span class="mode-icon"><pv-icon [name]="m.icon" /></span>
-            <span class="mode-name">{{ m.name }}</span>
-            <span class="mode-tag">{{ m.tagline }}</span>
-            <span class="mode-desc">{{ m.description }}</span>
+            <span class="mode-name">{{ m.name | t }}</span>
+            <span class="mode-tag">{{ m.tagline | t }}</span>
+            <span class="mode-desc">{{ m.description | t }}</span>
           </button>
         }
       </div>
@@ -43,25 +43,25 @@
       @if (svc.history().length) {
         <section class="history">
           @if (career(); as c) {
-            <div class="career" aria-label="Career stats">
-              <div class="career-stat"><span class="cs-v">{{ c.runs }}</span><span class="cs-k">Runs</span></div>
-              <div class="career-stat"><span class="cs-v">{{ c.wins }}</span><span class="cs-k">Titles</span></div>
-              <div class="career-stat"><span class="cs-v">#{{ c.best }}</span><span class="cs-k">Best finish</span></div>
-              <div class="career-stat gold"><span class="cs-v">{{ c.earnings }} ₽</span><span class="cs-k">Career prize</span></div>
+            <div class="career" [attr.aria-label]="'Career stats' | t">
+              <div class="career-stat"><span class="cs-v">{{ c.runs }}</span><span class="cs-k">{{ 'Runs' | t }}</span></div>
+              <div class="career-stat"><span class="cs-v">{{ c.wins }}</span><span class="cs-k">{{ 'Titles' | t }}</span></div>
+              <div class="career-stat"><span class="cs-v">#{{ c.best }}</span><span class="cs-k">{{ 'Best finish' | t }}</span></div>
+              <div class="career-stat gold"><span class="cs-v">{{ c.earnings }} ₽</span><span class="cs-k">{{ 'Career prize' | t }}</span></div>
               @if (rivalry(); as rv) {
-                <div class="career-stat riv" [title]="'Head-to-head vs ' + rv.name">
+                <div class="career-stat riv" [title]="'Head-to-head vs {0}' | t: [rv.name]">
                   <span class="cs-v">{{ rv.playerWins }}–{{ rv.rivalWins }}</span>
-                  <span class="cs-k">vs {{ rv.name }}</span>
+                  <span class="cs-k">{{ 'vs {0}' | t: [(rv.name)] }}</span>
                 </div>
               }
             </div>
           }
-          <h3 class="section-h">Recent runs</h3>
+          <h3 class="section-h">{{ 'Recent runs' | t }}</h3>
           <ul class="history-list">
             @for (h of svc.history(); track $index) {
               <li [class.won]="h.playerWon">
                 <span class="h-place">#{{ h.placement }}</span>
-                <span class="h-mode">{{ h.modeName }} · {{ h.formatName }}</span>
+                <span class="h-mode">{{ h.modeName | t }} · {{ h.formatName | t }}</span>
                 <span class="h-prize">+{{ h.prize }} ₽</span>
               </li>
             }
@@ -74,16 +74,16 @@
     @case ('loading') {
       <div class="loading">
         <pv-spinner />
-        <p>Seeding the bracket and building teams…</p>
+        <p>{{ 'Seeding the bracket and building teams…' | t }}</p>
       </div>
     }
 
     <!-- ───────────────────────────── draft ───────────────────────────── -->
     @case ('draft') {
       <div class="draft">
-        <h2 class="draft-title">Draft your team</h2>
+        <h2 class="draft-title">{{ 'Draft your team' | t }}</h2>
         <p class="draft-sub">
-          Choose {{ draftSize() }} Pokémon — selected
+          {{ 'Choose {0} Pokémon — selected' | t: [(draftSize())] }}
           <strong>{{ draftPicks().length }}/{{ draftSize() }}</strong>.
         </p>
         <div class="pool">
@@ -98,7 +98,7 @@
           }
         </div>
         <button class="btn confirm" type="button" [disabled]="!canConfirmDraft()" (click)="confirmDraft()">
-          Enter the bracket ›
+          {{ 'Enter the bracket ›' | t }}
         </button>
       </div>
     }
@@ -107,10 +107,10 @@
     @default {
       <div class="run-bar">
         <span class="run-mode">
-          @if (svc.mode(); as md) { <pv-icon [name]="md.icon" /> {{ md.name }} }
+          @if (svc.mode(); as md) { <pv-icon [name]="md.icon" /> {{ md.name | t }} }
         </span>
         @if (svc.monoType(); as mt) { <pv-type-badge [type]="mt" /> }
-        <button class="ghost" type="button" (click)="restart()">Quit</button>
+        <button class="ghost" type="button" (click)="restart()">{{ 'Quit' | t }}</button>
       </div>
 
       <!-- Active match / call-to-action / finale -->
@@ -126,41 +126,41 @@
           <span class="crown"><pv-icon name="crown" /></span>
           <img decoding="async" class="champ-ava" [src]="champ.avatar" [alt]="champ.name" />
           <p class="champ-name">
-            {{ championIsPlayer() ? 'You are the Champion!' : champ.name + ' lifts the trophy' }}
+            {{ championIsPlayer() ? ('You are the Champion!' | t) : champ.name + (' lifts the trophy' | t) }}
           </p>
           @if (!championIsPlayer()) {
             <p class="champ-sub">
-              @if (champ.isRival) { Your rival takes the crown — this isn't over. }
-              @else { You were knocked out — better luck next run. }
+              @if (champ.isRival) { {{ 'Your rival takes the crown — this isn\'t over.' | t }} }
+              @else { {{ 'You were knocked out — better luck next run.' | t }} }
             </p>
           }
           @if (svc.lastRun(); as run) {
             <div class="finale-stats">
-              <span class="fs-item"><span class="fs-k">Placement</span><span class="fs-v">#{{ run.placement }}</span></span>
-              <span class="fs-item"><span class="fs-k">Prize</span><span class="fs-v">+{{ run.prize }} ₽</span></span>
-              <span class="fs-item"><span class="fs-k">Field</span><span class="fs-v">{{ run.field }}</span></span>
+              <span class="fs-item"><span class="fs-k">{{ 'Placement' | t }}</span><span class="fs-v">#{{ run.placement }}</span></span>
+              <span class="fs-item"><span class="fs-k">{{ 'Prize' | t }}</span><span class="fs-v">+{{ run.prize }} ₽</span></span>
+              <span class="fs-item"><span class="fs-k">{{ 'Field' | t }}</span><span class="fs-v">{{ run.field }}</span></span>
               @if (svc.pickResult(); as pr) {
                 <span class="fs-item" [class.pk-hit]="pr.hit" [class.pk-miss]="!pr.hit">
-                  <span class="fs-k">Crystal ball</span>
-                  <span class="fs-v">{{ pr.hit ? '+' + pr.payout + ' ₽' : 'missed — ' + pr.name }}</span>
+                  <span class="fs-k">{{ 'Crystal ball' | t }}</span>
+                  <span class="fs-v">{{ pr.hit ? '+' + pr.payout + ' ₽' : ('missed — ' | t) + pr.name }}</span>
                 </span>
               }
             </div>
           }
-          <button class="btn" type="button" (click)="restart()">New tournament</button>
+          <button class="btn" type="button" (click)="restart()">{{ 'New tournament' | t }}</button>
         </div>
       } @else if (svc.currentMatchSetup(); as setup) {
         <div class="cta" [class.rival-up]="foeIsRival()">
-          <span class="cta-round">{{ isLeague() ? 'Next match' : roundLabel[setup.round] }}</span>
+          <span class="cta-round">{{ isLeague() ? ('Next match' | t) : roundLabel[setup.round] }}</span>
           <div class="cta-foe">
             <img decoding="async" class="ava" [src]="setup.foe.avatar" [alt]="setup.foe.name" loading="lazy" />
             <div class="cta-foe-meta">
-              <p class="vs">vs {{ setup.foe.name }} @if (foeIsRival()) { <span class="rival-tag">RIVAL</span> }</p>
-              <p class="foe-title">{{ setup.foe.title }}</p>
+              <p class="vs">{{ 'vs {0}' | t: [(setup.foe.name)] }} @if (foeIsRival()) { <span class="rival-tag">{{ 'RIVAL' | t }}</span> }</p>
+              <p class="foe-title">{{ setup.foe.title | t }}</p>
             </div>
           </div>
           @if (rivalLine(); as line) {
-            <p class="rival-taunt">“{{ line }}”</p>
+            <p class="rival-taunt">“{{ line | t }}”</p>
           }
           <div class="cta-team">
             @for (mon of setup.foeTeam; track mon.id) {
@@ -168,32 +168,32 @@
             }
           </div>
           <div class="cta-odds" [attr.data-tier]="matchOdds() >= 55 ? 'up' : matchOdds() > 45 ? 'even' : 'down'">
-            <span class="odds-head"><span class="odds-verdict">{{ oddsVerdict() }}</span> · win chance</span>
-            <div class="odds-track" role="img" [attr.aria-label]="'Estimated win chance ' + matchOdds() + '%'">
+            <span class="odds-head"><span class="odds-verdict">{{ oddsVerdict() | t }}</span> {{ '· win chance' | t }}</span>
+            <div class="odds-track" role="img" [attr.aria-label]="'Estimated win chance {0}%' | t: [matchOdds()]">
               <span class="odds-fill" [style.width.%]="matchOdds()"></span>
               <span class="odds-pct">{{ matchOdds() }}%</span>
             </div>
             @if (scouting(); as sc) {
-              <div class="scout" aria-label="Type matchup">
-                <span class="scout-chip up" [title]="'Your team hits ' + sc.advantage + ' of ' + sc.total + ' super-effectively'">⚔ {{ sc.advantage }}/{{ sc.total }}</span>
-                <span class="scout-chip down" [title]="sc.threat + ' of your Pokémon are hit super-effectively'">🛡 {{ sc.threat }}</span>
+              <div class="scout" [attr.aria-label]="'Type matchup' | t">
+                <span class="scout-chip up" [title]="'Your team hits {0} of {1} super-effectively' | t: [sc.advantage, sc.total]">⚔ {{ sc.advantage }}/{{ sc.total }}</span>
+                <span class="scout-chip down" [title]="'{0} of your Pokémon are hit super-effectively' | t: [sc.threat]">🛡 {{ sc.threat }}</span>
                 @if (lead(); as ld) {
-                  <span class="scout-chip lead" [title]="'Recommended lead vs this team'">★ {{ ld.name }}</span>
+                  <span class="scout-chip lead" [title]="'Recommended lead vs this team'">★ {{ ld.name | t }}</span>
                 }
               </div>
             }
           </div>
-          <button class="btn battle" type="button" (click)="battle()">Battle ›</button>
+          <button class="btn battle" type="button" (click)="battle()">{{ 'Battle ›' | t }}</button>
         </div>
       }
 
       <!-- Crystal-ball pick'em -->
       @if (pickOptions().length) {
-        <section class="pickem" aria-label="Crystal-ball pick">
-          <p class="pk-head">🔮 Crystal ball — call the champion <span class="pk-sub">lock before your first match; longshots pay more</span></p>
+        <section class="pickem" [attr.aria-label]="'Crystal-ball pick' | t">
+          <p class="pk-head">{{ '🔮 Crystal ball — call the champion' | t }} <span class="pk-sub">{{ 'lock before your first match; longshots pay more' | t }}</span></p>
           <div class="pk-strip">
             @for (o of pickOptions(); track o.id) {
-              <button class="pk-opt" type="button" (click)="svc.makePick(o.id)" [title]="o.name + ' — pays +' + o.payout + ' ₽ on the title'">
+              <button class="pk-opt" type="button" (click)="svc.makePick(o.id)" [title]="'{0} — pays +{1} ₽ on the title' | t: [o.name, o.payout]">
                 <img decoding="async" [src]="o.avatar" [alt]="o.name" loading="lazy" />
                 <span class="pk-name">{{ o.name }}@if (o.isRival) { <span aria-hidden="true">⚡</span> }</span>
                 <span class="pk-mult">×{{ o.mult }}</span>
@@ -204,17 +204,17 @@
       } @else if (svc.pick(); as p) {
         @if (!svc.pickResult()) {
           <div class="pickem chosen">
-            <span class="pk-head">🔮 Your call:</span>
+            <span class="pk-head">{{ '🔮 Your call:' | t }}</span>
             <img decoding="async" class="pk-ava" [src]="p.avatar" [alt]="p.name" />
-            <span class="pk-call">{{ p.name }} <span class="pk-mult">×{{ p.mult }}</span> — pays +{{ p.payout }} ₽ on the title</span>
-            @if (!svc.pickLocked()) { <button class="ghost" type="button" (click)="svc.clearPick()">Change</button> }
+            <span class="pk-call">{{ p.name }} <span class="pk-mult">×{{ p.mult }}</span> {{ '— pays +{0} ₽ on the title' | t: [(p.payout)] }}</span>
+            @if (!svc.pickLocked()) { <button class="ghost" type="button" (click)="svc.clearPick()">{{ 'Change' | t }}</button> }
           </div>
         }
       }
 
       @if (!isLeague()) {
       <!-- Desktop converging tree -->
-      <div class="tree" aria-label="Tournament bracket">
+      <div class="tree" [attr.aria-label]="'Tournament bracket' | t">
         <div class="side left">
           <div class="round-col">
             @for (m of leftR16(); track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
@@ -233,7 +233,7 @@
           </div>
           <div class="champ-spot" [class.lit]="!!svc.champion()">
             <span class="crown"><pv-icon [name]="svc.champion() ? 'crown' : 'trophy'" /></span>
-            <span class="cn">{{ svc.champion() ? (championIsPlayer() ? 'You' : svc.champion()?.name) : 'Champion' }}</span>
+            <span class="cn">{{ svc.champion() ? (championIsPlayer() ? ('You' | t) : svc.champion()?.name) : ('Champion' | t) }}</span>
           </div>
         </div>
 
@@ -251,29 +251,29 @@
       </div>
 
       <!-- Mobile horizontal-scroll bracket -->
-      <div class="scroll" aria-label="Tournament bracket">
+      <div class="scroll" [attr.aria-label]="'Tournament bracket' | t">
         @for (col of columns(); track col.id) {
           <div class="round-col">
-            <span class="rc-label">{{ col.label }}</span>
+            <span class="rc-label">{{ col.label | t }}</span>
             @for (m of col.matches; track m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: m }" /> }
           </div>
         }
       </div>
       } @else {
         <!-- League standings table -->
-        <div class="standings" aria-label="Standings">
+        <div class="standings" [attr.aria-label]="'Standings' | t">
           <div class="st-row st-head">
             <span class="st-rank">#</span>
-            <span class="st-name">Trainer</span>
+            <span class="st-name">{{ 'Trainer' | t }}</span>
             <span class="st-num">W</span>
             <span class="st-num">L</span>
-            <span class="st-num">Pts</span>
-            <span class="st-num">±KO</span>
+            <span class="st-num">{{ 'Pts' | t }}</span>
+            <span class="st-num">{{ '±KO' | t }}</span>
           </div>
           @for (s of svc.rankedStandings(); track s.trainerId; let i = $index) {
             <div class="st-row" [class.you]="s.isPlayer" [class.podium]="i < 3" [attr.data-rank]="i + 1" [style.animation-delay]="(i * 35) + 'ms'">
               <span class="st-rank">{{ i < 3 ? (i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉') : (i + 1) }}</span>
-              <span class="st-name">{{ s.isPlayer ? 'You' : s.name }}</span>
+              <span class="st-name">{{ s.isPlayer ? ('You' | t) : s.name }}</span>
               <span class="st-num">{{ s.wins }}</span>
               <span class="st-num">{{ s.losses }}</span>
               <span class="st-num strong">{{ s.wins * 3 }}</span>
@@ -296,7 +296,7 @@
       } @else {
         <span class="ava ph">·</span>
       }
-      <span class="nm">{{ m.a ? (m.a.isPlayer ? 'You' : m.a.name) : 'TBD' }}@if (m.a?.isRival) { <span class="riv-flag" title="Your rival">⚡</span> }</span>
+      <span class="nm">{{ m.a ? (m.a.isPlayer ? ('You' | t) : m.a.name) : ('TBD' | t) }}@if (m.a?.isRival) { <span class="riv-flag" [attr.title]="'Your rival' | t">⚡</span> }</span>
     </div>
     <div class="slot" [class.win]="m.played && m.winner === 1" [class.out]="m.played && m.winner === 0" [class.rival]="m.b?.isRival">
       @if (m.b) {
@@ -305,10 +305,10 @@
       } @else {
         <span class="ava ph">·</span>
       }
-      <span class="nm">{{ m.b ? (m.b.isPlayer ? 'You' : m.b.name) : 'TBD' }}@if (m.b?.isRival) { <span class="riv-flag" title="Your rival">⚡</span> }</span>
+      <span class="nm">{{ m.b ? (m.b.isPlayer ? ('You' | t) : m.b.name) : ('TBD' | t) }}@if (m.b?.isRival) { <span class="riv-flag" [attr.title]="'Your rival' | t">⚡</span> }</span>
     </div>
     @if (showCardOdds(m)) {
-      <div class="bm-odds" [attr.title]="'Projected: ' + cardOddsA(m) + '% / ' + (100 - cardOddsA(m)) + '%'">
+      <div class="bm-odds" [attr.title]="'Projected: {0}% / {1}%' | t: [cardOddsA(m), 100 - cardOddsA(m)]">
         <span class="bm-odds-a" [style.width.%]="cardOddsA(m)"></span>
       </div>
     }

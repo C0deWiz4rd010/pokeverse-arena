@@ -5,35 +5,36 @@ import { CryService } from '../../core/audio/cry.service';
 import { titleCase } from '../../core/ui/format';
 import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 /** "Who's That Pokémon?" — guess the silhouette from three choices. */
 @Component({
   selector: 'pv-whos-that',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent, ModalDirective],
+  imports: [TranslatePipe, IconComponent, ModalDirective],
   template: `
     <div class="backdrop" role="presentation" (click)="close.emit()"></div>
-    <div class="panel" role="dialog" aria-label="Who's That Pokémon?" pvModal (pvModalClose)="close.emit()">
+    <div class="panel" role="dialog" [attr.aria-label]="'Who’s That Pokémon?' | t" pvModal (pvModalClose)="close.emit()">
       <header class="head">
-        <h2>Who’s That Pokémon?</h2>
-        <button class="x" type="button" (click)="close.emit()" aria-label="Close"><pv-icon name="x" /></button>
+        <h2>{{ 'Who’s That Pokémon?' | t }}</h2>
+        <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t"><pv-icon name="x" /></button>
       </header>
 
       <div class="score">
-        <span>Streak <strong>{{ streak() }}</strong></span>
-        <span>Best <strong>{{ best() }}</strong></span>
+        <span>{{ 'Streak' | t }} <strong>{{ streak() }}</strong></span>
+        <span>{{ 'Best' | t }} <strong>{{ best() }}</strong></span>
       </div>
 
       @if (answer(); as a) {
         <div class="silhouette" [class.revealed]="revealed()">
-          <img decoding="async" [src]="art(a)" [alt]="revealed() ? a.name : 'Mystery Pokémon'" />
+          <img decoding="async" [src]="art(a)" [alt]="revealed() ? a.name : ('Mystery Pokémon' | t)" />
         </div>
 
         @if (revealed()) {
           <p class="verdict" [class.right]="lastCorrect()" [class.wrong]="!lastCorrect()">
-            {{ lastCorrect() ? "It's " : 'It was ' }}<strong>{{ titleCase(a.name) }}</strong>{{ lastCorrect() ? '!' : '.' }}
+            {{ lastCorrect() ? ("It's " | t) : ('It was ' | t) }}<strong>{{ titleCase(a.name) }}</strong>{{ lastCorrect() ? '!' : '.' }}
           </p>
-          <button class="btn next" type="button" (click)="newRound()">Next ›</button>
+          <button class="btn next" type="button" (click)="newRound()">{{ 'Next ›' | t }}</button>
         } @else {
           <div class="options">
             @for (o of options(); track o.id) {
@@ -42,7 +43,7 @@ import type { PokedexEntry } from '../../core/models/pokemon.model';
           </div>
         }
       } @else {
-        <p class="loading">Shuffling the tall grass…</p>
+        <p class="loading">{{ 'Shuffling the tall grass…' | t }}</p>
       }
     </div>
   `,

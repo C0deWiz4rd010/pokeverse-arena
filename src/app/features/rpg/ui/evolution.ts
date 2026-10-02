@@ -2,19 +2,21 @@ import { ChangeDetectionStrategy, Component, OnDestroy, afterNextRender, inject,
 import { RpgService } from '../rpg.service';
 import { officialArtwork } from '../../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../../core/ui/format';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Plays the queued post-battle evolutions: pulse → white flash → reveal. */
 @Component({
-  selector: 'pv-evolution',
+    imports: [TranslatePipe],
+selector: 'pv-evolution',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <div class="evo" (click)="skip()" role="status">
       <img decoding="async" class="evo-sprite" [class.flash]="flash()" [class.pulse]="pulse()" [src]="art(spriteId())" [alt]="caption()" />
-      <p class="evo-text">{{ caption() }}</p>
+      <p class="evo-text">{{ caption() | t }}</p>
     </div>
   `,
   styleUrl: './evolution.scss',

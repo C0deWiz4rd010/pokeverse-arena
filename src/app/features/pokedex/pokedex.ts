@@ -21,6 +21,7 @@ import { CryService } from '../../core/audio/cry.service';
 import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import { titleCase } from '../../core/ui/format';
 import { asSort, asView, parseTypes, type DexSort, type DexView } from './pokedex-filter';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 interface SortOption {
   readonly id: DexSort;
@@ -44,7 +45,7 @@ const VIEWS: { id: DexView; label: string; glyph: string }[] = [
 @Component({
   selector: 'pv-pokedex',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     StateComponent,
     PokemonCardComponent,
     PokemonQuickviewComponent,

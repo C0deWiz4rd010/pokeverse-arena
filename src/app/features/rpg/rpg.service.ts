@@ -19,6 +19,7 @@ import { buryFainted, consumeEncounter } from '../../game/rpg/nuzlocke';
 import { bumpCombo, comboLabel, comboShinyMultiplier } from '../../game/rpg/combo';
 import { fishBiteBonus } from '../../game/rpg/boons';
 import { canForage, collectForage, forageDay, forageId, forageLoot } from '../../game/rpg/forage';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { defaultSave, sanitizeSave } from '../../game/rpg/save';
 import {
   PARTY_MAX,
@@ -124,6 +125,7 @@ const SHINY_ODDS = 1 / 128;
 @Injectable({ providedIn: 'root' })
 export class RpgService {
   private readonly store = inject(SaveService);
+  private readonly i18n = inject(I18nService);
   private readonly battle = inject(BattleService);
   private readonly api = inject(PokeApiClient);
   private readonly globalToast = inject(ToastService);
@@ -880,12 +882,12 @@ export class RpgService {
       const portrait = node.speaker
         ? this.scriptPortrait ?? SPEAKER_PORTRAITS[node.speaker]
         : undefined;
-      this.dialogue.set({ speaker: node.speaker, text: node.say, portrait });
+      this.dialogue.set({ speaker: node.speaker ? this.i18n.t(node.speaker) : node.speaker, text: this.i18n.t(node.say), portrait });
       return 'pause';
     }
     if ('choice' in node) {
       this.choiceBranches = node.options.map((o) => o.then);
-      this.dialogue.set({ text: node.choice, choices: node.options.map((o) => o.label) });
+      this.dialogue.set({ text: this.i18n.t(node.choice), choices: node.options.map((o) => this.i18n.t(o.label)) });
       return 'pause';
     }
     if ('ifFlag' in node) {
@@ -954,7 +956,7 @@ export class RpgService {
 
   startTrainer(trainer: import('../../game/rpg/rpg-types').TrainerDef, portrait?: string): void {
     if (!trainer.team.length) return;
-    this.showToast(`${trainer.name}: ${trainer.intro}`, 3200);
+    this.showToast(`${this.i18n.t(trainer.name)}: ${this.i18n.t(trainer.intro)}`, 3200);
     this.startEncounter({
       kind: 'trainer',
       foeSpecies: trainer.team[0].species,
@@ -1145,7 +1147,7 @@ export class RpgService {
   }
 
   showToast(text: string, ms = 2600): void {
-    this.toast.set(text);
+    this.toast.set(this.i18n.t(text));
     if (this.toastTimer) clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => this.toast.set(null), ms);
   }

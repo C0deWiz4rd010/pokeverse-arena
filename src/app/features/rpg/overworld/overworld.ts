@@ -13,6 +13,7 @@ import type { Direction } from '../../../game/rpg/rpg-types';
 import { OwPartyHudComponent } from './party-hud';
 import { VOID, drawBall, drawCharacter, drawTile } from './tile-renderer';
 import { HapticsService } from '../../../core/haptics/haptics.service';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -38,19 +39,19 @@ const KEY_DIR: Record<string, Direction> = {
 @Component({
   selector: 'pv-overworld',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [OwPartyHudComponent],
+  imports: [TranslatePipe, OwPartyHudComponent],
   template: `
     <div class="ow" #wrap>
-      <canvas #cv class="ow-canvas"></canvas>
+      <canvas #cv class="ow-canvas" role="img" [attr.aria-label]="'Adventure map' | t"></canvas>
 
       @if (svc.map(); as m) {
-        <div class="ow-loc">{{ m.name }}@if (svc.nuzlocke()) { <span class="ow-wx" title="Nuzlocke run">💀</span> }@if (svc.comboHud(); as ch) { <span class="ow-wx" title="Catch combo">🔗 {{ ch }}</span> }</div>
+        <div class="ow-loc">{{ m.name | t }}@if (svc.nuzlocke()) { <span class="ow-wx" [attr.title]="'Nuzlocke run' | t">💀</span> }@if (svc.comboHud(); as ch) { <span class="ow-wx" [attr.title]="'Catch combo' | t">🔗 {{ ch }}</span> }</div>
       }
       @if (svc.toast(); as t) {
         <div class="ow-toast" role="status">{{ t }}</div>
       }
       <pv-ow-party-hud />
-      <button class="ow-menu" type="button" (click)="svc.openMenu()" aria-label="Menu">☰</button>
+      <button class="ow-menu" type="button" (click)="svc.openMenu()" [attr.aria-label]="'Menu' | t">☰</button>
 
       <!-- touch controls -->
       <div class="pad" aria-hidden="true">
@@ -60,7 +61,7 @@ const KEY_DIR: Record<string, Direction> = {
         <button class="pad-btn down" (pointerdown)="press('down', $event)" (pointerup)="release('down')" (pointerleave)="release('down')">▼</button>
       </div>
       <div class="ab" aria-hidden="true">
-        <button class="ab-btn r" [class.on]="touchRun()" (pointerdown)="toggleRun($event)" title="Run">🏃</button>
+        <button class="ab-btn r" [class.on]="touchRun()" (pointerdown)="toggleRun($event)" [attr.title]="'Run' | t">🏃</button>
         <button class="ab-btn a" (pointerdown)="interact($event)">A</button>
         <button class="ab-btn b" (pointerdown)="svc.openMenu()">B</button>
       </div>

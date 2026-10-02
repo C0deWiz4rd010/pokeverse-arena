@@ -10,41 +10,40 @@
 @if (svc.phase() === 'title') {
   <section class="title">
     <div class="title-card">
-      <span class="title-eyebrow"><pv-icon name="scroll-text" /> Story Mode</span>
-      <h1 class="title-name">PokéVerse <span class="grad">Adventure</span></h1>
+      <span class="title-eyebrow"><pv-icon name="scroll-text" /> {{ 'Story Mode' | t }}</span>
+      <h1 class="title-name">{{ 'PokéVerse' | t }} <span class="grad">{{ 'Adventure' | t }}</span></h1>
       <p class="title-sub">
-        A classic, top-down RPG. Pick a starter, explore Verdant Town, battle in
-        the tall grass, catch Pokémon and earn your first badge.
+        {{ 'A classic, top-down RPG. Pick a starter, explore Verdant Town, battle in the tall grass, catch Pokémon and earn your first badge.' | t }}
       </p>
-      <div class="slots" role="group" aria-label="Save slots">
+      <div class="slots" role="group" [attr.aria-label]="'Save slots' | t">
         @for (s of svc.slots(); track s.slot) {
           <div class="slot-card" [class.empty]="s.empty">
-            <span class="sc-head">Slot {{ s.slot }}</span>
+            <span class="sc-head">{{ 'Slot {0}' | t: [(s.slot)] }}</span>
             @if (!s.empty) {
-              <span class="sc-name">{{ s.name }} @if (s.nuzlocke) { <span class="sc-nuz" title="Nuzlocke run">💀</span> }</span>
+              <span class="sc-name">{{ s.name }} @if (s.nuzlocke) { <span class="sc-nuz" [attr.title]="'Nuzlocke run' | t">💀</span> }</span>
               <span class="sc-meta">{{ s.map }}</span>
-              <span class="sc-meta">🏅 {{ s.badges }} · {{ s.party }} Pokémon · Lv{{ s.topLevel }}</span>
+              <span class="sc-meta">{{ '🏅 {0} · {1} Pokémon · Lv{2}' | t: [(s.badges), (s.party), (s.topLevel)] }}</span>
               @if (s.nuzlocke && s.fallen > 0) {
-                <span class="sc-meta sc-fallen">💀 {{ s.fallen }} fallen</span>
+                <span class="sc-meta sc-fallen">{{ '💀 {0} fallen' | t: [(s.fallen)] }}</span>
               }
               <div class="sc-actions">
-                <button class="btn primary" type="button" (click)="svc.continue(s.slot)"><pv-icon name="book" /> Continue</button>
+                <button class="btn primary" type="button" (click)="svc.continue(s.slot)"><pv-icon name="book" /> {{ 'Continue' | t }}</button>
                 <button class="btn ghost danger" type="button" (click)="onDelete(s.slot)">
-                  {{ deleteArm() === s.slot ? 'Sure? Tap again' : 'Delete' }}
+                  {{ deleteArm() === s.slot ? ('Sure? Tap again' | t) : ('Delete' | t) }}
                 </button>
               </div>
             } @else {
-              <span class="sc-meta dim">Empty</span>
+              <span class="sc-meta dim">{{ 'Empty' | t }}</span>
               <button class="btn primary" type="button" (click)="svc.newGame('Red', s.slot)">
-                <pv-icon name="sparkles" /> New Adventure
+                <pv-icon name="sparkles" /> {{ 'New Adventure' | t }}
               </button>
               <button
                 class="btn ghost nuz"
                 type="button"
-                title="Hardcore: only the first wild Pokémon per route may be caught, fainted partners are gone forever, and a full wipe erases the save."
+                [attr.title]="'Hardcore: only the first wild Pokémon per route may be caught, fainted partners are gone forever, and a full wipe erases the save.' | t"
                 (click)="svc.newGame('Red', s.slot, true)"
               >
-                <pv-icon name="skull" /> Nuzlocke
+                <pv-icon name="skull" /> {{ 'Nuzlocke' | t }}
               </button>
             }
           </div>
@@ -61,7 +60,7 @@
 } @else {
   <!-- overworld, with dialogue / starter overlays on top -->
   <div class="rpg-stage">
-    @if (svc.objective(); as obj) { <p class="rpg-objective">{{ obj }}</p> }
+    @if (svc.objective(); as obj) { <p class="rpg-objective">{{ obj | t }}</p> }
     <div class="ow-host">
       @if (useCanvas) { <pv-overworld /> } @else { <pv-pixi-overworld /> }
       @if (svc.dialogue()) { <pv-dialogue-box /> }
@@ -69,9 +68,9 @@
       @if (svc.phase() === 'evolve') { <pv-evolution /> }
     </div>
     <p class="rpg-hint">
-      <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> / WASD move</span>
-      <span><kbd>Shift</kbd> run · <kbd>Z</kbd> talk · <kbd>Esc</kbd> menu</span>
-      <span>On touch: use the on-screen pad</span>
+      <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> {{ '/ WASD move' | t }}</span>
+      <span><kbd>{{ 'Shift' | t }}</kbd> {{ 'run ·' | t }} <kbd>Z</kbd> {{ 'talk ·' | t }} <kbd>{{ 'Esc' | t }}</kbd> {{ 'menu' | t }}</span>
+      <span>{{ 'On touch: use the on-screen pad' | t }}</span>
     </p>
   </div>
 }

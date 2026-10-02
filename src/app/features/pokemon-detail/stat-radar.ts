@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { PokemonStats } from '../../core/models/pokemon.model';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 interface RadarPoint {
   vx: number;
@@ -23,10 +24,11 @@ const LABELS: { key: keyof PokemonStats; short: string }[] = [
 
 /** Hexagonal base-stat radar chart drawn as inline SVG. */
 @Component({
-  selector: 'pv-stat-radar',
+    imports: [TranslatePipe],
+selector: 'pv-stat-radar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <svg viewBox="0 0 220 220" role="img" aria-label="Base stat radar">
+    <svg viewBox="0 0 220 220" role="img" [attr.aria-label]="'Base stat radar' | t">
       @for (ring of rings; track ring) {
         <polygon class="grid" [attr.points]="gridPoints(ring)" />
       }

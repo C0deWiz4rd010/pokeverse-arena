@@ -133,6 +133,7 @@ export interface PokemonSpeciesDto {
   evolution_chain: ApiResource;
   flavor_text_entries: FlavorText[];
   genera: { genus: string; language: NamedApiResource }[];
+  names?: { name: string; language: NamedApiResource }[];
   varieties: { is_default: boolean; pokemon: NamedApiResource }[];
 }
 

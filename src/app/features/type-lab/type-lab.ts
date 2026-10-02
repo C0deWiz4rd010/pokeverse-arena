@@ -15,6 +15,7 @@ import {
   type PokemonType,
   type TeamMemberTyping,
 } from '../../core/utils/type-chart';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 type Tab = 'matrix' | 'calculator' | 'defender' | 'team';
 
@@ -34,7 +35,7 @@ interface ProfileBucket {
 @Component({
   selector: 'pv-type-lab',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, PageHeaderComponent, IconComponent],
+  imports: [TranslatePipe, TypeBadgeComponent, PageHeaderComponent, IconComponent],
   templateUrl: './type-lab.html',
   styleUrl: './type-lab.scss',
 })

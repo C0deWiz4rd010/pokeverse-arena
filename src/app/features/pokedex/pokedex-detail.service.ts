@@ -12,6 +12,9 @@ import {
 export interface QuickDetail extends Pokemon {
   readonly genus: string;
   readonly flavor: string;
+  /** German genus / Pokédex entry, when available. */
+  readonly genusDe: string;
+  readonly flavorDe: string;
 }
 
 /** One evolution-family member, positioned by its stage depth. */
@@ -48,14 +51,18 @@ export class PokedexDetailService {
     const mon = mapPokemon(await this.api.pokemon(id));
     let genus = '';
     let flavor = '';
+    let genusDe = '';
+    let flavorDe = '';
     try {
       const species = mapSpecies(await this.api.species(mon.speciesId));
       genus = species.genus;
       flavor = species.flavorText;
+      genusDe = species.de?.genus ?? '';
+      flavorDe = species.de?.flavorText ?? '';
     } catch {
       /* species is optional flavour — ignore if it fails */
     }
-    const detail: QuickDetail = { ...mon, genus, flavor };
+    const detail: QuickDetail = { ...mon, genus, flavor, genusDe, flavorDe };
     this.cache.set(id, detail);
     return detail;
   }

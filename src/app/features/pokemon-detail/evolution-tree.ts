@@ -3,12 +3,13 @@ import { RouterLink } from '@angular/router';
 import { titleCase } from '../../core/ui/format';
 import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { EvolutionNode } from '../../core/models/pokemon.model';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 /** Recursively renders an evolution chain; highlights the current Pokémon. */
 @Component({
   selector: 'pv-evolution-tree',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [TranslatePipe, RouterLink],
   template: `
     <div class="stage">
       <a class="node" [class.current]="node().id === currentId()" [routerLink]="['/pokemon', node().id]">
@@ -22,7 +23,7 @@ import type { EvolutionNode } from '../../core/models/pokemon.model';
           @for (child of node().children; track child.id) {
             <div class="branch">
               <div class="arrow" aria-hidden="true">
-                @if (child.trigger) { <span class="trigger">{{ child.trigger }}</span> }
+                @if (child.trigger) { <span class="trigger">{{ child.trigger | t }}</span> }
                 <span class="line"></span>
                 <span class="tip">▸</span>
               </div>

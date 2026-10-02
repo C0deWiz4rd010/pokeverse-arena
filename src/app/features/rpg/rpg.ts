@@ -9,6 +9,7 @@ import { DialogueBoxComponent } from './ui/dialogue-box';
 import { StarterComponent } from './ui/starter';
 import { EvolutionComponent } from './ui/evolution';
 import { IconComponent } from '../../core/ui/icon/icon';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 /**
  * Classic RPG mode shell. Shows a title screen (New Adventure / Continue) and
@@ -17,7 +18,7 @@ import { IconComponent } from '../../core/ui/icon/icon';
 @Component({
   selector: 'pv-rpg',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     OverworldComponent,
     PixiOverworldComponent,
     RpgBattleComponent,

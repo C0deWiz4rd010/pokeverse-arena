@@ -10,6 +10,7 @@ import { activeBoons } from '../../../game/rpg/boons';
 import { SPRITE_BASE } from '../../../core/api/pokeapi-endpoints';
 import { itemName } from '../../../game/engine';
 import type { ItemId } from '../../../game/rpg/rpg-types';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 type Tab = 'party' | 'bag' | 'quests' | 'dex' | 'box';
 
@@ -17,7 +18,7 @@ type Tab = 'party' | 'bag' | 'quests' | 'dex' | 'box';
 @Component({
   selector: 'pv-field-menu',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [StatusBadgeComponent, ModalDirective],
+  imports: [TranslatePipe, StatusBadgeComponent, ModalDirective],
   templateUrl: './field-menu.html',
   styleUrl: './field-menu.scss',
 })

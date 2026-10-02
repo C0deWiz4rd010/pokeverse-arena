@@ -3,6 +3,7 @@ import { RpgService } from '../rpg.service';
 import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
 import { officialArtwork } from '../../../core/api/pokeapi-endpoints';
 import type { PokemonType } from '../../../core/utils/type-chart';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 interface Starter {
   readonly species: string;
@@ -16,18 +17,18 @@ interface Starter {
 @Component({
   selector: 'pv-starter',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent],
+  imports: [TranslatePipe, TypeBadgeComponent],
   template: `
     <div class="starter">
-      <h2 class="st-title">Choose your first partner!</h2>
-      <p class="st-sub">Prof. Oak: "Go on — pick the one that speaks to you."</p>
+      <h2 class="st-title">{{ 'Choose your first partner!' | t }}</h2>
+      <p class="st-sub">{{ 'Prof. Oak: "Go on — pick the one that speaks to you."' | t }}</p>
       <div class="st-grid">
         @for (s of starters; track s.species) {
           <button class="st-card" type="button" [style.--type]="'var(--type-' + s.type + ')'" (click)="pick(s.species)">
             <img decoding="async" [src]="art(s.dex)" [alt]="s.name" loading="lazy" />
             <strong>{{ s.name }}</strong>
             <pv-type-badge [type]="s.type" />
-            <span class="st-blurb">{{ s.blurb }}</span>
+            <span class="st-blurb">{{ s.blurb | t }}</span>
           </button>
         }
       </div>

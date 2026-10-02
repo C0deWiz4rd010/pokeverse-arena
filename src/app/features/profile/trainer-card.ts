@@ -22,6 +22,8 @@ export interface TrainerCardData {
   readonly accent2: string;
   readonly accent3: string;
   readonly version: string;
+  /** Translates the card's fixed captions (defaults to English). */
+  readonly t?: (text: string, params?: readonly unknown[]) => string;
 }
 
 const W = 1200;
@@ -44,6 +46,7 @@ function roundedPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
 
 /** Render the card and return it as a PNG blob (null when canvas is unavailable). */
 export async function renderTrainerCard(data: TrainerCardData): Promise<Blob | null> {
+  const T = (text: string, params?: readonly unknown[]): string => data.t?.(text, params) ?? text.replace(/\{(\d+)\}/g, (_w, i: string) => String(params?.[Number(i)] ?? ''));
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
@@ -76,7 +79,7 @@ export async function renderTrainerCard(data: TrainerCardData): Promise<Blob | n
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = data.accent3;
   ctx.font = '700 26px "Segoe UI", system-ui, sans-serif';
-  ctx.fillText('⚡ POKÉVERSE ARENA · TRAINER CARD', 60, 92);
+  ctx.fillText(T('⚡ POKÉVERSE ARENA · TRAINER CARD'), 60, 92);
 
   const rankLabel = data.rank.toUpperCase();
   ctx.font = '800 30px "Segoe UI", system-ui, sans-serif';
@@ -114,7 +117,7 @@ export async function renderTrainerCard(data: TrainerCardData): Promise<Blob | n
   }
   ctx.fillStyle = '#a9a7c9';
   ctx.font = '600 24px "Segoe UI", system-ui, sans-serif';
-  ctx.fillText(`${data.completion}% achievements`, 60, barY + 52);
+  ctx.fillText(T('{0}% achievements', [data.completion]), 60, barY + 52);
 
   /* ---- stat chips (two rows of three) ---- */
   const chipW = 214;
@@ -193,9 +196,9 @@ export async function renderTrainerCard(data: TrainerCardData): Promise<Blob | n
     ctx.fillStyle = data.accent3;
     ctx.font = '800 15px "Segoe UI", system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('LAB SPECIAL', 0, 48);
+    ctx.fillText(T('LAB SPECIAL'), 0, 48);
     ctx.font = '700 12px "Segoe UI", system-ui, sans-serif';
-    ctx.fillText('of the day', 0, 64);
+    ctx.fillText(T('of the day'), 0, 64);
     ctx.textAlign = 'left';
     ctx.restore();
   }

@@ -1,19 +1,19 @@
 <section class="team-builder">
   <pv-page-header
     icon="wrench"
-    title="Team Builder"
-    subtitle="Assemble a squad of six, tune levels &amp; natures, and expose your defensive gaps."
+    [title]="'Team Builder' | t"
+    [subtitle]="'Assemble a squad of six, tune levels & natures, and expose your defensive gaps.' | t"
   />
 
   <form class="add glass" (submit)="onSubmit($event)">
     <input
       type="text"
       list="dex-names"
-      placeholder="Add a Pokémon by name or #…"
+      [attr.placeholder]="'Add a Pokémon by name or #…' | t"
       [value]="query()"
       (input)="setQuery($event)"
       [disabled]="store.full()"
-      aria-label="Pokémon name or number"
+      [attr.aria-label]="'Pokémon name or number' | t"
     />
     <datalist id="dex-names">
       @for (n of names(); track n) {
@@ -21,7 +21,7 @@
       }
     </datalist>
     <button class="btn" type="submit" [disabled]="store.full() || store.adding()">
-      @if (store.adding()) { Adding… } @else { + Add }
+      @if (store.adding()) { {{ 'Adding…' | t }} } @else { {{ '+ Add' | t }} }
     </button>
     <span class="count" [class.full]="store.full()">{{ store.team().length }} / {{ MAX_TEAM }}</span>
   </form>
@@ -30,30 +30,30 @@
   <div class="discover glass">
     <div class="filters">
       <label class="filter">
-        <span>Type</span>
+        <span>{{ 'Type' | t }}</span>
         <select [value]="store.filterType() ?? ''" (change)="onFilterType($event)">
-          <option value="">Any type</option>
+          <option value="">{{ 'Any type' | t }}</option>
           @for (t of types; track t) {
-            <option [value]="t" [selected]="t === store.filterType()">{{ titleCase(t) }}</option>
+            <option [value]="t" [selected]="t === store.filterType()">{{ titleCase(t) | t }}</option>
           }
         </select>
       </label>
       <label class="filter">
-        <span>Generation</span>
+        <span>{{ 'Generation' | t }}</span>
         <select [value]="store.filterGen() ?? ''" (change)="onFilterGen($event)">
-          <option value="">Any gen</option>
+          <option value="">{{ 'Any gen' | t }}</option>
           @for (g of generations; track g) {
-            <option [value]="g" [selected]="g === store.filterGen()">Gen {{ g }}</option>
+            <option [value]="g" [selected]="g === store.filterGen()">{{ 'Gen {0}' | t: [(g)] }}</option>
           }
         </select>
       </label>
     </div>
     <div class="roll-actions">
       <button class="btn ghost" type="button" (click)="addRandom()" [disabled]="store.full() || store.rolling()">
-        @if (store.rolling()) { Rolling… } @else { <pv-icon name="dices" /> Random }
+        @if (store.rolling()) { {{ 'Rolling…' | t }} } @else { <pv-icon name="dices" /> {{ 'Random' | t }} }
       </button>
       <button class="btn ghost" type="button" (click)="fillRandom()" [disabled]="store.full() || store.rolling()">
-        <pv-icon name="sparkles" /> Fill team
+        <pv-icon name="sparkles" /> {{ 'Fill team' | t }}
       </button>
     </div>
   </div>
@@ -63,7 +63,7 @@
   }
 
   @if (store.team().length === 0) {
-    <pv-state kind="empty" icon="circle" title="Your team is empty" text="Search above to add your first Pokémon." />
+    <pv-state kind="empty" icon="circle" [title]="'Your team is empty' | t" [text]="'Search above to add your first Pokémon.' | t" />
   } @else {
     <div class="roster">
       @for (member of store.team(); track member.uid) {
@@ -84,7 +84,7 @@
                 [value]="member.nickname"
                 (input)="onNickname(member, $event)"
                 [placeholder]="titleCase(member.name)"
-                [attr.aria-label]="'Nickname for ' + member.name"
+                [attr.aria-label]="'Nickname for {0}' | t: [member.name]"
               />
               <span class="species">{{ titleCase(member.name) }} · #{{ member.id }}</span>
               <div class="m-types">
@@ -93,17 +93,17 @@
                 }
               </div>
             </div>
-            <button class="remove" type="button" (click)="store.remove(member.uid)" aria-label="Remove from team"><pv-icon name="x" /></button>
+            <button class="remove" type="button" (click)="store.remove(member.uid)" [attr.aria-label]="'Remove from team' | t"><pv-icon name="x" /></button>
           </header>
 
           <div class="m-config">
             <label class="field">
-              <span>Level <strong>{{ member.level }}</strong></span>
+              <span>{{ 'Level' | t }} <strong>{{ member.level }}</strong></span>
               <input type="range" min="1" max="100" [value]="member.level" (input)="onLevel(member, $event)" />
             </label>
 
             <label class="field">
-              <span>Nature</span>
+              <span>{{ 'Nature' | t }}</span>
               <select [value]="member.natureName" (change)="onNature(member, $event)">
                 @for (n of natures; track n.name) {
                   <option [value]="n.name" [selected]="n.name === member.natureName">{{ n.name }} ({{ natureSummary(n) }})</option>
@@ -112,7 +112,7 @@
             </label>
 
             <label class="field">
-              <span>Ability</span>
+              <span>{{ 'Ability' | t }}</span>
               <select [value]="member.ability" (change)="onAbility(member, $event)">
                 @for (a of member.abilities; track a) {
                   <option [value]="a" [selected]="a === member.ability">{{ titleCase(a) }}</option>
@@ -124,7 +124,7 @@
           <div class="m-stats">
             @for (row of statsFor(member); track row.key) {
               <div class="stat-row" [class]="natureMod(member, row.key)">
-                <span class="s-label">{{ row.label }}</span>
+                <span class="s-label">{{ row.label | t }}</span>
                 <span class="s-val">{{ row.value }}</span>
                 <span class="s-track"><span class="s-fill" [style.width.%]="statPct(row.value)" [style.background]="statColor(row.value)"></span></span>
                 @if (natureMod(member, row.key) === 'up') { <span class="nat up">▲</span> }
@@ -135,7 +135,7 @@
 
           <details class="m-moves">
             <summary>
-              Moves <span class="m-count">{{ member.moves.length }}/{{ MAX_MOVES }}</span>
+              {{ 'Moves' | t }} <span class="m-count">{{ member.moves.length }}/{{ MAX_MOVES }}</span>
               @if (member.moves.length) {
                 <span class="chosen-moves">
                   @for (mv of member.moves; track mv) { <em>{{ titleCase(mv) }}</em> }
@@ -162,20 +162,20 @@
 
     <!-- Team profile: average stats + speed tier -->
     <section class="profile-card glass">
-      <h2>Team profile</h2>
+      <h2>{{ 'Team profile' | t }}</h2>
       <div class="profile-grid">
         <div class="averages">
-          <h3>Average stats</h3>
+          <h3>{{ 'Average stats' | t }}</h3>
           @for (row of teamAverages(); track row.key) {
             <div class="avg-row">
-              <span class="a-label">{{ row.label }}</span>
+              <span class="a-label">{{ row.label | t }}</span>
               <span class="a-val">{{ row.value }}</span>
               <span class="a-track"><span class="a-fill" [style.width.%]="statPct(row.value)" [style.background]="statColor(row.value)"></span></span>
             </div>
           }
         </div>
         <div class="speed-tier">
-          <h3>Speed tier</h3>
+          <h3>{{ 'Speed tier' | t }}</h3>
           <ol class="tier-list">
             @for (s of speedTier(); track s.member.uid) {
               <li>
@@ -191,7 +191,7 @@
 
     <!-- Team-wide defensive analysis -->
     <section class="analysis glass">
-      <h2>Defensive analysis</h2>
+      <h2>{{ 'Defensive analysis' | t }}</h2>
 
       @if (store.rating(); as r) {
         <div class="rating" [attr.data-grade]="r.grade">
@@ -200,21 +200,21 @@
             <span class="g-score">{{ displayScore() }}</span>
           </div>
           <div class="rating-body">
-            <strong class="rating-title">Team Power Rating</strong>
-            <p class="rating-verdict">{{ r.verdict }}</p>
+            <strong class="rating-title">{{ 'Team Power Rating' | t }}</strong>
+            <p class="rating-verdict">{{ r.verdict | t }}</p>
             <div class="rating-meters">
               <div class="meter">
-                <span class="m-label"><pv-icon name="sword" /> Offense <b>{{ r.offense }}/18</b></span>
+                <span class="m-label"><pv-icon name="sword" /> {{ 'Offense' | t }} <b>{{ r.offense }}/18</b></span>
                 <span class="m-track"><span class="m-fill atk" [style.width.%]="(r.offense / 18) * 100"></span></span>
               </div>
               <div class="meter">
-                <span class="m-label"><pv-icon name="shield" /> Defense <b>{{ r.defense }}/18</b></span>
+                <span class="m-label"><pv-icon name="shield" /> {{ 'Defense' | t }} <b>{{ r.defense }}/18</b></span>
                 <span class="m-track"><span class="m-fill def" [style.width.%]="(r.defense / 18) * 100"></span></span>
               </div>
             </div>
             @if (r.suggestions.length) {
               <ul class="rating-tips">
-                @for (tip of r.suggestions; track tip) { <li><pv-icon name="arrow-right" /> {{ tip }}</li> }
+                @for (tip of r.suggestions; track tip) { <li><pv-icon name="arrow-right" /> {{ tip | t }}</li> }
               </ul>
             }
           </div>
@@ -223,24 +223,24 @@
 
       @if (blindSpots().length) {
         <div class="blind">
-          <strong><pv-icon name="triangle-alert" /> Blind spots</strong>
-          <p>No team member resists these attacking types:</p>
+          <strong><pv-icon name="triangle-alert" /> {{ 'Blind spots' | t }}</strong>
+          <p>{{ 'No team member resists these attacking types:' | t }}</p>
           <div class="chips">
             @for (t of blindSpots(); track t) {
-              <span class="chip danger" [style.--c]="typeColorVar(t)">{{ titleCase(t) }}</span>
+              <span class="chip danger" [style.--c]="typeColorVar(t)">{{ titleCase(t) | t }}</span>
             }
           </div>
         </div>
       } @else {
-        <p class="all-clear"><pv-icon name="check" /> Every attacking type is resisted by at least one member.</p>
+        <p class="all-clear"><pv-icon name="check" /> {{ 'Every attacking type is resisted by at least one member.' | t }}</p>
       }
 
       @if (weaknessRows().length) {
-        <h3>Shared weaknesses</h3>
+        <h3>{{ 'Shared weaknesses' | t }}</h3>
         <ul class="weak-list">
           @for (row of weaknessRows(); track row.type) {
             <li [class.shared]="row.count >= 2">
-              <span class="wt" [style.--c]="typeColorVar(row.type)">{{ titleCase(row.type) }}</span>
+              <span class="wt" [style.--c]="typeColorVar(row.type)">{{ titleCase(row.type) | t }}</span>
               <span class="bar"><span class="fill" [style.width.%]="(row.count / store.team().length) * 100" [style.--c]="typeColorVar(row.type)"></span></span>
               <span class="num">{{ row.count }}×</span>
             </li>
@@ -248,18 +248,18 @@
         </ul>
       }
 
-      <h3>Offensive coverage</h3>
+      <h3>{{ 'Offensive coverage' | t }}</h3>
       <div class="coverage">
         <div class="cov covered">
-          <span class="cov-h"><pv-icon name="sword" /> Hit hard ({{ coverage().covered.length }})</span>
+          <span class="cov-h"><pv-icon name="sword" /> {{ 'Hit hard ({0})' | t: [(coverage().covered.length)] }}</span>
           <div class="cov-chips">
             @for (t of coverage().covered; track t) { <pv-type-badge [type]="t" /> }
-            @if (!coverage().covered.length) { <span class="muted">No super-effective STAB yet.</span> }
+            @if (!coverage().covered.length) { <span class="muted">{{ 'No super-effective STAB yet.' | t }}</span> }
           </div>
         </div>
         @if (coverage().gaps.length) {
           <div class="cov gaps">
-            <span class="cov-h"><pv-icon name="triangle-alert" /> Gaps ({{ coverage().gaps.length }})</span>
+            <span class="cov-h"><pv-icon name="triangle-alert" /> {{ 'Gaps ({0})' | t: [(coverage().gaps.length)] }}</span>
             <div class="cov-chips">
               @for (t of coverage().gaps; track t) { <pv-type-badge [type]="t" /> }
             </div>
@@ -269,27 +269,27 @@
     </section>
 
     <div class="toolbar">
-      <button class="btn ghost" type="button" (click)="exportTeam()"><pv-icon name="download" /> Export JSON</button>
+      <button class="btn ghost" type="button" (click)="exportTeam()"><pv-icon name="download" /> {{ 'Export JSON' | t }}</button>
       <button class="btn ghost" type="button" (click)="copyTeam()">
-        @if (copied()) { <pv-icon name="check" /> Copied } @else { <pv-icon name="copy" /> Copy }
+        @if (copied()) { <pv-icon name="check" /> {{ 'Copied' | t }} } @else { <pv-icon name="copy" /> {{ 'Copy' | t }} }
       </button>
       <label class="btn ghost file">
-        <pv-icon name="upload" /> Import file
+        <pv-icon name="upload" /> {{ 'Import file' | t }}
         <input type="file" accept="application/json,.json" (change)="onImportFile($event)" hidden />
       </label>
-      <button class="btn ghost" type="button" (click)="showImport.set(!showImport())"><pv-icon name="pencil" /> Paste JSON</button>
-      <button class="btn ghost danger" type="button" (click)="store.clear()"><pv-icon name="trash-2" /> Clear</button>
+      <button class="btn ghost" type="button" (click)="showImport.set(!showImport())"><pv-icon name="pencil" /> {{ 'Paste JSON' | t }}</button>
+      <button class="btn ghost danger" type="button" (click)="store.clear()"><pv-icon name="trash-2" /> {{ 'Clear' | t }}</button>
     </div>
 
     @if (showImport()) {
       <div class="import glass">
         <textarea
           rows="5"
-          placeholder="Paste exported team JSON here…"
+          [attr.placeholder]="'Paste exported team JSON here…' | t"
           [value]="importText()"
           (input)="setImportText($event)"
         ></textarea>
-        <button class="btn" type="button" (click)="runImport()" [disabled]="store.adding()">Load team</button>
+        <button class="btn" type="button" (click)="runImport()" [disabled]="store.adding()">{{ 'Load team' | t }}</button>
       </div>
     }
   }

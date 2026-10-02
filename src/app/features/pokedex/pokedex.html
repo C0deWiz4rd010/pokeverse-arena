@@ -1,15 +1,15 @@
 <section class="container pokedex">
   <pv-page-header
     icon="book"
-    title="Pokédex"
-    [subtitle]="store.total() + ' of ' + store.count() + ' Pokémon · search, filter and dive in.'"
+    [title]="'Pokédex' | t"
+    [subtitle]="'{0} of {1} Pokémon · search, filter and dive in.' | t: [store.total(), store.count()]"
   />
 
   @if (filtersOpen()) {
   <div class="dex-hud glass">
     <div class="hud-stats">
-      <div class="hud-stat fav"><pv-icon name="heart" /> <strong>{{ store.favCount() }}</strong> <span>Favorites</span></div>
-      <div class="hud-stat caught"><pv-icon name="check" /> <strong>{{ store.caughtCount() }}</strong> <span>Caught</span></div>
+      <div class="hud-stat fav"><pv-icon name="heart" /> <strong>{{ store.favCount() }}</strong> <span>{{ 'Favorites' | t }}</span></div>
+      <div class="hud-stat caught"><pv-icon name="check" /> <strong>{{ store.caughtCount() }}</strong> <span>{{ 'Caught' | t }}</span></div>
     </div>
     @if (store.enriched()) {
       <div class="gen-pips">
@@ -18,7 +18,7 @@
             type="button"
             class="pip"
             [class.on]="store.generationFilter() === g.gen"
-            [title]="'Gen ' + g.gen + ' — ' + g.caught + '/' + g.total + ' caught, ' + g.fav + ' ♥'"
+            [title]="'Gen {0} — {1}/{2} caught, {3} ♥' | t: [g.gen, g.caught, g.total, g.fav]"
             (click)="store.setGeneration(store.generationFilter() === g.gen ? null : g.gen)"
           >
             <span class="pip-g">G{{ g.gen }}</span>
@@ -32,45 +32,45 @@
 
   <div class="controls glass">
     <label class="search">
-      <span class="sr-only">Search Pokémon</span>
+      <span class="sr-only">{{ 'Search Pokémon' | t }}</span>
       <pv-icon name="search" />
       <input
         type="search"
         inputmode="search"
-        placeholder="Name, #number, #1-151 or a type…"
+        [attr.placeholder]="'Name, #number, #1-151 or a type…' | t"
         [value]="store.query()"
         (input)="onSearch($event)"
       />
     </label>
 
-    <select class="sel gen" (change)="onGeneration($event)" aria-label="Filter by generation" [disabled]="!store.enriched()">
-      <option value="">All gens</option>
+    <select class="sel gen" (change)="onGeneration($event)" [attr.aria-label]="'Filter by generation' | t" [disabled]="!store.enriched()">
+      <option value="">{{ 'All gens' | t }}</option>
       @for (g of generations; track g) {
-        <option [value]="g" [selected]="store.generationFilter() === g">Gen {{ g }}</option>
+        <option [value]="g" [selected]="store.generationFilter() === g">{{ 'Gen {0}' | t: [(g)] }}</option>
       }
     </select>
 
-    <select class="sel sort" (change)="onSort($event)" aria-label="Sort">
+    <select class="sel sort" (change)="onSort($event)" [attr.aria-label]="'Sort' | t">
       @for (s of sorts; track s.id) {
-        <option [value]="s.id" [selected]="store.sort() === s.id">{{ s.label }}</option>
+        <option [value]="s.id" [selected]="store.sort() === s.id">{{ s.label | t }}</option>
       }
     </select>
 
-    <button class="btn toggle filter-toggle" type="button" [class.on]="filtersOpen()" [attr.aria-expanded]="filtersOpen()" title="Show/hide filters" (click)="filtersOpen.set(!filtersOpen())">
-      <pv-icon name="clipboard-list" /> Filter
+    <button class="btn toggle filter-toggle" type="button" [class.on]="filtersOpen()" [attr.aria-expanded]="filtersOpen()" [attr.title]="'Show/hide filters' | t" (click)="filtersOpen.set(!filtersOpen())">
+      <pv-icon name="clipboard-list" /> {{ 'Filter' | t }}
       @if (store.activeFilterCount() > 0) { <span class="f-count">{{ store.activeFilterCount() }}</span> }
     </button>
-    <button class="btn toggle" type="button" [class.on]="store.shiny()" [attr.aria-pressed]="store.shiny()" title="Shiny mode" (click)="store.toggleShiny()">
-      <pv-icon name="sparkles" /> Shiny
+    <button class="btn toggle" type="button" [class.on]="store.shiny()" [attr.aria-pressed]="store.shiny()" [attr.title]="'Shiny mode' | t" (click)="store.toggleShiny()">
+      <pv-icon name="sparkles" /> {{ 'Shiny' | t }}
     </button>
-    <button class="btn toggle icon-only" type="button" [class.on]="!cry.muted()" [title]="cry.muted() ? 'Unmute cries' : 'Mute cries'" (click)="cry.toggleMute()">
+    <button class="btn toggle icon-only" type="button" [class.on]="!cry.muted()" [title]="cry.muted() ? ('Unmute cries' | t) : ('Mute cries' | t)" (click)="cry.toggleMute()">
       <pv-icon name="volume-2" />
     </button>
   </div>
 
   @if (filtersOpen()) {
   <div class="types-row">
-    <div class="types" role="group" aria-label="Filter by type">
+    <div class="types" role="group" [attr.aria-label]="'Filter by type' | t">
       @for (t of types; track t) {
         <button
           type="button"
@@ -80,42 +80,42 @@
           [disabled]="!store.enriched()"
           (click)="toggleType(t)"
         >
-          {{ titleCase(t) }}
+          {{ titleCase(t) | t }}
         </button>
       }
     </div>
     <div class="type-tools">
       @if (store.typeFilters().size > 1) {
-        <div class="seg" role="group" aria-label="Match any or all selected types">
-          <button type="button" [class.on]="store.typeMode() === 'or'" [attr.aria-pressed]="store.typeMode() === 'or'" (click)="store.setTypeMode('or')">Any</button>
-          <button type="button" [class.on]="store.typeMode() === 'and'" [attr.aria-pressed]="store.typeMode() === 'and'" (click)="store.setTypeMode('and')">All</button>
+        <div class="seg" role="group" [attr.aria-label]="'Match any or all selected types' | t">
+          <button type="button" [class.on]="store.typeMode() === 'or'" [attr.aria-pressed]="store.typeMode() === 'or'" (click)="store.setTypeMode('or')">{{ 'Any' | t }}</button>
+          <button type="button" [class.on]="store.typeMode() === 'and'" [attr.aria-pressed]="store.typeMode() === 'and'" (click)="store.setTypeMode('and')">{{ 'All' | t }}</button>
         </div>
       }
-      <button class="btn toggle fav-filter" type="button" [class.on]="store.favOnly()" (click)="store.toggleFavOnly()" title="Favorites only">
+      <button class="btn toggle fav-filter" type="button" [class.on]="store.favOnly()" (click)="store.toggleFavOnly()" [attr.title]="'Favorites only' | t">
         <pv-icon name="heart" /> {{ store.favorites().size }}
       </button>
       @if (store.activeFilterCount() > 0) {
-        <button class="btn clear" type="button" (click)="clear()">Reset</button>
+        <button class="btn clear" type="button" (click)="clear()">{{ 'Reset' | t }}</button>
       }
     </div>
   </div>
   }
 
   @if (!store.enriched() && store.count() > 0) {
-    <p class="hint"><pv-icon name="sparkles" /> Loading types & generations…</p>
+    <p class="hint"><pv-icon name="sparkles" /> {{ 'Loading types & generations…' | t }}</p>
   }
 
   <div class="toolbar">
     <div class="tb-left">
-      <span class="result-count">{{ store.total() }} result{{ store.total() === 1 ? '' : 's' }}</span>
+      <span class="result-count">{{ '{0} result{1}' | t: [(store.total()), (store.total() === 1 ? '' : 's')] }}</span>
       <button class="btn ghost game-btn" type="button" (click)="openGame()" [disabled]="store.count() < 3">
-        <pv-icon name="sparkles" /> Who’s That?
+        <pv-icon name="sparkles" /> {{ 'Who’s That?' | t }}
       </button>
-      <a class="btn ghost showcase-btn" routerLink="/showcase" title="Immersive 3D showcase view">
-        <pv-icon name="star" /> 3D Showcase
+      <a class="btn ghost showcase-btn" routerLink="/showcase" [attr.title]="'Immersive 3D showcase view' | t">
+        <pv-icon name="star" /> {{ '3D Showcase' | t }}
       </a>
     </div>
-    <div class="views" role="group" aria-label="View mode">
+    <div class="views" role="group" [attr.aria-label]="'View mode' | t">
       @for (v of views; track v.id) {
         <button type="button" class="view-btn" [class.on]="store.view() === v.id" [title]="v.label" (click)="setView(v.id)">
           <span class="glyph" aria-hidden="true">{{ v.glyph }}</span>
@@ -134,11 +134,11 @@
         </div>
       }
     </div>
-    <p class="sr-only" role="status">Loading the Pokédex…</p>
+    <p class="sr-only" role="status">{{ 'Loading the Pokédex…' | t }}</p>
   } @else if (store.error()) {
-    <pv-state kind="error" title="Could not load the Pokédex" [text]="store.error() ?? ''" actionLabel="Try again" (action)="store.ensureLoaded()" />
+    <pv-state kind="error" [title]="'Could not load the Pokédex' | t" [text]="store.error() ?? ''" [actionLabel]="'Try again' | t" (action)="store.ensureLoaded()" />
   } @else if (store.total() === 0) {
-    <pv-state kind="empty" title="No Pokémon match your filters" text="Try a different search or loosen a filter." actionLabel="Clear filters" (action)="clear()" />
+    <pv-state kind="empty" [title]="'No Pokémon match your filters' | t" [text]="'Try a different search or loosen a filter.' | t" [actionLabel]="'Clear filters' | t" (action)="clear()" />
   } @else {
     <div class="grid" [class.gallery]="store.view() === 'gallery'" [class.compact]="store.view() === 'compact'" [class.list]="store.view() === 'list'">
       @for (entry of store.visible(); track entry.id; let i = $index) {
@@ -159,7 +159,7 @@
     <div #sentinel class="sentinel" aria-hidden="true"></div>
     @if (store.hasMore()) {
       <div class="more">
-        <button class="btn" type="button" (click)="store.loadMore()">Load more</button>
+        <button class="btn" type="button" (click)="store.loadMore()">{{ 'Load more' | t }}</button>
       </div>
     }
   }
@@ -188,7 +188,7 @@
 </section>
 
 @if (showTop()) {
-  <button class="top-fab" type="button" [class.raised]="store.compare().size > 0" (click)="scrollTop()" aria-label="Back to top">↑</button>
+  <button class="top-fab" type="button" [class.raised]="store.compare().size > 0" (click)="scrollTop()" [attr.aria-label]="'Back to top' | t">↑</button>
 }
 
 @if (store.compare().size > 0) {
@@ -196,7 +196,7 @@
     <div class="tray-mons">
       @for (id of store.compareIds(); track id) {
         @if (store.entryById(id); as e) {
-          <button class="tray-mon" type="button" (click)="removeCompare(id)" [title]="'Remove ' + titleCase(e.name)">
+          <button class="tray-mon" type="button" (click)="removeCompare(id)" [title]="'Remove {0}' | t: [titleCase(e.name)]">
             <img decoding="async" [src]="e.artwork" [alt]="e.name" loading="lazy" />
             <span class="rm-x">×</span>
           </button>
@@ -204,8 +204,8 @@
       }
     </div>
     <div class="tray-actions">
-      <button class="btn" type="button" [disabled]="!store.canCompare()" (click)="openCompare()">Compare ({{ store.compare().size }})</button>
-      <button class="btn ghost" type="button" (click)="store.clearCompare()">Clear</button>
+      <button class="btn" type="button" [disabled]="!store.canCompare()" (click)="openCompare()">{{ 'Compare ({0})' | t: [(store.compare().size)] }}</button>
+      <button class="btn ghost" type="button" (click)="store.clearCompare()">{{ 'Clear' | t }}</button>
     </div>
   </div>
 }

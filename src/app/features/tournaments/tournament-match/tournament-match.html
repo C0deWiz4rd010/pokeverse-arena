@@ -1,14 +1,14 @@
 <div class="match" [class.is-done]="done()" [class.themed]="!!setup().accent" [style.--match-accent]="setup().accent">
   @if (ruleBanner(); as banner) {
-    <p class="rule-banner">{{ banner }}</p>
+    <p class="rule-banner">{{ banner | t }}</p>
   }
 
   <div class="versus">
     <div class="vs-trainer">
       <img decoding="async" class="t-ava" [src]="setup().player.avatar" [alt]="setup().player.name" />
-      <span class="t-name">You</span>
+      <span class="t-name">{{ 'You' | t }}</span>
     </div>
-    <span class="vs-x">VS</span>
+    <span class="vs-x">{{ 'VS' | t }}</span>
     <div class="vs-trainer foe">
       <span class="t-name">{{ setup().foe.name }}</span>
       <img decoding="async" class="t-ava" [src]="setup().foe.avatar" [alt]="setup().foe.name" />
@@ -18,66 +18,66 @@
   <div class="arena">
     <pv-weather-overlay [weather]="weather()" />
     <pv-battle-fx />
-    <button class="speed-chip" type="button" (click)="cycleSpeed()" title="Battle speed" [attr.aria-label]="'Battle speed ' + speed() + '×'">{{ speed() }}×</button>
+    <button class="speed-chip" type="button" (click)="cycleSpeed()" [attr.title]="'Battle speed' | t" [attr.aria-label]="'Battle speed {0}×' | t: [speed()]">{{ speed() }}×</button>
 
     <div class="field-overlay">
       <pv-field-banner [weather]="engWeather()" [terrain]="engTerrain()" [weatherTurns]="wTurns()" [terrainTurns]="tTurns()" />
     </div>
 
     @if (foeQuip(); as quip) {
-      <div class="ace-quip" role="status">{{ quip }}</div>
+      <div class="ace-quip" role="status">{{ quip | t }}</div>
     }
 
     <!-- Foe (top-right) -->
     <div class="fighter foe" [class.shake]="shakeSide() === 1" [class.flash]="flashSide() === 1" [class.crit]="critSide() === 1">
-      @if (critSide() === 1) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
+      @if (critSide() === 1) { <span class="crit-burst" aria-hidden="true">{{ 'CRITICAL!' | t }}</span> }
       @if (foeActive(); as foe) {
         <div class="meta">
           <div class="name-row">
             <span class="name">{{ titleCase(foe.name) }}</span>
-            <span class="lvl">Lv{{ foe.level }}</span>
+            <span class="lvl">{{ 'Lv{0}' | t: [(foe.level)] }}</span>
             @if (fStatus() !== 'none') { <pv-status-badge [status]="fStatus()" /> }
           </div>
-          <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="fHpPct()"><span class="fill" [class.mid]="fHpPct() > 30 && fHpPct() <= 55" [class.low]="fHpPct() <= 30" [style.width.%]="fHpPct()"></span><span class="kp">{{ fHp() }} / {{ fMax() }} <small>KP</small></span></div>
+          <div class="hpbar" role="progressbar" [attr.aria-label]="'HP' | t" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="fHpPct()"><span class="fill" [class.mid]="fHpPct() > 30 && fHpPct() <= 55" [class.low]="fHpPct() <= 30" [style.width.%]="fHpPct()"></span><span class="kp">{{ fHp() }} / {{ fMax() }} <small>{{ 'KP' | t }}</small></span></div>
           <div class="types">
             @for (t of foe.types; track t) { <pv-type-badge [type]="t" /> }
           </div>
-          @if (foeAbility()) { <span class="ability">{{ foeAbility() }}</span> }
+          @if (foeAbility()) { <span class="ability">{{ foeAbility() | t }}</span> }
           @if (fStageChips().length) {
             <div class="stages">
-              @for (c of fStageChips(); track c.label) { <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span> }
+              @for (c of fStageChips(); track c.label) { <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label | t }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span> }
             </div>
           }
         </div>
         <img decoding="async" class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foe.sprite" [alt]="foe.name" [style.filter]="foe.hue ? 'hue-rotate(' + foe.hue + 'deg) drop-shadow(0 8px 14px rgba(0,0,0,0.45))' : null" loading="lazy" />
       }
       @for (f of floats(); track f.id) {
-        @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
+        @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text | t }}</span> }
       }
     </div>
 
     <!-- Player (bottom-left) -->
     <div class="fighter mine" [class.shake]="shakeSide() === 0" [class.flash]="flashSide() === 0" [class.crit]="critSide() === 0">
-      @if (critSide() === 0) { <span class="crit-burst" aria-hidden="true">CRITICAL!</span> }
+      @if (critSide() === 0) { <span class="crit-burst" aria-hidden="true">{{ 'CRITICAL!' | t }}</span> }
       @for (f of floats(); track f.id) {
-        @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
+        @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text | t }}</span> }
       }
       @if (playerActive(); as me) {
         <img decoding="async" class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="me.sprite" [alt]="me.name" [style.filter]="me.hue ? 'hue-rotate(' + me.hue + 'deg) drop-shadow(0 8px 14px rgba(0,0,0,0.45))' : null" loading="lazy" />
         <div class="meta">
           <div class="name-row">
             <span class="name">{{ titleCase(me.name) }}</span>
-            <span class="lvl">Lv{{ me.level }}</span>
+            <span class="lvl">{{ 'Lv{0}' | t: [(me.level)] }}</span>
             @if (pStatus() !== 'none') { <pv-status-badge [status]="pStatus()" /> }
           </div>
-          <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="pHpPct()"><span class="fill" [class.mid]="pHpPct() > 30 && pHpPct() <= 55" [class.low]="pHpPct() <= 30" [style.width.%]="pHpPct()"></span><span class="kp">{{ pHp() }} / {{ pMax() }} <small>KP</small></span></div>
+          <div class="hpbar" role="progressbar" [attr.aria-label]="'HP' | t" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="pHpPct()"><span class="fill" [class.mid]="pHpPct() > 30 && pHpPct() <= 55" [class.low]="pHpPct() <= 30" [style.width.%]="pHpPct()"></span><span class="kp">{{ pHp() }} / {{ pMax() }} <small>{{ 'KP' | t }}</small></span></div>
           <div class="types">
             @for (t of me.types; track t) { <pv-type-badge [type]="t" /> }
           </div>
-          @if (playerAbility()) { <span class="ability">{{ playerAbility() }}</span> }
+          @if (playerAbility()) { <span class="ability">{{ playerAbility() | t }}</span> }
           @if (pStageChips().length) {
             <div class="stages">
-              @for (c of pStageChips(); track c.label) { <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span> }
+              @for (c of pStageChips(); track c.label) { <span class="stage" [class.up]="c.value > 0" [class.down]="c.value < 0">{{ c.label | t }} {{ c.value > 0 ? '+' : '' }}{{ c.value }}</span> }
             </div>
           }
         </div>
@@ -88,7 +88,7 @@
   <!-- Team trays -->
   <div class="trays">
     <div class="tray" [class.picking]="switchOpen() || awaitingSwitch()">
-      <span class="tray-label">You</span>
+      <span class="tray-label">{{ 'You' | t }}</span>
       @for (m of playerTray(); track m.mon.id) {
         <button
           type="button"
@@ -97,7 +97,7 @@
           [class.fainted]="m.fainted"
           [class.switchable]="m.switchable"
           [disabled]="!m.switchable"
-          [title]="m.switchable ? 'Send out ' + titleCase(m.mon.name) : titleCase(m.mon.name)"
+          [title]="m.switchable ? ('Send out {0}' | t: [titleCase(m.mon.name)]) : titleCase(m.mon.name)"
           (click)="onTraySelect(0, m.index)"
         >
           <img decoding="async" [src]="m.mon.sprite" [alt]="m.mon.name" [style.filter]="m.mon.hue ? 'hue-rotate(' + m.mon.hue + 'deg)' : null" />
@@ -116,7 +116,7 @@
   <!-- Controls / log -->
   @if (!done()) {
     @if (awaitingSwitch()) {
-      <p class="switch-prompt"><strong>{{ titleCase(playerActive()?.name ?? '') }}</strong> fainted — pick a replacement from your team above.</p>
+      <p class="switch-prompt"><strong>{{ titleCase(playerActive()?.name ?? '') }}</strong> {{ 'fainted — pick a replacement from your team above.' | t }}</p>
     } @else {
       <div class="controls" [class.dim]="switchOpen() || busy()">
         @for (slot of moveSlots(); track slot.move.name; let i = $index) {
@@ -129,26 +129,26 @@
               [hotkey]="i + 1"
               (picked)="useMove(i)"
             />
-            @if (slot.maxPp !== null) { <span class="pp" [class.empty]="slot.pp <= 0">PP {{ slot.pp }}/{{ slot.maxPp }}</span> }
+            @if (slot.maxPp !== null) { <span class="pp" [class.empty]="slot.pp <= 0">{{ 'PP {0}/{1}' | t: [(slot.pp), (slot.maxPp)] }}</span> }
           </div>
         }
       </div>
       <div class="action-bar">
         <button class="switch-btn" type="button" [class.on]="switchOpen()" [disabled]="busy() || !canSwitch()" (click)="toggleSwitch()">
-          <span class="sw-ico" aria-hidden="true">⇄</span> {{ switchOpen() ? 'Cancel switch' : 'Switch Pokémon' }}
+          <span class="sw-ico" aria-hidden="true">⇄</span> {{ switchOpen() ? ('Cancel switch' | t) : ('Switch Pokémon' | t) }}
         </button>
       </div>
     }
   } @else {
     <div class="result" [class.win]="playerWon()">
-      <p class="result-title">{{ playerWon() ? 'Victory!' : 'Defeated' }}</p>
+      <p class="result-title">{{ playerWon() ? ('Victory!' | t) : ('Defeated' | t) }}</p>
       <button class="btn continue" type="button" (click)="continue()">
-        {{ playerWon() ? 'Advance ›' : 'Back to bracket' }}
+        {{ playerWon() ? ('Advance ›' | t) : ('Back to bracket' | t) }}
       </button>
     </div>
   }
 
   <ul class="log" aria-live="polite" #logEl>
-    @for (line of log(); track $index) { <li [attr.data-tone]="line.tone">{{ line.text }}</li> }
+    @for (line of log(); track $index) { <li [attr.data-tone]="line.tone">{{ line.text | t }}</li> }
   </ul>
 </div>

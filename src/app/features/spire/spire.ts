@@ -8,11 +8,12 @@ import { TournamentMatchComponent, type MatchOutcome } from '../tournaments/tour
 import { titleCase } from '../../core/ui/format';
 import type { Battler } from '../../game/engine';
 import { isBossFloor, type RewardOption, type ShopEntry, type SpireNode } from '../../game/spire';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 @Component({
   selector: 'pv-spire',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, SpinnerComponent, TypeBadgeComponent, IconComponent, TournamentMatchComponent],
+  imports: [TranslatePipe, PageHeaderComponent, SpinnerComponent, TypeBadgeComponent, IconComponent, TournamentMatchComponent],
   templateUrl: './spire.html',
   styleUrl: './spire.scss',
 })

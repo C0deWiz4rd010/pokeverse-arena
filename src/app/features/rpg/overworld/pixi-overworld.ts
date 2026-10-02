@@ -40,6 +40,7 @@ import {
   type Sheet,
   type TileArt,
 } from './atlas';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 type Pixi = typeof import('pixi.js');
 type PApplication = import('pixi.js').Application;
@@ -66,15 +67,15 @@ const KEY_DIR: Record<string, Direction> = {
 @Component({
   selector: 'pv-pixi-overworld',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [OwPartyHudComponent],
+  imports: [TranslatePipe, OwPartyHudComponent],
   template: `
     <div class="ow" #host>
-      <div class="ow-mount" #mount></div>
-      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }<span class="ow-wx" [title]="'It is ' + band()">{{ timeIcon() }}</span>@if (svc.nuzlocke()) { <span class="ow-wx" title="Nuzlocke run">💀</span> }@if (svc.comboHud(); as ch) { <span class="ow-wx" title="Catch combo — keep catching the same species!">🔗 {{ ch }}</span> }</div> }
-      @if (banner(); as b) { <div class="ow-banner" aria-hidden="true">{{ b }}</div> }
+      <div class="ow-mount" #mount role="img" [attr.aria-label]="'Adventure map' | t"></div>
+      @if (svc.map(); as m) { <div class="ow-loc">{{ m.name | t }}@if (weatherIcon(m.weather); as wi) { <span class="ow-wx">{{ wi }}</span> }<span class="ow-wx" [title]="'It is {0}' | t: [(band() | t)]">{{ timeIcon() }}</span>@if (svc.nuzlocke()) { <span class="ow-wx" [attr.title]="'Nuzlocke run' | t">💀</span> }@if (svc.comboHud(); as ch) { <span class="ow-wx" [attr.title]="'Catch combo — keep catching the same species!' | t">🔗 {{ ch }}</span> }</div> }
+      @if (banner(); as b) { <div class="ow-banner" aria-hidden="true">{{ b | t }}</div> }
       @if (svc.toast(); as t) { <div class="ow-toast" role="status">{{ t }}</div> }
       <pv-ow-party-hud />
-      <button class="ow-menu" type="button" (click)="svc.openMenu()" aria-label="Menu">☰</button>
+      <button class="ow-menu" type="button" (click)="svc.openMenu()" [attr.aria-label]="'Menu' | t">☰</button>
       <div class="pad" aria-hidden="true">
         <button class="pad-btn up" (pointerdown)="press('up', $event)" (pointerup)="release('up')" (pointerleave)="release('up')">▲</button>
         <button class="pad-btn left" (pointerdown)="press('left', $event)" (pointerup)="release('left')" (pointerleave)="release('left')">◀</button>
@@ -82,7 +83,7 @@ const KEY_DIR: Record<string, Direction> = {
         <button class="pad-btn down" (pointerdown)="press('down', $event)" (pointerup)="release('down')" (pointerleave)="release('down')">▼</button>
       </div>
       <div class="ab" aria-hidden="true">
-        <button class="ab-btn r" [class.on]="touchRun()" (pointerdown)="toggleRun($event)" title="Run">🏃</button>
+        <button class="ab-btn r" [class.on]="touchRun()" (pointerdown)="toggleRun($event)" [attr.title]="'Run' | t">🏃</button>
         <button class="ab-btn a" (pointerdown)="interact($event)">A</button>
         <button class="ab-btn b" (pointerdown)="svc.openMenu()">B</button>
       </div>

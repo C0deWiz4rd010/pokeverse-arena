@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 /** A spinning Poke Ball loading indicator. */
 @Component({
-  selector: 'pv-spinner',
+    imports: [TranslatePipe],
+selector: 'pv-spinner',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="wrap" role="status" [attr.aria-label]="label()">
@@ -13,7 +15,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         <div class="center"></div>
       </div>
       @if (label()) {
-        <span class="text">{{ label() }}</span>
+        <span class="text">{{ label() | t }}</span>
       }
     </div>
   `,

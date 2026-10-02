@@ -1,22 +1,22 @@
-<div class="fm" role="dialog" aria-label="Field menu" pvModal>
+<div class="fm" role="dialog" [attr.aria-label]="'Field menu' | t" pvModal>
   <header class="fm-head">
     <div class="fm-tabs" role="tablist">
-      <button #firstTab type="button" role="tab" [attr.aria-selected]="tab() === 'party'" [class.on]="tab() === 'party'" (click)="tab.set('party')">Pokémon</button>
-      <button type="button" role="tab" [attr.aria-selected]="tab() === 'bag'" [class.on]="tab() === 'bag'" (click)="tab.set('bag')">Bag</button>
-      <button type="button" role="tab" [attr.aria-selected]="tab() === 'quests'" [class.on]="tab() === 'quests'" (click)="tab.set('quests')">Quests</button>
-      <button type="button" role="tab" [attr.aria-selected]="tab() === 'box'" [class.on]="tab() === 'box'" (click)="tab.set('box')">Box</button>
-      <button type="button" role="tab" [attr.aria-selected]="tab() === 'dex'" [class.on]="tab() === 'dex'" (click)="tab.set('dex')">Dex</button>
+      <button #firstTab type="button" role="tab" [attr.aria-selected]="tab() === 'party'" [class.on]="tab() === 'party'" (click)="tab.set('party')">{{ 'Pokémon' | t }}</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'bag'" [class.on]="tab() === 'bag'" (click)="tab.set('bag')">{{ 'Bag' | t }}</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'quests'" [class.on]="tab() === 'quests'" (click)="tab.set('quests')">{{ 'Quests' | t }}</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'box'" [class.on]="tab() === 'box'" (click)="tab.set('box')">{{ 'Box' | t }}</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'dex'" [class.on]="tab() === 'dex'" (click)="tab.set('dex')">{{ 'Dex' | t }}</button>
     </div>
     <span class="fm-money">{{ svc.money() }} ₽</span>
   </header>
 
   @if (pendingItem()) {
-    <p class="fm-prompt">Use on which Pokémon? <button type="button" class="link" (click)="cancelItem()">Cancel</button></p>
+    <p class="fm-prompt">{{ 'Use on which Pokémon?' | t }} <button type="button" class="link" (click)="cancelItem()">{{ 'Cancel' | t }}</button></p>
   }
 
   @if (tab() === 'party') {
-    <div class="fm-look" role="group" aria-label="Trainer look">
-      <span class="fm-look-label">Look</span>
+    <div class="fm-look" role="group" [attr.aria-label]="'Trainer look' | t">
+      <span class="fm-look-label">{{ 'Look' | t }}</span>
       @for (l of looks; track l.key) {
         <button type="button" class="look-btn" [class.on]="svc.appearance() === l.key" [attr.aria-pressed]="svc.appearance() === l.key" [title]="l.name" (click)="chooseLook(l.key)">
           <img decoding="async" [src]="lookFace(l.key)" [alt]="l.name" />
@@ -29,32 +29,32 @@
           <button class="mon-main" type="button" [class.pick]="pendingItem()" [disabled]="!pendingItem()" (click)="onPartyClick(m.i)">
             <div class="mon-top">
               <strong>{{ m.name }}</strong>
-              <span class="lv">Lv{{ m.level }}</span>
+              <span class="lv">{{ 'Lv{0}' | t: [(m.level)] }}</span>
               @if (m.status !== 'none') { <pv-status-badge [status]="m.status" /> }
-              @if (m.held) { <span class="held" [title]="'Holding: ' + m.held">🎒 {{ m.held }}</span> }
+              @if (m.held) { <span class="held" [title]="'Holding: {0}' | t: [m.held]">🎒 {{ m.held }}</span> }
             </div>
-            <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="m.hpPct"><span class="fill" [class.mid]="m.hpPct <= 55 && m.hpPct > 25" [class.low]="m.hpPct <= 25" [style.width.%]="m.hpPct"></span></div>
-            <div class="mon-foot"><span>HP {{ m.hp }}/{{ m.maxHp }}</span><span class="xp">XP <i [style.width.%]="m.xpPct"></i></span></div>
+            <div class="hpbar" role="progressbar" [attr.aria-label]="'HP' | t" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="m.hpPct"><span class="fill" [class.mid]="m.hpPct <= 55 && m.hpPct > 25" [class.low]="m.hpPct <= 25" [style.width.%]="m.hpPct"></span></div>
+            <div class="mon-foot"><span>{{ 'HP {0}/{1}' | t: [(m.hp), (m.maxHp)] }}</span><span class="xp">{{ 'XP' | t }} <i [style.width.%]="m.xpPct"></i></span></div>
           </button>
           @if (!pendingItem()) {
             @if (renameUid() === m.uid) {
               <div class="mon-rename">
-                <input type="text" maxlength="16" [value]="renameDraft()" (input)="onRenameInput($event)" (keydown.enter)="saveRename()" placeholder="Nickname" />
-                <button type="button" (click)="saveRename()">OK</button>
+                <input type="text" maxlength="16" [value]="renameDraft()" (input)="onRenameInput($event)" (keydown.enter)="saveRename()" [attr.placeholder]="'Nickname' | t" />
+                <button type="button" (click)="saveRename()">{{ 'OK' | t }}</button>
                 <button type="button" (click)="cancelRename()">✕</button>
               </div>
             } @else {
               <div class="mon-actions">
-                <button type="button" [disabled]="m.i === 0" (click)="svc.setLead(m.i)">Lead</button>
-                <button type="button" [disabled]="partyView().length < 2" (click)="svc.deposit(m.i)">→ Box</button>
-                <button type="button" (click)="startRename(m.uid, m.name)">Rename</button>
-                @if (m.held) { <button type="button" (click)="svc.takeHeld(m.i)">Take item</button> }
+                <button type="button" [disabled]="m.i === 0" (click)="svc.setLead(m.i)">{{ 'Lead' | t }}</button>
+                <button type="button" [disabled]="partyView().length < 2" (click)="svc.deposit(m.i)">{{ '→ Box' | t }}</button>
+                <button type="button" (click)="startRename(m.uid, m.name)">{{ 'Rename' | t }}</button>
+                @if (m.held) { <button type="button" (click)="svc.takeHeld(m.i)">{{ 'Take item' | t }}</button> }
               </div>
             }
           }
         </div>
       } @empty {
-        <p class="fm-empty">No Pokémon yet. Find a starter in the Lab!</p>
+        <p class="fm-empty">{{ 'No Pokémon yet. Find a starter in the Lab!' | t }}</p>
       }
     </div>
   } @else if (tab() === 'box') {
@@ -63,26 +63,26 @@
         <div class="box-mon">
           <img decoding="async" [src]="m.sprite" [alt]="m.name" loading="lazy" />
           <span class="box-name">{{ m.name }}</span>
-          <span class="box-lv">Lv{{ m.level }}</span>
-          <button type="button" class="withdraw" (click)="svc.withdraw(m.i)">Withdraw</button>
+          <span class="box-lv">{{ 'Lv{0}' | t: [(m.level)] }}</span>
+          <button type="button" class="withdraw" (click)="svc.withdraw(m.i)">{{ 'Withdraw' | t }}</button>
         </div>
       } @empty {
-        <p class="fm-empty">The storage box is empty.</p>
+        <p class="fm-empty">{{ 'The storage box is empty.' | t }}</p>
       }
     </div>
   } @else if (tab() === 'quests') {
     <div class="fm-quests">
       <p class="q-progress">
         <span class="q-bar"><span class="q-fill" [style.width.%]="questView().total ? (questView().done / questView().total) * 100 : 0"></span></span>
-        {{ questView().done }} / {{ questView().total }} complete
+        {{ '{0} / {1} complete' | t: [(questView().done), (questView().total)] }}
       </p>
       <ul class="q-list">
         @for (e of questView().entries; track e.quest.id) {
           <li [class.done]="e.done">
             <span class="q-check" aria-hidden="true">{{ e.done ? '✔' : '○' }}</span>
             <span class="q-body">
-              <span class="q-title">{{ e.quest.title }}</span>
-              @if (!e.done) { <span class="q-hint">{{ e.quest.hint }}</span> }
+              <span class="q-title">{{ e.quest.title | t }}</span>
+              @if (!e.done) { <span class="q-hint">{{ e.quest.hint | t }}</span> }
             </span>
           </li>
         }
@@ -90,26 +90,26 @@
     </div>
   } @else if (tab() === 'dex') {
     <div class="fm-dex">
-      <p class="dex-stats">Seen <strong>{{ dexView().seen }}</strong> · Caught <strong>{{ dexView().caught }}</strong></p>
+      <p class="dex-stats">{{ 'Seen' | t }} <strong>{{ dexView().seen }}</strong> {{ '· Caught' | t }} <strong>{{ dexView().caught }}</strong></p>
       @if (dexView().badges.length) {
         <p class="dex-badges">@for (b of dexView().badges; track b) { <span class="badge">🏅 {{ b }}</span> }</p>
       }
       @if (boons().length) {
         <div class="fm-boons">
-          <p class="mem-title">✨ Badge boons</p>
+          <p class="mem-title">{{ '✨ Badge boons' | t }}</p>
           @for (b of boons(); track b.badge) {
-            <p class="boon-row"><strong>{{ b.name }}</strong><span>{{ b.desc }}</span></p>
+            <p class="boon-row"><strong>{{ b.name }}</strong><span>{{ b.desc | t }}</span></p>
           }
         </div>
       }
       @if (svc.nuzlocke() && fallenView().length) {
         <div class="fm-memorial">
-          <p class="mem-title">💀 In memoriam</p>
+          <p class="mem-title">{{ '💀 In memoriam' | t }}</p>
           <div class="mem-grid">
             @for (f of fallenView(); track $index) {
-              <span class="mem-mon" [title]="f.name + ' · fell at Lv' + f.level">
+              <span class="mem-mon" [title]="'{0} · fell at Lv{1}' | t: [f.name, f.level]">
                 <img decoding="async" [src]="f.sprite" [alt]="f.name" loading="lazy" />
-                <small>{{ f.name }} · Lv{{ f.level }}</small>
+                <small>{{ '{0} · Lv{1}' | t: [(f.name), (f.level)] }}</small>
               </span>
             }
           </div>
@@ -119,7 +119,7 @@
         @for (m of dexView().mons; track m.id) {
           <span class="dex-mon"><img decoding="async" [src]="m.sprite" [alt]="'#' + m.id" loading="lazy" /></span>
         } @empty {
-          <p class="fm-empty">No Pokémon caught yet.</p>
+          <p class="fm-empty">{{ 'No Pokémon caught yet.' | t }}</p>
         }
       </div>
     </div>
@@ -127,19 +127,19 @@
     <div class="fm-bag">
       @for (it of bagView(); track it.id) {
         <button class="bag-item" type="button" [class.dim]="!it.field" (click)="pickItem(it.id)">
-          <span class="bi-name">{{ it.name }}</span>
-          <span class="bi-desc">{{ it.desc }}</span>
+          <span class="bi-name">{{ it.name | t }}</span>
+          <span class="bi-desc">{{ it.desc | t }}</span>
           <span class="bi-count">×{{ it.count }}</span>
         </button>
       } @empty {
-        <p class="fm-empty">Your Bag is empty.</p>
+        <p class="fm-empty">{{ 'Your Bag is empty.' | t }}</p>
       }
     </div>
   }
 
   <footer class="fm-actions">
-    <button class="btn" type="button" (click)="save()">Save</button>
-    <button class="btn" type="button" (click)="svc.closeMenu()">Resume</button>
-    <button class="btn ghost" type="button" (click)="svc.exitToTitle()">Title</button>
+    <button class="btn" type="button" (click)="save()">{{ 'Save' | t }}</button>
+    <button class="btn" type="button" (click)="svc.closeMenu()">{{ 'Resume' | t }}</button>
+    <button class="btn ghost" type="button" (click)="svc.exitToTitle()">{{ 'Title' | t }}</button>
   </footer>
 </div>
