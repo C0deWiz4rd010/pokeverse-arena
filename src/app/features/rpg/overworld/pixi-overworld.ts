@@ -48,6 +48,15 @@ type PContainer = import('pixi.js').Container;
 type PTexture = import('pixi.js').Texture;
 type PSprite = import('pixi.js').Sprite;
 
+/** Tiles per culling block edge. */
+const CHUNK = 8;
+/** Upper bound on live dust/leaf particles. */
+const MAX_PARTICLES = 120;
+/** Phones / small laptops: render at 1x and keep effects lean. */
+const lowEnd = (): boolean => {
+  const n = navigator as Navigator & { deviceMemory?: number };
+  return (n.hardwareConcurrency ?? 8) <= 4 || (n.deviceMemory ?? 8) <= 4;
+};
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const KEY_DIR: Record<string, Direction> = {
@@ -100,6 +109,8 @@ export class PixiOverworldComponent implements OnDestroy {
   private app: PApplication | null = null;
   private world!: PContainer;
   private tilesLayer!: PContainer;
+  /** Static tiles grouped in CHUNK x CHUNK blocks so off-screen blocks cost nothing. */
+  private chunks = new Map<string, { c: PContainer; x0: number; y0: number }>();
   private entitiesLayer!: PContainer;
   private canopyLayer!: PContainer;
   private destroyed = false;
@@ -111,7 +122,8 @@ export class PixiOverworldComponent implements OnDestroy {
   /** Per-character animation state: sheet key, facing and gait. */
   private charMeta = new Map<PContainer, { key: string; dir: Direction; moving: boolean }>();
   private waterTiles: { g: import('pixi.js').Graphics; glint?: import('pixi.js').Graphics; foam?: import('pixi.js').Graphics; x: number; y: number }[] = [];
-  private grassTiles: { c: PContainer; tufts: PSprite[] }[] = [];
+  private grassTiles: { c: PContainer; tufts: PSprite[]; x: number; y: number }[] = [];
+  private canopyTops: { s: PSprite; x: number; y: number }[] = [];
   private player: PContainer | null = null;
   private builtMapId = '';
   private builtDirty = 0;
@@ -130,11 +142,11 @@ export class PixiOverworldComponent implements OnDestroy {
   private weatherLayer!: PContainer;
   private weatherTint: import('pixi.js').Graphics | null = null;
   private weather: WeatherKind | null = null;
-  private rain: { g: import('pixi.js').Graphics; vy: number; vx: number }[] = [];
+  private rain: { g: PSprite; vy: number; vx: number }[] = [];
   private snow: { s: PSprite; vy: number; ph: number }[] = [];
   // --- ambient petals/leaves, tinted per region ---
   private petalLayer: PContainer | null = null;
-  private petals: { g: import('pixi.js').Graphics; vx: number; vy: number; ph: number }[] = [];
+  private petals: { g: PSprite; vx: number; vy: number; ph: number }[] = [];
   private shakeUntil = 0;
   private shakeMag = 0;
   /** npc id → container, so wanderers can glide to their runtime tile. */
@@ -168,6 +180,46 @@ export class PixiOverworldComponent implements OnDestroy {
     if (dir) this.held.delete(dir);
   };
   private readonly onResize = (): void => this.resize();
+  /** Losing focus would otherwise leave a key "held" and keep the hero walking. */
+  private readonly onBlur = (): void => { this.held.clear(); this.running = false; };
+
+  private ro: ResizeObserver | null = null;
+  private io: IntersectionObserver | null = null;
+  private onScreen = true;
+  private ctxLost = false;
+  private readonly onVisibility = (): void => this.syncRun();
+  private readonly onCtxLost = (e: Event): void => { e.preventDefault(); this.ctxLost = true; this.syncRun(); };
+  private readonly onCtxRestored = (): void => { this.ctxLost = false; this.syncRun(); };
+
+  private syncRun(): void {
+    const t = this.app?.ticker;
+    if (!t) return;
+    const run = !document.hidden && this.onScreen && !this.ctxLost;
+    if (run && !t.started) t.start();
+    else if (!run && t.started) t.stop();
+  }
+
+  /* ------------------------------------------------- adaptive quality */
+
+  private slowFor = 0;
+  private lowQuality = false;
+
+  /** Sustained slow frames switch the pretty-but-optional effects off. */
+  private watchFps(delta: number): void {
+    if (this.lowQuality || REDUCED) return;
+    this.slowFor = delta > 1.6 ? this.slowFor + delta : Math.max(0, this.slowFor - 1);
+    if (this.slowFor > 240) this.degrade();
+  }
+
+  private degrade(): void {
+    this.lowQuality = true;
+    this.world.filters = [];
+    if (this.ambientLayer) this.ambientLayer.visible = false;
+    if (this.petalLayer) this.petalLayer.visible = false;
+    if (this.light) this.light.visible = false;
+    const r = this.app?.renderer;
+    if (r && r.resolution > 1) { r.resize(r.screen.width, r.screen.height, 1); this.resizeFx(); }
+  }
 
   constructor() {
     afterNextRender(() => void this.init());
@@ -177,9 +229,21 @@ export class PixiOverworldComponent implements OnDestroy {
     this.destroyed = true;
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
-    window.removeEventListener('resize', this.onResize);
-    this.app?.destroy(true, { children: true, texture: false });
+    window.removeEventListener('blur', this.onBlur);
+    document.removeEventListener('visibilitychange', this.onVisibility);
+    this.ro?.disconnect();
+    this.io?.disconnect();
+    if (this.bannerTimer) clearTimeout(this.bannerTimer);
+    const app = this.app;
+    // keep the GL handle: browsers cap live contexts, so hand ours back explicitly
+    const gl = (app?.renderer as unknown as { gl?: WebGLRenderingContext } | undefined)?.gl;
+    app?.destroy(true, { children: true, texture: false });
     this.app = null;
+    for (const t of this.frames.values()) t.destroy(false);
+    this.frames.clear();
+    for (const t of this.radialCache.values()) t.destroy(true);
+    this.radialCache.clear();
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
   }
 
   protected press(dir: Direction, ev?: Event): void {
@@ -223,6 +287,9 @@ export class PixiOverworldComponent implements OnDestroy {
         background: '#05060f',
         antialias: false,
         roundPixels: true,
+        // crisp on retina, but a phone's 3x panel would shade 9x the pixels for no visible gain
+        resolution: lowEnd() ? 1 : Math.min(window.devicePixelRatio || 1, 2),
+        autoDensity: true,
       });
       if (this.destroyed) { app.destroy(true); return; }
       this.app = app;
@@ -251,11 +318,19 @@ export class PixiOverworldComponent implements OnDestroy {
 
       window.addEventListener('keydown', this.onKeyDown);
       window.addEventListener('keyup', this.onKeyUp);
-      window.addEventListener('resize', this.onResize);
+      window.addEventListener('blur', this.onBlur);
+      this.ro = new ResizeObserver(this.onResize);
+      this.ro.observe(host);
+      // sleep while the tab is hidden, the map is scrolled out of view or the GPU context is gone
+      document.addEventListener('visibilitychange', this.onVisibility);
+      this.io = new IntersectionObserver((e) => { this.onScreen = e[e.length - 1]?.isIntersecting ?? true; this.syncRun(); });
+      this.io.observe(host);
+      app.canvas.addEventListener('webglcontextlost', this.onCtxLost);
+      app.canvas.addEventListener('webglcontextrestored', this.onCtxRestored);
 
       this.resize();
       this.rebuildMap();
-      app.ticker.add(() => this.tick());
+      app.ticker.add((t) => this.tick(t.deltaTime));
     } catch {
       // WebGL unavailable — the shell's reduced/no-webgl path should have caught
       // this, but bail quietly so the page never crashes.
@@ -308,10 +383,13 @@ export class PixiOverworldComponent implements OnDestroy {
     if (!map || !this.app) return;
     this.builtMapId = map.id;
     this.showBanner(map.name);
+    for (const ch of this.chunks.values()) ch.c.destroy({ children: true });
+    this.chunks.clear();
     this.tilesLayer.removeChildren();
     this.entitiesLayer.removeChildren();
     this.canopyLayer.removeChildren();
     this.charMeta.clear();
+    this.canopyTops = [];
     this.waterTiles = [];
     this.grassTiles = [];
 
@@ -371,8 +449,8 @@ export class PixiOverworldComponent implements OnDestroy {
   private drawTile(kind: TileKind, x: number, y: number, map: MapDef): void {
     const art = TILE_ART[kind];
     if ('proc' in art) {
-      if (art.proc === 'water') this.tilesLayer.addChild(this.makeWater(x, y, map));
-      else this.tilesLayer.addChild(this.makeTallGrass(x, y));
+      if (art.proc === 'water') this.chunk(x, y).addChild(this.makeWater(x, y, map));
+      else this.chunk(x, y).addChild(this.makeTallGrass(x, y));
       return;
     }
     if (kind === 'path') {
@@ -402,7 +480,7 @@ export class PixiOverworldComponent implements OnDestroy {
       const shade = new this.PIXI!.Graphics()
         .ellipse(sx, y * TILE_PX + TILE_PX * 0.9, TILE_PX * 0.34, TILE_PX * 0.12)
         .fill({ color: 0x000000, alpha: 0.16 });
-      this.tilesLayer.addChild(shade);
+      this.chunk(x, y).addChild(shade);
       const isTree = (tx: number): boolean => map.tiles[y]?.[tx] === 'tree';
       let runStart = x;
       while (isTree(runStart - 1)) runStart--;
@@ -422,6 +500,7 @@ export class PixiOverworldComponent implements OnDestroy {
       top.x = x * TILE_PX;
       top.y = (y - 1) * TILE_PX;
       this.canopyLayer.addChild(top); // crown overlaps the tile above, over entities
+      this.canopyTops.push({ s: top, x, y: y - 1 });
       return;
     }
     if (kind === 'rock' || kind === 'bush' || kind === 'stump') {
@@ -434,12 +513,39 @@ export class PixiOverworldComponent implements OnDestroy {
       const leaf = new this.PIXI!.Sprite(this.texFor('world', DOOR_OVERLAY));
       leaf.x = x * TILE_PX;
       leaf.y = y * TILE_PX;
-      this.tilesLayer.addChild(leaf);
+      this.chunk(x, y).addChild(leaf);
       return;
     }
     // grounded decorations already have grass under them from the base pass
     this.drawArt(art, x, y);
   }
+
+  /** The chunk container holding tile (x, y); created on first use. */
+  private chunk(x: number, y: number): PContainer {
+    const cx = Math.floor(x / CHUNK), cy = Math.floor(y / CHUNK);
+    const key = `${cx},${cy}`;
+    let ch = this.chunks.get(key);
+    if (!ch) {
+      const c = new this.PIXI!.Container();
+      c.eventMode = 'none';
+      ch = { c, x0: cx * CHUNK, y0: cy * CHUNK };
+      this.chunks.set(key, ch);
+      this.tilesLayer.addChild(c);
+    }
+    return ch.c;
+  }
+
+  /** Hide chunks (and skip tile animation) outside the camera, with a one-tile margin. */
+  private cullChunks(w: number, h: number): void {
+    const z = this.zoom * TILE_PX;
+    const left = -this.world.x / z - 1, top = -this.world.y / z - 1;
+    const right = (w - this.world.x) / z + 1, bottom = (h - this.world.y) / z + 1;
+    this.view = { left, top, right, bottom };
+    for (const ch of this.chunks.values()) {
+      ch.c.visible = ch.x0 + CHUNK >= left && ch.x0 <= right && ch.y0 + CHUNK >= top && ch.y0 <= bottom;
+    }
+  }
+  private view = { left: -1e9, top: -1e9, right: 1e9, bottom: 1e9 };
 
   private drawArt(art: TileArt, x: number, y: number): void {
     if ('proc' in art) return;
@@ -447,7 +553,7 @@ export class PixiOverworldComponent implements OnDestroy {
     s.x = x * TILE_PX;
     s.y = y * TILE_PX;
     if (art.tint !== undefined) s.tint = art.tint;
-    this.tilesLayer.addChild(s);
+    this.chunk(x, y).addChild(s);
   }
 
   private makeWater(x: number, y: number, map: MapDef): PContainer {
@@ -502,7 +608,7 @@ export class PixiOverworldComponent implements OnDestroy {
       tufts.push(tuft);
       c.addChild(tuft);
     }
-    this.grassTiles.push({ c, tufts });
+    this.grassTiles.push({ c, tufts, x, y });
     return c;
   }
 
@@ -521,7 +627,7 @@ export class PixiOverworldComponent implements OnDestroy {
       .ellipse(cx, base, rx, ry).fill(grey) // body
       .ellipse(cx - rx * 0.28, base - ry * 0.3, rx * 0.4, ry * 0.35).fill({ color: 0xffffff, alpha: 0.16 }); // top highlight
     if ((h % 5) === 0) g.ellipse(cx + rx * 0.2, base + ry * 0.2, rx * 0.5, ry * 0.35).fill({ color: 0x6faa5c, alpha: 0.5 }); // moss
-    this.tilesLayer.addChild(g);
+    this.chunk(x, y).addChild(g);
   }
 
   /** Solid decorative obstacles authored into maps: a boulder, leafy bush or
@@ -553,7 +659,7 @@ export class PixiOverworldComponent implements OnDestroy {
         .ellipse(cx, py + TILE_PX * 0.5, 4.4, 2.4).fill(top)
         .ellipse(cx, py + TILE_PX * 0.5, 2.2, 1.2).stroke({ width: 0.8, color: 0x8a5a34, alpha: 0.7 });
     }
-    this.tilesLayer.addChild(g);
+    this.chunk(x, y).addChild(g);
   }
 
   /** A forage berry bush: a tinted tuft, ripe ones topped with berry dots. */
@@ -620,7 +726,11 @@ export class PixiOverworldComponent implements OnDestroy {
 
   /* ------------------------------------------------------------- effects */
 
+  private readonly radialCache = new Map<string, PTexture>();
   private radial(size: number, inner: string, outer: string): PTexture {
+    const key = `${size}|${inner}|${outer}`;
+    const hit = this.radialCache.get(key);
+    if (hit) return hit;
     const c = document.createElement('canvas');
     c.width = c.height = size;
     const g = c.getContext('2d')!;
@@ -629,7 +739,9 @@ export class PixiOverworldComponent implements OnDestroy {
     grd.addColorStop(1, outer);
     g.fillStyle = grd;
     g.fillRect(0, 0, size, size);
-    return this.PIXI!.Texture.from(c);
+    const tex = this.PIXI!.Texture.from(c);
+    this.radialCache.set(key, tex);
+    return tex;
   }
 
   private buildFx(): void {
@@ -679,7 +791,7 @@ export class PixiOverworldComponent implements OnDestroy {
 
   private updateDayNight(): void {
     if (!this.nightTint || REDUCED) return;
-    const hr = new Date().getHours();
+    const hr = this.hourNow();
     // [tintColor, tintAlpha, fireflyVisibility]
     let color = 0xffffff, alpha = 0, fire = 0;
     if (hr >= 21 || hr < 5) { color = 0x2a3b7a; alpha = 0.45; fire = 1; }       // night
@@ -689,18 +801,30 @@ export class PixiOverworldComponent implements OnDestroy {
     else if (hr < 9) { color = 0xcfe0ff; alpha = 0.1; fire = 0.1; }             // cool morning
     // ease toward target
     this.nightTint.tint = color;
-    this.nightTint.alpha += (alpha - this.nightTint.alpha) * 0.04;
-    this.light!.alpha += ((0.12 + fire * 0.22) - this.light!.alpha) * 0.04;
-    this.fireflyVis += (fire - this.fireflyVis) * 0.04;
+    const k = this.ease(0.04);
+    this.nightTint.alpha += (alpha - this.nightTint.alpha) * k;
+    this.light!.alpha += ((0.12 + fire * 0.22) - this.light!.alpha) * k;
+    this.fireflyVis += (fire - this.fireflyVis) * k;
   }
   private fireflyVis = 0;
+  private hourCache = { at: -1e9, hr: 12 };
+  /** The clock hour, re-read at most once a second instead of allocating a Date every frame. */
+  private hourNow(): number {
+    const now = performance.now();
+    if (now - this.hourCache.at > 1000) this.hourCache = { at: now, hr: new Date().getHours() };
+    return this.hourCache.hr;
+  }
+  /** Per-frame easing factor that behaves the same at any frame rate. */
+  private ease(k: number): number {
+    return 1 - Math.pow(1 - k, this.dt);
+  }
 
   private updateAmbient(): void {
     if (REDUCED || !this.app) return;
     const w = this.app.renderer.width / this.app.renderer.resolution;
     const h = this.app.renderer.height / this.app.renderer.resolution;
     for (const a of this.ambient) {
-      a.s.x += a.vx; a.s.y += a.vy;
+      a.s.x += a.vx * this.dt; a.s.y += a.vy * this.dt;
       if (a.s.x < -8) a.s.x = w + 8; if (a.s.x > w + 8) a.s.x = -8;
       if (a.s.y < -8) a.s.y = h + 8; if (a.s.y > h + 8) a.s.y = -8;
       a.s.alpha = this.fireflyVis * (0.4 + 0.6 * Math.abs(Math.sin(this.frame / 40 + a.ph)));
@@ -708,10 +832,21 @@ export class PixiOverworldComponent implements OnDestroy {
   }
 
   private spawnParticle(wx: number, wy: number, color: number, size: number, vx: number, vy: number, life: number, grav: number): void {
-    const g = new this.PIXI!.Graphics().rect(-size / 2, -size / 2, size, size).fill(color);
+    if (this.parts.length >= MAX_PARTICLES) return;
+    const g = this.partPool.pop() ?? new this.PIXI!.Sprite(this.PIXI!.Texture.WHITE);
+    g.anchor.set(0.5);
+    g.width = size; g.height = size;
+    g.tint = color; g.alpha = 1;
     g.x = wx; g.y = wy;
     this.particlesLayer.addChild(g);
     this.parts.push({ node: g, vx, vy, life, max: life, grav });
+  }
+
+  private readonly partPool: PSprite[] = [];
+  private freeParticle(n: PContainer): void {
+    n.removeFromParent();
+    if (this.partPool.length < MAX_PARTICLES) this.partPool.push(n as PSprite);
+    else n.destroy();
   }
 
   /* ------------------------------------------------------------- weather */
@@ -739,7 +874,9 @@ export class PixiOverworldComponent implements OnDestroy {
     const h = this.app.renderer.height / this.app.renderer.resolution;
     const color = this.petalColor(map.id);
     for (let i = 0; i < 10; i++) {
-      const g = new this.PIXI!.Graphics().roundRect(-2, -1.2, 4, 2.4, 1).fill({ color, alpha: 0.8 });
+      const g = new this.PIXI!.Sprite(this.PIXI!.Texture.WHITE);
+      g.anchor.set(0.5);
+      g.width = 4; g.height = 2.4; g.tint = color; g.alpha = 0.8;
       g.x = Math.random() * w;
       g.y = Math.random() * h;
       g.rotation = Math.random() * Math.PI;
@@ -753,9 +890,9 @@ export class PixiOverworldComponent implements OnDestroy {
     const w = this.app.renderer.width / this.app.renderer.resolution;
     const h = this.app.renderer.height / this.app.renderer.resolution;
     for (const p of this.petals) {
-      p.g.x += p.vx + Math.sin(this.frame / 34 + p.ph) * 0.3;
-      p.g.y += p.vy;
-      p.g.rotation += 0.012;
+      p.g.x += (p.vx + Math.sin(this.frame / 34 + p.ph) * 0.3) * this.dt;
+      p.g.y += p.vy * this.dt;
+      p.g.rotation += 0.012 * this.dt;
       if (p.g.y > h + 6 || p.g.x < -6) {
         p.g.y = -6;
         p.g.x = Math.random() * (w + 30);
@@ -781,11 +918,14 @@ export class PixiOverworldComponent implements OnDestroy {
         : kind === 'sandstorm' ? 0xc2a15a
         : kind === 'sun' ? 0xffcf7a
         : 0x000000;
+      this.weatherCol = tint;
       if (kind) this.weatherTint.rect(0, 0, w, h).fill(tint);
     }
     if (kind === 'rain') {
       for (let i = 0; i < 90; i++) {
-        const g = new pixi.Graphics().moveTo(0, 0).lineTo(-2.5, 11).stroke({ width: 1.4, color: 0xbcd4ff, alpha: 0.5 });
+        const g = new pixi.Sprite(pixi.Texture.WHITE);
+        g.anchor.set(0.5, 0);
+        g.width = 1.4; g.height = 11; g.rotation = 0.22; g.tint = 0xbcd4ff; g.alpha = 0.5;
         g.x = Math.random() * (w + 40); g.y = Math.random() * h;
         this.weatherLayer.addChild(g);
         this.rain.push({ g, vy: 13 + Math.random() * 4, vx: -3 });
@@ -793,7 +933,9 @@ export class PixiOverworldComponent implements OnDestroy {
     } else if (kind === 'sandstorm') {
       // Dust streaks race sideways; reuse the rain pool with horizontal motion.
       for (let i = 0; i < 70; i++) {
-        const g = new pixi.Graphics().moveTo(0, 0).lineTo(9, 1.5).stroke({ width: 1.3, color: 0xe8c98a, alpha: 0.45 });
+        const g = new pixi.Sprite(pixi.Texture.WHITE);
+        g.anchor.set(0, 0.5);
+        g.width = 9.1; g.height = 1.3; g.rotation = 0.165; g.tint = 0xe8c98a; g.alpha = 0.45;
         g.x = Math.random() * (w + 40) - 20; g.y = Math.random() * h;
         this.weatherLayer.addChild(g);
         this.rain.push({ g, vy: (Math.random() - 0.5) * 1.2, vx: 8 + Math.random() * 5 });
@@ -810,6 +952,15 @@ export class PixiOverworldComponent implements OnDestroy {
     }
   }
 
+  private weatherCol = 0;
+  /** Re-fit the full-screen weather tint after a resize (particles just keep wrapping). */
+  private layoutWeather(): void {
+    if (!this.app || !this.weatherTint || !this.weather) return;
+    const w = this.app.renderer.width / this.app.renderer.resolution;
+    const h = this.app.renderer.height / this.app.renderer.resolution;
+    this.weatherTint.clear().rect(0, 0, w, h).fill(this.weatherCol);
+  }
+
   private updateWeather(): void {
     if (REDUCED || !this.app) return;
     const w = this.app.renderer.width / this.app.renderer.resolution;
@@ -821,18 +972,18 @@ export class PixiOverworldComponent implements OnDestroy {
         : this.weather === 'sandstorm' ? 0.2
         : this.weather === 'sun' ? 0.1
         : 0;
-      this.weatherTint.alpha += (target - this.weatherTint.alpha) * 0.05;
+      this.weatherTint.alpha += (target - this.weatherTint.alpha) * this.ease(0.05);
     }
     for (const r of this.rain) {
-      r.g.y += r.vy; r.g.x += r.vx;
+      r.g.y += r.vy * this.dt; r.g.x += r.vx * this.dt;
       if (r.g.y > h) { r.g.y = -12; r.g.x = Math.random() * (w + 40); }
       if (r.g.y < -12) { r.g.y = h + 6; r.g.x = Math.random() * (w + 40); }
       if (r.g.x < -20) r.g.x = w + 10;
       else if (r.g.x > w + 20) r.g.x = -14;
     }
     for (const f of this.snow) {
-      f.s.y += f.vy;
-      f.s.x += Math.sin(this.frame / 40 + f.ph) * 0.5;
+      f.s.y += f.vy * this.dt;
+      f.s.x += Math.sin(this.frame / 40 + f.ph) * 0.5 * this.dt;
       if (f.s.y > h + 4) { f.s.y = -4; f.s.x = Math.random() * w; }
       if (f.s.x < -6) f.s.x = w + 6; else if (f.s.x > w + 6) f.s.x = -6;
     }
@@ -853,11 +1004,11 @@ export class PixiOverworldComponent implements OnDestroy {
   private updateParticles(): void {
     for (let i = this.parts.length - 1; i >= 0; i--) {
       const p = this.parts[i];
-      p.vy += p.grav;
-      p.node.x += p.vx; p.node.y += p.vy;
-      p.life--;
+      p.vy += p.grav * this.dt;
+      p.node.x += p.vx * this.dt; p.node.y += p.vy * this.dt;
+      p.life -= this.dt;
       p.node.alpha = Math.max(0, p.life / p.max);
-      if (p.life <= 0) { p.node.destroy(); this.parts.splice(i, 1); }
+      if (p.life <= 0) { this.freeParticle(p.node); this.parts.splice(i, 1); }
     }
   }
 
@@ -868,8 +1019,12 @@ export class PixiOverworldComponent implements OnDestroy {
 
   /* ------------------------------------------------------------- loop */
 
-  private tick(): void {
+  /** Frame-rate independent step: 1 = one 60 fps frame (capped so a tab-switch never teleports things). */
+  private dt = 1;
+  private tick(delta: number): void {
     if (!this.app) return;
+    this.dt = Math.min(delta, 3);
+    this.watchFps(delta);
     const m = this.svc.map();
     const dirty = this.svc.mapDirty();
     if (m && (m.id !== this.builtMapId || dirty !== this.builtDirty)) {
@@ -887,7 +1042,7 @@ export class PixiOverworldComponent implements OnDestroy {
         this.poseChar(this.player, null, this.stepping);
       }
     }
-    this.frame++;
+    this.frame += this.dt;
     this.pollGamepad();
     this.updateMovement();
     this.animateTiles();
@@ -903,7 +1058,7 @@ export class PixiOverworldComponent implements OnDestroy {
   /** Glide NPC sprites toward their runtime tiles (wanderers move; statics sit). */
   private updateNpcs(): void {
     const positions = this.svc.npcPos();
-    const ease = REDUCED ? 1 : 0.18;
+    const ease = REDUCED ? 1 : this.ease(0.18);
     for (const [id, s] of this.npcSprites) {
       const p = positions[id];
       if (!p) continue;
@@ -984,7 +1139,8 @@ export class PixiOverworldComponent implements OnDestroy {
   /** Poll the first connected gamepad: stick/d-pad walk, A interacts, B opens the menu, X runs. */
   private pollGamepad(): void {
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : null;
-    const gp = pads ? Array.from(pads).find((p) => p?.connected) : null;
+    let gp: Gamepad | null = null;
+    if (pads) for (let i = 0; i < pads.length; i++) if (pads[i]?.connected) { gp = pads[i]; break; }
     this.padDirs.clear();
     if (!gp) { this.runningPad = false; return; }
     const ax = gp.axes[0] ?? 0;
@@ -1015,7 +1171,9 @@ export class PixiOverworldComponent implements OnDestroy {
   private animateTiles(): void {
     if (REDUCED) return;
     const t = this.frame;
+    const v = this.view;
     for (const w of this.waterTiles) {
+      if (w.x < v.left || w.x > v.right || w.y < v.top || w.y > v.bottom) continue;
       w.g.x = Math.sin(t / 30 + w.x) * 2;
       w.g.alpha = 0.7 + Math.sin(t / 25 + w.y) * 0.25;
       if (w.glint) {
@@ -1027,6 +1185,7 @@ export class PixiOverworldComponent implements OnDestroy {
       if (w.foam) w.foam.alpha = 0.6 + Math.sin(t / 18 + w.x * 1.3 + w.y * 0.7) * 0.32;
     }
     for (const g of this.grassTiles) {
+      if (g.x < v.left || g.x > v.right || g.y < v.top || g.y > v.bottom) continue;
       const sway = Math.sin(t / 22 + g.c.x * 0.08);
       g.tufts.forEach((tuft, i) => { tuft.skew.x = sway * (i === 0 ? 0.12 : -0.09); });
     }
@@ -1044,6 +1203,9 @@ export class PixiOverworldComponent implements OnDestroy {
     }
     this.world.x = Math.round(w / 2 - (this.visX + 0.5) * TILE_PX * this.zoom + sx);
     this.world.y = Math.round(h / 2 - (this.visY + 0.5) * TILE_PX * this.zoom + sy);
+    this.cullChunks(w, h);
+    const v = this.view;
+    for (const t of this.canopyTops) t.s.visible = t.x >= v.left - 1 && t.x <= v.right && t.y >= v.top - 1 && t.y <= v.bottom;
   }
 
   /* ------------------------------------------------------------- resize */
@@ -1052,15 +1214,19 @@ export class PixiOverworldComponent implements OnDestroy {
     return Math.max(360, Math.min(560, Math.round(width * 0.62)));
   }
 
+  private lastW = 0;
+  private lastH = 0;
   private resize(): void {
     if (!this.app) return;
     const host = this.host().nativeElement;
     const w = host.clientWidth || 640;
     const h = this.targetHeight(w);
+    if (w === this.lastW && h === this.lastH) return;
+    this.lastW = w; this.lastH = h;
     this.app.renderer.resize(w, h);
     // ~13 tiles tall in view
     this.zoom = Math.max(2, Math.round(h / (13 * TILE_PX)));
     this.resizeFx();
-    this.buildWeather(this.svc.map()?.weather);
+    this.layoutWeather();
   }
 }

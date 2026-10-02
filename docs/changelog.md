@@ -4,6 +4,37 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.5.0 — 2026-10-02
+
+⚡ **Rendering performance** (phase G of the polish plan).
+
+### Performance
+
+- **Adventure map (PixiJS)**
+  - Tiles live in 8×8 chunks that are hidden when off-screen; water and tall-grass animation
+    only runs for visible tiles.
+  - Movement, particles, weather and easing use delta-time, so the game runs at the same
+    speed at 30, 60 or 144 fps.
+  - Rain, sand, petals and dust are batched sprites from one shared texture; particles are pooled
+    and capped.
+  - Gradient textures are cached and released, as are the frame textures.
+  - The clock and gamepad are no longer re-allocated every frame.
+  - The renderer uses `devicePixelRatio` (max 2, 1× on low-end devices) with `autoDensity`.
+  - A `ResizeObserver` replaces the window listener; a resize no longer re-rolls the weather.
+  - Sustained slow frames switch off the colour grade, fireflies, petals and glow and drop to 1× resolution.
+- **Sleep when unseen:** the overworld, the Three.js hero and the battle effects stop their loops while
+  the tab is hidden, the canvas is scrolled out of view or the GPU context is lost.
+  The battle effects tick only while particles exist.
+- **WebGL contexts** are handed back explicitly (capability probe, overworld, battle effects, hero), so
+  moving between battle and map never runs into the browser's context limit.
+- **Three.js hero:** fewer particles and no MSAA on low-end devices, `low-power` GPU preference,
+  adaptive pixel ratio, and a time base that no longer jumps after a pause.
+- Animated Pokémon GIFs start as still images for visitors who prefer reduced motion.
+
+### Fixed
+
+- Losing window focus no longer leaves a movement key stuck on the adventure map.
+
 ## v2.4.0 — 2026-10-02
 
 🇩🇪 **Deutsch / English + accessibility pass** (phase F of the polish plan).

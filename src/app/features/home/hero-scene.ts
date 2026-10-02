@@ -1,4 +1,4 @@
-import { AmbientLight, BufferAttribute, BufferGeometry, Clock, Group, IcosahedronGeometry, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, PointLight, Points, PointsMaterial, Scene, WebGLRenderer } from 'three';
+import { AmbientLight, BufferAttribute, BufferGeometry, Group, IcosahedronGeometry, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, PointLight, Points, PointsMaterial, Scene, WebGLRenderer } from 'three';
 
 /**
  * Lazily-imported Three.js hero: a holographic Poke Ball energy core made of an
@@ -7,8 +7,11 @@ import { AmbientLight, BufferAttribute, BufferGeometry, Clock, Group, Icosahedro
  * the renderer, geometries and listeners.
  */
 export function createHeroScene(canvas: HTMLCanvasElement): () => void {
-  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const nav = navigator as Navigator & { deviceMemory?: number };
+  const lean = (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4;
+  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: !lean, powerPreference: 'low-power' });
+  let pixelRatio = Math.min(window.devicePixelRatio, lean ? 1.5 : 2);
+  renderer.setPixelRatio(pixelRatio);
 
   const scene = new Scene();
   const camera = new PerspectiveCamera(50, 1, 0.1, 100);
@@ -38,7 +41,7 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
   group.add(shell);
 
   // Orbiting particle field
-  const count = 700;
+  const count = lean ? 320 : 700;
   const positions = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const r = 2 + Math.random() * 2.5;
@@ -83,10 +86,25 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
   ro.observe(canvas);
   resize();
 
+  // The loop only runs while the hero is on screen, the tab is visible and the GL context is alive.
   let raf = 0;
-  const clock = new Clock();
-  const animate = () => {
-    const t = clock.getElapsedTime();
+  let t = 0;
+  let last = 0;
+  let onScreen = true;
+  let ctxLost = false;
+  let slow = 0;
+  const animate = (now: number) => {
+    const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
+    last = now;
+    t += dt;
+    // sustained slow frames: drop the pixel ratio once instead of stuttering forever
+    slow = dt > 0.028 ? slow + 1 : Math.max(0, slow - 1);
+    if (slow > 90 && pixelRatio > 1) {
+      pixelRatio = 1;
+      renderer.setPixelRatio(1);
+      resize();
+      slow = 0;
+    }
     group.rotation.y = t * 0.4 + pointer.x * 0.6;
     group.rotation.x = Math.sin(t * 0.3) * 0.2 + pointer.y * 0.4;
     shell.rotation.z = t * 0.1;
@@ -96,10 +114,35 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
     renderer.render(scene, camera);
     raf = requestAnimationFrame(animate);
   };
-  animate();
+  const sync = () => {
+    const run = onScreen && !document.hidden && !ctxLost;
+    if (run && !raf) {
+      last = 0;
+      raf = requestAnimationFrame(animate);
+    } else if (!run && raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  };
+  const io = new IntersectionObserver((entries) => {
+    onScreen = entries[entries.length - 1]?.isIntersecting ?? true;
+    sync();
+  });
+  io.observe(canvas);
+  const onLost = (e: Event) => { e.preventDefault(); ctxLost = true; sync(); };
+  const onRestored = () => { ctxLost = false; sync(); };
+  canvas.addEventListener('webglcontextlost', onLost);
+  canvas.addEventListener('webglcontextrestored', onRestored);
+  document.addEventListener('visibilitychange', sync);
+  sync();
 
   return () => {
     cancelAnimationFrame(raf);
+    raf = 0;
+    io.disconnect();
+    canvas.removeEventListener('webglcontextlost', onLost);
+    canvas.removeEventListener('webglcontextrestored', onRestored);
+    document.removeEventListener('visibilitychange', sync);
     ro.disconnect();
     window.removeEventListener('pointermove', onPointer);
     core.geometry.dispose();
@@ -109,5 +152,6 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
     particleGeo.dispose();
     (particles.material as Material).dispose();
     renderer.dispose();
+    renderer.forceContextLoss();
   };
 }

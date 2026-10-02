@@ -67,7 +67,8 @@ export class PokemonDetailComponent {
 
   protected readonly shiny = signal(false);
   protected readonly back = signal(false);
-  protected readonly animated = signal(true);
+  /** Animated GIFs start off for people who asked for reduced motion (the toggle still works). */
+  protected readonly animated = signal(!(typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches));
   protected readonly sparkle = signal(0);
   protected readonly revealed = signal(false);
   protected readonly moveTab = signal<MoveTab>('level-up');

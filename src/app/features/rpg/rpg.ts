@@ -53,7 +53,10 @@ export class RpgComponent {
     try {
       if (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
       const c = document.createElement('canvas');
-      return !(c.getContext('webgl2') || c.getContext('webgl'));
+      const gl = c.getContext('webgl2') ?? c.getContext('webgl');
+      // browsers cap live contexts (~16); hand the probe's one straight back
+      gl?.getExtension('WEBGL_lose_context')?.loseContext();
+      return !gl;
     } catch {
       return true;
     }

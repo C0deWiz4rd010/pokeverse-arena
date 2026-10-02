@@ -234,7 +234,7 @@ export class PokemonQuickviewComponent {
   protected art = computed(() => {
     const d = this.detail();
     if (this.shiny()) return officialArtwork(this.entry().id, true);
-    return d?.sprites.animatedFront ?? d?.sprites.default ?? this.entry().artwork;
+    return (REDUCED ? null : d?.sprites.animatedFront) ?? d?.sprites.default ?? this.entry().artwork;
   });
 
   /** Anchored, viewport-clamped position relative to the source tile. */

@@ -93,8 +93,10 @@ export class BattleFxComponent implements OnDestroy {
     this.ready = false;
     this.particles.length = 0;
     if (this.app) {
+      const gl = (this.app.renderer as unknown as { gl?: WebGLRenderingContext }).gl;
       this.app.destroy({ removeView: true }, { children: true });
       this.app = null;
+      gl?.getExtension('WEBGL_lose_context')?.loseContext();
     }
   }
 
@@ -148,6 +150,10 @@ export class BattleFxComponent implements OnDestroy {
       app.canvas.style.height = '100%';
       this.host.nativeElement.appendChild(app.canvas);
       app.ticker.add((ticker) => this.tick(ticker.deltaTime));
+      // an empty stage needs no frames: wake the ticker only while particles live
+      app.ticker.autoStart = false;
+      app.ticker.stop();
+      app.canvas.addEventListener('webglcontextlost', (e) => e.preventDefault());
       this.pixi = pixi;
       this.app = app;
       this.layer = layer;
@@ -164,7 +170,8 @@ export class BattleFxComponent implements OnDestroy {
   }
 
   private spark(x: number, y: number, color: number, vx?: number, vy?: number, speed = 1): void {
-    if (!this.pixi || !this.layer) return;
+    if (!this.pixi || !this.layer || this.particles.length >= 140) return;
+    this.wake();
     const r = 2 + Math.random() * 3;
     const g = new this.pixi.Graphics().circle(0, 0, r).fill({ color, alpha: 1 });
     g.position.set(x, y);
@@ -184,13 +191,23 @@ export class BattleFxComponent implements OnDestroy {
 
   private ring(x: number, y: number, color: number): void {
     if (!this.pixi || !this.layer) return;
+    this.wake();
     const g = new this.pixi.Graphics().circle(0, 0, 10).stroke({ color, width: 3, alpha: 1 });
     g.position.set(x, y);
     this.layer.addChild(g);
     this.particles.push({ gfx: g, kind: 'ring', vx: 0, vy: 0, life: 1, ttl: 22, grow: 0.12 });
   }
 
+  private wake(): void {
+    if (this.app && !this.app.ticker.started && !document.hidden) this.app.ticker.start();
+  }
+
   private tick(delta: number): void {
+    if (!this.particles.length) {
+      this.app?.ticker.stop();
+      return;
+    }
+    delta = Math.min(delta, 3);
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.life -= delta / p.ttl;
