@@ -33,10 +33,12 @@
   background: color-mix(in srgb, var(--bg) 65%, #000);
   transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 
-  &:hover {
+  @include hover-capable {
+    &:hover {
     transform: translateY(-3px);
     border-color: var(--accent);
     background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+  }
   }
   &:active { transform: translateY(-1px); }
 
@@ -90,7 +92,9 @@
   .pk-name { font-size: 0.82rem; font-weight: 600; }
   .pk-types { display: flex; gap: 0.25rem; }
 
-  &:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+  @include hover-capable {
+    &:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+  }
   &.on { border-color: var(--accent); transform: translateY(-2px); }
 }
 
@@ -115,7 +119,9 @@
     cursor: pointer;
     transition: color 0.15s ease, border-color 0.15s ease;
 
-    &:hover { color: var(--text); border-color: var(--accent); }
+    @include hover-capable {
+      &:hover { color: var(--text); border-color: var(--accent); }
+    }
   }
 }
 
@@ -251,7 +257,9 @@
     background: color-mix(in srgb, var(--bg) 55%, #000);
     color: var(--text);
     transition: transform 0.15s ease, border-color 0.15s ease;
-    &:hover { transform: translateY(-2px); border-color: var(--accent-2); }
+    @include hover-capable {
+      &:hover { transform: translateY(-2px); border-color: var(--accent-2); }
+    }
     img { width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--bg) 60%, #000); }
     .pk-name { max-width: 76px; font-size: 0.66rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   }
@@ -265,7 +273,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pickem .pk-opt:hover { transform: none; }
+  @include hover-capable {
+    .pickem .pk-opt:hover { transform: none; }
+  }
 }
 
 .finale {
@@ -519,7 +529,9 @@
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
 }
-.format-card:hover { transform: translateY(-2px); }
+@include hover-capable {
+  .format-card:hover { transform: translateY(-2px); }
+}
 .format-card.on {
   border-color: color-mix(in srgb, var(--accent) 65%, transparent);
   box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 22%, transparent);
@@ -603,7 +615,9 @@
 
 /* ---- lobby card entrances ---- */
 .format-card, .mode-card { animation: t-rise 0.4s ease both; }
-.mode-card:hover, .format-card:hover { transform: translateY(-3px); }
+@include hover-capable {
+  .mode-card:hover, .format-card:hover { transform: translateY(-3px); }
+}
 
 /* ---- bracket reveal + states ---- */
 .bmatch { animation: t-pop 0.35s ease both; }

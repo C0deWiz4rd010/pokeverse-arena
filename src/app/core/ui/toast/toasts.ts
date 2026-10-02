@@ -8,13 +8,17 @@ import { IconComponent } from '../icon/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IconComponent],
   template: `
-    <div class="stack" aria-live="polite">
+    <div class="stack" role="status" aria-live="polite">
       @for (t of svc.toasts(); track t.id) {
         <button
           type="button"
           class="toast glass"
           [class.achievement]="t.kind === 'achievement'"
           (click)="svc.dismiss(t.id)"
+          (mouseenter)="svc.pause(t.id)"
+          (mouseleave)="svc.resume(t.id)"
+          (focus)="svc.pause(t.id)"
+          (blur)="svc.resume(t.id)"
           title="Dismiss"
         >
           <span class="t-icon" aria-hidden="true"><pv-icon [name]="t.icon" /></span>

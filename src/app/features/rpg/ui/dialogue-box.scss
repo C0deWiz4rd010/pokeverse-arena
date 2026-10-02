@@ -1,3 +1,5 @@
+@use '../../../../styles/responsive' as *;
+
 .dbox {
   position: absolute;
   left: 0.6rem;
@@ -54,7 +56,9 @@
   padding: 0.5rem 0.8rem; border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border); background: var(--surface); color: var(--text);
 }
-.choices button:hover { border-color: var(--accent); }
+@include hover-capable {
+  .choices button:hover { border-color: var(--accent); }
+}
 
 @keyframes dcaret { 50% { opacity: 0; } }
 @keyframes dnext { 50% { transform: translateY(3px); } }

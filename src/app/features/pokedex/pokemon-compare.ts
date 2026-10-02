@@ -1,3 +1,4 @@
+import { ModalDirective } from '../../core/ui/modal/modal';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -34,10 +35,10 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
 @Component({
   selector: 'pv-pokemon-compare',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, TypeBadgeComponent, IconComponent],
+  imports: [RouterLink, TypeBadgeComponent, IconComponent, ModalDirective],
   template: `
-    <div class="backdrop" (click)="close.emit()"></div>
-    <div class="panel" role="dialog" aria-label="Compare Pokémon">
+    <div class="backdrop" role="presentation" (click)="close.emit()"></div>
+    <div class="panel" role="dialog" aria-label="Compare Pokémon" pvModal (pvModalClose)="close.emit()">
       <header class="head">
         <h2>Compare</h2>
         <button class="x" type="button" (click)="close.emit()" aria-label="Close"><pv-icon name="x" /></button>

@@ -67,7 +67,9 @@
   color: var(--text); background: var(--glass); border: 1px solid var(--glass-border);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
-.chip:hover { border-color: var(--t1); }
+@include hover-capable {
+  .chip:hover { border-color: var(--t1); }
+}
 .chip.on { color: #0b0a1f; background: linear-gradient(135deg, var(--t1), var(--t2)); border-color: transparent; }
 .jump { display: inline-flex; align-items: baseline; gap: 0.3rem; font-size: 0.78rem; color: var(--text-faint); }
 .jump input {
@@ -89,7 +91,9 @@
   color: var(--text); background: var(--glass); border: 1px solid var(--glass-border);
   transition: border-color 0.15s ease, transform 0.12s ease;
 }
-.nav:hover { border-color: var(--t1); transform: scale(1.08); }
+@include hover-capable {
+  .nav:hover { border-color: var(--t1); transform: scale(1.08); }
+}
 
 .art-wrap {
   position: relative;
@@ -164,7 +168,9 @@
   border: 1px solid transparent; transition: border-color 0.15s ease, background 0.15s ease;
 }
 .evo-mon img { width: 2.6rem; height: 2.6rem; image-rendering: pixelated; }
-.evo-mon:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--glass-border); }
+@include hover-capable {
+  .evo-mon:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--glass-border); }
+}
 .evo-mon.cur { border-color: color-mix(in srgb, var(--t1) 75%, transparent); background: color-mix(in srgb, var(--t1) 14%, transparent); }
 .evo-arrow { color: var(--text-faint); font-weight: 800; }
 

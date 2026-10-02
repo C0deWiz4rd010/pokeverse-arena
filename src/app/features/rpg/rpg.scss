@@ -77,7 +77,9 @@
   .btn { padding: 0.45rem 0.8rem; min-height: 2.3rem; font-size: 0.85rem; }
   .btn.danger { color: #ff8d98; border-color: color-mix(in srgb, #ff4d5e 40%, var(--glass-border)); }
   .btn.nuz { color: var(--text-dim); border-color: color-mix(in srgb, #a78bfa 35%, var(--glass-border)); }
-  .btn.nuz:hover { color: #d7ccff; border-color: #a78bfa; }
+  @include hover-capable {
+    .btn.nuz:hover { color: #d7ccff; border-color: #a78bfa; }
+  }
   .sc-nuz { font-size: 0.8rem; }
   .sc-fallen { color: #ff8d98; }
 }
@@ -89,7 +91,9 @@
   border: 1px solid var(--glass-border); background: var(--surface); color: var(--text);
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
-.btn:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--accent); }
+@include hover-capable {
+  .btn:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--accent); }
+}
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .btn.primary { border: none; color: #0b0a1f; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
 

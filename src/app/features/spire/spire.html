@@ -89,7 +89,7 @@
         @for (p of svc.partyView(); track p.mon.id; let i = $index) {
           <div class="party-mon" [class.fainted]="p.hpPct <= 0">
             <img decoding="async" [src]="p.mon.sprite" [alt]="p.mon.name" [style.filter]="p.mon.hue ? 'hue-rotate(' + p.mon.hue + 'deg)' : null" [title]="titleCase(p.mon.name)" loading="lazy" />
-            <span class="hp"><span class="fill" [class.low]="p.hpPct <= 30" [style.width.%]="p.hpPct"></span></span>
+            <span class="hp" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="p.hpPct"><span class="fill" [class.low]="p.hpPct <= 30" [style.width.%]="p.hpPct"></span></span>
           </div>
         }
       </div>

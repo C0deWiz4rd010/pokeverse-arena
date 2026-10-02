@@ -1,3 +1,4 @@
+import { ModalDirective } from '../../core/ui/modal/modal';
 import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { CryService } from '../../core/audio/cry.service';
@@ -9,10 +10,10 @@ import type { PokedexEntry } from '../../core/models/pokemon.model';
 @Component({
   selector: 'pv-whos-that',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent],
+  imports: [IconComponent, ModalDirective],
   template: `
-    <div class="backdrop" (click)="close.emit()"></div>
-    <div class="panel" role="dialog" aria-label="Who's That Pokémon?">
+    <div class="backdrop" role="presentation" (click)="close.emit()"></div>
+    <div class="panel" role="dialog" aria-label="Who's That Pokémon?" pvModal (pvModalClose)="close.emit()">
       <header class="head">
         <h2>Who’s That Pokémon?</h2>
         <button class="x" type="button" (click)="close.emit()" aria-label="Close"><pv-icon name="x" /></button>

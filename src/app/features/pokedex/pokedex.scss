@@ -71,7 +71,9 @@
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-dim);
 }
-.btn.toggle:hover { color: var(--text); }
+@include hover-capable {
+  .btn.toggle:hover { color: var(--text); }
+}
 .btn.toggle.on {
   color: #0b0a1f;
   background: linear-gradient(135deg, var(--accent-3), #ffe39a);
@@ -120,7 +122,9 @@
   border: 1px solid var(--glass-border);
   transition: all 0.15s ease;
 }
-.type-chip:hover:not(:disabled) { color: var(--text); border-color: var(--c); }
+@include hover-capable {
+  .type-chip:hover:not(:disabled) { color: var(--text); border-color: var(--c); }
+}
 .type-chip:disabled { opacity: 0.4; cursor: not-allowed; }
 .type-chip.active {
   color: #fff;
@@ -138,14 +142,20 @@
   background: rgba(0, 0, 0, 0.25);
   cursor: pointer;
 }
-.seg span {
+.seg button {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
   padding: 0.22rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.74rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--text-dim);
+  @include touch { min-height: var(--tap); padding-inline: 0.9rem; }
 }
-.seg span.on { color: #0b0a1f; background: var(--accent); }
+.seg button.on { color: #0b0a1f; background: var(--accent); }
 
 .hint {
   display: inline-flex;
@@ -268,7 +278,9 @@
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease;
 }
-.pip:hover { color: var(--text); border-color: var(--accent); }
+@include hover-capable {
+  .pip:hover { color: var(--text); border-color: var(--accent); }
+}
 .pip.on { color: #0b0a1f; background: var(--accent); border-color: var(--accent); }
 .pip-g { font-size: 0.66rem; font-weight: 800; text-align: center; }
 .pip-bar { height: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
@@ -297,7 +309,9 @@
   align-items: center;
   gap: 0.35rem;
 }
-.btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+@include hover-capable {
+  .btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+}
 .btn.ghost:disabled { opacity: 0.5; cursor: not-allowed; }
 .game-btn { font-size: 0.82rem; padding: 0.35rem 0.7rem; }
 
@@ -348,7 +362,9 @@
   opacity: 0;
   transition: opacity 0.15s ease;
 }
-.tray-mon:hover .rm-x { opacity: 1; }
+@include hover-capable {
+  .tray-mon:hover .rm-x { opacity: 1; }
+}
 .tray-actions { display: flex; gap: 0.55rem; flex-wrap: wrap; }
 .tray-actions .btn { padding: 0.45rem 0.95rem; }
 
@@ -374,7 +390,9 @@
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
   animation: tray-up-fab 0.2s ease;
 }
-.top-fab:hover { border-color: var(--accent); color: var(--accent); }
+@include hover-capable {
+  .top-fab:hover { border-color: var(--accent); color: var(--accent); }
+}
 /* Clear the compare tray when it is docked at the bottom. */
 .top-fab.raised { bottom: calc(4.9rem + env(safe-area-inset-bottom, 0px)); }
 @keyframes tray-up-fab { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; } }

@@ -270,7 +270,9 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   border: 1px solid var(--glass-border); background: var(--surface); color: var(--text);
   transition: transform 0.12s ease, border-color 0.12s ease;
 }
-.cmd:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--accent); }
+@include hover-capable {
+  .cmd:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--accent); }
+}
 .cmd:disabled { opacity: 0.45; cursor: not-allowed; }
 .cmd.primary { border: none; color: #0b0a1f; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
 .cmd.back { grid-column: 1 / -1; }
@@ -302,7 +304,9 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   padding: 0.55rem 0.8rem; border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border); background: var(--surface); color: var(--text);
 }
-.bag-row:hover:not(:disabled) { border-color: var(--accent); }
+@include hover-capable {
+  .bag-row:hover:not(:disabled) { border-color: var(--accent); }
+}
 .bag-row:disabled { opacity: 0.6; cursor: not-allowed; }
 .bi-name { font-weight: 700; }
 .bi-count { color: var(--text-dim); font-variant-numeric: tabular-nums; }
@@ -350,5 +354,7 @@ pv-battle-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   .dmg-float { animation: rb-fade 0.9s ease forwards; }
   @keyframes rb-fade { 0% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%); } }
   .hpbar .fill { transition: none; }
-  .cmd:hover:not(:disabled) { transform: none; }
+  @include hover-capable {
+    .cmd:hover:not(:disabled) { transform: none; }
+  }
 }

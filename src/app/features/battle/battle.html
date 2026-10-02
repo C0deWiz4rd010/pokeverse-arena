@@ -109,7 +109,7 @@
                       }
                     </div>
                   }
-                  <div class="hpbar">
+                  <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="oppHpPct()">
                     <span class="fill" [class.low]="oppHpPct() <= 25" [class.mid]="oppHpPct() > 25 && oppHpPct() <= 50" [style.width.%]="oppHpPct()"></span>
                     <span class="kp">{{ oppHp() }} / {{ oppMaxHp() }} <small>KP</small></span>
                   </div>
@@ -146,7 +146,7 @@
                       }
                     </div>
                   }
-                  <div class="hpbar">
+                  <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="playerHpPct()">
                     <span class="fill" [class.low]="playerHpPct() <= 25" [class.mid]="playerHpPct() > 25 && playerHpPct() <= 50" [style.width.%]="playerHpPct()"></span>
                     <span class="kp">{{ playerHp() }} / {{ playerMaxHp() }} <small>KP</small></span>
                   </div>

@@ -128,15 +128,21 @@
   text-align: left;
   cursor: pointer;
 
-  &:hover {
+  @include hover-capable {
+    &:hover {
     transform: translateY(-3px);
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
   }
+  }
 }
 .daily-card { border-color: color-mix(in srgb, var(--accent-3) 35%, var(--glass-border)); }
-.daily-card:hover { border-color: color-mix(in srgb, var(--accent-3) 70%, transparent); }
+@include hover-capable {
+  .daily-card:hover { border-color: color-mix(in srgb, var(--accent-3) 70%, transparent); }
+}
 .lab-card { border-color: color-mix(in srgb, var(--accent-2) 32%, var(--glass-border)); }
-.lab-card:hover { border-color: color-mix(in srgb, var(--accent-2) 65%, transparent); }
+@include hover-capable {
+  .lab-card:hover { border-color: color-mix(in srgb, var(--accent-2) 65%, transparent); }
+}
 
 .tc-flair {
   flex: none;
@@ -171,7 +177,9 @@
   em { font-size: 0.65rem; font-weight: 800; font-style: normal; color: var(--text-faint); }
 }
 .tc-go { flex: none; font-weight: 800; color: var(--text-faint); transition: transform 0.15s ease, color 0.15s ease; }
-.today-card:hover .tc-go { color: var(--accent); transform: translateX(3px); }
+@include hover-capable {
+  .today-card:hover .tc-go { color: var(--accent); transform: translateX(3px); }
+}
 
 /* Narrow cards in the swipe row: give the copy room to breathe. */
 @include below(lg) {
@@ -182,7 +190,9 @@
 
 /* Daily silhouette: blacked-out sprite until the first tap reveals it. */
 .who-card { border-color: color-mix(in srgb, var(--accent) 30%, var(--glass-border)); }
-.who-card:hover { border-color: color-mix(in srgb, var(--accent) 62%, transparent); }
+@include hover-capable {
+  .who-card:hover { border-color: color-mix(in srgb, var(--accent) 62%, transparent); }
+}
 .who-card .tc-flair { background: linear-gradient(135deg, #5a5366, #2a2440); color: var(--accent); }
 .who-card .tc-sprites img {
   width: 52px;
@@ -217,9 +227,11 @@
   transition: transform 0.18s ease, border-color 0.18s ease;
 }
 @include up(md) { .feature { padding: 1.3rem; } }
-.feature:hover {
+@include hover-capable {
+  .feature:hover {
   transform: translateY(-4px);
   border-color: var(--accent);
+}
 }
 .f-icon { font-size: 1.35rem; }
 .feature h3 { margin: 0.35rem 0 0; font-size: 0.9rem; }
@@ -254,10 +266,12 @@
   animation: rise 0.5s ease 0.12s both;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.next-step:hover {
+@include hover-capable {
+  .next-step:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent-2) 60%, transparent);
   box-shadow: 0 10px 26px -14px color-mix(in srgb, var(--accent-2) 70%, transparent);
+}
 }
 .ns-icon {
   display: grid; place-items: center; width: 2.2rem; height: 2.2rem; flex: none;
@@ -312,16 +326,20 @@
   transition: transform 0.12s ease, border-color 0.18s ease, box-shadow 0.2s ease;
   animation: card-in 0.45s ease both;
 }
-.feature:hover {
+@include hover-capable {
+  .feature:hover {
   transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-5px);
   border-color: color-mix(in srgb, var(--accent) 65%, transparent);
   box-shadow: 0 16px 36px color-mix(in srgb, var(--accent) 24%, transparent);
+}
 }
 .feature .sheen {
   position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s ease;
   background: radial-gradient(220px 220px at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%);
 }
-.feature:hover .sheen { opacity: 0.85; }
+@include hover-capable {
+  .feature:hover .sheen { opacity: 0.85; }
+}
 .feature .f-icon { color: var(--accent); }
 .feature .go { color: var(--accent); }
 
@@ -332,6 +350,10 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-copy .gradient-text, .eyebrow, .hero-copy h1, .lead, .cta, .dash, .feature, .next-step { animation: none; }
   .feature { transform: none; }
-  .feature:hover { transform: translateY(-4px); }
-  .next-step:hover { transform: none; }
+  @include hover-capable {
+    .feature:hover { transform: translateY(-4px); }
+  }
+  @include hover-capable {
+    .next-step:hover { transform: none; }
+  }
 }

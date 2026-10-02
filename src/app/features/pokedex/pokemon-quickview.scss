@@ -1,3 +1,5 @@
+@use '../../../styles/responsive' as *;
+
 :host {
   --t1: var(--accent);
   --t2: var(--accent-2);
@@ -48,7 +50,9 @@
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 .evo-mon img { width: 2.1rem; height: 2.1rem; image-rendering: pixelated; }
-.evo-mon:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--glass-border); }
+@include hover-capable {
+  .evo-mon:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--glass-border); }
+}
 .evo-mon.cur { border-color: color-mix(in srgb, var(--t1) 75%, transparent); background: color-mix(in srgb, var(--t1) 14%, transparent); }
 .evo-arrow { color: var(--text-faint); font-weight: 800; }
 
@@ -108,7 +112,9 @@
   color: var(--text-dim);
   cursor: pointer;
 }
-.x:hover { color: var(--text); }
+@include hover-capable {
+  .x:hover { color: var(--text); }
+}
 
 .qv-head { display: flex; gap: 0.7rem; align-items: center; }
 .qv-art {

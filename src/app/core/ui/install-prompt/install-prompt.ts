@@ -30,7 +30,7 @@ interface BeforeInstallPromptEvent extends Event {
   },
   template: `
     @if (visible()) {
-      <div class="install glass" role="dialog" aria-label="Install app">
+      <div class="install glass" role="region" aria-label="Install app">
         <span class="ic"><pv-icon name="download" /></span>
         <span class="msg">
           <strong>Install PokéVerse Arena</strong>

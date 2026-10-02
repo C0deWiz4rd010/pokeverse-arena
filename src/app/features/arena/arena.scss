@@ -141,10 +141,12 @@
     background: var(--type);
   }
 
-  &:hover {
+  @include hover-capable {
+    &:hover {
     transform: translateY(-3px);
     border-color: color-mix(in srgb, var(--type) 55%, var(--glass-border));
     box-shadow: 0 10px 26px color-mix(in srgb, var(--type) 22%, transparent);
+  }
   }
 
   &.owned {
@@ -245,10 +247,12 @@
   border: 1px solid color-mix(in srgb, var(--type) 40%, var(--glass-border));
   transition: transform 0.14s ease, border-color 0.14s ease;
 }
-.scout-mon:hover {
+@include hover-capable {
+  .scout-mon:hover {
   transform: translateY(-2px) scale(1.08);
   border-color: color-mix(in srgb, var(--type) 70%, transparent);
   z-index: 2;
+}
 }
 .scout-mon img { width: 30px; height: 30px; object-fit: contain; }
 .scout-mon.ace {
@@ -316,9 +320,11 @@
   border-radius: var(--radius-sm);
   transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.15s ease;
 
-  &:hover {
+  @include hover-capable {
+    &:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 16px color-mix(in srgb, var(--type, var(--accent)) 30%, transparent);
+  }
   }
   &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
@@ -338,7 +344,9 @@
   text-decoration: underline;
   cursor: pointer;
 
-  &:hover { color: var(--text); }
+  @include hover-capable {
+    &:hover { color: var(--text); }
+  }
 }
 
 .reset-row {
@@ -372,7 +380,9 @@
   border-radius: var(--radius-sm);
   margin-bottom: 0.6rem;
 
-  &:hover { color: var(--text); border-color: var(--accent); }
+  @include hover-capable {
+    &:hover { color: var(--text); border-color: var(--accent); }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -383,7 +393,9 @@
   .progress-bar span {
     transition: none;
   }
-  .scout-mon:hover { transform: none; }
+  @include hover-capable {
+    .scout-mon:hover { transform: none; }
+  }
 }
 
 /* ============================ Arena v2 — gym experience ==================== */

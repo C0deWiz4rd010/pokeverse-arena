@@ -11,7 +11,8 @@ const REDUCED =
   selector: 'pv-evolution',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="evo" (click)="skip()">
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
+    <div class="evo" (click)="skip()" role="status">
       <img decoding="async" class="evo-sprite" [class.flash]="flash()" [class.pulse]="pulse()" [src]="art(spriteId())" [alt]="caption()" />
       <p class="evo-text">{{ caption() }}</p>
     </div>

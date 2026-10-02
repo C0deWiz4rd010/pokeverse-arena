@@ -53,7 +53,9 @@
   cursor: pointer;
   transition: transform 0.12s, border-color 0.2s, color 0.2s, background 0.2s;
 }
-.t-btn:hover { transform: translateY(-1px); color: var(--text); }
+@include hover-capable {
+  .t-btn:hover { transform: translateY(-1px); color: var(--text); }
+}
 .t-btn.on {
   color: #fff;
   border-color: var(--c);
@@ -256,7 +258,9 @@ tr.hi .row-head { background: color-mix(in srgb, var(--c) 35%, #14122a); color: 
   margin-left: auto; padding: 0.2rem 0.6rem; border-radius: 999px;
   border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-dim);
 }
-.clear-pins:hover { color: var(--text); }
+@include hover-capable {
+  .clear-pins:hover { color: var(--text); }
+}
 .readout {
   display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
   margin: 0.6rem 0 0.2rem; padding: 0.5rem 0.8rem; border-radius: var(--radius-sm);
@@ -286,7 +290,9 @@ tr.hi .row-head { background: color-mix(in srgb, var(--c) 35%, #14122a); color: 
   border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); cursor: pointer;
 }
 .member .rm { color: var(--text-faint); font-size: 0.7rem; margin-left: 0.2rem; }
-.member:hover .rm { color: #ff8a8a; }
+@include hover-capable {
+  .member:hover .rm { color: #ff8a8a; }
+}
 .builder { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
 .build-chosen { display: inline-flex; gap: 0.3rem; align-items: center; min-height: 1.6rem; }
 .btn.add {

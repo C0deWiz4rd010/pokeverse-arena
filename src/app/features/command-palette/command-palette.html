@@ -1,11 +1,12 @@
 @if (open()) {
-  <div class="cmd-backdrop" (click)="close()">
+  <div class="cmd-backdrop" role="presentation" (click)="onBackdrop($event)">
     <div
       class="cmd-panel glass"
       role="dialog"
       aria-modal="true"
       aria-label="Command palette"
-      (click)="$event.stopPropagation()"
+      pvModal
+      (pvModalClose)="close()"
     >
       <label class="cmd-search">
         <pv-icon name="search" />
@@ -34,6 +35,7 @@
               type="button"
               class="cmd-item"
               role="option"
+              tabindex="-1"
               [id]="'cmd-opt-' + indexOf(item)"
               [class.active]="indexOf(item) === selected()"
               [attr.aria-selected]="indexOf(item) === selected()"

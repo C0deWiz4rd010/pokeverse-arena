@@ -1,3 +1,4 @@
+import { ModalDirective } from '../../core/ui/modal/modal';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -72,7 +73,7 @@ const MAX_POKEMON_HITS = 8;
 @Component({
   selector: 'pv-command-palette',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent],
+  imports: [IconComponent, ModalDirective],
   templateUrl: './command-palette.html',
   styleUrl: './command-palette.scss',
 })
@@ -267,6 +268,11 @@ export class CommandPaletteComponent {
   protected hover(item: PaletteItem): void {
     const i = this.indexOf(item);
     if (i >= 0) this.selected.set(i);
+  }
+
+  protected onBackdrop(event: MouseEvent): void {
+    // Only a click on the dimmed backdrop itself dismisses — not one inside the panel.
+    if (event.target === event.currentTarget) this.close();
   }
 
   protected close(): void {

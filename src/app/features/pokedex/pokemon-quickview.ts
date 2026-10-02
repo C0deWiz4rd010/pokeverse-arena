@@ -38,7 +38,7 @@ const REDUCED =
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, TypeBadgeComponent, IconComponent],
   template: `
-    <div class="backdrop" (click)="close.emit()"></div>
+    <div class="backdrop" role="presentation" (click)="close.emit()"></div>
     <div
       class="panel"
       [style.--t1]="t1()"
@@ -49,6 +49,7 @@ const REDUCED =
       (pointermove)="onTilt($event)"
       (pointerleave)="resetTilt()"
       role="dialog"
+      [attr.aria-label]="name() + ' quick view'"
     >
       <button class="x" type="button" (click)="close.emit()" aria-label="Close"><pv-icon name="x" /></button>
 

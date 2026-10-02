@@ -80,7 +80,9 @@
 .setup-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 .setup-actions .btn { flex: 1; }
 .btn.ghost { background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border); color: var(--text); }
-.btn.ghost:hover { background: rgba(255, 255, 255, 0.12); }
+@include hover-capable {
+  .btn.ghost:hover { background: rgba(255, 255, 255, 0.12); }
+}
 .hint { font-size: 0.78rem; color: var(--text-dim); }
 .err {
   color: #fca5a5;

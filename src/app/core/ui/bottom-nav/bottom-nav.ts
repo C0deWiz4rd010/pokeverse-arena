@@ -1,3 +1,4 @@
+import { ModalDirective } from '../modal/modal';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -24,7 +25,7 @@ export interface BottomNavItem {
 @Component({
   selector: 'pv-bottom-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, IconComponent],
+  imports: [RouterLink, RouterLinkActive, IconComponent, ModalDirective],
   template: `
     <nav class="bnav glass" aria-label="Primary">
       <a class="bslot" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="tap()">
@@ -49,8 +50,8 @@ export interface BottomNavItem {
     </nav>
 
     @if (sheet()) {
-      <div class="sheet-scrim" (click)="closeSheet()"></div>
-      <div class="sheet glass" role="dialog" aria-label="All sections">
+      <div class="sheet-scrim" role="presentation" (click)="closeSheet()"></div>
+      <div class="sheet glass" role="dialog" aria-label="All sections" pvModal (pvModalClose)="closeSheet()">
         <div class="sheet-grip" aria-hidden="true"></div>
         <div class="sheet-grid">
           @for (item of items(); track item.path) {

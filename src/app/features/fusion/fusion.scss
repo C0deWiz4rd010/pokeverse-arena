@@ -23,15 +23,19 @@
     var(--glass);
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
 
-  &:hover {
+  @include hover-capable {
+    &:hover {
     transform: translateY(-2px);
     border-color: color-mix(in srgb, var(--accent-3) 70%, transparent);
     box-shadow: 0 10px 26px color-mix(in srgb, var(--accent-3) 18%, transparent);
   }
+  }
   &.active {
     border-color: color-mix(in srgb, var(--success) 55%, transparent);
     cursor: default;
-    &:hover { transform: none; box-shadow: var(--shadow); }
+    @include hover-capable {
+      &:hover { transform: none; box-shadow: var(--shadow); }
+    }
   }
 }
 .sp-flair { font-size: 1.4rem; }
@@ -144,7 +148,9 @@
     border-radius: 8px;
     cursor: pointer;
 
-    &:hover { background: rgba(255, 255, 255, 0.08); }
+    @include hover-capable {
+      &:hover { background: rgba(255, 255, 255, 0.08); }
+    }
     img { width: 34px; height: 34px; image-rendering: pixelated; }
     small { margin-left: auto; color: var(--text-faint); }
   }
@@ -164,7 +170,9 @@
   }
 }
 .swap ::ng-deep svg { transition: transform 0.35s ease; }
-.swap:hover ::ng-deep svg { transform: rotate(180deg); }
+@include hover-capable {
+  .swap:hover ::ng-deep svg { transform: rotate(180deg); }
+}
 
 .error {
   padding: 0.7rem 1rem;
@@ -382,10 +390,12 @@
   cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
 
-  &:hover {
+  @include hover-capable {
+    &:hover {
     transform: translateY(-3px);
     border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border));
     box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+  }
   }
   img { width: 72px; height: 72px; image-rendering: pixelated; }
 }
@@ -411,7 +421,9 @@
 }
 .dex-card:hover .dex-remove,
 .dex-card:focus-within .dex-remove { opacity: 1; }
-.dex-remove:hover { color: var(--danger); background: rgba(255, 93, 115, 0.15); }
+@include hover-capable {
+  .dex-remove:hover { color: var(--danger); background: rgba(255, 93, 115, 0.15); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .halo { animation: none; }

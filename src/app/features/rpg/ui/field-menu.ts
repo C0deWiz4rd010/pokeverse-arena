@@ -1,3 +1,4 @@
+import { ModalDirective } from '../../../core/ui/modal/modal';
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, inject, signal, viewChild, afterNextRender } from '@angular/core';
 import { RpgService } from '../rpg.service';
 import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge';
@@ -16,7 +17,7 @@ type Tab = 'party' | 'bag' | 'quests' | 'dex' | 'box';
 @Component({
   selector: 'pv-field-menu',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [StatusBadgeComponent],
+  imports: [StatusBadgeComponent, ModalDirective],
   templateUrl: './field-menu.html',
   styleUrl: './field-menu.scss',
 })

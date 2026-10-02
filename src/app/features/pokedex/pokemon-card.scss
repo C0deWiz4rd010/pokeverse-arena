@@ -1,3 +1,5 @@
+@use '../../../styles/responsive' as *;
+
 .card {
   --t1: var(--accent);
   --t2: var(--accent-2);
@@ -106,7 +108,9 @@
   font-size: 0.8rem;
   transition: transform 0.15s ease, color 0.15s ease;
 }
-.fav-btn:hover { color: #ff6b9d; transform: scale(1.15); }
+@include hover-capable {
+  .fav-btn:hover { color: #ff6b9d; transform: scale(1.15); }
+}
 .fav-btn.on { color: #ff6b9d; }
 .fav-btn.on ::ng-deep svg { fill: #ff6b9d; }
 .fav-btn.on { animation: fav-pop 0.3s ease; }
@@ -217,7 +221,9 @@
 }
 .card:hover .info,
 .card:focus-within .info { opacity: 1; transform: none; }
-.info:hover { color: var(--t1); border-color: color-mix(in srgb, var(--t1) 60%, transparent); }
+@include hover-capable {
+  .info:hover { color: var(--t1); border-color: color-mix(in srgb, var(--t1) 60%, transparent); }
+}
 
 @keyframes shimmer { to { background-position: -200% 0; } }
 @keyframes card-in { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
@@ -256,7 +262,9 @@
 .card.list .name { order: 2; flex: 1; font-size: 1rem; }
 .card.list .types { order: 2; }
 .card.list .info { bottom: 50%; transform: translateY(50%); }
-.card.list:hover .info { transform: translateY(50%); }
+@include hover-capable {
+  .card.list:hover .info { transform: translateY(50%); }
+}
 
 /* ---- keyboard focus ring ---- */
 .card:focus-visible {
@@ -288,7 +296,9 @@
 .card:hover .compare-btn,
 .card:focus-within .compare-btn,
 .compare-btn.on { opacity: 1; transform: none; }
-.compare-btn:hover { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 60%, transparent); }
+@include hover-capable {
+  .compare-btn:hover { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 60%, transparent); }
+}
 .compare-btn.on { color: #0b0a1f; background: var(--accent-2); border-color: var(--accent-2); }
 .card.list .compare-btn { bottom: 0.5rem; left: auto; right: 2.6rem; }
 

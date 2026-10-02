@@ -22,7 +22,8 @@ const FACE_KEYS = new Set(['boy', 'girl', 'prof', 'nurse', 'clerk', 'leader', 'o
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (svc.dialogue(); as d) {
-      <div class="dbox" [class.with-face]="!!faceUrl()" (click)="onAdvance()">
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
+      <div class="dbox" [class.with-face]="!!faceUrl()" (click)="onAdvance()" role="log" aria-live="polite">  <!-- keyboard advance (Z/Enter/Space) is handled globally by the game loop -->
         @if (faceUrl(); as f) {
           <span class="face" aria-hidden="true"><img decoding="async" [src]="f" alt="" /></span>
         }
@@ -30,7 +31,8 @@ const FACE_KEYS = new Set(['boy', 'girl', 'prof', 'nurse', 'clerk', 'leader', 'o
         <p class="text">{{ shown() }}<span class="caret" [class.show]="!revealed()">▌</span></p>
 
         @if (d.choices && revealed()) {
-          <div class="choices" (click)="$event.stopPropagation()">
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
+          <div class="choices" role="group" (click)="$event.stopPropagation()">
             @for (c of d.choices; track $index; let i = $index) {
               <button type="button" (click)="choose(i)">{{ c }}</button>
             }

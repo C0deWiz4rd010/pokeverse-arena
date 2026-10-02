@@ -22,7 +22,7 @@
               @if (fStatus() !== 'none') { <pv-status-badge [status]="fStatus()" /> }
             </div>
             <div class="types">@for (t of foe.types; track t) { <pv-type-badge [type]="t" /> }</div>
-            <div class="hpbar"><span class="fill" [class.mid]="fHpPct() <= 55 && fHpPct() > 25" [class.low]="fHpPct() <= 25" [style.width.%]="fHpPct()"></span></div>
+            <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="fHpPct()"><span class="fill" [class.mid]="fHpPct() <= 55 && fHpPct() > 25" [class.low]="fHpPct() <= 25" [style.width.%]="fHpPct()"></span></div>
           </div>
           <img decoding="async" class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foeAnim()" (error)="$any($event.target).src = foe.sprite" [alt]="foe.name" />
         }
@@ -44,7 +44,7 @@
               <span class="lv">Lv{{ me.level }}</span>
               @if (pStatus() !== 'none') { <pv-status-badge [status]="pStatus()" /> }
             </div>
-            <div class="hpbar"><span class="fill" [class.mid]="pHpPct() <= 55 && pHpPct() > 25" [class.low]="pHpPct() <= 25" [style.width.%]="pHpPct()"></span><span class="kp">{{ pHp() }} / {{ pMax() }}</span></div>
+            <div class="hpbar" role="progressbar" aria-label="HP" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="pHpPct()"><span class="fill" [class.mid]="pHpPct() <= 55 && pHpPct() > 25" [class.low]="pHpPct() <= 25" [style.width.%]="pHpPct()"></span><span class="kp">{{ pHp() }} / {{ pMax() }}</span></div>
           </div>
         }
       </div>

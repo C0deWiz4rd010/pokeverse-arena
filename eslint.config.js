@@ -22,11 +22,6 @@ module.exports = tseslint.config(
   {
     files: ['**/*.html'],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
-    // a11y findings are fixed in Phase F (then promoted back to errors)
-    rules: {
-      '@angular-eslint/template/click-events-have-key-events': 'warn',
-      '@angular-eslint/template/interactive-supports-focus': 'warn',
-      '@angular-eslint/template/role-has-required-aria': 'warn',
-    },
+    rules: {},
   },
 );

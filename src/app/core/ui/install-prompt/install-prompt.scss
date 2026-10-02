@@ -57,7 +57,9 @@
   color: var(--text-faint);
   cursor: pointer;
 }
-.x:hover { color: var(--text); }
+@include hover-capable {
+  .x:hover { color: var(--text); }
+}
 
 @keyframes install-in {
   from { opacity: 0; transform: translateY(16px); }

@@ -35,7 +35,9 @@
   background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius);
   color: var(--text); cursor: pointer; transition: border-color 0.15s ease, transform 0.12s ease;
 }
-.pick:hover { transform: translateY(-2px); }
+@include hover-capable {
+  .pick:hover { transform: translateY(-2px); }
+}
 .pick.on { border-color: var(--accent); box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 30%, transparent); }
 .pick img { width: 84px; height: 84px; object-fit: contain; }
 .pk-name { font-weight: 700; font-size: 0.85rem; }
@@ -99,7 +101,9 @@
   background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius);
   color: var(--text); cursor: pointer; transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.node:hover, .reward:hover, .shop-item:hover { transform: translateY(-3px); }
+@include hover-capable {
+  .node:hover, .reward:hover, .shop-item:hover { transform: translateY(-3px); }
+}
 .node:disabled, .shop-item:disabled { opacity: 0.45; cursor: not-allowed; }
 .node-icon, .r-icon, .s-icon { font-size: 1.3rem; }
 .node-label, .r-label, .s-label { font-weight: 700; }
@@ -124,7 +128,9 @@
   padding: 0.5rem 1rem; border-radius: var(--radius-sm);
   display: inline-flex; align-items: center; gap: 0.4rem;
 }
-.btn:hover { transform: translateY(-1px); }
+@include hover-capable {
+  .btn:hover { transform: translateY(-1px); }
+}
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn.ghost, .ghost { background: transparent; border: 1px solid var(--glass-border); color: var(--text); }
 .ghost { appearance: none; cursor: pointer; font: inherit; padding: 0.45rem 0.9rem; border-radius: var(--radius-sm); }

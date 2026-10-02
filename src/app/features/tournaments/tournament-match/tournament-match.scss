@@ -432,7 +432,9 @@
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   animation: ball-call 1.3s ease-in-out infinite;
 }
-.ball.switchable:hover { transform: scale(1.18); border-color: var(--accent); }
+@include hover-capable {
+  .ball.switchable:hover { transform: scale(1.18); border-color: var(--accent); }
+}
 .ball:disabled { cursor: default; }
 .tray.picking { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); border-radius: 999px; }
 
@@ -452,7 +454,9 @@
   background: color-mix(in srgb, var(--accent-2) 16%, transparent);
   color: var(--text);
 }
-.switch-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-2) 28%, transparent); }
+@include hover-capable {
+  .switch-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-2) 28%, transparent); }
+}
 .switch-btn.on { background: var(--accent-2); color: #0b0a1f; }
 .switch-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .switch-btn .sw-ico { font-size: 1rem; }

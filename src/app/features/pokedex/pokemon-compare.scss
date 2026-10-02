@@ -1,3 +1,5 @@
+@use '../../../styles/responsive' as *;
+
 .backdrop {
   position: fixed;
   inset: 0;
@@ -40,7 +42,9 @@
   border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.3);
   color: var(--text-dim); cursor: pointer;
 }
-.x:hover { color: var(--text); }
+@include hover-capable {
+  .x:hover { color: var(--text); }
+}
 .loading { color: var(--text-dim); padding: 2rem; text-align: center; }
 
 .table {
@@ -70,7 +74,9 @@
   border: none; background: rgba(0, 0, 0, 0.4); color: var(--text-dim);
   border-radius: 50%; cursor: pointer; font-size: 0.6rem;
 }
-.rm:hover { color: #ff8a8a; }
+@include hover-capable {
+  .rm:hover { color: #ff8a8a; }
+}
 
 .row-label { font-size: 0.78rem; color: var(--text-dim); text-align: right; }
 .row-label.bst { font-weight: 800; color: var(--text); }

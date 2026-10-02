@@ -86,10 +86,10 @@
     </div>
     <div class="type-tools">
       @if (store.typeFilters().size > 1) {
-        <button class="seg" type="button">
-          <span [class.on]="store.typeMode() === 'or'" (click)="store.setTypeMode('or')">Any</span>
-          <span [class.on]="store.typeMode() === 'and'" (click)="store.setTypeMode('and')">All</span>
-        </button>
+        <div class="seg" role="group" aria-label="Match any or all selected types">
+          <button type="button" [class.on]="store.typeMode() === 'or'" [attr.aria-pressed]="store.typeMode() === 'or'" (click)="store.setTypeMode('or')">Any</button>
+          <button type="button" [class.on]="store.typeMode() === 'and'" [attr.aria-pressed]="store.typeMode() === 'and'" (click)="store.setTypeMode('and')">All</button>
+        </div>
       }
       <button class="btn toggle fav-filter" type="button" [class.on]="store.favOnly()" (click)="store.toggleFavOnly()" title="Favorites only">
         <pv-icon name="heart" /> {{ store.favorites().size }}

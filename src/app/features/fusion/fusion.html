@@ -48,7 +48,7 @@
       @if (activeSlot() === 'head' && suggestions('head').length) {
         <ul class="suggest" role="listbox">
           @for (s of suggestions('head'); track s.id) {
-            <li role="option" (mousedown)="pick('head', s)">
+            <li role="option" aria-selected="false" (mousedown)="pick('head', s)">
               <img decoding="async" [src]="sprite(s.id)" alt="" loading="lazy" />
               <span>{{ titleCase(s.name) }}</span>
               <small>#{{ s.id }}</small>
@@ -90,7 +90,7 @@
       @if (activeSlot() === 'body' && suggestions('body').length) {
         <ul class="suggest" role="listbox">
           @for (s of suggestions('body'); track s.id) {
-            <li role="option" (mousedown)="pick('body', s)">
+            <li role="option" aria-selected="false" (mousedown)="pick('body', s)">
               <img decoding="async" [src]="sprite(s.id)" alt="" loading="lazy" />
               <span>{{ titleCase(s.name) }}</span>
               <small>#{{ s.id }}</small>

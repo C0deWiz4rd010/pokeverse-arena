@@ -25,9 +25,11 @@
   border: 1px solid color-mix(in srgb, var(--type) 45%, var(--glass-border));
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.st-card:hover {
+@include hover-capable {
+  .st-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--type) 80%, transparent);
+}
 }
 .st-card img { width: 96px; height: 96px; object-fit: contain; }
 .st-card strong { font-size: 1rem; }

@@ -1,3 +1,5 @@
+@use '../../../../styles/responsive' as *;
+
 :host {
   display: block;
   position: relative;
@@ -42,14 +44,18 @@
   transition: opacity 0.25s ease;
 }
 
-.mv:hover:not(:disabled) {
+@include hover-capable {
+  .mv:hover:not(:disabled) {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--c) 85%, transparent);
   box-shadow:
     0 12px 26px -14px color-mix(in srgb, var(--c) 80%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--c) 35%, transparent);
 }
-.mv:hover:not(:disabled) .mv-glow { opacity: 1; }
+}
+@include hover-capable {
+  .mv:hover:not(:disabled) .mv-glow { opacity: 1; }
+}
 .mv:active:not(:disabled) { transform: translateY(-1px); }
 .mv:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
 .mv:disabled { opacity: 0.5; cursor: not-allowed; }

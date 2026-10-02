@@ -131,7 +131,9 @@
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
-.remove:hover { color: #fff; border-color: #f87171; background: rgba(248, 113, 113, 0.2); }
+@include hover-capable {
+  .remove:hover { color: #fff; border-color: #f87171; background: rgba(248, 113, 113, 0.2); }
+}
 
 /* ---- per-member config ---- */
 .m-config { display: grid; gap: 0.6rem; }
@@ -204,7 +206,9 @@
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
-.mv:hover:not(:disabled) { color: var(--text); }
+@include hover-capable {
+  .mv:hover:not(:disabled) { color: var(--text); }
+}
 .mv.on {
   color: #fff;
   border-color: var(--accent);
@@ -298,7 +302,9 @@
   border: 1px solid var(--glass-border);
   color: var(--text);
 }
-.btn.ghost:hover { background: rgba(255, 255, 255, 0.1); }
+@include hover-capable {
+  .btn.ghost:hover { background: rgba(255, 255, 255, 0.1); }
+}
 .btn.ghost.danger { color: #fca5a5; border-color: rgba(248, 113, 113, 0.3); }
 .btn.file { cursor: pointer; display: inline-flex; align-items: center; }
 
@@ -348,18 +354,24 @@
   animation: tb-rise 0.4s ease both;
   transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.member:hover {
+@include hover-capable {
+  .member:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--t1) 55%, transparent);
   box-shadow: 0 14px 32px color-mix(in srgb, var(--t1) 22%, transparent);
+}
 }
 
 /* sprite stage with animated hover swap */
 .m-art { position: relative; width: 64px; height: 64px; }
 .m-art img { position: absolute; inset: 0; width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
 .m-art .anim { image-rendering: pixelated; opacity: 0; transition: opacity 0.2s ease; }
-.member:hover .m-art .still { opacity: 0; }
-.member:hover .m-art .anim { opacity: 1; }
+@include hover-capable {
+  .member:hover .m-art .still { opacity: 0; }
+}
+@include hover-capable {
+  .member:hover .m-art .anim { opacity: 1; }
+}
 
 /* computed stats as animated bars (overrides the old strip) */
 .m-stats { display: grid; grid-template-columns: 1fr; gap: 0.25rem; text-align: left; }

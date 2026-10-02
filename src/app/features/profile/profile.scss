@@ -20,7 +20,9 @@
   font-weight: 600;
   transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 
-  &:hover { transform: translateY(-1px); color: var(--text); border-color: var(--t1); }
+  @include hover-capable {
+    &:hover { transform: translateY(-1px); color: var(--text); border-color: var(--t1); }
+  }
   &.on {
     color: var(--text);
     border-color: var(--t1);
@@ -53,7 +55,9 @@
   text-align: left;
   transition: border-color 0.15s ease, background 0.15s ease;
 
-  &:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--glass-border)); }
+  @include hover-capable {
+    &:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--glass-border)); }
+  }
 }
 .setting-info { display: flex; align-items: center; gap: 0.7rem; }
 .setting-icon {
@@ -202,7 +206,9 @@
   background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius);
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
-.record:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 40%, var(--glass-border)); }
+@include hover-capable {
+  .record:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 40%, var(--glass-border)); }
+}
 .rec-icon { font-size: 1.3rem; color: var(--accent-2); }
 .rec-val { font-weight: 800; font-size: 1.1rem; }
 .rec-label { font-size: 0.72rem; color: var(--text-dim); }
@@ -227,7 +233,9 @@
   border-color: color-mix(in srgb, var(--accent-3) 45%, var(--glass-border));
   background: linear-gradient(120deg, color-mix(in srgb, var(--accent-3) 10%, transparent), transparent 60%), var(--glass);
 }
-.ach.on:hover { transform: translateY(-2px); }
+@include hover-capable {
+  .ach.on:hover { transform: translateY(-2px); }
+}
 .ach-icon {
   display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0;
   font-size: 1.3rem; border-radius: 12px;
@@ -250,7 +258,9 @@
   appearance: none; background: none; border: none; color: var(--text-dim); font: inherit;
   cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.82rem;
 }
-.link:hover { color: var(--text); }
+@include hover-capable {
+  .link:hover { color: var(--text); }
+}
 
 /* Trainer-Card share button — sits under the rank bar, never full-width. */
 .card-btn {
@@ -261,13 +271,17 @@
   margin-top: 0.2rem;
   transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
-.card-btn:hover:not(:disabled) {
+@include hover-capable {
+  .card-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 35%, transparent);
+}
 }
 .card-btn:disabled { opacity: 0.6; cursor: progress; }
 
 @media (prefers-reduced-motion: reduce) {
   .rank-fill, .bar-fill, .ring-prog { transition: none; }
-  .record:hover, .ach.on:hover { transform: none; }
+  @include hover-capable {
+    .record:hover, .ach.on:hover { transform: none; }
+  }
 }
