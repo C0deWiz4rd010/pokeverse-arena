@@ -9,6 +9,7 @@
 import { SeededRng } from '../../core/utils/rng';
 import type { ItemId, Terrain, Weather } from '../engine';
 import type { RelicId } from '../spire/relics';
+import { safeGet, safeSet } from '../../core/storage/safe-storage';
 
 export type WaveKind = 'wild' | 'elite' | 'boss';
 
@@ -189,7 +190,7 @@ export function defaultOdysseyMeta(): OdysseyMeta {
 
 export function loadOdysseyMeta(): OdysseyMeta {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = safeGet(KEY);
     if (!raw) return defaultOdysseyMeta();
     return { ...defaultOdysseyMeta(), ...(JSON.parse(raw) as Partial<OdysseyMeta>) };
   } catch {
@@ -199,7 +200,7 @@ export function loadOdysseyMeta(): OdysseyMeta {
 
 export function saveOdysseyMeta(meta: OdysseyMeta): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify(meta));
+    safeSet(KEY, JSON.stringify(meta));
   } catch {
     /* storage unavailable */
   }

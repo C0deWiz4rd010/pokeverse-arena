@@ -11,6 +11,7 @@ import type { Battler, BattleEvent, SideIndex, StatusCondition } from '../../gam
 import type { PokemonType } from '../../core/utils/type-chart';
 import { titleCase } from '../../core/ui/format';
 import type { BattleFxComponent } from './pixi/battle-fx';
+import { safeGet, safeSet } from '../../core/storage/safe-storage';
 
 export type LogTone = 'crit' | 'super' | 'resist' | 'faint' | 'win' | 'switch';
 export interface LogLine {
@@ -33,7 +34,7 @@ export type BattleSpeed = (typeof SPEEDS)[number];
 
 function readSpeed(): BattleSpeed {
   try {
-    const v = Number(localStorage.getItem(SPEED_KEY));
+    const v = Number(safeGet(SPEED_KEY));
     return (SPEEDS as readonly number[]).includes(v) ? (v as BattleSpeed) : 1;
   } catch {
     return 1;
@@ -101,7 +102,7 @@ export abstract class BattlePresenterBase {
     const next = SPEEDS[(SPEEDS.indexOf(this.speed()) + 1) % SPEEDS.length];
     this.speed.set(next);
     try {
-      localStorage.setItem(SPEED_KEY, String(next));
+      safeSet(SPEED_KEY, String(next));
     } catch {
       /* persistence is best-effort */
     }

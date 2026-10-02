@@ -8,11 +8,13 @@ import {
   withComponentInputBinding,
   withHashLocation,
   withInMemoryScrolling,
+  withNavigationErrorHandler,
   withViewTransitions,
 } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 
 import { routes } from './app.routes';
+import { chunkAwareNavigationErrorHandler } from './core/update/chunk-error';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -30,6 +32,7 @@ export const appConfig: ApplicationConfig = {
       // navigation is skipped — starting a transition there races the first
       // paint and logs an InvalidStateError abort.
       withViewTransitions({ skipInitialTransition: true }),
+      withNavigationErrorHandler(chunkAwareNavigationErrorHandler),
     ),
   ],
 };

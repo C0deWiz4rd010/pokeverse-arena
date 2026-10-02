@@ -19,7 +19,6 @@ import {
   FLOWER_VARIANTS,
   GRASS,
   GRASS_VARIANTS,
-  GROUNDED,
   INDOOR_FLOOR,
   LILY_PAD,
   PINE,
@@ -438,8 +437,7 @@ export class PixiOverworldComponent implements OnDestroy {
       return;
     }
     // grounded decorations already have grass under them from the base pass
-    if (!GROUNDED.has(kind) || map.outdoor) this.drawArt(art, x, y);
-    else this.drawArt(art, x, y);
+    this.drawArt(art, x, y);
   }
 
   private drawArt(art: TileArt, x: number, y: number): void {

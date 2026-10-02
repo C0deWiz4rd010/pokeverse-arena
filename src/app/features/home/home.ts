@@ -71,6 +71,7 @@ export class HomeComponent implements OnDestroy {
   private readonly heroCanvas = viewChild<ElementRef<HTMLCanvasElement>>('hero');
   protected readonly heroReady = signal(false);
   private dispose: (() => void) | null = null;
+  private destroyed = false;
 
   protected readonly features: FeatureCard[] = [
     { path: '/pokedex', icon: 'book', title: 'Interactive Pokédex', text: 'Type-themed cards, quick-view, shiny mode, compare tray & a living dex to fill.', accent: 'var(--accent)' },
@@ -148,6 +149,8 @@ export class HomeComponent implements OnDestroy {
   private async initHero(canvas: HTMLCanvasElement): Promise<void> {
     try {
       const { createHeroScene } = await import('./hero-scene');
+      // The user may have left Home while the chunk was loading — don't start a loop nobody stops.
+      if (this.destroyed) return;
       this.dispose = createHeroScene(canvas);
       this.heroReady.set(true);
     } catch {
@@ -156,6 +159,7 @@ export class HomeComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.dispose?.();
   }
 }

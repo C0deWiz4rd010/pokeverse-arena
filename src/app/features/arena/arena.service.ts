@@ -23,6 +23,7 @@ import { BattleService } from '../battle/battle.service';
 import { TeamBuilderService } from '../team-builder/team-builder.service';
 import type { PlayerMatchSetup } from '../tournaments/tournaments.service';
 import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
+import { safeGet, safeSet, safeRemove } from '../../core/storage/safe-storage';
 
 type Status = 'hub' | 'loading' | 'intro' | 'battle' | 'reward' | 'gauntlet' | 'error';
 
@@ -100,7 +101,7 @@ export class ArenaService {
   readonly reward = signal<ArenaReward | null>(null);
 
   readonly badges = signal<ReadonlySet<PokemonType>>(this.restoreBadges());
-  readonly isChampion = signal<boolean>(localStorage.getItem(CHAMP_KEY) === '1');
+  readonly isChampion = signal<boolean>(safeGet(CHAMP_KEY) === '1');
   readonly coins = signal<number>(this.restoreCoins());
   readonly stars = signal<Readonly<Record<string, number>>>(this.restoreStars());
 
@@ -270,7 +271,7 @@ export class ArenaService {
     if (run.index >= run.trainers.length) {
       this.addCoins(300);
       this.isChampion.set(true);
-      localStorage.setItem(CHAMP_KEY, '1');
+      safeSet(CHAMP_KEY, '1');
       this.gauntletResult.set('won');
       this.endGauntlet();
       return;
@@ -328,8 +329,8 @@ export class ArenaService {
     this.persistBadges(new Set());
     this.isChampion.set(false);
     this.stars.set({});
-    localStorage.removeItem(CHAMP_KEY);
-    localStorage.removeItem(STARS_KEY);
+    safeRemove(CHAMP_KEY);
+    safeRemove(STARS_KEY);
     this.reward.set(null);
   }
 
@@ -338,7 +339,7 @@ export class ArenaService {
     const next = this.coins() + n;
     this.coins.set(next);
     try {
-      localStorage.setItem(COINS_KEY, String(next));
+      safeSet(COINS_KEY, String(next));
     } catch {
       /* storage unavailable */
     }
@@ -349,7 +350,7 @@ export class ArenaService {
     const next = { ...this.stars(), [type]: stars };
     this.stars.set(next);
     try {
-      localStorage.setItem(STARS_KEY, JSON.stringify(next));
+      safeSet(STARS_KEY, JSON.stringify(next));
     } catch {
       /* storage unavailable */
     }
@@ -418,7 +419,7 @@ export class ArenaService {
 
   private restoreBadges(): ReadonlySet<PokemonType> {
     try {
-      const raw = localStorage.getItem(BADGE_KEY);
+      const raw = safeGet(BADGE_KEY);
       if (!raw) return new Set();
       const list = JSON.parse(raw) as unknown;
       if (!Array.isArray(list)) return new Set();
@@ -430,20 +431,20 @@ export class ArenaService {
 
   private persistBadges(badges: ReadonlySet<PokemonType>): void {
     try {
-      localStorage.setItem(BADGE_KEY, JSON.stringify([...badges]));
+      safeSet(BADGE_KEY, JSON.stringify([...badges]));
     } catch {
       /* storage unavailable */
     }
   }
 
   private restoreCoins(): number {
-    const n = Number(localStorage.getItem(COINS_KEY));
+    const n = Number(safeGet(COINS_KEY));
     return Number.isFinite(n) && n > 0 ? n : 0;
   }
 
   private restoreStars(): Record<string, number> {
     try {
-      const raw = localStorage.getItem(STARS_KEY);
+      const raw = safeGet(STARS_KEY);
       return raw ? (JSON.parse(raw) as Record<string, number>) : {};
     } catch {
       return {};

@@ -4,6 +4,7 @@
  * progression backbone folds it into the profile later.
  */
 import type { SpireMeta } from './spire-types';
+import { safeGet, safeSet } from '../../core/storage/safe-storage';
 
 const KEY = 'spire:meta';
 
@@ -13,7 +14,7 @@ export function defaultMeta(): SpireMeta {
 
 export function loadMeta(): SpireMeta {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = safeGet(KEY);
     if (!raw) return defaultMeta();
     return { ...defaultMeta(), ...(JSON.parse(raw) as Partial<SpireMeta>) };
   } catch {
@@ -23,7 +24,7 @@ export function loadMeta(): SpireMeta {
 
 export function saveMeta(meta: SpireMeta): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify(meta));
+    safeSet(KEY, JSON.stringify(meta));
   } catch {
     /* storage unavailable */
   }

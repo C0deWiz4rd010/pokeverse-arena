@@ -2,6 +2,8 @@
  * Persisted tournament history & prize helpers. Stored in localStorage for now;
  * the progression backbone (profile/save service) folds these in later.
  */
+import { safeGet, safeSet } from '../../core/storage/safe-storage';
+
 
 export interface TournamentRecord {
   /** ISO date the run finished. */
@@ -25,7 +27,7 @@ const CAP = 30;
 
 export function loadHistory(): TournamentRecord[] {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = safeGet(KEY);
     if (!raw) return [];
     const list = JSON.parse(raw) as unknown;
     return Array.isArray(list) ? (list as TournamentRecord[]) : [];
@@ -37,7 +39,7 @@ export function loadHistory(): TournamentRecord[] {
 export function pushHistory(record: TournamentRecord): TournamentRecord[] {
   const list = [record, ...loadHistory()].slice(0, CAP);
   try {
-    localStorage.setItem(KEY, JSON.stringify(list));
+    safeSet(KEY, JSON.stringify(list));
   } catch {
     /* storage unavailable */
   }

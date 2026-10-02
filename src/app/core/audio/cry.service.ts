@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { cryUrl } from '../api/pokeapi-endpoints';
+import { safeGet, safeSet } from '../storage/safe-storage';
 
 /**
  * Plays Pokémon cries through a single shared `Audio` element, so a new cry always
@@ -9,7 +10,7 @@ import { cryUrl } from '../api/pokeapi-endpoints';
 @Injectable({ providedIn: 'root' })
 export class CryService {
   private audio: HTMLAudioElement | null = null;
-  readonly muted = signal<boolean>(localStorage.getItem('cry:muted') === '1');
+  readonly muted = signal<boolean>(safeGet('cry:muted') === '1');
   /** The id currently playing (for a little speaker-pulse in the UI). */
   readonly playing = signal<number | null>(null);
 
@@ -17,7 +18,7 @@ export class CryService {
     const next = !this.muted();
     this.muted.set(next);
     try {
-      localStorage.setItem('cry:muted', next ? '1' : '0');
+      safeSet('cry:muted', next ? '1' : '0');
     } catch {
       /* ignore */
     }

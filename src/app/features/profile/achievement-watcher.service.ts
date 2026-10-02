@@ -30,7 +30,13 @@ export class AchievementWatcherService {
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe(() => this.check());
-    setInterval(() => this.check(), POLL_MS);
+    // Slow poll only while the tab is visible; catch up as soon as it comes back.
+    setInterval(() => {
+      if (document.visibilityState === 'visible') this.check();
+    }, POLL_MS);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') this.check();
+    });
     this.check();
   }
 

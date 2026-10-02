@@ -5,6 +5,8 @@
  * stronger every time you meet, and taunt you based on the head-to-head score.
  * Pure helpers + a thin localStorage layer (same pattern as history.ts).
  */
+import { safeGet, safeSet } from '../../core/storage/safe-storage';
+
 
 export interface RivalState {
   readonly v: 1;
@@ -41,7 +43,7 @@ export function createRival(rand: () => number = Math.random): RivalState {
 /** Load the persisted rival, creating (and persisting) one on first use. */
 export function loadRival(): RivalState {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = safeGet(KEY);
     if (raw) {
       const s = JSON.parse(raw) as Partial<RivalState>;
       if (s && s.v === 1 && typeof s.name === 'string') return s as RivalState;
@@ -56,7 +58,7 @@ export function loadRival(): RivalState {
 
 export function saveRival(state: RivalState): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify(state));
+    safeSet(KEY, JSON.stringify(state));
   } catch {
     /* storage unavailable */
   }

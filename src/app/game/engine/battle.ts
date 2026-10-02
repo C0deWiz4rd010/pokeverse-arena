@@ -404,7 +404,7 @@ export class Battle {
       this.applyMoveBoosts(target, sec.boosts, events);
     }
     if (sec.flinch) {
-      // Only meaningful if the target has not yet acted this turn.
+      // Cleared at the start of every turn, so it only bites if the target moves later this turn.
       this.state.sides[defenderIndex].volatiles.flinch = true;
     }
   }
