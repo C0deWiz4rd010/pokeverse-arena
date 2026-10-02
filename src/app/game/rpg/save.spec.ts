@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSave, isValidSave, RPG_SAVE_VERSION } from './save';
+import { defaultSave, isValidSave, RPG_SAVE_VERSION, sanitizeSave, START } from './save';
 import { makePartyMon, healParty } from './party';
 
 describe('rpg save', () => {
@@ -35,5 +35,47 @@ describe('rpg save', () => {
     const [healed] = healParty([mon]);
     expect(healed.currentHp).toBe(19);
     expect(healed.status).toBe('none');
+  });
+});
+
+describe('sanitizeSave', () => {
+  it('passes a healthy save through', () => {
+    const s = defaultSave('Ash');
+    s.party.push(makePartyMon('bulbasaur', 1, 5, 20));
+    const out = sanitizeSave(JSON.parse(JSON.stringify(s)));
+    expect(out?.party[0]?.species).toBe('bulbasaur');
+    expect(out?.name).toBe('Ash');
+  });
+
+  it('drops corrupt Pokemon and repairs out-of-range numbers instead of crashing later', () => {
+    const s = JSON.parse(JSON.stringify(defaultSave()));
+    s.party = [
+      { species: 'pikachu', dexId: 25, level: 500, xp: -4, maxHp: 30, currentHp: 999, status: 'bogus' },
+      { species: 'ghost' },
+      null,
+    ];
+    const out = sanitizeSave(s);
+    expect(out?.party.length).toBe(1);
+    const mon = out?.party[0];
+    expect(mon?.level).toBe(100);
+    expect(mon?.currentHp).toBe(30);
+    expect(mon?.xp).toBe(0);
+    expect(mon?.status).toBe('none');
+    expect(mon?.uid).toBeTruthy();
+  });
+
+  it('sends the player to the start when the saved map no longer exists', () => {
+    const s = JSON.parse(JSON.stringify(defaultSave()));
+    s.map = 'deleted-map';
+    s.x = 40;
+    const out = sanitizeSave(s);
+    expect(out?.map).toBe(START.map);
+    expect(out?.x).toBe(START.x);
+  });
+
+  it('rejects unrecoverable blobs', () => {
+    expect(sanitizeSave(null)).toBeNull();
+    expect(sanitizeSave({ map: 'home-town' })).toBeNull();
+    expect(sanitizeSave('x')).toBeNull();
   });
 });

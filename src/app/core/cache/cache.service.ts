@@ -19,6 +19,9 @@ interface PokeVerseDb extends DBSchema {
   };
 }
 
+/** Upper bound for the in-memory mirror (entries beyond it are evicted least-recently-used). */
+const MAX_MEMORY_ENTRIES = 400;
+
 /** Default time-to-live for cached API responses: 7 days. */
 const DEFAULT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -37,7 +40,7 @@ export class CacheService {
 
   private db(): Promise<IDBPDatabase<PokeVerseDb>> {
     if (!this.dbPromise) {
-      this.dbPromise = openDB<PokeVerseDb>('pokeverse-arena', 1, {
+      const opened = openDB<PokeVerseDb>('pokeverse-arena', 1, {
         upgrade(db) {
           if (!db.objectStoreNames.contains('api-cache')) {
             db.createObjectStore('api-cache', { keyPath: 'key' });
@@ -46,9 +49,63 @@ export class CacheService {
             db.createObjectStore('savegame');
           }
         },
+        // Another tab wants to upgrade/delete the DB: step aside so it isn't stuck.
+        blocking: () => {
+          void opened.then((db) => db.close()).catch(() => undefined);
+          this.dbPromise = null;
+        },
+        // The browser killed the connection (storage cleared, crash): reopen lazily.
+        terminated: () => {
+          this.dbPromise = null;
+        },
       });
+      // A failed open must not be cached forever — retry on the next call.
+      opened.catch(() => {
+        this.dbPromise = null;
+      });
+      this.dbPromise = opened;
+      this.scheduleSweep();
     }
     return this.dbPromise;
+  }
+
+  /** Drop expired rows once per session, when the browser is idle. */
+  private scheduleSweep(): void {
+    const run = () => void this.sweepExpired();
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 10_000 });
+    else setTimeout(run, 3000);
+  }
+
+  /** Delete every expired `api-cache` row (reads only evict the rows they touch). */
+  async sweepExpired(now = Date.now()): Promise<number> {
+    let removed = 0;
+    try {
+      const db = await this.db();
+      const tx = db.transaction('api-cache', 'readwrite');
+      let cursor = await tx.store.openCursor();
+      while (cursor) {
+        const exp = cursor.value.expiresAt;
+        if (exp && exp < now) {
+          await cursor.delete();
+          removed++;
+        }
+        cursor = await cursor.continue();
+      }
+      await tx.done;
+    } catch {
+      /* best effort */
+    }
+    return removed;
+  }
+
+  /** LRU mirror: touching an entry moves it to the back; overflow evicts from the front. */
+  private remember(key: string, entry: CacheEntry): void {
+    this.memory.delete(key);
+    this.memory.set(key, entry);
+    if (this.memory.size > MAX_MEMORY_ENTRIES) {
+      const oldest = this.memory.keys().next().value;
+      if (oldest !== undefined) this.memory.delete(oldest);
+    }
   }
 
   async get<T>(key: string): Promise<T | undefined> {
@@ -58,7 +115,7 @@ export class CacheService {
       await this.delete(key);
       return undefined;
     }
-    this.memory.set(key, cached);
+    this.remember(key, cached);
     return cached.data as T;
   }
 
@@ -69,7 +126,7 @@ export class CacheService {
       fetchedAt: Date.now(),
       expiresAt: ttlMs > 0 ? Date.now() + ttlMs : undefined,
     };
-    this.memory.set(key, entry);
+    this.remember(key, entry);
     try {
       const db = await this.db();
       await db.put('api-cache', entry);

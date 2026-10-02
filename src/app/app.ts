@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from './core/version';
 import { ThemeService } from './core/theme/theme.service';
+import { SaveService } from './core/storage/save.service';
 import { IconComponent } from './core/ui/icon/icon';
 import type { IconName } from './core/ui/icon/icons.data';
 import { ToastsComponent } from './core/ui/toast/toasts';
@@ -31,6 +32,7 @@ export class App {
   /** Instantiated here so the persisted accent palette applies at startup. */
   protected readonly theme = inject(ThemeService);
   private readonly achievements = inject(AchievementWatcherService);
+  private readonly saves = inject(SaveService);
 
   protected readonly menuOpen = signal(false);
   protected readonly paletteOpen = signal(false);
@@ -57,6 +59,7 @@ export class App {
 
   constructor() {
     this.achievements.start();
+    void this.saves.requestPersistence();
   }
 
   /** ⌘K / Ctrl+K opens the command palette from anywhere. */

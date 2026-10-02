@@ -19,7 +19,7 @@ import { buryFainted, consumeEncounter } from '../../game/rpg/nuzlocke';
 import { bumpCombo, comboLabel, comboShinyMultiplier } from '../../game/rpg/combo';
 import { fishBiteBonus } from '../../game/rpg/boons';
 import { canForage, collectForage, forageDay, forageId, forageLoot } from '../../game/rpg/forage';
-import { defaultSave, isValidSave } from '../../game/rpg/save';
+import { defaultSave, sanitizeSave } from '../../game/rpg/save';
 import {
   PARTY_MAX,
   depositToBox,
@@ -269,14 +269,31 @@ export class RpgService {
     if (this.phase() === 'title') this.slots.set(this.readSlots());
   }
 
+  /** Save when the page is hidden/closed — per-step persistence alone can lose the last moves. */
+  private readonly flush = (): void => {
+    if (this.phase() !== 'title') this.persist();
+  };
+
+  constructor() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') this.flush();
+    });
+    window.addEventListener('pagehide', this.flush);
+  }
+
   /** Slot 1 stays on the legacy key so existing adventures keep working. */
   private keyFor(slot: number): string {
     return slot === 1 ? SAVE_KEY : `${SAVE_KEY}:${slot}`;
   }
 
   private readSave(slot: 1 | 2 | 3 = this.slot()): RpgSave | null {
-    const g = this.store.read<RpgSave | null>(this.keyFor(slot), null);
-    return g && isValidSave(g) ? g : null;
+    const key = this.keyFor(slot);
+    const raw = this.store.read<unknown>(key, null);
+    if (raw === null) return null;
+    const g = sanitizeSave(raw);
+    // Unrecoverable: keep a copy for manual rescue instead of silently showing an empty slot.
+    if (!g && this.store.read<unknown>(`${key}:quarantine`, null) === null) this.store.write(`${key}:quarantine`, raw);
+    return g;
   }
 
   private readSlots(): SlotInfo[] {

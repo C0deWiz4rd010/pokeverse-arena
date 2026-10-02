@@ -141,4 +141,14 @@
       </div>
     }
   </div>
+
+  <h3 class="h">Your data</h3>
+  <div class="data-actions">
+    <button type="button" class="btn card-btn" (click)="exportSave()"><pv-icon name="download" /> Export save</button>
+    <label class="btn card-btn import-btn">
+      <pv-icon name="upload" /> Import save
+      <input type="file" accept="application/json,.json" (change)="importSave($event)" hidden />
+    </label>
+  </div>
+  <p class="data-note">Saves live only in this browser. Export a backup before clearing site data or switching devices.</p>
 </section>

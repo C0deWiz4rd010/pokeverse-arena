@@ -93,6 +93,11 @@
   border-color: transparent;
 }
 .setting-row.on .knob { transform: translateX(1.2rem); background: #0b0a1f; }
+/* Backup / restore */
+.data-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.import-btn { cursor: pointer; }
+.data-note { margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--text-dim); }
+
 @media (prefers-reduced-motion: reduce) {
   .switch, .knob { transition: none; }
 }

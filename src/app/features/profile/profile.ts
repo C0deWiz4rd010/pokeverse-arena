@@ -10,6 +10,8 @@ import { APP_VERSION } from '../../core/version';
 import { dailyFusionPair } from '../../game/fusion/fusion';
 import { dailySeed } from '../../core/utils/rng';
 import { renderTrainerCard } from './trainer-card';
+import { buildBackup, parseBackup } from '../../core/storage/backup';
+import { safeSet } from '../../core/storage/safe-storage';
 
 @Component({
   selector: 'pv-profile',
@@ -151,5 +153,46 @@ export class ProfileComponent {
     } finally {
       this.rendering.set(false);
     }
+  }
+
+  /* ------------------------------------------------------ backup / restore */
+
+  /** Download every save of this app as one JSON file. */
+  protected exportSave(): void {
+    try {
+      const backup = buildBackup(localStorage, APP_VERSION);
+      const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pokeverse-save-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      this.toasts.show({ title: 'Save exported', text: `${Object.keys(backup.entries).length} entries in your downloads.`, icon: 'download', kind: 'info' });
+    } catch {
+      this.toasts.show({ title: 'Export failed', text: 'Browser storage is not readable.', icon: 'triangle-alert', kind: 'info' });
+    }
+  }
+
+  /** Restore a previously exported file (replaces the matching local saves, then reloads). */
+  protected async importSave(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const parsed = parseBackup(await file.text());
+    if (!parsed.ok) {
+      this.toasts.show({ title: 'Import failed', text: parsed.error, icon: 'triangle-alert', kind: 'info' });
+      return;
+    }
+    const count = Object.keys(parsed.entries).length;
+    if (!confirm(`Restore ${count} saved entries? Matching progress on this device will be overwritten.`)) return;
+    let failed = 0;
+    for (const [key, value] of Object.entries(parsed.entries)) if (!safeSet(key, value)) failed++;
+    if (failed) {
+      this.toasts.show({ title: 'Import incomplete', text: `${failed} entries could not be written (storage full?).`, icon: 'triangle-alert', kind: 'info' });
+      return;
+    }
+    location.reload();
   }
 }
