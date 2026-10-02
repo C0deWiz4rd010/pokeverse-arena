@@ -16,7 +16,7 @@
   .hero {
     grid-template-columns: 1.1fr 1fr;
     gap: 2rem;
-    min-height: 70vh;
+    min-height: calc(var(--dvh) * 70);
     padding: 2rem 0;
     text-align: left;
   }
@@ -105,13 +105,15 @@
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 
-  @media (min-width: 900px) {
+  @include up(lg) {
     grid-auto-flow: row;
     grid-auto-columns: unset;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     overflow: visible;
     padding-bottom: 0;
   }
+  /* four cards: 2×2 until the column is wide enough for a single row */
+  @include up(xxl) { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
 }
 .today-card {
   display: flex;
@@ -172,7 +174,7 @@
 .today-card:hover .tc-go { color: var(--accent); transform: translateX(3px); }
 
 /* Narrow cards in the swipe row: give the copy room to breathe. */
-@media (max-width: 899px) {
+@include below(lg) {
   .tc-go { display: none; }
   .tc-sprites img { width: 36px; height: 36px; }
   .who-card .tc-sprites img { width: 44px; height: 44px; }

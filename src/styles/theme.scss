@@ -10,7 +10,7 @@
   /* Text */
   --text: #e9e8ff;
   --text-dim: #a9a7c9;
-  --text-faint: #6f6d92;
+  --text-faint: #8a88ad; /* ≥ 4.5:1 on the dark surfaces */
 
   /* Brand accents */
   --accent: #6ce0ff;
@@ -27,6 +27,73 @@
   --header-h: 64px;
   /* Mobile bottom tab-bar height (0 on desktop where the bar is hidden). */
   --nav-h: 0px;
+
+  /* Dynamic viewport unit: tracks mobile browser chrome (URL bar), unlike plain vh.
+     Use as  calc(var(--dvh) * 70)  in place of 70vh. */
+  --dvh: 1vh;
+
+  /* Layout rhythm: one content width and a fluid page gutter for every screen. */
+  --content-max: 1200px;
+  --gutter: clamp(0.75rem, 3vw, 2rem);
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* Type scale — nothing below 0.75rem; headings scale fluidly */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: clamp(1.1rem, 1rem + 0.5vw, 1.3rem);
+  --fs-xl: clamp(1.35rem, 1.1rem + 1.1vw, 1.9rem);
+  --fs-2xl: clamp(1.7rem, 1.2rem + 2.2vw, 2.8rem);
+
+  /* Minimum comfortable touch target */
+  --tap: 2.75rem;
+
+  /* Device cut-outs / gesture bars (0 where unsupported) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  color-scheme: dark;
+}
+
+@supports (height: 1dvh) {
+  :root {
+    --dvh: 1dvh;
+  }
+}
+
+/* Wide screens get more room and a larger content column. */
+@media (min-width: 1600px) {
+  :root {
+    --content-max: 1480px;
+  }
+}
+
+/* Phones in landscape: little vertical space, so the chrome shrinks. */
+@media (max-height: 480px) and (orientation: landscape) {
+  :root {
+    --header-h: 48px;
+  }
+}
+
+/* Higher contrast on request: opaque surfaces, stronger borders and body text. */
+@media (prefers-contrast: more) {
+  :root {
+    --glass: rgb(20, 18, 48);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --text-dim: #d4d2ee;
+    --text-faint: #b3b1d4;
+  }
 }
 
 /* Official Pokemon type colors */
@@ -63,7 +130,7 @@
 }
 
 .container {
-  width: min(1200px, 100% - 2rem);
+  width: min(var(--content-max), 100% - 2 * var(--gutter));
   margin-inline: auto;
 }
 
@@ -181,3 +248,15 @@ textarea {
   min-height: 2.5rem;
 }
 textarea { min-height: 4.5rem; }
+
+/* Touch screens: every shared control reaches a comfortable finger-sized hit area. */
+@media (pointer: coarse) {
+  .btn,
+  .speed-chip {
+    min-height: var(--tap);
+  }
+  input:not([type='range']):not([type='checkbox']):not([type='radio']):not([type='color']),
+  select {
+    min-height: var(--tap);
+  }
+}

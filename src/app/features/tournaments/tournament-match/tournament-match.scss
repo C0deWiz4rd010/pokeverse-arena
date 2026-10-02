@@ -57,10 +57,12 @@
 
 .arena {
   position: relative;
+  container-type: inline-size;
   display: grid;
   grid-template-rows: 1fr 1fr;
   gap: 0.5rem;
   min-height: 320px;
+  @include short { min-height: 0; }
   padding: 0.75rem;
   border-radius: var(--radius);
   border: 1px solid var(--glass-border);
@@ -125,13 +127,14 @@
   &.mine::before { left: 0; bottom: -6px; }
 
   .sprite {
-    width: 104px;
-    height: 104px;
+    --s: clamp(5rem, 20cqi, 10.5rem); /* fluid with the arena (container query) */
+    width: var(--s);
+    height: var(--s);
     object-fit: contain;
     image-rendering: auto;
     filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45));
 
-    @include up(md) { width: 140px; height: 140px; }
+    @include short { --s: clamp(3.2rem, calc(var(--dvh) * 22), 6rem); }
   }
 
   &.mine .sprite { scale: -1 1; }

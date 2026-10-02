@@ -59,7 +59,7 @@
   white-space: nowrap;
 }
 .special.active .sp-go { color: var(--success); }
-@media (max-width: 480px) {
+@include below(sm) {
   .sp-imgs { display: none; }
 }
 

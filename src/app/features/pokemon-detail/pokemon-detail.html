@@ -14,9 +14,9 @@
   </nav>
 
   @if (store.loading()) {
-    <pv-spinner label="Loading Pokémon…" />
+    <pv-state kind="loading" title="Loading Pokémon…" [card]="false" />
   } @else if (store.error()) {
-    <div class="state glass"><p><pv-icon name="triangle-alert" /> {{ store.error() }}</p></div>
+    <pv-state kind="error" title="Could not load this Pokémon" [text]="store.error() ?? ''" actionLabel="Try again" (action)="reload()" />
   } @else if (s) {
     <div class="layout">
       <!-- ───────────────────────── HERO ───────────────────────── -->

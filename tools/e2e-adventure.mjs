@@ -18,7 +18,7 @@ const OUT = fileURLToPath(new URL('../.ui-shots', import.meta.url));
 await mkdir(OUT, { recursive: true });
 
 const errors = [];
-const browser = await chromium.launch();
+const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 950 } });
 const page = await ctx.newPage();
 page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`); });

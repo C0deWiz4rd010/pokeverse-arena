@@ -11,7 +11,7 @@
 .aurora {
   position: fixed;
   inset: -20% -10% auto -10%;
-  height: 70vh;
+  height: calc(var(--dvh) * 70);
   z-index: -1;
   pointer-events: none;
   background:
@@ -54,6 +54,8 @@
   animation: rise 0.5s ease both;
 }
 @include up(lg) { .hero { position: sticky; top: calc(var(--header-h) + 1rem); } }
+/* a pinned card taller than a landscape phone would trap the page — let it scroll */
+@include short { .hero { position: static; } }
 .hero-top { display: flex; justify-content: space-between; align-items: center; }
 .num { color: var(--text-faint); font-weight: 800; font-variant-numeric: tabular-nums; }
 .hero-actions { display: flex; gap: 0.55rem; flex-wrap: wrap; }
@@ -72,13 +74,21 @@
 .icon-btn:hover { transform: scale(1.1); }
 .icon-btn.on { color: #0b0a1f; background: linear-gradient(135deg, var(--accent-3), #fff3); box-shadow: 0 0 16px var(--accent-3); }
 .icon-btn.fav.on { color: #fff; background: linear-gradient(135deg, #ff6b9d, #ff9ec4); box-shadow: 0 0 16px #ff6b9d; }
+@include touch {
+  .icon-btn { width: var(--tap); height: var(--tap); }
+  .seg-btn, .nav-btn { min-height: var(--tap); }
+}
 .icon-btn.pulse { animation: speaker 0.6s ease infinite; color: var(--accent); }
 
 /* ---- sprite stage ---- */
-.art-stage { position: relative; display: grid; place-items: center; padding: 0.8rem 0; min-height: 240px; }
+.art-stage {
+  --sp: clamp(10rem, 56vw, 13.5rem); /* sprite edge: fluid between small phones and desktop */
+  position: relative; display: grid; place-items: center; padding: 0.8rem 0; min-height: calc(var(--sp) + 1.6rem);
+  @include short { --sp: clamp(7rem, calc(var(--dvh) * 40), 10rem); }
+}
 .art-ring {
   position: absolute;
-  width: 210px; height: 210px;
+  width: var(--sp); height: var(--sp);
   border-radius: 50%;
   background: radial-gradient(circle, color-mix(in srgb, var(--accent) 45%, transparent) 0%, transparent 62%);
   filter: blur(10px);
@@ -86,14 +96,14 @@
   animation: glowPulse 3s ease-in-out infinite;
 }
 .sprite {
-  width: 210px; height: 210px;
+  width: var(--sp); height: var(--sp);
   object-fit: contain;
   position: relative;
   z-index: 1;
   filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.55));
   animation: float 3.2s ease-in-out infinite;
 }
-.sprite.pixel { image-rendering: pixelated; width: 180px; height: 180px; }
+.sprite.pixel { image-rendering: pixelated; width: calc(var(--sp) * 0.86); height: calc(var(--sp) * 0.86); }
 .sparkle-burst { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .spk {
   position: absolute;

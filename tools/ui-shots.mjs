@@ -24,7 +24,7 @@ const slug = (r) => (r === '#/' ? 'home' : r.replace('#/', '').replace(/[^a-z0-9
 await mkdir(OUT, { recursive: true });
 
 const errors = [];
-const browser = await chromium.launch();
+const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 const page = await ctx.newPage();
 page.on('console', (m) => { if (m.type() === 'error') errors.push(`${page.url()} :: ${m.text()}`); });

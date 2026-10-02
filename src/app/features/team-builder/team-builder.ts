@@ -1,3 +1,4 @@
+import { StateComponent } from '../../core/ui/state/state';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -32,7 +33,8 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 @Component({
   selector: 'pv-team-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeBadgeComponent, SpinnerComponent, PageHeaderComponent, IconComponent],
+  imports: [
+    StateComponent,TypeBadgeComponent, SpinnerComponent, PageHeaderComponent, IconComponent],
   templateUrl: './team-builder.html',
   styleUrl: './team-builder.scss',
 })

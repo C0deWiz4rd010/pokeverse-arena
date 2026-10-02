@@ -21,7 +21,7 @@ import type { IconName } from '../icon/icons.data';
   `,
   styles: [
     `
-      .wrap { display: grid; place-items: center; min-height: 60vh; padding: 2rem 0; }
+      .wrap { display: grid; place-items: center; min-height: calc(var(--dvh) * 60); padding: 2rem 0; }
       .card { text-align: center; padding: 3rem 2rem; max-width: 560px; }
       .emoji { font-size: 4rem; margin-bottom: 0.5rem; }
       h1 { font-size: 2rem; }

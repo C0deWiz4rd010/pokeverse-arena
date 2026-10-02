@@ -6,7 +6,7 @@
   place-items: center;
   align-content: center;
   gap: 1rem;
-  min-height: min(58vh, 520px);
+  min-height: min(calc(var(--dvh) * 58), 520px);
 }
 
 /* ---- daily challenge ---- */
@@ -99,6 +99,7 @@
 /* ---- arena ---- */
 .arena {
   position: relative;
+  container-type: inline-size; /* lets sprites size themselves from the arena width */
   display: grid;
   gap: 0.8rem;
   padding: 0.6rem;
@@ -130,8 +131,8 @@
   content: '';
   position: absolute;
   z-index: -1;
-  width: 116px;
-  height: 28px;
+  width: clamp(7rem, 26cqi, 11rem);
+  height: clamp(1.7rem, 6cqi, 2.4rem);
   border-radius: 50%;
   background: radial-gradient(
     closest-side,
@@ -140,7 +141,6 @@
     transparent
   );
 
-  @include up(md) { width: 170px; height: 38px; }
 }
 .fighter.foe::before {
   right: 0;
@@ -155,13 +155,14 @@
 .fighter.mine::before { left: 0; bottom: -6px; }
 
 .fighter .sprite {
-  width: 96px;
-  height: 96px;
+  /* Fluid: scales with the arena (container query), never below thumb-friendly or above crisp */
+  --s: clamp(4.6rem, 20cqi, 11rem);
+  width: var(--s);
+  height: var(--s);
   object-fit: contain;
   image-rendering: auto;
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.5));
 }
-@include up(md) { .fighter .sprite { width: 150px; height: 150px; } }
 .fighter.mine .sprite { scale: -1 1; }
 
 .info {
@@ -319,7 +320,7 @@
    The page header hides once the battle starts (the title has done its job),
    fighters and info cards shrink, and the move grid stays within thumb reach
    without scrolling. */
-@media (max-width: 767px) {
+@include below(md) {
   .battle { padding-top: 0.4rem; }
   .battle.in-fight pv-page-header { display: none; }
 
@@ -328,7 +329,6 @@
      never lands on top of the opponent's info card. */
   .battle.in-fight .arena { padding-top: 2rem; }
   .fighter { gap: 0.3rem; }
-  .fighter .sprite { width: 74px; height: 74px; }
   .info { padding: 0.35rem 0.5rem; max-width: 215px; }
   .info .row strong { font-size: 0.82rem; }
   .info .types { margin: 0.2rem 0; }
@@ -344,6 +344,17 @@
   .result { padding: 1rem; }
 }
 
+/* ---- landscape phone: arena left, moves right, log slimmed to a strip ---- */
+@include short {
+  .battle { padding-top: 0.25rem; padding-bottom: 1rem; }
+  .battle.in-fight pv-page-header { display: none; }
+  .fighter .sprite { --s: clamp(3.4rem, calc(var(--dvh) * 24), 7rem); }
+  .stage-main { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; gap: 0.6rem; }
+  .stage-main > .result { grid-column: 1 / -1; }
+  .thinking { grid-column: 2; margin: 0; }
+  .log-lines { max-height: 4.5rem; }
+}
+
 /* ---- large view: log to the right, full-height & self-scrolling ---- */
 @include up(xl) {
   .battle { max-width: 1180px; }
@@ -351,7 +362,7 @@
   .log {
     position: sticky;
     top: calc(var(--header-h) + 1rem);
-    max-height: calc(100vh - var(--header-h) - 2rem);
+    max-height: calc(calc(var(--dvh) * 100) - var(--header-h) - 2rem);
   }
   .log-lines { max-height: none; flex: 1; }
 }

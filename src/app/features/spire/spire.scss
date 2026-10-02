@@ -6,7 +6,7 @@
 .err { color: #ff8a8a; }
 .h { margin: 1.1rem 0 0.7rem; font-size: 1.05rem; }
 
-.state { display: grid; place-items: center; min-height: 30vh; }
+.state { display: grid; place-items: center; min-height: calc(var(--dvh) * 30); }
 
 /* ---- intro / meta ---- */
 .intro { display: grid; gap: 1rem; max-width: 560px; margin-inline: auto; text-align: center; }

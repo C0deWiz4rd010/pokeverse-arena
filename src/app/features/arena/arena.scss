@@ -2,7 +2,7 @@
 
 :host {
   display: block;
-  width: min(1100px, 100%);
+  width: min(var(--content-max), 100%);
   margin-inline: auto;
   padding-bottom: 3rem;
 }
@@ -351,7 +351,7 @@
   display: grid;
   place-items: center;
   gap: 0.8rem;
-  min-height: min(50vh, 420px);
+  min-height: min(calc(var(--dvh) * 50), 420px);
   text-align: center;
 }
 
@@ -399,7 +399,7 @@
   background: rgba(0, 0, 0, 0.18);
   border: 1px solid var(--glass-border);
 }
-@media (max-width: 560px) { .badge-case { grid-template-columns: repeat(6, 1fr); } }
+@include below(sm) { .badge-case { grid-template-columns: repeat(6, 1fr); } }
 .case-slot {
   --type: var(--accent);
   display: grid;

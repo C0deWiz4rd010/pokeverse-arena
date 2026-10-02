@@ -63,10 +63,7 @@
   }
 
   @if (store.team().length === 0) {
-    <div class="empty glass">
-      <span class="poke" aria-hidden="true"><pv-icon name="circle" /></span>
-      <p>Your team is empty. Search above to add your first Pokémon.</p>
-    </div>
+    <pv-state kind="empty" icon="circle" title="Your team is empty" text="Search above to add your first Pokémon." />
   } @else {
     <div class="roster">
       @for (member of store.team(); track member.uid) {

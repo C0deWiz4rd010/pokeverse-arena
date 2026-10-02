@@ -13,7 +13,7 @@
   top: 50%;
   transform: translate(-50%, -50%);
   width: min(880px, 94vw);
-  max-height: 88vh;
+  max-height: calc(var(--dvh) * 88);
   overflow: auto;
   padding: 1rem 1.1rem 1.3rem;
   border-radius: var(--radius);

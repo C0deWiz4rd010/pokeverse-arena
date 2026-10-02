@@ -4,6 +4,37 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.3.0 — 2026-10-02
+
+🛠️ **Quality, resilience & responsive foundation** (phases A–E of the polish plan).
+
+### Added
+
+- **Offline-first PWA** — the service worker now precaches the app shell on first
+  visit (list + build id stamped by `tools/postbuild.mjs`), PNG/maskable icons,
+  manifest shortcuts, and a CSP.
+- **Save backup** — export/import all progress as JSON from the Profile page.
+- **Resilient data layer** — API requests are throttled (6 at once), time out and
+  retry with backoff; the cache sweeps expired entries and caps memory; saves are
+  versioned with a migration ladder, corrupt blobs are backed up, and RPG saves are
+  repaired/quarantined instead of crashing.
+- **Responsive system** — fluid design tokens (`--dvh`, spacing/type scales,
+  `--gutter`, `--content-max`), unified breakpoints (+`xs`, `xxl`), landscape-phone
+  (`short`) layouts for the shell, bottom nav, battles and detail page, safe-area
+  handling, fluid battle sprites via container queries, 44px touch targets.
+- **Shared `pv-state`** loading/empty/error block (with retry) in Pokédex, Pokémon
+  detail and Team Builder.
+- **Tooling** — ESLint, CI verify job (typecheck, lint, tests), Lighthouse job,
+  tighter bundle budgets, 7-viewport screenshot matrix.
+
+### Fixed
+
+- `ng test` compiled no specs (typing errors) — the suite runs again (435 tests).
+- Stale service-worker shell/opaque-image caching; unguarded `localStorage` reads
+  that could crash start-up; hero scene leaking when leaving Home mid-load; achievement
+  polling in background tabs; stale-chunk errors after a deploy now reload or notify.
+- Desktop nav no longer wraps to two rows (icon-only with tooltips below 1600px).
+
 ## v2.2.4 — 2026-07-31
 
 📱 **Mobile-first polish** — a careful pass over every view to fix cramped

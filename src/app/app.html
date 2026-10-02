@@ -9,7 +9,7 @@
     <span class="brand-sub">Arena</span>
   </a>
 
-  <button class="palette-btn" type="button" (click)="openPalette()" title="Search & commands (Ctrl+K)">
+  <button class="palette-btn" type="button" (click)="openPalette()" title="Search & commands (Ctrl+K)" aria-label="Search and commands" aria-keyshortcuts="Control+K Meta+K">
     <pv-icon name="search" />
     <span class="pb-label">Search…</span>
     <kbd class="pb-kbd">Ctrl K</kbd>
@@ -20,20 +20,22 @@
     type="button"
     (click)="toggleMenu()"
     [attr.aria-expanded]="menuOpen()"
+    aria-controls="site-nav"
     aria-label="Toggle navigation"
   >
     <span></span><span></span><span></span>
   </button>
 
-  <nav class="nav" [class.open]="menuOpen()">
+  <nav class="nav" id="site-nav" aria-label="Main" [class.open]="menuOpen()">
     @for (item of nav; track item.path) {
       <a
         [routerLink]="item.path"
         routerLinkActive="active"
+        [attr.title]="item.label"
         (click)="closeMenu()"
       >
         <span class="nav-icon" aria-hidden="true"><pv-icon [name]="item.icon" /></span>
-        <span>{{ item.label }}</span>
+        <span class="nav-label">{{ item.label }}</span>
       </a>
     }
   </nav>

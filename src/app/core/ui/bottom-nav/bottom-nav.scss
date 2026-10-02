@@ -13,8 +13,8 @@
 
 .bnav {
   position: fixed;
-  left: 0.5rem;
-  right: 0.5rem;
+  left: max(0.5rem, var(--safe-left));
+  right: max(0.5rem, var(--safe-right));
   bottom: 0.5rem;
   z-index: 60;
   display: grid;
@@ -39,7 +39,7 @@
   border-radius: 14px;
   color: var(--text-faint);
   font: inherit;
-  font-size: 0.62rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -91,9 +91,11 @@
 }
 .sheet {
   position: fixed;
-  left: 0.5rem;
-  right: 0.5rem;
+  left: max(0.5rem, var(--safe-left));
+  right: max(0.5rem, var(--safe-right));
   bottom: 0.5rem;
+  max-height: calc(var(--dvh) * 88);
+  overflow-y: auto;
   z-index: 66;
   padding: 0.7rem 0.8rem 0.9rem;
   @include safe-bottom(0.7rem);
@@ -120,7 +122,7 @@
   padding: 0.55rem 0.2rem;
   border-radius: 14px;
   color: var(--text-dim);
-  font-size: 0.66rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   text-align: center;
   transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
@@ -141,6 +143,18 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
   color: var(--accent);
+}
+
+/* Landscape phone: a slim icon-only bar and a wider, shorter sheet. */
+@include short {
+  .bnav { padding-block: 0.15rem; }
+  .bslot { flex-direction: row; min-height: 44px; }
+  /* visually hidden, still announced */
+  .bslot:not(.center) span { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .bslot.center { margin-top: -0.5rem; }
+  .orb { width: 2.6rem; height: 2.6rem; }
+  .sheet-grid { grid-template-columns: repeat(7, 1fr); }
+  .sheet-icon { width: 2.3rem; height: 2.3rem; }
 }
 
 @keyframes scrim-in {

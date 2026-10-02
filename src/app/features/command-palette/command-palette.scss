@@ -1,3 +1,5 @@
+@use '../../../styles/responsive' as *;
+
 .cmd-backdrop {
   position: fixed;
   inset: 0;
@@ -5,7 +7,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: min(14vh, 8rem) 1rem 1rem;
+  padding: min(calc(var(--dvh) * 14), 8rem) 1rem 1rem;
   background: rgba(5, 6, 15, 0.6);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -14,7 +16,7 @@
 
 .cmd-panel {
   width: min(640px, 100%);
-  max-height: min(70vh, 34rem);
+  max-height: min(calc(var(--dvh) * 70), 34rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -164,6 +166,6 @@ kbd {
   span { display: inline-flex; align-items: center; gap: 0.3rem; }
 }
 
-@media (max-width: 480px) {
+@include below(sm) {
   .cmd-hint, .cmd-foot { display: none; }
 }

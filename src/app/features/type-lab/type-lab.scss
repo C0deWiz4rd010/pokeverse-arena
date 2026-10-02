@@ -321,7 +321,7 @@ tr.hi .row-head { background: color-mix(in srgb, var(--c) 35%, #14122a); color: 
 .hm-nums .w.hot { color: #ff8a8a; }
 .hm-nums .r { color: #7fe6a6; }
 .cov-row { display: grid; gap: 0.8rem; }
-@media (min-width: 720px) { .cov-row { grid-template-columns: 1fr 1fr; } }
+@include up(md) { .cov-row { grid-template-columns: 1fr 1fr; } }
 .cov-h { font-size: 0.8rem; font-weight: 700; display: block; margin-bottom: 0.3rem; }
 .cov.covered .cov-h { color: #7fe6a6; }
 .cov.gaps .cov-h { color: #ff8a8a; }

@@ -1,3 +1,4 @@
+import { StateComponent } from '../../core/ui/state/state';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,7 +17,6 @@ import { StatRadarComponent } from './stat-radar';
 import { EvolutionTreeComponent } from './evolution-tree';
 import { StatBarComponent } from '../../core/ui/stat-bar/stat-bar';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
-import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { CryService } from '../../core/audio/cry.service';
 import { PokedexService } from '../pokedex/pokedex.service';
@@ -39,11 +39,11 @@ const DEX_MAX = 1025;
   selector: 'pv-pokemon-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    StateComponent,
     StatRadarComponent,
     EvolutionTreeComponent,
     StatBarComponent,
     TypeBadgeComponent,
-    SpinnerComponent,
     IconComponent,
   ],
   templateUrl: './pokemon-detail.html',
@@ -184,6 +184,10 @@ export class PokemonDetailComponent {
         { threshold: 60 },
       );
     });
+  }
+
+  protected reload(): void {
+    void this.store.load(this.id().toLowerCase()).then(() => this.onLoaded());
   }
 
   private onLoaded(): void {

@@ -1,3 +1,4 @@
+import { StateComponent } from '../../core/ui/state/state';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -44,6 +45,7 @@ const VIEWS: { id: DexView; label: string; glyph: string }[] = [
   selector: 'pv-pokedex',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    StateComponent,
     PokemonCardComponent,
     PokemonQuickviewComponent,
     PokemonCompareComponent,

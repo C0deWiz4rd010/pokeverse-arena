@@ -81,7 +81,7 @@ import type { IconName } from '../icon/icons.data';
       }
       /* Small phones: the title alone carries the page — the subtitle's
          explainer costs a text block of scroll on every feature. */
-      @media (max-width: 479px) {
+      @media (max-width: 479.98px) {
         :host {
           margin-bottom: 0.6rem;
         }

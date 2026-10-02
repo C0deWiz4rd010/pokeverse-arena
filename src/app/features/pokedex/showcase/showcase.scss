@@ -7,7 +7,7 @@
   --t1: var(--accent);
   --t2: var(--accent-2);
   position: relative;
-  min-height: calc(100vh - 140px);
+  min-height: calc(calc(var(--dvh) * 100) - 140px);
   display: flex;
   flex-direction: column;
   gap: 0.8rem;

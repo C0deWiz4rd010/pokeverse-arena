@@ -29,7 +29,7 @@
 }
 
 /* ----------------------------------------------------------------- title */
-.title { display: grid; place-items: center; min-height: 60vh; padding: 2rem 0; }
+.title { display: grid; place-items: center; min-height: calc(var(--dvh) * 60); padding: 2rem 0; }
 .title-card {
   display: grid; gap: 0.9rem; justify-items: center; text-align: center;
   width: min(560px, 100%); padding: 2rem 1.4rem; border-radius: var(--radius);
@@ -60,7 +60,7 @@
   width: 100%;
   margin-top: 0.4rem;
   grid-template-columns: 1fr;
-  @media (min-width: 560px) { grid-template-columns: repeat(3, 1fr); }
+  @include up(sm) { grid-template-columns: repeat(3, 1fr); }
 }
 .slot-card {
   display: flex; flex-direction: column; align-items: center; gap: 0.3rem;

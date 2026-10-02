@@ -136,14 +136,9 @@
     </div>
     <p class="sr-only" role="status">Loading the Pokédex…</p>
   } @else if (store.error()) {
-    <div class="state glass">
-      <p><pv-icon name="triangle-alert" /> {{ store.error() }}</p>
-    </div>
+    <pv-state kind="error" title="Could not load the Pokédex" [text]="store.error() ?? ''" actionLabel="Try again" (action)="store.ensureLoaded()" />
   } @else if (store.total() === 0) {
-    <div class="state glass">
-      <p>No Pokémon match your filters.</p>
-      <button class="btn btn-primary" type="button" (click)="clear()">Clear filters</button>
-    </div>
+    <pv-state kind="empty" title="No Pokémon match your filters" text="Try a different search or loosen a filter." actionLabel="Clear filters" (action)="clear()" />
   } @else {
     <div class="grid" [class.gallery]="store.view() === 'gallery'" [class.compact]="store.view() === 'compact'" [class.list]="store.view() === 'list'">
       @for (entry of store.visible(); track entry.id; let i = $index) {

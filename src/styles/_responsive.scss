@@ -4,10 +4,12 @@
 @use 'sass:map';
 
 $breakpoints: (
+  xs: 361px, /* below(xs) = phones up to and including 360px wide */
   sm: 480px,
   md: 768px,
   lg: 1024px,
   xl: 1280px,
+  xxl: 1600px,
 );
 
 @mixin up($name) {
@@ -44,4 +46,73 @@ $breakpoints: (
 }
 @mixin safe-right($base: 0px) {
   padding-right: calc(#{$base} + env(safe-area-inset-right, 0px));
+}
+
+/* ------------------------------------------------------------ input / shape */
+
+/* Phones held sideways: wide but very short. Pair with compact HUDs. */
+@mixin short {
+  @media (max-height: 480px) and (orientation: landscape) {
+    @content;
+  }
+}
+
+/* Real hover (mouse / trackpad). Keeps hover effects off touch screens, where
+   they stick after a tap. */
+@mixin hover-capable {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}
+
+/* Touch-first devices (finger-sized targets). */
+@mixin touch {
+  @media (pointer: coarse) {
+    @content;
+  }
+}
+
+/* Minimum comfortable hit area, centred around the visible control. */
+@mixin touch-target($size: var(--tap)) {
+  min-height: $size;
+  min-width: $size;
+}
+
+/* ------------------------------------------------------------ shared surfaces */
+
+@mixin glass-card($pad: var(--space-4)) {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  padding: $pad;
+}
+
+@mixin pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  font-size: var(--fs-sm);
+}
+
+@mixin section-title {
+  margin: var(--space-5) 0 var(--space-3);
+  font-size: var(--fs-lg);
+  letter-spacing: -0.01em;
+}
+
+/* Centred block for loading / empty / error messages. */
+@mixin state-block($min: 30) {
+  display: grid;
+  place-items: center;
+  gap: var(--space-3);
+  min-height: calc(var(--dvh) * #{$min});
+  text-align: center;
+  color: var(--text-dim);
 }
