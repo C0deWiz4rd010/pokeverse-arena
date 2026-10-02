@@ -38,7 +38,7 @@
 
             @if (svc.performer(); as p) {
               <div class="performer-card">
-                <img [src]="p.sprite" [alt]="p.name" width="120" height="120" />
+                <img decoding="async" [src]="p.sprite" [alt]="p.name" width="120" height="120" />
                 <div class="who"><strong>{{ p.name }}</strong><span class="dex">#{{ p.dex }}</span></div>
               </div>
             }
@@ -118,7 +118,7 @@
 
             <div class="spotlight">
               @if (svc.performer(); as p) {
-                <img class="perf-sprite" [src]="p.sprite" [alt]="p.name" />
+                <img decoding="async" class="perf-sprite" [src]="p.sprite" [alt]="p.name" />
               }
               <!-- floating hearts + outcome banner, re-created each round to replay the animation -->
               @for (o of [svc.lastOutcome()]; track o?.round) {

@@ -8,7 +8,7 @@
       <button class="speed-chip" type="button" (click)="cycleSpeed()" title="Battle speed" [attr.aria-label]="'Battle speed ' + speed() + '×'">{{ speed() }}×</button>
       @if (vsShown() && vsFace(); as face) {
         <div class="vs-banner" aria-hidden="true">
-          <img class="vs-face" [src]="face" alt="" />
+          <img decoding="async" class="vs-face" [src]="face" alt="" />
           <span class="vs-text"><strong>{{ trainerName() }}</strong> wants to battle!</span>
         </div>
       }
@@ -24,7 +24,7 @@
             <div class="types">@for (t of foe.types; track t) { <pv-type-badge [type]="t" /> }</div>
             <div class="hpbar"><span class="fill" [class.mid]="fHpPct() <= 55 && fHpPct() > 25" [class.low]="fHpPct() <= 25" [style.width.%]="fHpPct()"></span></div>
           </div>
-          <img class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foeAnim()" (error)="$any($event.target).src = foe.sprite" [alt]="foe.name" />
+          <img decoding="async" class="sprite" [class.send-in]="enterFoe()" [class.fainting]="faintSide() === 1" [src]="foeAnim()" (error)="$any($event.target).src = foe.sprite" [alt]="foe.name" />
         }
         @for (f of floats(); track f.id) {
           @if (f.side === 1) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
@@ -37,7 +37,7 @@
           @if (f.side === 0) { <span class="dmg-float {{ f.cls }}" aria-hidden="true">{{ f.text }}</span> }
         }
         @if (playerActive(); as me) {
-          <img class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="playerAnim()" (error)="$any($event.target).src = me.sprite" [alt]="me.name" />
+          <img decoding="async" class="sprite" [class.send-in]="enterMine()" [class.fainting]="faintSide() === 0" [src]="playerAnim()" (error)="$any($event.target).src = me.sprite" [alt]="me.name" />
           <div class="info">
             <div class="row">
               <strong>{{ titleCase(me.name) }}</strong>

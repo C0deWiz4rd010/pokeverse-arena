@@ -13,7 +13,7 @@ import type { EvolutionNode } from '../../core/models/pokemon.model';
     <div class="stage">
       <a class="node" [class.current]="node().id === currentId()" [routerLink]="['/pokemon', node().id]">
         <span class="halo" aria-hidden="true"></span>
-        <img [src]="node().artwork" [alt]="name()" loading="lazy" (error)="onError($event)" />
+        <img decoding="async" [src]="node().artwork" [alt]="name()" loading="lazy" (error)="onError($event)" />
         <span>{{ name() }}</span>
       </a>
 

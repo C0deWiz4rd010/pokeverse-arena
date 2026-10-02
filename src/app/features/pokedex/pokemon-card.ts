@@ -79,7 +79,7 @@ export interface QuickviewRequest {
           (error)="onError($event)"
         />
         @if (hovering() && !animFail()) {
-          <img class="anim" [src]="animSrc()" [alt]="''" aria-hidden="true" (error)="animFail.set(true)" />
+          <img decoding="async" class="anim" [src]="animSrc()" [alt]="''" aria-hidden="true" (error)="animFail.set(true)" />
         }
       </div>
 

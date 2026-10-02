@@ -9,12 +9,14 @@ import {
   withHashLocation,
   withInMemoryScrolling,
   withNavigationErrorHandler,
+  withPreloading,
   withViewTransitions,
 } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 
 import { routes } from './app.routes';
 import { chunkAwareNavigationErrorHandler } from './core/update/chunk-error';
+import { IdlePreloadStrategy } from './core/update/idle-preload';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,6 +35,7 @@ export const appConfig: ApplicationConfig = {
       // paint and logs an InvalidStateError abort.
       withViewTransitions({ skipInitialTransition: true }),
       withNavigationErrorHandler(chunkAwareNavigationErrorHandler),
+      withPreloading(IdlePreloadStrategy),
     ),
   ],
 };

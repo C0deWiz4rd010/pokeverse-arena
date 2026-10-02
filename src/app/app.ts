@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from './core/version';
 import { ThemeService } from './core/theme/theme.service';
 import { SaveService } from './core/storage/save.service';
+import { installImageFallback } from './core/ui/image-fallback';
 import { IconComponent } from './core/ui/icon/icon';
 import type { IconName } from './core/ui/icon/icons.data';
 import { ToastsComponent } from './core/ui/toast/toasts';
@@ -60,6 +61,7 @@ export class App {
   constructor() {
     this.achievements.start();
     void this.saves.requestPersistence();
+    installImageFallback();
   }
 
   /** ⌘K / Ctrl+K opens the command palette from anywhere. */

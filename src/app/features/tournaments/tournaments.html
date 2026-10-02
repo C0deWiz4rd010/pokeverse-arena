@@ -89,7 +89,7 @@
         <div class="pool">
           @for (mon of svc.draftPool(); track mon.id) {
             <button class="pick" type="button" [class.on]="isPicked(mon)" (click)="toggleDraft(mon)">
-              <img [src]="mon.sprite" [alt]="mon.name" loading="lazy" />
+              <img decoding="async" [src]="mon.sprite" [alt]="mon.name" loading="lazy" />
               <span class="pk-name">{{ titleCase(mon.name) }}</span>
               <span class="pk-types">
                 @for (t of mon.types; track t) { <pv-type-badge [type]="t" /> }
@@ -124,7 +124,7 @@
             </div>
           }
           <span class="crown"><pv-icon name="crown" /></span>
-          <img class="champ-ava" [src]="champ.avatar" [alt]="champ.name" />
+          <img decoding="async" class="champ-ava" [src]="champ.avatar" [alt]="champ.name" />
           <p class="champ-name">
             {{ championIsPlayer() ? 'You are the Champion!' : champ.name + ' lifts the trophy' }}
           </p>
@@ -153,7 +153,7 @@
         <div class="cta" [class.rival-up]="foeIsRival()">
           <span class="cta-round">{{ isLeague() ? 'Next match' : roundLabel[setup.round] }}</span>
           <div class="cta-foe">
-            <img class="ava" [src]="setup.foe.avatar" [alt]="setup.foe.name" loading="lazy" />
+            <img decoding="async" class="ava" [src]="setup.foe.avatar" [alt]="setup.foe.name" loading="lazy" />
             <div class="cta-foe-meta">
               <p class="vs">vs {{ setup.foe.name }} @if (foeIsRival()) { <span class="rival-tag">RIVAL</span> }</p>
               <p class="foe-title">{{ setup.foe.title }}</p>
@@ -164,7 +164,7 @@
           }
           <div class="cta-team">
             @for (mon of setup.foeTeam; track mon.id) {
-              <img [src]="mon.sprite" [alt]="mon.name" [title]="titleCase(mon.name)" loading="lazy" />
+              <img decoding="async" [src]="mon.sprite" [alt]="mon.name" [title]="titleCase(mon.name)" loading="lazy" />
             }
           </div>
           <div class="cta-odds" [attr.data-tier]="matchOdds() >= 55 ? 'up' : matchOdds() > 45 ? 'even' : 'down'">
@@ -194,7 +194,7 @@
           <div class="pk-strip">
             @for (o of pickOptions(); track o.id) {
               <button class="pk-opt" type="button" (click)="svc.makePick(o.id)" [title]="o.name + ' — pays +' + o.payout + ' ₽ on the title'">
-                <img [src]="o.avatar" [alt]="o.name" loading="lazy" />
+                <img decoding="async" [src]="o.avatar" [alt]="o.name" loading="lazy" />
                 <span class="pk-name">{{ o.name }}@if (o.isRival) { <span aria-hidden="true">⚡</span> }</span>
                 <span class="pk-mult">×{{ o.mult }}</span>
               </button>
@@ -205,7 +205,7 @@
         @if (!svc.pickResult()) {
           <div class="pickem chosen">
             <span class="pk-head">🔮 Your call:</span>
-            <img class="pk-ava" [src]="p.avatar" [alt]="p.name" />
+            <img decoding="async" class="pk-ava" [src]="p.avatar" [alt]="p.name" />
             <span class="pk-call">{{ p.name }} <span class="pk-mult">×{{ p.mult }}</span> — pays +{{ p.payout }} ₽ on the title</span>
             @if (!svc.pickLocked()) { <button class="ghost" type="button" (click)="svc.clearPick()">Change</button> }
           </div>
@@ -291,7 +291,7 @@
   <div class="bmatch" [class.live]="isLive(m)" [class.player]="hasPlayer(m)" [class.done]="m.played">
     <div class="slot" [class.win]="m.played && m.winner === 0" [class.out]="m.played && m.winner === 1" [class.rival]="m.a?.isRival">
       @if (m.a) {
-        <img class="ava" [src]="m.a.avatar" [alt]="m.a.name" loading="lazy" />
+        <img decoding="async" class="ava" [src]="m.a.avatar" [alt]="m.a.name" loading="lazy" />
         @if (m.a.seed) { <span class="seed">{{ m.a.seed }}</span> }
       } @else {
         <span class="ava ph">·</span>
@@ -300,7 +300,7 @@
     </div>
     <div class="slot" [class.win]="m.played && m.winner === 1" [class.out]="m.played && m.winner === 0" [class.rival]="m.b?.isRival">
       @if (m.b) {
-        <img class="ava" [src]="m.b.avatar" [alt]="m.b.name" loading="lazy" />
+        <img decoding="async" class="ava" [src]="m.b.avatar" [alt]="m.b.name" loading="lazy" />
         @if (m.b.seed) { <span class="seed">{{ m.b.seed }}</span> }
       } @else {
         <span class="ava ph">·</span>

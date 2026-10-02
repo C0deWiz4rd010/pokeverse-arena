@@ -25,7 +25,7 @@ import type { PokedexEntry } from '../../core/models/pokemon.model';
 
       @if (answer(); as a) {
         <div class="silhouette" [class.revealed]="revealed()">
-          <img [src]="art(a)" [alt]="revealed() ? a.name : 'Mystery Pokémon'" />
+          <img decoding="async" [src]="art(a)" [alt]="revealed() ? a.name : 'Mystery Pokémon'" />
         </div>
 
         @if (revealed()) {

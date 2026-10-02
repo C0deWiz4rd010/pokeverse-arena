@@ -41,7 +41,7 @@
               (click)="execute(item)"
             >
               @if (item.sprite) {
-                <img class="cmd-sprite" [src]="item.sprite" alt="" loading="lazy" width="40" height="40" />
+                <img decoding="async" class="cmd-sprite" [src]="item.sprite" alt="" loading="lazy" width="40" height="40" />
               } @else if (item.icon) {
                 <span class="cmd-icon" aria-hidden="true"><pv-icon [name]="item.icon" /></span>
               }

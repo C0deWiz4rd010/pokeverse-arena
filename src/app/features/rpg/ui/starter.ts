@@ -24,7 +24,7 @@ interface Starter {
       <div class="st-grid">
         @for (s of starters; track s.species) {
           <button class="st-card" type="button" [style.--type]="'var(--type-' + s.type + ')'" (click)="pick(s.species)">
-            <img [src]="art(s.dex)" [alt]="s.name" loading="lazy" />
+            <img decoding="async" [src]="art(s.dex)" [alt]="s.name" loading="lazy" />
             <strong>{{ s.name }}</strong>
             <pv-type-badge [type]="s.type" />
             <span class="st-blurb">{{ s.blurb }}</span>

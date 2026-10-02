@@ -12,7 +12,8 @@
     "lint": "eslint \"src/**/*.{ts,html}\"",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.spec.json",
     "test:ci": "ng test --no-watch",
-    "verify": "npm run typecheck && npm run lint && npm run test:ci && npm run build"
+    "verify": "npm run typecheck && npm run lint && npm run test:ci && npm run build",
+    "postbuild": "node tools/postbuild.mjs"
   },
   "private": true,
   "packageManager": "npm@11.4.2",

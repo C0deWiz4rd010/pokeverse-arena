@@ -19,7 +19,7 @@
       <span class="fm-look-label">Look</span>
       @for (l of looks; track l.key) {
         <button type="button" class="look-btn" [class.on]="svc.appearance() === l.key" [attr.aria-pressed]="svc.appearance() === l.key" [title]="l.name" (click)="chooseLook(l.key)">
-          <img [src]="lookFace(l.key)" [alt]="l.name" />
+          <img decoding="async" [src]="lookFace(l.key)" [alt]="l.name" />
         </button>
       }
     </div>
@@ -61,7 +61,7 @@
     <div class="fm-box">
       @for (m of boxView(); track m.i) {
         <div class="box-mon">
-          <img [src]="m.sprite" [alt]="m.name" loading="lazy" />
+          <img decoding="async" [src]="m.sprite" [alt]="m.name" loading="lazy" />
           <span class="box-name">{{ m.name }}</span>
           <span class="box-lv">Lv{{ m.level }}</span>
           <button type="button" class="withdraw" (click)="svc.withdraw(m.i)">Withdraw</button>
@@ -108,7 +108,7 @@
           <div class="mem-grid">
             @for (f of fallenView(); track $index) {
               <span class="mem-mon" [title]="f.name + ' · fell at Lv' + f.level">
-                <img [src]="f.sprite" [alt]="f.name" loading="lazy" />
+                <img decoding="async" [src]="f.sprite" [alt]="f.name" loading="lazy" />
                 <small>{{ f.name }} · Lv{{ f.level }}</small>
               </span>
             }
@@ -117,7 +117,7 @@
       }
       <div class="dex-grid">
         @for (m of dexView().mons; track m.id) {
-          <span class="dex-mon"><img [src]="m.sprite" [alt]="'#' + m.id" loading="lazy" /></span>
+          <span class="dex-mon"><img decoding="async" [src]="m.sprite" [alt]="'#' + m.id" loading="lazy" /></span>
         } @empty {
           <p class="fm-empty">No Pokémon caught yet.</p>
         }

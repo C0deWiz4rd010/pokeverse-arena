@@ -57,7 +57,7 @@ const REDUCED =
           <header class="qv-head">
             <div class="qv-art">
               @if (!loaded()) { <span class="skel" aria-hidden="true"></span> }
-              <img [src]="art()" [alt]="name()" (load)="loaded.set(true)" (error)="onArtError($event)" />
+              <img decoding="async" [src]="art()" [alt]="name()" (load)="loaded.set(true)" (error)="onArtError($event)" />
             </div>
             <div class="qv-id">
               <span class="num">{{ num() }}</span>
@@ -100,7 +100,7 @@ const REDUCED =
                           [routerLink]="['/pokemon', s.id]"
                           [title]="titleCase(s.name) + (s.trigger ? ' · ' + s.trigger : '')"
                         >
-                          <img [src]="evoSprite(s.id)" [alt]="s.name" loading="lazy" />
+                          <img decoding="async" [src]="evoSprite(s.id)" [alt]="s.name" loading="lazy" />
                         </a>
                       }
                     </div>

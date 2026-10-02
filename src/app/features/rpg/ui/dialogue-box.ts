@@ -24,7 +24,7 @@ const FACE_KEYS = new Set(['boy', 'girl', 'prof', 'nurse', 'clerk', 'leader', 'o
     @if (svc.dialogue(); as d) {
       <div class="dbox" [class.with-face]="!!faceUrl()" (click)="onAdvance()">
         @if (faceUrl(); as f) {
-          <span class="face" aria-hidden="true"><img [src]="f" alt="" /></span>
+          <span class="face" aria-hidden="true"><img decoding="async" [src]="f" alt="" /></span>
         }
         @if (d.speaker) { <span class="speaker">{{ d.speaker }}</span> }
         <p class="text">{{ shown() }}<span class="caret" [class.show]="!revealed()">▌</span></p>

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { AmbientLight, BufferAttribute, BufferGeometry, Clock, Group, IcosahedronGeometry, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, PointLight, Points, PointsMaterial, Scene, WebGLRenderer } from 'three';
 
 /**
  * Lazily-imported Three.js hero: a holographic Poke Ball energy core made of an
@@ -7,20 +7,20 @@ import * as THREE from 'three';
  * the renderer, geometries and listeners.
  */
 export function createHeroScene(canvas: HTMLCanvasElement): () => void {
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  const scene = new Scene();
+  const camera = new PerspectiveCamera(50, 1, 0.1, 100);
   camera.position.z = 4.2;
 
-  const group = new THREE.Group();
+  const group = new Group();
   scene.add(group);
 
   // Inner solid core
-  const core = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(1, 1),
-    new THREE.MeshStandardMaterial({
+  const core = new Mesh(
+    new IcosahedronGeometry(1, 1),
+    new MeshStandardMaterial({
       color: 0x6ce0ff,
       emissive: 0x1b2a6b,
       metalness: 0.7,
@@ -31,9 +31,9 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
   group.add(core);
 
   // Glowing wireframe shell
-  const shell = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(1.55, 1),
-    new THREE.MeshBasicMaterial({ color: 0xc46bff, wireframe: true, transparent: true, opacity: 0.4 }),
+  const shell = new Mesh(
+    new IcosahedronGeometry(1.55, 1),
+    new MeshBasicMaterial({ color: 0xc46bff, wireframe: true, transparent: true, opacity: 0.4 }),
   );
   group.add(shell);
 
@@ -48,21 +48,21 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
     positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
     positions[i * 3 + 2] = r * Math.cos(phi);
   }
-  const particleGeo = new THREE.BufferGeometry();
-  particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const particles = new THREE.Points(
+  const particleGeo = new BufferGeometry();
+  particleGeo.setAttribute('position', new BufferAttribute(positions, 3));
+  const particles = new Points(
     particleGeo,
-    new THREE.PointsMaterial({ color: 0xffd166, size: 0.03, transparent: true, opacity: 0.8 }),
+    new PointsMaterial({ color: 0xffd166, size: 0.03, transparent: true, opacity: 0.8 }),
   );
   scene.add(particles);
 
-  const keyLight = new THREE.PointLight(0x6ce0ff, 60, 50);
+  const keyLight = new PointLight(0x6ce0ff, 60, 50);
   keyLight.position.set(4, 3, 5);
   scene.add(keyLight);
-  const rimLight = new THREE.PointLight(0xc46bff, 40, 50);
+  const rimLight = new PointLight(0xc46bff, 40, 50);
   rimLight.position.set(-4, -2, 2);
   scene.add(rimLight);
-  scene.add(new THREE.AmbientLight(0x404060, 1.2));
+  scene.add(new AmbientLight(0x404060, 1.2));
 
   const pointer = { x: 0, y: 0 };
   const onPointer = (e: PointerEvent) => {
@@ -84,7 +84,7 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
   resize();
 
   let raf = 0;
-  const clock = new THREE.Clock();
+  const clock = new Clock();
   const animate = () => {
     const t = clock.getElapsedTime();
     group.rotation.y = t * 0.4 + pointer.x * 0.6;
@@ -103,11 +103,11 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
     ro.disconnect();
     window.removeEventListener('pointermove', onPointer);
     core.geometry.dispose();
-    (core.material as THREE.Material).dispose();
+    (core.material as Material).dispose();
     shell.geometry.dispose();
-    (shell.material as THREE.Material).dispose();
+    (shell.material as Material).dispose();
     particleGeo.dispose();
-    (particles.material as THREE.Material).dispose();
+    (particles.material as Material).dispose();
     renderer.dispose();
   };
 }

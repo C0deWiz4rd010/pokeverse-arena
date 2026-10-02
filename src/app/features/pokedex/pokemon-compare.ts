@@ -71,7 +71,7 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
           @for (m of mons(); track m.id) {
             <div class="mon-head">
               <button class="rm" type="button" (click)="removeId.emit(m.id)" aria-label="Remove"><pv-icon name="x" /></button>
-              <a [routerLink]="['/pokemon', m.id]"><img [src]="art(m)" [alt]="m.name" /></a>
+              <a [routerLink]="['/pokemon', m.id]"><img decoding="async" [src]="art(m)" [alt]="m.name" /></a>
               <strong>{{ titleCase(m.name) }}</strong>
               <span class="num">{{ padId(m.id) }}</span>
               <div class="types">@for (t of m.types; track t) { <pv-type-badge [type]="t" /> }</div>

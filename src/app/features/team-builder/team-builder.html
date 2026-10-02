@@ -77,8 +77,8 @@
         >
           <header class="m-head">
             <div class="m-art">
-              <img class="still" [src]="member.artwork" [alt]="member.name" loading="lazy" />
-              <img class="anim" [src]="animatedSprite(member.id)" alt="" aria-hidden="true" loading="lazy" />
+              <img decoding="async" class="still" [src]="member.artwork" [alt]="member.name" loading="lazy" />
+              <img decoding="async" class="anim" [src]="animatedSprite(member.id)" alt="" aria-hidden="true" loading="lazy" />
             </div>
             <div class="m-id">
               <input
@@ -182,7 +182,7 @@
           <ol class="tier-list">
             @for (s of speedTier(); track s.member.uid) {
               <li>
-                <img [src]="s.member.artwork" [alt]="s.member.name" loading="lazy" />
+                <img decoding="async" [src]="s.member.artwork" [alt]="s.member.name" loading="lazy" />
                 <span class="t-name">{{ s.member.nickname || titleCase(s.member.name) }}</span>
                 <span class="t-speed">{{ s.speed }}</span>
               </li>

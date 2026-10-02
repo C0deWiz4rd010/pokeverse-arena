@@ -4,19 +4,40 @@
     <meta charset="utf-8" />
     <title>PokéVerse Arena</title>
     <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="A modular Pokémon platform & browser game built on the PokéAPI — Pokédex, Type Lab, Team Builder and seeded battles." />
     <meta name="theme-color" content="#0b0a1f" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PokéVerse Arena" />
+    <meta property="og:description" content="Pokédex, Type Lab, Team Builder, battles, tournaments and a full pixel-art adventure — in your browser, installable and offline-ready." />
+    <meta name="twitter:card" content="summary" />
+    <!--
+      Content-Security-Policy (GitHub Pages cannot send headers, so it ships as a meta tag).
+      - 'unsafe-eval': PixiJS compiles shader-uniform sync code with new Function().
+      - the sha256 + 'unsafe-hashes' pair allows only Angular's critical-CSS swap handler
+        (onload="this.media='all'") — no other inline script is permitted.
+      - style 'unsafe-inline': Angular's component styles are injected at runtime.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-hashes' 'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://raw.githubusercontent.com https://api.dicebear.com; media-src 'self' blob: https://raw.githubusercontent.com; connect-src 'self' https://pokeapi.co https://raw.githubusercontent.com https://api.dicebear.com; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; form-action 'none'"
+    />
+    <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
+    <link rel="preconnect" href="https://pokeapi.co" crossorigin />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="icon.svg" />
-    <link rel="apple-touch-icon" href="icon.svg" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="mask-icon" href="icon.svg" color="#6ce0ff" />
     <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="PokéVerse" />
   </head>
   <body>
     <app-root></app-root>
+    <noscript>PokéVerse Arena needs JavaScript to run. Please enable it in your browser settings.</noscript>
   </body>
 </html>

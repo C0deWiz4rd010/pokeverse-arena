@@ -46,7 +46,7 @@ const DEX_MAX = 1025;
         <span class="glow"></span>
         <span class="ring"></span>
         <span class="ring r2"></span>
-        @if (detail(); as d) { <img class="echo" [src]="art()" alt="" /> }
+        @if (detail(); as d) { <img decoding="async" class="echo" [src]="art()" alt="" /> }
       </div>
 
       <header class="bar">
@@ -69,7 +69,7 @@ const DEX_MAX = 1025;
         <button class="nav prev" type="button" (click)="step(-1)" aria-label="Previous Pokémon">‹</button>
 
         <figure class="art-wrap" [style.transform]="tiltT()">
-          <img
+          <img decoding="async"
             class="art"
             [src]="art()"
             [alt]="name()"
@@ -130,7 +130,7 @@ const DEX_MAX = 1025;
                     <div class="evo-stage">
                       @for (s of stage; track s.id) {
                         <button class="evo-mon" type="button" [class.cur]="s.id === id()" (click)="jump(s.id)" [title]="titleCase(s.name)">
-                          <img [src]="evoSprite(s.id)" [alt]="s.name" loading="lazy" />
+                          <img decoding="async" [src]="evoSprite(s.id)" [alt]="s.name" loading="lazy" />
                         </button>
                       }
                     </div>

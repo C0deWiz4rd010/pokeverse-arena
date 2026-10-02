@@ -16,8 +16,8 @@
         <span class="sp-parents">{{ sp.headName }} × {{ sp.bodyName }}</span>
       </span>
       <span class="sp-imgs" aria-hidden="true">
-        <img [src]="sprite(sp.head)" alt="" loading="lazy" />
-        <img [src]="sprite(sp.body)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(sp.head)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(sp.body)" alt="" loading="lazy" />
       </span>
       <span class="sp-go">{{ sp.active ? '✓ In the lab' : 'Splice it →' }}</span>
     </button>
@@ -49,7 +49,7 @@
         <ul class="suggest" role="listbox">
           @for (s of suggestions('head'); track s.id) {
             <li role="option" (mousedown)="pick('head', s)">
-              <img [src]="sprite(s.id)" alt="" loading="lazy" />
+              <img decoding="async" [src]="sprite(s.id)" alt="" loading="lazy" />
               <span>{{ titleCase(s.name) }}</span>
               <small>#{{ s.id }}</small>
             </li>
@@ -91,7 +91,7 @@
         <ul class="suggest" role="listbox">
           @for (s of suggestions('body'); track s.id) {
             <li role="option" (mousedown)="pick('body', s)">
-              <img [src]="sprite(s.id)" alt="" loading="lazy" />
+              <img decoding="async" [src]="sprite(s.id)" alt="" loading="lazy" />
               <span>{{ titleCase(s.name) }}</span>
               <small>#{{ s.id }}</small>
             </li>
@@ -109,15 +109,15 @@
   @if (fusion(); as f) {
     <section class="stage" [class.merging]="phase() === 'merging'" [class.done]="phase() === 'done'" aria-live="polite">
       <div class="parents" aria-hidden="true">
-        @if (headArt(); as art) { <img class="parent left" [src]="art" alt="" /> }
+        @if (headArt(); as art) { <img decoding="async" class="parent left" [src]="art" alt="" /> }
         <span class="beam"></span>
-        @if (bodyArt(); as art) { <img class="parent right" [src]="art" alt="" /> }
+        @if (bodyArt(); as art) { <img decoding="async" class="parent right" [src]="art" alt="" /> }
       </div>
 
       <div class="result">
         <span class="halo" aria-hidden="true" [style.--h1]="'var(--type-' + f.types[0] + ')'" [style.--h2]="'var(--type-' + f.types[f.types.length - 1] + ')'"></span>
         @if (bodyArt(); as art) {
-          <img class="fused" [src]="art" [alt]="f.name" [style.filter]="fusedFilter()" />
+          <img decoding="async" class="fused" [src]="art" [alt]="f.name" [style.filter]="fusedFilter()" />
         }
         @for (s of [1, 2, 3, 4, 5, 6]; track s) {
           <span class="spark s{{ s }}" aria-hidden="true">✦</span>
@@ -171,7 +171,7 @@
       <div class="dex-grid">
         @for (entry of lab.dex(); track entry.code) {
           <button class="dex-card glass" type="button" (click)="loadSaved(entry)" [title]="'Load ' + entry.name">
-            <img [src]="sprite(entry.bodyId)" [alt]="entry.name" [style.filter]="savedFilter(entry)" loading="lazy" />
+            <img decoding="async" [src]="sprite(entry.bodyId)" [alt]="entry.name" [style.filter]="savedFilter(entry)" loading="lazy" />
             <span class="dex-name">{{ entry.name }}</span>
             <span class="dex-meta">#{{ entry.code }} · BST {{ entry.bst }}</span>
             <span class="dex-types">

@@ -12,7 +12,7 @@ const REDUCED =
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="evo" (click)="skip()">
-      <img class="evo-sprite" [class.flash]="flash()" [class.pulse]="pulse()" [src]="art(spriteId())" [alt]="caption()" />
+      <img decoding="async" class="evo-sprite" [class.flash]="flash()" [class.pulse]="pulse()" [src]="art(spriteId())" [alt]="caption()" />
       <p class="evo-text">{{ caption() }}</p>
     </div>
   `,

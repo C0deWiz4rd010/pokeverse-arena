@@ -7,14 +7,14 @@
 
         <div class="vs-stage">
           <div class="vs-side foe-side">
-            <div class="vs-avatar"><img [src]="svc.setup()?.foe?.avatar" [alt]="g.leader.name" /></div>
+            <div class="vs-avatar"><img decoding="async" [src]="svc.setup()?.foe?.avatar" [alt]="g.leader.name" /></div>
             <strong class="vs-name">{{ g.leader.name }}</strong>
             <span class="vs-title">{{ g.leader.title }}</span>
             <pv-type-badge [type]="g.leader.type" />
             @if (g.rematch) { <span class="vs-tag">Rematch · Lv{{ g.level }}</span> }
             <div class="vs-team">
               @for (m of g.foeTeam; track $index) {
-                <img class="vs-mon" [src]="m.sprite" [alt]="m.name" [title]="titleCase(m.name)" loading="lazy" />
+                <img decoding="async" class="vs-mon" [src]="m.sprite" [alt]="m.name" [title]="titleCase(m.name)" loading="lazy" />
               }
             </div>
           </div>
@@ -22,12 +22,12 @@
           <div class="vs-bolt" aria-hidden="true"><span>VS</span></div>
 
           <div class="vs-side you-side">
-            <div class="vs-avatar you"><img [src]="svc.setup()?.player?.avatar" alt="You" /></div>
+            <div class="vs-avatar you"><img decoding="async" [src]="svc.setup()?.player?.avatar" alt="You" /></div>
             <strong class="vs-name">You</strong>
             <span class="vs-title">Challenger</span>
             <div class="vs-team">
               @for (m of g.playerTeam; track $index) {
-                <img class="vs-mon" [src]="m.sprite" [alt]="m.name" [title]="titleCase(m.name)" loading="lazy" />
+                <img decoding="async" class="vs-mon" [src]="m.sprite" [alt]="m.name" [title]="titleCase(m.name)" loading="lazy" />
               }
             </div>
           </div>
@@ -218,7 +218,7 @@
               @for (m of scout(e.leader); track m.species) {
                 <span class="scout-mon" [class.ace]="m.ace" [title]="titleCase(m.species) + (m.ace ? ' · ace' : '')">
                   @if (m.art) {
-                    <img [src]="m.art" [alt]="m.species" loading="lazy" />
+                    <img decoding="async" [src]="m.art" [alt]="m.species" loading="lazy" />
                   } @else {
                     <span class="scout-ph" aria-hidden="true"></span>
                   }

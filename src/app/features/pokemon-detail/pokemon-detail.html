@@ -41,7 +41,7 @@
               </div>
             }
           }
-          <img class="sprite" [class.pixel]="animated()" [src]="spriteSrc()" [alt]="titleCase(s.pokemon.name)" (error)="onSpriteError($event)" />
+          <img decoding="async" class="sprite" [class.pixel]="animated()" [src]="spriteSrc()" [alt]="titleCase(s.pokemon.name)" (error)="onSpriteError($event)" />
         </div>
 
         <div class="sprite-controls">

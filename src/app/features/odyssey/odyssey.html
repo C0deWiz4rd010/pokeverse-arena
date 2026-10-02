@@ -39,7 +39,7 @@
         <div class="roster">
           @for (id of svc.starters(); track id) {
             <button class="roster-mon" type="button" [disabled]="svc.busy()" (click)="svc.pickStarter(id)">
-              <img [src]="sprite(id)" [alt]="'#' + id" loading="lazy" width="68" height="68" />
+              <img decoding="async" [src]="sprite(id)" [alt]="'#' + id" loading="lazy" width="68" height="68" />
               <span>#{{ id }}</span>
             </button>
           }
@@ -60,7 +60,7 @@
           <div class="foes">
             @for (id of s.species; track $index) {
               <div class="foe">
-                <img [src]="sprite(id)" [alt]="'#' + id" loading="lazy" width="72" height="72" />
+                <img decoding="async" [src]="sprite(id)" [alt]="'#' + id" loading="lazy" width="72" height="72" />
                 <span>Lv {{ s.level }}</span>
               </div>
             }
@@ -87,7 +87,7 @@
       @if (svc.daze(); as d) {
         <div class="catch glass">
           <h3>{{ titleCase(d.name) }} is dazed!</h3>
-          <img class="dazed" [src]="d.sprite" [alt]="d.name" width="140" height="140" />
+          <img decoding="async" class="dazed" [src]="d.sprite" [alt]="d.name" width="140" height="140" />
           <p class="hint">Catch chance {{ pct(d.chance) }}% · {{ svc.balls() }} ball{{ svc.balls() === 1 ? '' : 's' }} left</p>
           <div class="catch-actions">
             <button class="btn btn-primary" type="button" [disabled]="svc.balls() <= 0 || svc.busy()" (click)="svc.throwBall()">
@@ -143,7 +143,7 @@
           <p>New starters unlocked this run:</p>
           <div class="unlocks">
             @for (id of svc.runUnlocks(); track id) {
-              <img [src]="sprite(id)" [alt]="'#' + id" width="56" height="56" />
+              <img decoding="async" [src]="sprite(id)" [alt]="'#' + id" width="56" height="56" />
             }
           </div>
         } @else {
@@ -162,7 +162,7 @@
       <span class="party-coins" title="Coins"><pv-icon name="gem" /> {{ svc.coins() }}</span>
       @for (p of svc.partyView(); track p.mon.id + '-' + $index) {
         <div class="pm" [class.down]="p.hpPct <= 0" [title]="titleCase(p.mon.name) + ' · Lv ' + p.mon.level">
-          <img [src]="p.mon.sprite" [alt]="p.mon.name" loading="lazy" />
+          <img decoding="async" [src]="p.mon.sprite" [alt]="p.mon.name" loading="lazy" />
           <span class="pm-lv">L{{ p.mon.level }}</span>
           <span class="pm-bar"><span class="pm-fill" [class.low]="p.hpPct <= 25" [style.width.%]="p.hpPct"></span></span>
         </div>

@@ -52,9 +52,9 @@
         <span class="tc-meta">🔥 {{ daily.streak() }} streak · best {{ daily.best() }}</span>
       </span>
       <span class="tc-sprites" aria-hidden="true">
-        <img [src]="sprite(daily.matchup.playerId)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(daily.matchup.playerId)" alt="" loading="lazy" />
         <em>vs</em>
-        <img [src]="sprite(daily.matchup.opponentId)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(daily.matchup.opponentId)" alt="" loading="lazy" />
       </span>
       <span class="tc-go" aria-hidden="true">→</span>
     </a>
@@ -67,7 +67,7 @@
         <span class="tc-meta">A new mystery every day</span>
       </span>
       <span class="tc-sprites" aria-hidden="true">
-        <img [src]="sprite(who)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(who)" alt="" loading="lazy" />
       </span>
       <span class="tc-go" aria-hidden="true">{{ whoRevealed() ? '→' : '?' }}</span>
     </button>
@@ -80,9 +80,9 @@
         <span class="tc-meta">Same seeded pair for every trainer</span>
       </span>
       <span class="tc-sprites" aria-hidden="true">
-        <img [src]="sprite(special.head)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(special.head)" alt="" loading="lazy" />
         <em>×</em>
-        <img [src]="sprite(special.body)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(special.body)" alt="" loading="lazy" />
       </span>
       <span class="tc-go" aria-hidden="true">→</span>
     </a>
@@ -95,9 +95,9 @@
         <span class="tc-meta">🎯 Guess the stronger stat</span>
       </span>
       <span class="tc-sprites" aria-hidden="true">
-        <img [src]="sprite(showdownA)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(showdownA)" alt="" loading="lazy" />
         <em>vs</em>
-        <img [src]="sprite(showdownB)" alt="" loading="lazy" />
+        <img decoding="async" [src]="sprite(showdownB)" alt="" loading="lazy" />
       </span>
       <span class="tc-go" aria-hidden="true">→</span>
     </a>

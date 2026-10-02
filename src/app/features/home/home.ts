@@ -122,7 +122,10 @@ export class HomeComponent implements OnDestroy {
       const canvas = this.heroCanvas()?.nativeElement;
       // The orb is display:none below lg — skip the WebGL scene entirely there.
       const desktop = typeof matchMedia === 'undefined' || matchMedia('(min-width: 1024px)').matches;
-      if (REDUCED_MOTION || !desktop || !canvas) return;
+      // The 3D orb is decorative: skip its ~500 kB chunk on Data Saver or low-memory devices.
+      const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number };
+      const frugal = !!nav.connection?.saveData || (nav.deviceMemory !== undefined && nav.deviceMemory < 4);
+      if (REDUCED_MOTION || !desktop || frugal || !canvas) return;
       void this.initHero(canvas);
     });
   }

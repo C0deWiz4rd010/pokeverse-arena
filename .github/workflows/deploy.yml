@@ -42,6 +42,23 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
         continue-on-error: true
 
+  lighthouse:
+    name: Lighthouse (mobile, informational)
+    needs: verify
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Lighthouse CI
+        run: npx --yes @lhci/cli@0.14.x autorun
+
   build:
     needs: verify
     runs-on: ubuntu-latest

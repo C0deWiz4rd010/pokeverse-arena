@@ -202,7 +202,7 @@
       @for (id of store.compareIds(); track id) {
         @if (store.entryById(id); as e) {
           <button class="tray-mon" type="button" (click)="removeCompare(id)" [title]="'Remove ' + titleCase(e.name)">
-            <img [src]="e.artwork" [alt]="e.name" loading="lazy" />
+            <img decoding="async" [src]="e.artwork" [alt]="e.name" loading="lazy" />
             <span class="rm-x">×</span>
           </button>
         }

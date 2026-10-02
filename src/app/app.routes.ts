@@ -9,6 +9,7 @@ export const routes: Routes = [
   },
   {
     path: 'pokedex',
+    data: { preload: true },
     title: 'Pokédex · PokéVerse Arena',
     loadComponent: () => import('./features/pokedex/pokedex').then((m) => m.PokedexComponent),
   },
@@ -20,6 +21,7 @@ export const routes: Routes = [
   },
   {
     path: 'pokemon/:id',
+    data: { preload: true },
     title: 'Pokémon · PokéVerse Arena',
     loadComponent: () =>
       import('./features/pokemon-detail/pokemon-detail').then((m) => m.PokemonDetailComponent),
@@ -37,6 +39,7 @@ export const routes: Routes = [
   },
   {
     path: 'battle',
+    data: { preload: true },
     title: 'Battle · PokéVerse Arena',
     loadComponent: () => import('./features/battle/battle').then((m) => m.BattleComponent),
   },
