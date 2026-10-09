@@ -4,6 +4,24 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.6.0 — 2026-10-09
+
+🎨 **Graphics polish** (phase H of the polish plan).
+
+### Added
+
+- **Type-specific battle effects.** Fire throws rising embers, water and poison splash droplets, electric forks
+  lightning, grass and bug spin leaves, ice shatters into shards, psychic/ghost/fairy/dark release drifting stars
+  and a second ring, ground and rock fling debris, and fighting/normal/steel/dragon/flying burst into impact lines.
+  Crits throw half again as many particles.
+- **Smooth day/night.** The adventure map's light grade interpolates between keyframes (night → dawn → morning →
+  day → golden hour → dusk) on the real clock instead of stepping between bands.
+
+### Fixed
+
+- Battle effects now aim at the actual Pokémon sprite instead of a fixed spot, which missed it in the adventure
+  battle layout.
+
 ## v2.5.0 — 2026-10-02
 
 ⚡ **Rendering performance** (phase G of the polish plan).
