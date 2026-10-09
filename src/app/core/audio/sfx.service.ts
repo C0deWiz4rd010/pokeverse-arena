@@ -55,7 +55,7 @@ export class SfxService {
       case 'select': this.seq(t, [[660, 0.05], [990, 0.07]], 'sine', 0.16); break;
       case 'back': this.tone(t, 520, 0.08, 'sine', 0.16, 380); break;
       case 'error': this.seq(t, [[200, 0.1], [160, 0.14]], 'square', 0.1); break;
-      case 'step': this.puff(t, 0.04, 380 + Math.random() * 260, 0.07); break;
+      case 'step': this.step(); break;
       case 'encounter': this.seq(t, [[880, 0.07], [660, 0.07], [880, 0.07], [1175, 0.14]], 'square', 0.1); break;
       case 'item': this.seq(t, [[988, 0.07], [1319, 0.12]], 'sine', 0.18); break;
       case 'whoosh': this.puff(t, 0.2, 500, 0.12, 1900); break;
@@ -134,6 +134,32 @@ export class SfxService {
     src.connect(f).connect(g).connect(this.master!);
     src.start(t);
     src.stop(t + dur + 0.02);
+  }
+
+  /**
+   * Footsteps fire constantly, so they are baked once into a buffer (a decaying, low-passed noise tick)
+   * and played through a single node — building a filter + gain graph per step cost real frame time on weak phones.
+   */
+  private stepBuf: AudioBuffer | null = null;
+  private stepCount = 0;
+  private step(): void {
+    if ((this.stepCount++ & 1) === 1) return; // every other step is plenty
+    const ctx = this.ctx!;
+    if (!this.stepBuf) {
+      const n = Math.floor(ctx.sampleRate * 0.05);
+      this.stepBuf = ctx.createBuffer(1, n, ctx.sampleRate);
+      const d = this.stepBuf.getChannelData(0);
+      let lp = 0;
+      for (let i = 0; i < n; i++) {
+        lp += ((Math.random() * 2 - 1) - lp) * 0.12; // one-pole low-pass
+        d[i] = lp * 0.9 * Math.pow(1 - i / n, 2.5);
+      }
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = this.stepBuf;
+    src.playbackRate.value = 0.85 + Math.random() * 0.35;
+    src.connect(this.master!);
+    src.start();
   }
 
   private hit(t: number, power: number): void {

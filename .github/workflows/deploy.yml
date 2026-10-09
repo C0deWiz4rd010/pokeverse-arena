@@ -61,6 +61,26 @@ jobs:
       - name: Lighthouse CI
         run: npx --yes @lhci/cli@0.14.x autorun
 
+  e2e:
+    name: Browser acceptance (routes x viewports, adventure, offline)
+    needs: verify
+    runs-on: ubuntu-latest
+    # Informational until it has been green on a few runs; flip to required by removing this line.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Run the acceptance suite against the production build
+        run: node tools/accept.mjs
+        env:
+          ACCEPT_PORT: 4300
+
   build:
     needs: verify
     runs-on: ubuntu-latest

@@ -52,10 +52,10 @@
 </header>
 
 <main class="content" id="main-content" tabindex="-1">
-  <router-outlet />
+  <router-outlet (activate)="routed.set(true)" />
 </main>
 
-<footer class="footer">
+<footer class="footer" [class.pending]="!routed()">
   <span>
     {{ 'Data from' | t }}
     <a href="https://pokeapi.co" target="_blank" rel="noopener noreferrer">{{ 'PokéAPI' | t }}</a>

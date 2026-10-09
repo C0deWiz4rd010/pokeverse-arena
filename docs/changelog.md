@@ -4,6 +4,32 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.9.0 — 2026-10-09
+
+✅ **Tests & acceptance** (phase K of the polish plan). See [docs/acceptance.md](acceptance.md).
+
+### Added
+
+- **Browser acceptance suite** (`npm run accept`): routes × 7 viewports (no errors, no overflow), the adventure
+  happy path, and an **offline start** through the service worker — all against the production build. Runs in
+  CI as the informational `e2e` job.
+- `tools/serve-dist.mjs` (gzip static server), `tools/perf-overworld.mjs` (frame-time probe with CPU throttle).
+- **Coverage thresholds** enforced by `npm run test:ci` (`@vitest/coverage-v8`; statements 78 / branches 68 /
+  functions 82 / lines 80).
+- New specs: `CacheService` (IndexedDB via `fake-indexeddb`: TTL, sweep, LRU mirror, savegame store),
+  `ToastService` (pause/resume, cap), endpoint builders.
+
+### Fixed
+
+- **Layout shift:** the footer no longer jumps down when the first page fills in (CLS 0.15 → 0).
+- **Footstep sound cost:** steps are baked into one buffer and played through a single node, and only every other
+  step sounds. Building a filter graph per step cost up to 40 % of the frame rate on a heavily throttled CPU.
+
+### Measured
+
+- Mobile Lighthouse on the production build: performance 93–94, accessibility 100, best-practices 100, SEO 91.
+- Lighthouse CI thresholds raised to performance 0.9, accessibility 0.95, best-practices 0.95.
+
 ## v2.8.0 — 2026-10-09
 
 🎮 **Input, audio & haptics** (phase J of the polish plan).

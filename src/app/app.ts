@@ -39,6 +39,8 @@ export class App {
   protected readonly i18n = inject(I18nService);
 
   protected readonly menuOpen = signal(false);
+  /** True once the first route has rendered (the footer waits for it to avoid a layout shift). */
+  protected readonly routed = signal(false);
   protected readonly paletteOpen = signal(false);
   protected readonly scrolled = signal(false);
   protected readonly showToTop = signal(false);

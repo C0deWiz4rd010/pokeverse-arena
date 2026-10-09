@@ -288,6 +288,8 @@
 }
 
 .footer {
+  /* hidden until the first route has rendered, so it never jumps down when the page fills in (CLS) */
+  &.pending { visibility: hidden; }
   text-align: center;
   padding: 1.5rem 1rem 2rem;
   color: var(--text-faint);
