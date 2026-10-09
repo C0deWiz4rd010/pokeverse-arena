@@ -40,6 +40,9 @@ import {
   type Sheet,
   type TileArt,
 } from './atlas';
+import { HapticsService } from '../../../core/haptics/haptics.service';
+import { OverworldInput } from './input';
+import { SfxService } from '../../../core/audio/sfx.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 type Pixi = typeof import('pixi.js');
@@ -59,10 +62,6 @@ const lowEnd = (): boolean => {
 };
 const REDUCED =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-const KEY_DIR: Record<string, Direction> = {
-  ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-  w: 'up', s: 'down', a: 'left', d: 'right', W: 'up', S: 'down', A: 'left', D: 'right',
-};
 
 /**
  * High-end PixiJS (WebGL) overworld on the CC0 **Ninja Adventure** art pack:
@@ -86,15 +85,15 @@ const KEY_DIR: Record<string, Direction> = {
       <pv-ow-party-hud />
       <button class="ow-menu" type="button" (click)="svc.openMenu()" [attr.aria-label]="'Menu' | t">☰</button>
       <div class="pad" aria-hidden="true">
-        <button class="pad-btn up" (pointerdown)="press('up', $event)" (pointerup)="release('up')" (pointerleave)="release('up')">▲</button>
-        <button class="pad-btn left" (pointerdown)="press('left', $event)" (pointerup)="release('left')" (pointerleave)="release('left')">◀</button>
-        <button class="pad-btn right" (pointerdown)="press('right', $event)" (pointerup)="release('right')" (pointerleave)="release('right')">▶</button>
-        <button class="pad-btn down" (pointerdown)="press('down', $event)" (pointerup)="release('down')" (pointerleave)="release('down')">▼</button>
+        <button class="pad-btn up" (pointerdown)="press('up', $event)" (pointerup)="release('up')" (pointerleave)="release('up')" (pointercancel)="release('up')">▲</button>
+        <button class="pad-btn left" (pointerdown)="press('left', $event)" (pointerup)="release('left')" (pointerleave)="release('left')" (pointercancel)="release('left')">◀</button>
+        <button class="pad-btn right" (pointerdown)="press('right', $event)" (pointerup)="release('right')" (pointerleave)="release('right')" (pointercancel)="release('right')">▶</button>
+        <button class="pad-btn down" (pointerdown)="press('down', $event)" (pointerup)="release('down')" (pointerleave)="release('down')" (pointercancel)="release('down')">▼</button>
       </div>
       <div class="ab" aria-hidden="true">
         <button class="ab-btn r" [class.on]="touchRun()" (pointerdown)="toggleRun($event)" [attr.title]="'Run' | t">🏃</button>
         <button class="ab-btn a" (pointerdown)="interact($event)">A</button>
-        <button class="ab-btn b" (pointerdown)="svc.openMenu()">B</button>
+        <button class="ab-btn b" (pointerdown)="input.menu($event)">B</button>
       </div>
     </div>
   `,
@@ -102,6 +101,7 @@ const KEY_DIR: Record<string, Direction> = {
 })
 export class PixiOverworldComponent implements OnDestroy {
   protected readonly svc = inject(RpgService);
+  private readonly haptics = inject(HapticsService);
   private readonly host = viewChild.required<ElementRef<HTMLDivElement>>('host');
   private readonly mount = viewChild.required<ElementRef<HTMLDivElement>>('mount');
 
@@ -158,31 +158,20 @@ export class PixiOverworldComponent implements OnDestroy {
   private from = { x: 0, y: 0 };
   private to = { x: 0, y: 0 };
   private t0 = 0;
-  private readonly held = new Set<Direction>();
   private readonly baseStepMs = REDUCED ? 0 : 150;
   private stepDur = REDUCED ? 0 : 150;
-  private running = false;
+  private readonly sfx = inject(SfxService);
+  protected readonly input = new OverworldInput({
+    phase: () => this.svc.phase(),
+    interact: () => this.svc.interact(),
+    openMenu: () => this.svc.openMenu(),
+    fire: (p) => { this.haptics.fire(p); this.sfx.play(p === 'select' ? 'select' : 'tap'); },
+  });
   /** Sticky run toggle for touch players (keyboard holds Shift, gamepad holds X). */
-  protected readonly touchRun = signal(false);
+  protected readonly touchRun = this.input.touchRun;
   private frame = 0;
 
-  private readonly onKeyDown = (e: KeyboardEvent): void => {
-    this.running = e.shiftKey;
-    if (this.svc.phase() !== 'overworld') return;
-    if (e.key === 'z' || e.key === 'Z' || e.key === 'Enter') { e.preventDefault(); this.svc.interact(); return; }
-    if (e.key === 'Escape' || e.key === 'x' || e.key === 'X') { e.preventDefault(); this.svc.openMenu(); return; }
-    const dir = KEY_DIR[e.key];
-    if (dir) { e.preventDefault(); this.held.add(dir); }
-  };
-  private readonly onKeyUp = (e: KeyboardEvent): void => {
-    this.running = e.shiftKey;
-    const dir = KEY_DIR[e.key];
-    if (dir) this.held.delete(dir);
-  };
   private readonly onResize = (): void => this.resize();
-  /** Losing focus would otherwise leave a key "held" and keep the hero walking. */
-  private readonly onBlur = (): void => { this.held.clear(); this.running = false; };
-
   private ro: ResizeObserver | null = null;
   private io: IntersectionObserver | null = null;
   private onScreen = true;
@@ -227,9 +216,7 @@ export class PixiOverworldComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
-    window.removeEventListener('keydown', this.onKeyDown);
-    window.removeEventListener('keyup', this.onKeyUp);
-    window.removeEventListener('blur', this.onBlur);
+    this.input.detach();
     document.removeEventListener('visibilitychange', this.onVisibility);
     this.ro?.disconnect();
     this.io?.disconnect();
@@ -246,19 +233,10 @@ export class PixiOverworldComponent implements OnDestroy {
     gl?.getExtension('WEBGL_lose_context')?.loseContext();
   }
 
-  protected press(dir: Direction, ev?: Event): void {
-    ev?.preventDefault();
-    if (this.svc.phase() === 'overworld') this.held.add(dir);
-  }
-  protected release(dir: Direction): void { this.held.delete(dir); }
-  protected toggleRun(ev?: Event): void {
-    ev?.preventDefault();
-    this.touchRun.update((v) => !v);
-  }
-  protected interact(ev?: Event): void {
-    ev?.preventDefault();
-    if (this.svc.phase() === 'overworld') this.svc.interact();
-  }
+  protected press(dir: Direction, ev?: Event): void { this.input.press(dir, ev); }
+  protected release(dir: Direction): void { this.input.release(dir); }
+  protected toggleRun(ev?: Event): void { this.input.toggleRun(ev); }
+  protected interact(ev?: Event): void { this.input.interact(ev); }
 
   protected weatherIcon(w?: WeatherKind): string {
     return w === 'rain' ? '🌧' : w === 'snow' ? '❄' : w === 'sun' ? '☀' : w === 'sandstorm' ? '🌪' : '';
@@ -316,9 +294,7 @@ export class PixiOverworldComponent implements OnDestroy {
       }
       if (!REDUCED) this.buildFx();
 
-      window.addEventListener('keydown', this.onKeyDown);
-      window.addEventListener('keyup', this.onKeyUp);
-      window.addEventListener('blur', this.onBlur);
+      this.input.attach(host);
       this.ro = new ResizeObserver(this.onResize);
       this.ro.observe(host);
       // sleep while the tab is hidden, the map is scrolled out of view or the GPU context is gone
@@ -1041,7 +1017,7 @@ export class PixiOverworldComponent implements OnDestroy {
       }
     }
     this.frame += this.dt;
-    this.pollGamepad();
+    this.input.pollGamepad();
     this.updateMovement();
     this.animateTiles();
     this.updateParticles();
@@ -1091,11 +1067,12 @@ export class PixiOverworldComponent implements OnDestroy {
         if (np && this.player) this.poseChar(this.player, dir, false);
         if (res.warped && np) { this.visX = np.x; this.visY = np.y; }
         else if (res.moved && before && np) {
+          this.sfx.play('step');
           this.from = { x: before.x, y: before.y };
           this.to = { x: np.x, y: np.y };
           this.t0 = performance.now();
           this.hopping = !!res.hopped;
-          this.stepDur = REDUCED ? 0 : res.hopped ? 260 : this.running || this.runningPad || this.touchRun() ? 95 : this.baseStepMs;
+          this.stepDur = REDUCED ? 0 : res.hopped ? 260 : this.input.isRunning() ? 95 : this.baseStepMs;
           this.stepping = this.stepDur > 0;
           if (!this.stepping) { this.visX = np.x; this.visY = np.y; }
           this.spawnDust(before.x, before.y);
@@ -1124,35 +1101,7 @@ export class PixiOverworldComponent implements OnDestroy {
   private hopping = false;
 
   private nextDir(): Direction | null {
-    for (const d of ['up', 'down', 'left', 'right'] as const) if (this.held.has(d) || this.padDirs.has(d)) return d;
-    return null;
-  }
-
-  /* ---------------------------------------------------------- gamepad */
-
-  private readonly padDirs = new Set<Direction>();
-  private runningPad = false;
-  private padPrev = [false, false];
-
-  /** Poll the first connected gamepad: stick/d-pad walk, A interacts, B opens the menu, X runs. */
-  private pollGamepad(): void {
-    const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : null;
-    let gp: Gamepad | null = null;
-    if (pads) for (let i = 0; i < pads.length; i++) if (pads[i]?.connected) { gp = pads[i]; break; }
-    this.padDirs.clear();
-    if (!gp) { this.runningPad = false; return; }
-    const ax = gp.axes[0] ?? 0;
-    const ay = gp.axes[1] ?? 0;
-    if (ay < -0.5 || gp.buttons[12]?.pressed) this.padDirs.add('up');
-    if (ay > 0.5 || gp.buttons[13]?.pressed) this.padDirs.add('down');
-    if (ax < -0.5 || gp.buttons[14]?.pressed) this.padDirs.add('left');
-    if (ax > 0.5 || gp.buttons[15]?.pressed) this.padDirs.add('right');
-    this.runningPad = gp.buttons[2]?.pressed ?? false;
-    const a = gp.buttons[0]?.pressed ?? false;
-    const b = gp.buttons[1]?.pressed ?? false;
-    if (a && !this.padPrev[0] && this.svc.phase() === 'overworld') this.svc.interact();
-    if (b && !this.padPrev[1] && this.svc.phase() === 'overworld') this.svc.openMenu();
-    this.padPrev = [a, b];
+    return this.input.next();
   }
 
   /* ------------------------------------------------------ area banner */

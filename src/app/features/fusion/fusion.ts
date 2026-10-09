@@ -14,7 +14,7 @@ import { StatBarComponent } from '../../core/ui/stat-bar/stat-bar';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { ToastService } from '../../core/ui/toast/toast.service';
 import { CryService } from '../../core/audio/cry.service';
-import { SPRITE_BASE, cryUrl, officialArtwork } from '../../core/api/pokeapi-endpoints';
+import { SPRITE_BASE, officialArtwork } from '../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../core/ui/format';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { FusionService, type SavedFusion } from './fusion.service';
@@ -223,15 +223,7 @@ export class FusionComponent {
     const head = this.lab.headId();
     const body = this.lab.bodyId();
     if (!head || !body) return;
-    const first = new Audio(cryUrl(head));
-    first.volume = 0.45;
-    void first.play().catch(() => undefined);
-    setTimeout(() => {
-      const second = new Audio(cryUrl(body));
-      second.volume = 0.4;
-      second.playbackRate = 1.18;
-      void second.play().catch(() => undefined);
-    }, 420);
+    this.cries.playPair(head, body);
   }
 
   protected async share(): Promise<void> {

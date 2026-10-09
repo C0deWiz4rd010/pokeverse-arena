@@ -108,12 +108,12 @@
   gap: 0.3rem;
 }
 .pad {
-  left: 0.8rem;
-  grid-template-columns: repeat(3, 3rem);
-  grid-template-rows: repeat(3, 3rem);
+  left: max(0.8rem, var(--safe-left, 0px));
+  grid-template-columns: repeat(3, var(--key, 3.5rem));
+  grid-template-rows: repeat(3, var(--key, 3.5rem));
 }
 .ab {
-  right: 0.8rem;
+  right: max(0.8rem, var(--safe-right, 0px));
   grid-auto-flow: column;
   align-items: end;
 }
@@ -128,20 +128,24 @@
   background: color-mix(in srgb, var(--bg) 60%, #000);
   border: 1px solid var(--glass-border);
   cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
+.pad, .ab { --key: 3.5rem; @include short { --key: 3.1rem; } }
 .pad-btn.up { grid-area: 1 / 2; }
 .pad-btn.left { grid-area: 2 / 1; }
 .pad-btn.right { grid-area: 2 / 3; }
 .pad-btn.down { grid-area: 3 / 2; }
 .ab-btn {
-  width: 3rem;
-  height: 3rem;
+  width: var(--key, 3.5rem);
+  height: var(--key, 3.5rem);
   border-radius: 50%;
 }
 .ab-btn.a { background: color-mix(in srgb, var(--accent) 30%, #0b0a1f); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
 .ab-btn.b { background: color-mix(in srgb, var(--accent-2) 26%, #0b0a1f); border-color: color-mix(in srgb, var(--accent-2) 50%, transparent); }
 /* Sticky run toggle — lit while active (the touch counterpart of holding Shift). */
-.ab-btn.r { width: 2.4rem; height: 2.4rem; font-size: 0.95rem; opacity: 0.85; }
+.ab-btn.r { width: 2.8rem; height: 2.8rem; font-size: 0.95rem; opacity: 0.85; }
 .ab-btn.r.on {
   background: color-mix(in srgb, var(--accent-3) 40%, #0b0a1f);
   border-color: var(--accent-3);

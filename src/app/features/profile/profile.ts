@@ -6,6 +6,7 @@ import { I18nService, LOCALES } from '../../core/i18n/i18n.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { ToastService } from '../../core/ui/toast/toast.service';
 import { HapticsService } from '../../core/haptics/haptics.service';
+import { SfxService } from '../../core/audio/sfx.service';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { APP_VERSION } from '../../core/version';
 import { dailyFusionPair } from '../../game/fusion/fusion';
@@ -28,6 +29,7 @@ export class ProfileComponent {
   protected readonly i18n = inject(I18nService);
   protected readonly locales = LOCALES;
   protected readonly haptics = inject(HapticsService);
+  protected readonly sfx = inject(SfxService);
 
   protected readonly editing = signal(false);
   protected readonly nameDraft = signal('');

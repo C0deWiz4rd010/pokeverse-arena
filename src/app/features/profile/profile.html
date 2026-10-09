@@ -93,8 +93,39 @@
     }
   </div>
 
+  <h3 class="h">{{ 'Feel' | t }}</h3>
+  <button
+    type="button"
+    class="setting-row"
+    [class.on]="!sfx.muted()"
+    role="switch"
+    [attr.aria-checked]="!sfx.muted()"
+    (click)="sfx.setMuted(!sfx.muted())"
+  >
+    <span class="setting-info">
+      <span class="setting-icon"><pv-icon name="sparkles" /></span>
+      <span>
+        <strong>{{ 'Sound effects' | t }}</strong>
+        <span class="setting-sub">{{ 'Short synthesized blips for taps, steps, hits and catches' | t }}</span>
+      </span>
+    </span>
+    <span class="switch" aria-hidden="true"><span class="knob"></span></span>
+  </button>
+  <label class="vol-row" [class.off]="sfx.muted()">
+    <span>{{ 'Volume' | t }}</span>
+    <input
+      type="range"
+      min="0"
+      max="100"
+      step="5"
+      [value]="sfx.volume() * 100"
+      [disabled]="sfx.muted()"
+      [attr.aria-label]="'Volume' | t"
+      (input)="sfx.setVolume(+$any($event.target).value / 100)"
+    />
+  </label>
+
   @if (haptics.supported) {
-    <h3 class="h">{{ 'Feel' | t }}</h3>
     <button
       type="button"
       class="setting-row"

@@ -380,6 +380,8 @@ export class RpgBattleComponent extends BattlePresenterBase {
     }
     if (caught) {
       this.append(`Gotcha! ${titleCase(foe.battler.name)} was caught!`, 'win');
+      this.sfx.play('catch');
+      this.haptics.fire('success');
       await this.wait(500);
       await this.finalizeCaught();
     } else {
@@ -526,6 +528,8 @@ export class RpgBattleComponent extends BattlePresenterBase {
         if (r.leveledTo.length) {
           mon.level = r.level;
           lines.push(`${titleCase(mon.nickname ?? mon.species)} grew to Lv${r.level}!`);
+          this.sfx.play('levelup');
+          this.haptics.fire('success');
           // Recompute max HP at the new level and carry the gain into current HP.
           try {
             const rebuilt = await this.battleSvc.buildBattler(mon.species, mon.level);

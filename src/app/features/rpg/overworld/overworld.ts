@@ -5,7 +5,6 @@ import {
   OnDestroy,
   afterNextRender,
   inject,
-  signal,
   viewChild,
 } from '@angular/core';
 import { RpgService } from '../rpg.service';
@@ -13,6 +12,8 @@ import type { Direction } from '../../../game/rpg/rpg-types';
 import { OwPartyHudComponent } from './party-hud';
 import { VOID, drawBall, drawCharacter, drawTile } from './tile-renderer';
 import { HapticsService } from '../../../core/haptics/haptics.service';
+import { OverworldInput } from './input';
+import { SfxService } from '../../../core/audio/sfx.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 const REDUCED =
@@ -23,11 +24,6 @@ const LOOK_COLORS: Record<string, readonly [string, string]> = {
   girl: ['#ff8fb8', '#e23b6b'],
   clerk: ['#8de0a8', '#3f9d5a'],
   leader: ['#ffcf6b', '#c46bff'],
-};
-const KEY_DIR: Record<string, Direction> = {
-  ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-  w: 'up', s: 'down', a: 'left', d: 'right',
-  W: 'up', S: 'down', A: 'left', D: 'right',
 };
 
 /**
@@ -55,15 +51,15 @@ const KEY_DIR: Record<string, Direction> = {
 
       <!-- touch controls -->
       <div class="pad" aria-hidden="true">
-        <button class="pad-btn up" (pointerdown)="press('up', $event)" (pointerup)="release('up')" (pointerleave)="release('up')">▲</button>
-        <button class="pad-btn left" (pointerdown)="press('left', $event)" (pointerup)="release('left')" (pointerleave)="release('left')">◀</button>
-        <button class="pad-btn right" (pointerdown)="press('right', $event)" (pointerup)="release('right')" (pointerleave)="release('right')">▶</button>
-        <button class="pad-btn down" (pointerdown)="press('down', $event)" (pointerup)="release('down')" (pointerleave)="release('down')">▼</button>
+        <button class="pad-btn up" (pointerdown)="press('up', $event)" (pointerup)="release('up')" (pointerleave)="release('up')" (pointercancel)="release('up')">▲</button>
+        <button class="pad-btn left" (pointerdown)="press('left', $event)" (pointerup)="release('left')" (pointerleave)="release('left')" (pointercancel)="release('left')">◀</button>
+        <button class="pad-btn right" (pointerdown)="press('right', $event)" (pointerup)="release('right')" (pointerleave)="release('right')" (pointercancel)="release('right')">▶</button>
+        <button class="pad-btn down" (pointerdown)="press('down', $event)" (pointerup)="release('down')" (pointerleave)="release('down')" (pointercancel)="release('down')">▼</button>
       </div>
       <div class="ab" aria-hidden="true">
         <button class="ab-btn r" [class.on]="touchRun()" (pointerdown)="toggleRun($event)" [attr.title]="'Run' | t">🏃</button>
         <button class="ab-btn a" (pointerdown)="interact($event)">A</button>
-        <button class="ab-btn b" (pointerdown)="svc.openMenu()">B</button>
+        <button class="ab-btn b" (pointerdown)="input.menu($event)">B</button>
       </div>
     </div>
   `,
@@ -94,89 +90,18 @@ export class OverworldComponent implements OnDestroy {
   private from = { x: 0, y: 0 };
   private to = { x: 0, y: 0 };
   private t0 = 0;
-  private readonly held = new Set<Direction>();
   private readonly baseStepMs = REDUCED ? 0 : 140;
   private stepDur = REDUCED ? 0 : 140;
-  private running = false;
-  /** Sticky run toggle for touch players (keyboard holds Shift). */
-  protected readonly touchRun = signal(false);
+  private readonly sfx = inject(SfxService);
+  protected readonly input = new OverworldInput({
+    phase: () => this.svc.phase(),
+    interact: () => this.svc.interact(),
+    openMenu: () => this.svc.openMenu(),
+    fire: (p) => { this.haptics.fire(p); this.sfx.play(p === 'select' ? 'select' : 'tap'); },
+  });
+  /** Sticky run toggle for touch players (keyboard holds Shift, gamepad holds X). */
+  protected readonly touchRun = this.input.touchRun;
 
-  /* Virtual-joystick drag state: dragging anywhere on the map steers the walker;
-     a quick tap without travel counts as an interact. */
-  private dragId = -1;
-  private dragActive = false;
-  private dragStartX = 0;
-  private dragStartY = 0;
-  private dragStartT = 0;
-  private dragDir: Direction | null = null;
-  private dragMoved = false;
-
-  private readonly DRAG_DEAD = 22;
-
-  private readonly onPointerDown = (e: PointerEvent): void => {
-    if (this.dragActive) return;
-    // Let the on-screen buttons and menu handle their own taps.
-    if ((e.target as HTMLElement)?.closest('.pad, .ab, .ow-menu')) return;
-    this.dragActive = true;
-    this.dragId = e.pointerId;
-    this.dragStartX = e.clientX;
-    this.dragStartY = e.clientY;
-    this.dragStartT = performance.now();
-    this.dragDir = null;
-    this.dragMoved = false;
-  };
-  private readonly onPointerMove = (e: PointerEvent): void => {
-    if (!this.dragActive || e.pointerId !== this.dragId) return;
-    const dx = e.clientX - this.dragStartX;
-    const dy = e.clientY - this.dragStartY;
-    if (Math.abs(dx) < this.DRAG_DEAD && Math.abs(dy) < this.DRAG_DEAD) return;
-    this.dragMoved = true;
-    const dir: Direction =
-      Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
-    if (dir !== this.dragDir) {
-      if (this.dragDir) this.held.delete(this.dragDir);
-      this.dragDir = dir;
-      this.held.add(dir);
-      this.haptics.fire('tap');
-    }
-  };
-  private readonly onPointerUp = (e: PointerEvent): void => {
-    if (e.pointerId !== this.dragId) return;
-    this.dragActive = false;
-    if (this.dragDir) this.held.delete(this.dragDir);
-    this.dragDir = null;
-    // A tap (barely moved, brief) interacts with what's in front of the player.
-    const quick = performance.now() - this.dragStartT < 260;
-    if (!this.dragMoved && quick && this.svc.phase() === 'overworld') {
-      this.haptics.fire('tap');
-      this.svc.interact();
-    }
-  };
-
-  private readonly onKeyDown = (e: KeyboardEvent): void => {
-    this.running = e.shiftKey;
-    if (this.svc.phase() !== 'overworld') return; // a dialogue/starter overlay is active
-    if (e.key === 'z' || e.key === 'Z' || e.key === 'Enter') {
-      e.preventDefault();
-      this.svc.interact();
-      return;
-    }
-    if (e.key === 'Escape' || e.key === 'x' || e.key === 'X') {
-      e.preventDefault();
-      this.svc.openMenu();
-      return;
-    }
-    const dir = KEY_DIR[e.key];
-    if (dir) {
-      e.preventDefault();
-      this.held.add(dir);
-    }
-  };
-  private readonly onKeyUp = (e: KeyboardEvent): void => {
-    this.running = e.shiftKey;
-    const dir = KEY_DIR[e.key];
-    if (dir) this.held.delete(dir);
-  };
   private readonly onResize = (): void => this.resize();
 
   constructor() {
@@ -188,52 +113,22 @@ export class OverworldComponent implements OnDestroy {
       }
       this.ctx = this.canvas().nativeElement.getContext('2d');
       this.resize();
-      window.addEventListener('keydown', this.onKeyDown);
-      window.addEventListener('keyup', this.onKeyUp);
       window.addEventListener('resize', this.onResize);
-      const wrap = this.wrap().nativeElement;
-      wrap.addEventListener('pointerdown', this.onPointerDown);
-      wrap.addEventListener('pointermove', this.onPointerMove);
-      wrap.addEventListener('pointerup', this.onPointerUp);
-      wrap.addEventListener('pointercancel', this.onPointerUp);
+      this.input.attach(this.wrap().nativeElement);
       this.loop();
     });
   }
 
   ngOnDestroy(): void {
     cancelAnimationFrame(this.raf);
-    window.removeEventListener('keydown', this.onKeyDown);
-    window.removeEventListener('keyup', this.onKeyUp);
     window.removeEventListener('resize', this.onResize);
-    const wrap = this.wrap().nativeElement;
-    wrap.removeEventListener('pointerdown', this.onPointerDown);
-    wrap.removeEventListener('pointermove', this.onPointerMove);
-    wrap.removeEventListener('pointerup', this.onPointerUp);
-    wrap.removeEventListener('pointercancel', this.onPointerUp);
+    this.input.detach();
   }
 
-  protected press(dir: Direction, ev?: Event): void {
-    ev?.preventDefault();
-    if (this.svc.phase() !== 'overworld') return;
-    this.haptics.fire('tap');
-    this.held.add(dir);
-  }
-  protected release(dir: Direction): void {
-    this.held.delete(dir);
-  }
-  protected toggleRun(ev?: Event): void {
-    ev?.preventDefault();
-    this.haptics.fire('select');
-    this.touchRun.update((v) => !v);
-  }
-  protected interact(ev?: Event): void {
-    ev?.preventDefault();
-    if (this.svc.phase() !== 'overworld') return;
-    this.haptics.fire('tap');
-    this.svc.interact();
-  }
-
-  /* ------------------------------------------------------------- internals */
+  protected press(dir: Direction, ev?: Event): void { this.input.press(dir, ev); }
+  protected release(dir: Direction): void { this.input.release(dir); }
+  protected toggleRun(ev?: Event): void { this.input.toggleRun(ev); }
+  protected interact(ev?: Event): void { this.input.interact(ev); }
 
   private resize(): void {
     const el = this.wrap().nativeElement;
@@ -260,6 +155,7 @@ export class OverworldComponent implements OnDestroy {
   };
 
   private update(): void {
+    this.input.pollGamepad();
     if (this.stepping) {
       const p = this.stepDur <= 0 ? 1 : Math.min(1, (performance.now() - this.t0) / this.stepDur);
       this.visX = this.from.x + (this.to.x - this.from.x) * p;
@@ -280,11 +176,12 @@ export class OverworldComponent implements OnDestroy {
       this.visX = np.x;
       this.visY = np.y;
     } else if (res.moved) {
+      this.sfx.play('step');
       const np = this.svc.player()!;
       this.from = { x: before.x, y: before.y };
       this.to = { x: np.x, y: np.y };
       this.t0 = performance.now();
-      this.stepDur = REDUCED ? 0 : this.running || this.touchRun() ? 95 : this.baseStepMs;
+      this.stepDur = REDUCED ? 0 : this.input.isRunning() ? 95 : this.baseStepMs;
       this.stepping = this.stepDur > 0;
       if (!this.stepping) {
         this.visX = np.x;
@@ -294,8 +191,7 @@ export class OverworldComponent implements OnDestroy {
   }
 
   private nextDir(): Direction | null {
-    for (const d of ['up', 'down', 'left', 'right'] as const) if (this.held.has(d)) return d;
-    return null;
+    return this.input.next();
   }
 
   /** Rasterise every static tile once; water animates live over the blit. */

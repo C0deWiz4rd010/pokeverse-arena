@@ -4,6 +4,33 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.8.0 — 2026-10-09
+
+🎮 **Input, audio & haptics** (phase J of the polish plan).
+
+### Added
+
+- **Sound effects** (`SfxService`): synthesised with WebAudio, so nothing to download or cache. Taps, steps, item pickups,
+  encounters, whooshes, hits (normal / super effective / critical), stat changes, status, healing, faints, catches and
+  level-ups. *Profile → Feel* has a sound switch and a volume slider; both persist.
+- **Haptics in battle.** Hits, crits, faints, catches and level-ups now vibrate on the adventure's battle screen too.
+
+### Changed
+
+- **One input layer for both adventure renderers** (`rpg/overworld/input.ts`): keyboard, on-screen pad, swipe-to-steer,
+  tap-to-interact and gamepad now behave identically on the canvas and the Pixi map (the canvas gained the gamepad, Pixi
+  gained swipe/tap and haptics). The latest pressed direction wins instead of a fixed priority.
+- Held inputs clear on window blur, tab hide and pointer cancel, so the walker never keeps going on its own. A cancelled
+  touch never counts as a tap. Keys typed into a text field no longer steer.
+- Touch pad and A/B buttons are larger (56 px, 50 px on short landscape phones), respect left/right safe areas and disable
+  browser touch gestures on the buttons.
+- Pokémon cries reuse two audio elements instead of allocating a new one per play; the Fusion Lab's chimera cry goes through
+  the same service.
+
+### Tests
+
+- `input.spec.ts` (steering, latest-wins, blur/hide, run, typing guard, swipe, tap, cancel) and `sfx.service.spec.ts`.
+
 ## v2.7.0 — 2026-10-09
 
 🧠 **Game logic** (phase I of the polish plan).

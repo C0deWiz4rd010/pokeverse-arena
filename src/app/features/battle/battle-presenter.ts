@@ -6,7 +6,9 @@
  * walker over engine {@link BattleEvent}s; hook methods let each UI add its
  * flavour (cries, hit-stop, ace quips) without forking the pipeline.
  */
-import { computed, signal, type Signal } from '@angular/core';
+import { computed, inject, signal, type Signal } from '@angular/core';
+import { SfxService } from '../../core/audio/sfx.service';
+import { HapticsService } from '../../core/haptics/haptics.service';
 import type { Battler, BattleEvent, SideIndex, StatusCondition } from '../../game/engine';
 import type { PokemonType } from '../../core/utils/type-chart';
 import { titleCase } from '../../core/ui/format';
@@ -85,6 +87,9 @@ export abstract class BattlePresenterBase {
   protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
   protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
 
+  protected readonly sfx = inject(SfxService);
+  protected readonly haptics = inject(HapticsService);
+
   /** The type of the move currently resolving (drives the impact burst). */
   protected pendingType: PokemonType | null = null;
 
@@ -145,6 +150,7 @@ export abstract class BattlePresenterBase {
           this.append(`${titleCase(ev.attacker)} used ${titleCase(ev.move)}!`);
           this.pendingType = this.moveType(ev.side, ev.move);
           this.fx()?.cast(ev.side, this.pendingType);
+          this.sfx.play('whoosh');
           await this.wait(t.move);
           break;
         case 'miss':
@@ -156,6 +162,8 @@ export abstract class BattlePresenterBase {
           this.flashSide.set(ev.side);
           this.shakeSide.set(ev.side);
           if (this.pendingType) this.fx()?.impact(ev.side, this.pendingType, ev.crit);
+          this.sfx.play(ev.crit ? 'crit' : ev.effectiveness >= 2 ? 'super' : 'hit');
+          this.haptics.fire(ev.crit || ev.effectiveness >= 2 ? 'heavy' : 'impact');
           await this.onImpact(ev.side, ev.crit);
           const before = ev.side === 0 ? this.pHp() : this.fHp();
           const dealt = Math.max(0, before - ev.remainingHp);
@@ -177,12 +185,17 @@ export abstract class BattlePresenterBase {
           const before = ev.side === 0 ? this.pHp() : this.fHp();
           const gained = Math.max(0, ev.remainingHp - before);
           if (gained > 0) this.spawnFloat(ev.side, `+${gained}`, 'heal');
+          if (gained > 0) this.sfx.play('heal');
           this.setHp(ev.side, ev.remainingHp);
           if (ev.text) this.append(ev.text);
           await this.wait(t.heal);
           break;
         }
         case 'status-set':
+          this.sfx.play('status');
+          if (ev.text) this.append(ev.text);
+          await this.wait(t.note);
+          break;
         case 'cure':
         case 'weather':
         case 'terrain':
@@ -195,11 +208,14 @@ export abstract class BattlePresenterBase {
           await this.wait(t.note);
           break;
         case 'stage-change':
+          this.sfx.play(ev.delta > 0 ? 'up' : 'down');
           if (ev.text) this.append(ev.text);
           await this.wait(t.stage);
           break;
         case 'faint':
           this.append(`${titleCase(ev.name)} fainted!`, 'faint');
+          this.sfx.play('faint');
+          this.haptics.fire('heavy');
           this.onFainted(ev.side);
           this.faintSide.set(ev.side);
           await this.wait(t.faint);

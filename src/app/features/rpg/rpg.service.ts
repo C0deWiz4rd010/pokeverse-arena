@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { SaveService } from '../../core/storage/save.service';
+import { SfxService } from '../../core/audio/sfx.service';
 import { BattleService } from '../battle/battle.service';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { idFromUrl } from '../../core/api/pokeapi-endpoints';
@@ -125,6 +126,7 @@ const SHINY_ODDS = 1 / 128;
 @Injectable({ providedIn: 'root' })
 export class RpgService {
   private readonly store = inject(SaveService);
+  private readonly sfx = inject(SfxService);
   private readonly i18n = inject(I18nService);
   private readonly battle = inject(BattleService);
   private readonly api = inject(PokeApiClient);
@@ -399,6 +401,7 @@ export class RpgService {
       this.game.set(next);
       this.persist();
       this.showToast(`Found ${ITEMS[gi.item].name}${gi.qty > 1 ? ' ×' + gi.qty : ''}!`);
+      this.sfx.play('item');
       const grassItem = isTallGrass(m, t.x, t.y);
       return { moved: true, warped: false, grass: grassItem, hopped };
     }
@@ -585,6 +588,7 @@ export class RpgService {
     const styles: EncounterFx[] = setup.kind === 'trainer' ? ['alert'] : ['flash', 'spiral', 'split'];
     this.encounterFx.set(styles[Math.floor(Math.random() * styles.length)]);
     this.phase.set('battle');
+    this.sfx.play('encounter');
     if (this.fxTimer) clearTimeout(this.fxTimer);
     this.fxTimer = setTimeout(() => this.encounterFx.set(null), 950);
   }

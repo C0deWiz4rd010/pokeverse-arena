@@ -285,3 +285,15 @@
     .record:hover, .ach.on:hover { transform: none; }
   }
 }
+
+.vol-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.4rem 0 0.9rem;
+  padding: 0 1rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  input { flex: 1; min-height: 44px; accent-color: var(--accent); }
+  &.off { opacity: 0.5; }
+}
