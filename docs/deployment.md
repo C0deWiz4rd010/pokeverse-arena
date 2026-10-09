@@ -34,3 +34,9 @@ https://<owner>.github.io/pokeverse-arena/
 
 > If the repository is ever renamed, update the `--base-href` value in the
 > workflow to match the new sub-path.
+
+## CI jobs
+
+`verify` (typecheck, lint, translations, tests with coverage thresholds) gates `build` and `deploy`. `lighthouse` (mobile
+audit) and `e2e` (browser acceptance against the production build) run alongside and are informational until they have
+been green for a while — see [acceptance.md](acceptance.md).

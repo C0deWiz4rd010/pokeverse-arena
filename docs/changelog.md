@@ -4,6 +4,25 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.0 — 2026-10-09
+
+🏁 **The polish release** — the A–Z pass over the whole app, rolled up. Nothing new on top of v2.9.0 except documentation.
+
+What changed since v2.0, in one list (details in the entries below):
+
+- **Foundation & quality** (v2.1): CI with typecheck/lint/tests, ESLint, strict budgets.
+- **Robustness** (v2.2): service worker, storage and race-condition fixes; throttled, retrying API client; versioned saves with
+  export/import; IndexedDB cache sweep.
+- **Load performance & PWA**: app-shell precache, PNG icons, CSP, idle preloading, Lighthouse CI.
+- **Responsive system** (v2.3): fluid tokens, unified breakpoints, `dvh`, safe areas, landscape layouts.
+- **Accessibility & German/English** (v2.4).
+- **Rendering performance** (v2.5): chunk-culled Pixi map, delta-time, batched particles, pause when unseen, adaptive quality.
+- **Graphics** (v2.6): type-specific battle effects, smooth day/night.
+- **Game logic** (v2.7): status moves in live battles, contact table, Magic Guard, one time-of-day source.
+- **Input, audio & haptics** (v2.8): shared input layer, WebAudio sound effects, battle vibration.
+- **Tests & acceptance** (v2.9): offline/route/adventure acceptance suite, coverage thresholds, CLS fix.
+- **Docs**: architecture, PWA, mobile-first, deployment, README and roadmap brought up to date.
+
 ## v2.9.0 — 2026-10-09
 
 ✅ **Tests & acceptance** (phase K of the polish plan). See [docs/acceptance.md](acceptance.md).

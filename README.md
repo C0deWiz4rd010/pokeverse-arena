@@ -53,10 +53,13 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
 - **Odyssey** — an endless seeded roguelike march through eight biomes:
   daze-catch every foe, level and evolve on the move, and permanently unlock
   every caught species as a starter.
-- **Installable PWA** — web manifest, app icon and a service worker that caches the
-  app shell, PokéAPI data and sprites for offline play.
-- **Offline-first** — every API response cached in IndexedDB; accessible skip link
-  and `prefers-reduced-motion` respected throughout.
+- **Deutsch / English** — the whole UI in both languages, switchable any time (`DE | EN`), including NPC dialogue,
+  battle log, items, quests and German Pokédex entries.
+- **Sound & haptics** — synthesised sound effects (volume/mute in the profile) and vibration on hits, catches and level-ups.
+- **Installable, offline-first PWA** — the app shell is precached on the first visit, PokéAPI data and sprites are cached,
+  and the app starts without a network.
+- **Responsive & accessible** — fluid layouts from 320 px phones (portrait and landscape) to ultrawide, safe areas,
+  focus-trapped dialogs, WCAG-AA contrast, `prefers-reduced-motion` respected throughout.
 
 ## 🧱 Tech stack
 
@@ -68,7 +71,7 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
 | Motion | GSAP 3 |
 | 3D hero | Three.js (lazy) |
 | Storage | IndexedDB via `idb` |
-| Tests | Vitest |
+| Tests | Vitest (+ coverage thresholds) · Playwright acceptance suite |
 
 See [`docs/tech-decisions.md`](docs/tech-decisions.md) for the reasoning behind
 every choice, and [`docs/architecture.md`](docs/architecture.md) for the layout.
@@ -79,7 +82,9 @@ every choice, and [`docs/architecture.md`](docs/architecture.md) for the layout.
 npm install
 npm start          # dev server on http://localhost:4200
 npm test           # unit tests (Vitest)
+npm run verify     # typecheck + lint + translations + tests/coverage + production build
 npm run build      # production build
+npm run accept     # browser acceptance on the production build (routes × viewports, adventure, offline)
 ```
 
 ## 📚 Documentation
@@ -90,6 +95,10 @@ npm run build      # production build
 - [`docs/roadmap.md`](docs/roadmap.md) — phased milestones.
 - [`docs/pwa.md`](docs/pwa.md) — PWA, accessibility & mobile.
 - [`docs/deployment.md`](docs/deployment.md) — GitHub Pages via Actions.
+- [`docs/mobile-first.md`](docs/mobile-first.md) — responsive tokens, breakpoints and mixins.
+- [`docs/i18n.md`](docs/i18n.md) — the English/German translation layer.
+- [`docs/acceptance.md`](docs/acceptance.md) — quality gates, acceptance suite, reference numbers.
+- [`docs/changelog.md`](docs/changelog.md) — release notes.
 
 ## 🙏 Credits
 

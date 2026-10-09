@@ -23,25 +23,41 @@ layout is the baseline; larger screens are progressive enhancements.
 
 ## Shared breakpoints
 
-| Token | Min width | Target |
-| ----- | --------- | ------ |
-| `sm`  | 480px     | large phones |
-| `md`  | 768px     | tablets / split desktop |
-| `lg`  | 1024px    | desktop |
-| `xl`  | 1280px    | wide desktop |
+| Token | Width | Target |
+| ----- | ----- | ------ |
+| `xs`  | below 361px | small phones (`below(xs)`) |
+| `sm`  | 480px | large phones |
+| `md`  | 768px | tablets / split desktop |
+| `lg`  | 1024px | desktop |
+| `xl`  | 1280px | wide desktop |
+| `xxl` | 1600px | ultrawide |
 
-Defined as SCSS mixins in `src/styles/_responsive.scss` — use
-`@include up(md) { … }` instead of hand-writing media queries.
+Defined in `src/styles/_responsive.scss`. Never write a raw `@media (min-width…)` in a component — use the mixins:
+
+| Mixin | Use |
+| ----- | --- |
+| `up(bp)` / `below(bp)` | width breakpoints |
+| `short` | landscape phones (`max-height: 480px`) |
+| `hover-capable` | hover effects only where a real hover exists |
+| `touch` / `touch-target` | coarse pointers; 44 px minimum tap size |
+| `glass-card`, `pill`, `section-title`, `state-block` | shared surfaces and blocks |
+
+## Design tokens (`src/styles/theme.scss`)
+
+- `--dvh` (dynamic viewport height — always use it instead of `vh`), `--gutter` (fluid page gutter), `--content-max`.
+- Spacing scale `--space-1…8`, type scale `--fs-xs…2xl` (never below 0.75rem), `--tap` (44 px).
+- Safe-area tokens `--safe-top/right/bottom/left` — apply to anything fixed to an edge (toasts, pads, sheets, overlays).
+- Container queries (`cqi`) size the battle sprites fluidly.
 
 ## Layout checklist (per component)
 
 1. Looks complete at **320px** wide with no horizontal scroll.
-2. Tap targets ≥ 40px; controls are full-width on mobile.
+2. Tap targets ≥ 44px (the adventure pad is 56px); controls are full-width on mobile.
 3. Fluid type via `clamp()` for headings.
 4. Grids use `repeat(auto-fill, minmax(...))` or explicit `min-width` steps.
 5. Sticky/side panels only kick in at `md`+; they stack on mobile.
-6. Verified at 320 / 375 / 768 / 1024 / 1440px and at arbitrary in-between
-   widths (no broken "in-between" states).
+6. Verified by `tools/ui-shots.mjs` at 320×640, 375×780, 844×390 (landscape), 768×1024, 1280×800, 1920×1080 and 2560×1080:
+   no console errors, no horizontal overflow.
 7. Respects `prefers-reduced-motion`.
 
 ## Desktop still matters

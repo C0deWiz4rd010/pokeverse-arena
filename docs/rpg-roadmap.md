@@ -152,3 +152,14 @@ Pure `evolution.ts` (+spec), cache-first chain lookup, `evolve` phase + overlay
 `npx ng build` clean · `npx vitest run` green (new pure logic covered) · Playwright
 smoke (desktop + mobile, 0 console errors) · reduced-motion respected · one commit
 per increment on `develop`.
+
+---
+
+## Status after the v2.x polish pass
+
+Done: status moves and real move data in live battles, contact/Magic Guard fixes, one time-of-day source, a shared input layer
+with gamepad/swipe/tap, sound and haptics, chunk-culled Pixi map, type-specific battle effects, German/English.
+
+Still open (each a feature of its own): move-learn UI on level-up, growth groups and trainer XP, catch formula with shakes,
+shiny/RPG-Pokédex views, fly/town map, berry trees; engine mechanics for charge/recharge turns, fixed-damage and OHKO moves
+and Struggle at 0 PP; seeded randomness for encounters, fishing and battle.
