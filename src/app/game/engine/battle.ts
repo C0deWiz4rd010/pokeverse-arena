@@ -624,6 +624,8 @@ export class Battle {
   private indirectDamage(side: SideIndex, amount: number, events: BattleEvent[], text: string): void {
     if (amount <= 0) return;
     const s = this.state.sides[side];
+    // Magic Guard blocks every kind of indirect damage (recoil, Rough Skin, Rocky Helmet, chip, hazards …)
+    if (abilityById(s.battler.ability)?.magicGuard) return;
     s.currentHp = Math.max(0, s.currentHp - amount);
     events.push({
       kind: 'damage',

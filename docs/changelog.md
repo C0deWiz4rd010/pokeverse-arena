@@ -4,6 +4,32 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v2.7.0 — 2026-10-09
+
+🧠 **Game logic** (phase I of the polish plan).
+
+### Fixed
+
+- **Status moves now work in live battles.** The move converter used to drop every non-damaging move and
+  mislabel the rest, so Growl, Thunder Wave, Swords Dance, Recover, weather and hazard moves never appeared.
+  A new pure `convertMove` (`game/engine/move-convert.ts`) maps the PokéAPI data onto the engine: stat changes
+  (user or opponent), guaranteed ailments, healing, weather, terrain and hazards. Every moveset keeps one useful
+  status move when the species has one.
+- Damaging moves get their real stat riders (Psychic lowers Sp. Def, Close Combat lowers the user's Defense) and
+  ailment chances, no longer mixed up with flinch.
+- Contact now comes from a table (Earthquake, Rock Slide, Stone Edge … do not make contact) instead of "every physical
+  move"; punch, bite and sound moves are tagged for the abilities that care.
+- **Magic Guard** blocks all indirect damage consistently: recoil, Rough Skin, Rocky Helmet, hazards, chip damage.
+
+### Changed
+
+- One time-of-day source (`game/rpg/time.ts`): the encounter band, the new `timeOfDay()` (night/dawn/day/dusk) and
+  the overworld light grade now share the same hour keyframes, so the world you see matches the Pokémon you meet.
+
+### Tests
+
+- `move-convert.spec.ts` (fixtures for status and damaging moves, plus two engine round-trips) and `time.spec.ts`.
+
 ## v2.6.0 — 2026-10-09
 
 🎨 **Graphics polish** (phase H of the polish plan).

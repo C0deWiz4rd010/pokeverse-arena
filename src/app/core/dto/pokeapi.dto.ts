@@ -193,6 +193,10 @@ export interface MoveDto {
   effect_chance: number | null;
   effect_entries: VerboseEffect[];
   flavor_text_entries: FlavorText[];
+  /** Stat stage changes the move causes (positive = raise). */
+  stat_changes?: { change: number; stat: NamedApiResource }[];
+  /** Who the move hits ("user", "selected-pokemon", "entire-field" …). */
+  target?: NamedApiResource;
   meta: {
     ailment: NamedApiResource;
     ailment_chance: number;
@@ -202,6 +206,7 @@ export interface MoveDto {
     healing: number;
     max_hits: number | null;
     min_hits: number | null;
+    stat_chance: number;
   } | null;
 }
 

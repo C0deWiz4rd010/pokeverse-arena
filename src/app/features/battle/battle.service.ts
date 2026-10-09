@@ -2,26 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { MoveDto, PokemonDto } from '../../core/dto/pokeapi.dto';
-import { isPokemonType, type PokemonType } from '../../core/utils/type-chart';
+import { isPokemonType } from '../../core/utils/type-chart';
 import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
 import {
   isAbilityId,
   type AbilityId,
   type Battler,
   type BattleMove,
-  type DamageClass,
-  type SecondaryEffect,
-  type StatusCondition,
 } from '../../game/engine';
-
-/** Map PokéAPI move ailment slugs onto the engine's status conditions. */
-const AILMENT: Record<string, StatusCondition> = {
-  paralysis: 'paralysis',
-  sleep: 'sleep',
-  freeze: 'freeze',
-  burn: 'burn',
-  poison: 'poison',
-};
+import { convertMove, isUsefulStatusMove } from '../../game/engine/move-convert';
 
 /** Number of distinct level-up moves to consider before filtering to damaging ones. */
 const MOVE_CANDIDATES = 14;
@@ -150,49 +139,19 @@ export class BattleService {
 
     const details = await Promise.all(names.map((n) => this.api.move(n).catch(() => null as MoveDto | null)));
 
-    const damaging = details.filter((d): d is MoveDto => !!d && (d.power ?? 0) > 0).map((d) => this.toMove(d));
+    const all = details.filter((d): d is MoveDto => !!d).map((d) => convertMove(d));
+    const damaging = all.filter((m) => m.damageClass !== 'status' && m.power > 0);
+    const utility = all.filter(isUsefulStatusMove);
 
     // Level mode keeps recency order (already sorted); default takes the strongest.
-    const chosen = atLevel !== undefined ? damaging.slice(0, MOVE_SLOTS) : damaging.sort((a, b) => b.power - a.power).slice(0, MOVE_SLOTS);
+    const ranked = atLevel !== undefined ? damaging : damaging.sort((a, b) => b.power - a.power);
+    // Every set keeps one utility move (setup, status, recovery, field) when the species has one,
+    // so fights are more than a damage race; the rest of the slots stay damaging.
+    const chosen = utility.length && ranked.length > 1
+      ? [...ranked.slice(0, MOVE_SLOTS - 1), utility[0]]
+      : ranked.slice(0, MOVE_SLOTS);
+    if (!chosen.length && utility.length) chosen.push(...utility.slice(0, MOVE_SLOTS));
 
     return chosen.length ? chosen : [STRUGGLE];
-  }
-
-  private toMove(dto: MoveDto): BattleMove {
-    const type = dto.type.name;
-    const rawClass = (dto.damage_class?.name ?? 'physical') as DamageClass;
-    const damageClass: DamageClass = rawClass === 'status' ? 'physical' : rawClass;
-    const meta = dto.meta;
-
-    // Secondary on-hit rider: a status ailment, else a flinch chance.
-    let secondary: SecondaryEffect | undefined;
-    const status = meta ? AILMENT[meta.ailment?.name ?? ''] : undefined;
-    if (status && meta && meta.ailment_chance > 0) {
-      secondary = { chance: meta.ailment_chance, status };
-    } else if (meta && meta.flinch_chance > 0) {
-      secondary = { chance: meta.flinch_chance, flinch: true };
-    }
-
-    const drainPct = meta?.drain ?? 0;
-    const multiHit =
-      meta && meta.min_hits && meta.max_hits ? ([meta.min_hits, meta.max_hits] as const) : undefined;
-
-    return {
-      name: dto.name,
-      type: (isPokemonType(type) ? type : 'normal') as PokemonType,
-      power: dto.power ?? 0,
-      // API `accuracy: null` means the move never misses → 0 in the engine.
-      accuracy: dto.accuracy ?? 0,
-      damageClass,
-      priority: dto.priority,
-      pp: dto.pp ?? undefined,
-      secondary,
-      drain: drainPct > 0 ? drainPct / 100 : undefined,
-      recoil: drainPct < 0 ? -drainPct / 100 : undefined,
-      multiHit,
-      critStage: meta?.crit_rate || undefined,
-      // We don't capture move flags from the API, so approximate contact by class.
-      flags: damageClass === 'physical' ? { contact: true } : undefined,
-    };
   }
 }
