@@ -255,6 +255,7 @@ export class PixiOverworldComponent implements OnDestroy {
     const p = this.svc.player();
     if (p) { this.visX = p.x; this.visY = p.y; }
     try {
+      await import('pixi.js/unsafe-eval'); // CSP-safe shader sync (no 'unsafe-eval' in the policy)
       this.PIXI = await import('pixi.js');
       if (this.destroyed) return;
       const app = new this.PIXI.Application();

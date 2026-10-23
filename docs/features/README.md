@@ -45,7 +45,7 @@ See [../plan.md](../plan.md).
 
 - [PWA, accessibility & mobile](../pwa.md) — installable PWA, service worker, a11y.
 - [Mobile-first guidelines](../mobile-first.md) — breakpoints, rules, checklist.
-- [Technical decisions](../tech-decisions.md) — why PixiJS, Three.js, idb, GSAP.
+- [Technical decisions](../tech-decisions.md) — why PixiJS, Three.js, idb.
 - [Architecture](../architecture.md) — folder structure & principles.
 
 ## Conventions every feature follows

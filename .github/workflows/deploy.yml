@@ -16,9 +16,10 @@ permissions:
   pages: write
   id-token: write
 
-# Allow one concurrent deployment; cancel superseded runs.
+# One run per ref; a newer push supersedes an older run of the same ref. Pull-request runs
+# live in their own group, so they can never cancel a deployment of develop/main.
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

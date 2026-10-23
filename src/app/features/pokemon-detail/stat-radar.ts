@@ -17,15 +17,15 @@ const LABELS: { key: keyof PokemonStats; short: string }[] = [
   { key: 'hp', short: 'HP' },
   { key: 'attack', short: 'Atk' },
   { key: 'defense', short: 'Def' },
-  { key: 'speed', short: 'Spe' },
-  { key: 'special-defense', short: 'SpD' },
   { key: 'special-attack', short: 'SpA' },
+  { key: 'special-defense', short: 'SpD' },
+  { key: 'speed', short: 'Spe' },
 ];
 
 /** Hexagonal base-stat radar chart drawn as inline SVG. */
 @Component({
-    imports: [TranslatePipe],
-selector: 'pv-stat-radar',
+  selector: 'pv-stat-radar',
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <svg viewBox="0 0 220 220" role="img" [attr.aria-label]="'Base stat radar' | t">

@@ -29,7 +29,7 @@ instead of showing a "failed to fetch module" error. `npm run e2e:offline` prove
 
 ### Security headers
 
-`index.html` carries a Content-Security-Policy (`'unsafe-eval'` is required by PixiJS' shader compilation) and
+`index.html` carries a Content-Security-Policy (no `'unsafe-eval'` — PixiJS is loaded through its `pixi.js/unsafe-eval` build) and
 `referrer`/`color-scheme` hints. GitHub Pages cannot set response headers, so the policy lives in a `<meta>` tag.
 
 ## Accessibility

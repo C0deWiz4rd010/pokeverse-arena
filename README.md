@@ -7,7 +7,7 @@
 Advanced interactive Pokédex · Type Lab · Team Builder · Turn-based Battles ·
 Arena · Tournaments · World Explorer · Fusion Lab · Berry Garden · Contests
 
-Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js** · **IndexedDB**
+Built with **Angular 22** · **Signals** · **PixiJS** · **Three.js** · **IndexedDB**
 
 </div>
 
@@ -68,7 +68,7 @@ Built with **Angular 22** · **Signals** · **PixiJS** · **GSAP** · **Three.js
 | Framework | Angular 22 (standalone, signals) |
 | Language | TypeScript 6 (strict) |
 | 2D game | PixiJS 8 (lazy) |
-| Motion | GSAP 3 |
+| Motion | CSS animations + View Transitions |
 | 3D hero | Three.js (lazy) |
 | Storage | IndexedDB via `idb` |
 | Tests | Vitest (+ coverage thresholds) · Playwright acceptance suite |

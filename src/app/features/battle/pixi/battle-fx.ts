@@ -247,6 +247,8 @@ export class BattleFxComponent implements OnDestroy {
   private async init(): Promise<void> {
     if (this.reduceMotion || this.destroyed) return;
     try {
+      // CSP-safe shader sync (no new Function), so the policy needs no 'unsafe-eval'.
+      await import('pixi.js/unsafe-eval');
       const pixi = await import('pixi.js');
       if (this.destroyed) return;
       const app = new pixi.Application();

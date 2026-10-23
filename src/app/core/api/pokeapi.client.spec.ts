@@ -56,4 +56,17 @@ describe('PokeApiClient', () => {
     await c.get('https://x/d');
     expect(http.get).toHaveBeenCalledTimes(1);
   });
+
+  it('remembers a 404 so a repeat lookup skips the network', async () => {
+    http.get.mockReturnValue(err(404));
+    const c = TestBed.inject(PokeApiClient);
+    await expect(c.get('https://x/gone')).rejects.toBeInstanceOf(HttpErrorResponse);
+    await expect(c.get('https://x/gone')).rejects.toBeInstanceOf(HttpErrorResponse);
+    expect(http.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('byUrl refuses hosts other than PokeAPI', async () => {
+    await expect(TestBed.inject(PokeApiClient).byUrl('https://evil.example/x')).rejects.toThrow();
+    expect(http.get).not.toHaveBeenCalled();
+  });
 });

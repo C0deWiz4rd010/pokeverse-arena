@@ -21,6 +21,8 @@ import type {
 const MAX_CONCURRENT = 6;
 const MAX_RETRIES = 2;
 const REQUEST_TIMEOUT_MS = 15_000;
+const NOT_FOUND_TTL_MS = 60_000;
+const API_ORIGIN = 'https://pokeapi.co/';
 
 /**
  * Typed, cache-first PokeAPI REST v2 client.
@@ -37,25 +39,41 @@ export class PokeApiClient {
   private readonly cache = inject(CacheService);
   private readonly inFlight = new Map<string, Promise<unknown>>();
   private readonly pool = new Semaphore(MAX_CONCURRENT);
+  /** URL → expiry of a remembered 404, so repeated lookups of a missing id skip the network. */
+  private readonly notFound = new Map<string, number>();
 
   /** Generic cache-first GET. */
-  async get<T>(url: string, ttlMs?: number): Promise<T> {
-    const cached = await this.cache.get<T>(url);
-    if (cached !== undefined) return cached;
-
+  get<T>(url: string, ttlMs?: number): Promise<T> {
+    // Register the in-flight promise synchronously so callers that race the
+    // cache lookup still share one request.
     const existing = this.inFlight.get(url) as Promise<T> | undefined;
     if (existing) return existing;
 
-    const request = this.pool
-      .run(() => this.fetchWithRetry<T>(url))
-      .then(async (data) => {
-        await this.cache.set(url, data, ttlMs);
-        return data;
-      })
-      .finally(() => this.inFlight.delete(url));
-
+    const request = this.load<T>(url, ttlMs).finally(() => this.inFlight.delete(url));
     this.inFlight.set(url, request);
     return request;
+  }
+
+  private async load<T>(url: string, ttlMs?: number): Promise<T> {
+    const cached = await this.cache.get<T>(url);
+    if (cached !== undefined) return cached;
+
+    const missing = this.notFound.get(url);
+    if (missing !== undefined && missing > Date.now()) {
+      throw new HttpErrorResponse({ status: 404, url });
+    }
+
+    try {
+      const data = await this.pool.run(() => this.fetchWithRetry<T>(url));
+      // The cache write is off the critical path; a failed write only costs a refetch later.
+      void this.cache.set(url, data, ttlMs).catch(() => undefined);
+      return data;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 404) {
+        this.notFound.set(url, Date.now() + NOT_FOUND_TTL_MS);
+      }
+      throw err;
+    }
   }
 
   private async fetchWithRetry<T>(url: string): Promise<T> {
@@ -122,7 +140,9 @@ export class PokeApiClient {
     return this.get(endpoints.berryFlavor(id));
   }
 
+  /** Follows a `url` field from an API response; only PokeAPI itself is allowed. */
   byUrl<T>(url: string): Promise<T> {
+    if (!url.startsWith(API_ORIGIN)) return Promise.reject(new Error(`Refusing non-PokeAPI url: ${url}`));
     return this.get<T>(url);
   }
 }

@@ -29,12 +29,9 @@ make sense here?"*
 - Loaded **lazily** only inside the Battle/Arena feature routes so the Pokédex
   stays light.
 
-### GSAP 3 — ✅ YES (UI + timeline animation)
-- HP-bar tweening, card flips, evolution-tree line draw, tournament bracket
-  reveals, damage-number pops.
-- Works both on the DOM (Pokédex UI) and on Pixi display objects (battle).
-- Honors `prefers-reduced-motion`: a global flag disables/instant-completes
-  timelines.
+### GSAP — ❌ dropped
+- Originally planned for HP-bar tweening and bracket reveals. Everything shipped with CSS transitions/keyframes,
+  the View Transitions API and Pixi's own ticker, so the dependency was never imported and was removed (v3.0.1).
 
 ### Three.js — ✅ YES, but scoped (creative "wow" factor)
 - Used **only** for an optional 3D hero on the landing page: a rotating,
@@ -46,7 +43,7 @@ make sense here?"*
   are out of scope for performance and licensing reasons.
 
 ### Decision summary
-> Use **PixiJS** for the game, **GSAP** for motion, **idb** for storage, and a
+> Use **PixiJS** for the game, **CSS** for motion, **idb** for storage, and a
 > **lazy Three.js** hero for flair. Skip Phaser. Keep every heavy dependency off
 > the critical path via lazy-loaded routes.
 

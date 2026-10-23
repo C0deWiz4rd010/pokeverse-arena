@@ -15,14 +15,14 @@
     <meta name="twitter:card" content="summary" />
     <!--
       Content-Security-Policy (GitHub Pages cannot send headers, so it ships as a meta tag).
-      - 'unsafe-eval': PixiJS compiles shader-uniform sync code with new Function().
+      - no 'unsafe-eval': PixiJS runs through its `pixi.js/unsafe-eval` build (no new Function()).
       - the sha256 + 'unsafe-hashes' pair allows only Angular's critical-CSS swap handler
         (onload="this.media='all'") — no other inline script is permitted.
       - style 'unsafe-inline': Angular's component styles are injected at runtime.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-hashes' 'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://raw.githubusercontent.com https://api.dicebear.com; media-src 'self' blob: https://raw.githubusercontent.com; connect-src 'self' https://pokeapi.co https://raw.githubusercontent.com https://api.dicebear.com; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; form-action 'none'"
+      content="default-src 'self'; script-src 'self' 'unsafe-hashes' 'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://raw.githubusercontent.com https://api.dicebear.com; media-src 'self' blob: https://raw.githubusercontent.com; connect-src 'self' https://pokeapi.co https://raw.githubusercontent.com https://api.dicebear.com; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
     />
     <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
     <link rel="preconnect" href="https://pokeapi.co" crossorigin />

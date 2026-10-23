@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { DestroyRef, Injectable, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -24,20 +24,27 @@ export class AchievementWatcherService {
   private readonly save = inject(SaveService);
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(I18nService);
+  private readonly destroyRef = inject(DestroyRef);
   private started = false;
 
   start(): void {
     if (this.started) return;
     this.started = true;
-    this.router.events
+    const nav = this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe(() => this.check());
     // Slow poll only while the tab is visible; catch up as soon as it comes back.
-    setInterval(() => {
+    const poll = setInterval(() => {
       if (document.visibilityState === 'visible') this.check();
     }, POLL_MS);
-    document.addEventListener('visibilitychange', () => {
+    const onVisible = () => {
       if (document.visibilityState === 'visible') this.check();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    this.destroyRef.onDestroy(() => {
+      nav.unsubscribe();
+      clearInterval(poll);
+      document.removeEventListener('visibilitychange', onVisible);
     });
     this.check();
   }

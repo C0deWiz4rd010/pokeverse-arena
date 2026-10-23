@@ -21,7 +21,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 
 | Phase | Inhalt | Version | Status |
 | ----- | ------ | ------- | ------ |
-| 1 | Quick Wins & Bugfixes | v3.0.1 | ⬜ |
+| 1 | Quick Wins & Bugfixes | v3.0.1 | ✅ |
 | 2 | Strengere Typen & Lint | v3.0.2 | ⬜ |
 | 3 | Architektur entkoppeln | v3.0.3 | ⬜ |
 | 4 | Große Services aufteilen | v3.0.4 | ⬜ |

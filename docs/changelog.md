@@ -4,6 +4,26 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.1 — 2026-10-23
+
+🔧 **Quick wins & bugfixes** (phase 1 of the [improvement plan](improvement-plan.md)).
+
+### Fixed
+
+- **CI:** a pull-request run could cancel a production deploy (shared `pages` concurrency group); groups are now per ref.
+- **Stat radar:** the Pokémon detail radar used a different axis order (…Spe, SpD, SpA) than quick view and compare;
+  the same Pokémon now has the same shape everywhere.
+- **Stat Showdown:** going offline mid-round left the spinner forever; there is now an error state with *Try again*.
+- **Leaks:** the detail page's count-up animation and the achievement watcher's timers/listeners are cleaned up.
+- **API client:** requests that raced the cache lookup could fetch twice; the cache write no longer delays the response;
+  missing ids (404) are remembered for a minute; `byUrl` only follows PokéAPI links.
+- **Start-up failure** now shows a message instead of a blank page.
+
+### Changed
+
+- **Security:** the CSP no longer allows `'unsafe-eval'` (PixiJS runs through `pixi.js/unsafe-eval`) and gained `base-uri 'self'`.
+- Removed the unused **GSAP** dependency.
+
 ## v3.0.0 — 2026-10-09
 
 🏁 **The polish release** — the A–Z pass over the whole app, rolled up. Nothing new on top of v2.9.0 except documentation.

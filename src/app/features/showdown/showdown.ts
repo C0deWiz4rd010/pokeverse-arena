@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   signal,
 } from '@angular/core';
@@ -11,6 +12,7 @@ import { SaveService } from '../../core/storage/save.service';
 import { HapticsService } from '../../core/haptics/haptics.service';
 import { ToastService } from '../../core/ui/toast/toast.service';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
+import { StateComponent } from '../../core/ui/state/state';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { titleCase } from '../../core/ui/format';
 import {
@@ -25,7 +27,7 @@ import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 const MAX_ID = 1025;
 
-type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over';
+type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over' | 'error';
 
 /**
  * Stat Showdown — a fast, swipe/tap "higher-or-lower" duel. Two Pokémon appear;
@@ -36,7 +38,7 @@ type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over';
 @Component({
   selector: 'pv-showdown',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, PageHeaderComponent, TypeBadgeComponent],
+  imports: [TranslatePipe, PageHeaderComponent, TypeBadgeComponent, StateComponent],
   host: { '(document:keydown)': 'onKey($event)' },
   template: `
     <pv-page-header [title]="'Stat Showdown' | t" [subtitle]="'Higher or lower — guess the stronger stat' | t" icon="dices" />
@@ -54,7 +56,15 @@ type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over';
       </section>
     }
 
-    @if (phase() !== 'intro') {
+    @if (phase() === 'error') {
+      <pv-state
+        kind="error"
+        [title]="'Could not load the next round' | t"
+        [text]="'Check your connection and try again.' | t"
+        [actionLabel]="'Try again' | t"
+        (action)="retry()"
+      />
+    } @else if (phase() !== 'intro') {
       <div class="hud">
         <span class="chip">{{ '🔥 Streak' | t }} <strong>{{ streak() }}</strong></span>
         <span class="chip">{{ '🏅 Best' | t }} <strong>{{ best() }}</strong></span>
@@ -115,6 +125,14 @@ export class ShowdownComponent {
   private readonly save = inject(SaveService);
   private readonly haptics = inject(HapticsService);
   private readonly toast = inject(ToastService);
+  private timer: ReturnType<typeof setTimeout> | undefined;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      this.token++; // drop any round still loading
+      clearTimeout(this.timer);
+    });
+  }
 
   protected readonly sides = ['left', 'right'] as const;
 
@@ -162,6 +180,10 @@ export class ShowdownComponent {
     await this.loadRound();
   }
 
+  protected async retry(): Promise<void> {
+    await this.loadRound();
+  }
+
   protected onKey(e: KeyboardEvent): void {
     if (this.phase() !== 'playing') return;
     if (e.key === 'ArrowLeft') { e.preventDefault(); this.pick('left'); }
@@ -181,7 +203,7 @@ export class ShowdownComponent {
     if (correct) {
       this.haptics.fire('success');
       this.streak.update((s) => s + 1);
-      setTimeout(() => this.loadRound(), 1150);
+      this.timer = setTimeout(() => void this.loadRound(), 1150);
     } else {
       this.haptics.fire('error');
       const isRecord = this.streak() > this.best();
@@ -190,7 +212,7 @@ export class ShowdownComponent {
         this.save.write('showdown-best', this.streak());
         this.newBest.set(true);
       }
-      setTimeout(() => this.phase.set('over'), 900);
+      this.timer = setTimeout(() => this.phase.set('over'), 900);
     }
   }
 
@@ -216,10 +238,19 @@ export class ShowdownComponent {
     this.right.set(null);
     this.stat.set(SHOWDOWN_STATS[Math.floor(Math.random() * SHOWDOWN_STATS.length)]);
 
-    const [a, b] = await Promise.all([this.fetchMon(), this.fetchMon()]);
-    let second = b;
-    let guard = 0;
-    while (second.id === a.id && guard++ < 5) second = await this.fetchMon();
+    let a: ShowdownMon;
+    let second: ShowdownMon;
+    try {
+      const [first, b] = await Promise.all([this.fetchMon(), this.fetchMon()]);
+      a = first;
+      second = b;
+      let guard = 0;
+      while (second.id === a.id && guard++ < 5) second = await this.fetchMon();
+    } catch {
+      // Offline with nothing cached: surface a retry instead of hanging on the spinner.
+      if (run === this.token) this.phase.set('error');
+      return;
+    }
 
     if (run !== this.token) return; // a newer round superseded this one
     this.left.set(a);

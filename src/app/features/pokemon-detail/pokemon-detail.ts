@@ -7,6 +7,7 @@ import {
   afterNextRender,
   computed,
   effect,
+  DestroyRef,
   inject,
   input,
   signal,
@@ -164,7 +165,15 @@ export class PokemonDetailComponent {
     return moves.filter((m) => m.method === method);
   });
 
+  private revealTimer: ReturnType<typeof setTimeout> | undefined;
+  private countUpFrame = 0;
+
   constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      clearTimeout(this.revealTimer);
+      cancelAnimationFrame(this.countUpFrame);
+    });
+
     effect(() => {
       const id = this.id();
       this.shiny.set(false);
@@ -196,20 +205,22 @@ export class PokemonDetailComponent {
 
   private onLoaded(): void {
     // Trigger the stat-bar / radar grow-in on the next frame.
-    setTimeout(() => this.revealed.set(true), 40);
+    clearTimeout(this.revealTimer);
+    this.revealTimer = setTimeout(() => this.revealed.set(true), 40);
     this.countUpBst();
     this.dex.ensureLoaded();
   }
 
   private countUpBst(): void {
+    cancelAnimationFrame(this.countUpFrame);
     const target = this.pokemon()?.baseStatTotal ?? 0;
     const start = performance.now();
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / 700);
       this.bstShown.set(Math.round(target * (1 - Math.pow(1 - t, 3))));
-      if (t < 1) requestAnimationFrame(step);
+      if (t < 1) this.countUpFrame = requestAnimationFrame(step);
     };
-    requestAnimationFrame(step);
+    this.countUpFrame = requestAnimationFrame(step);
   }
 
   protected toggleShiny(): void {
