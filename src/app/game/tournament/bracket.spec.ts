@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildBracket,
-  nextReadyMatch,
-  playerMatch,
-  reportResult,
-  findMatch,
-} from './bracket';
+import { buildBracket, nextReadyMatch, playerMatch, reportResult, findMatch } from './bracket';
 import type { Trainer } from './types';
 
 function trainers(count = 16): Trainer[] {
@@ -26,9 +20,9 @@ describe('bracket', () => {
     expect(b.rounds.qf).toHaveLength(4);
     expect(b.rounds.sf).toHaveLength(2);
     expect(b.rounds.final).toHaveLength(1);
-    expect(b.rounds.r16[0].a?.id).toBe('t0');
-    expect(b.rounds.r16[0].b?.id).toBe('t1');
-    expect(b.rounds.qf[0].a).toBeNull();
+    expect(b.rounds.r16[0]!.a?.id).toBe('t0');
+    expect(b.rounds.r16[0]!.b?.id).toBe('t1');
+    expect(b.rounds.qf[0]!.a).toBeNull();
     expect(b.champion).toBeNull();
   });
 
@@ -40,10 +34,10 @@ describe('bracket', () => {
     let b = buildBracket(trainers());
     // r16 slot 0 → winner a (t0) goes to qf slot 0, side a.
     b = reportResult(b, 'r16-0', 0);
-    expect(b.rounds.qf[0].a?.id).toBe('t0');
+    expect(b.rounds.qf[0]!.a?.id).toBe('t0');
     // r16 slot 1 → winner b (t3) goes to qf slot 0, side b.
     b = reportResult(b, 'r16-1', 1);
-    expect(b.rounds.qf[0].b?.id).toBe('t3');
+    expect(b.rounds.qf[0]!.b?.id).toBe('t3');
   });
 
   it('does not mutate the previous bracket (immutable updates)', () => {

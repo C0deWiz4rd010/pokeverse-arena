@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { createRival, recordRivalMeeting, rivalLevelBoost, rivalMeetings, rivalTaunt } from './rival';
+import {
+  createRival,
+  recordRivalMeeting,
+  rivalLevelBoost,
+  rivalMeetings,
+  rivalTaunt,
+} from './rival';
 
 /** A rand() that replays a fixed sequence (repeats the last value). */
 const seq = (...vals: number[]) => {
   let i = 0;
-  return () => vals[Math.min(i++, vals.length - 1)];
+  return () => vals[Math.min(i++, vals.length - 1)]!;
 };
 
 describe('tournament rival', () => {

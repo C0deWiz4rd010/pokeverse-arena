@@ -75,13 +75,14 @@ export class TeamBuilderService {
   );
 
   /** Live computed stats per member at its chosen level + nature. */
-  readonly memberStats = computed(() =>
-    new Map(
-      this.team().map((m) => [
-        m.uid,
-        quickStats(m.baseStats, m.level, natureByName(m.natureName)),
-      ]),
-    ),
+  readonly memberStats = computed(
+    () =>
+      new Map(
+        this.team().map((m) => [
+          m.uid,
+          quickStats(m.baseStats, m.level, natureByName(m.natureName)),
+        ]),
+      ),
   );
 
   constructor() {
@@ -206,10 +207,11 @@ export class TeamBuilderService {
     return set;
   }
 
-  patch(uid: string, change: Partial<Pick<TeamMember, 'nickname' | 'ability' | 'level' | 'natureName'>>): void {
-    this.team.update((t) =>
-      t.map((m) => (m.uid === uid ? { ...m, ...this.sanitise(change) } : m)),
-    );
+  patch(
+    uid: string,
+    change: Partial<Pick<TeamMember, 'nickname' | 'ability' | 'level' | 'natureName'>>,
+  ): void {
+    this.team.update((t) => t.map((m) => (m.uid === uid ? { ...m, ...this.sanitise(change) } : m)));
   }
 
   toggleMove(uid: string, move: string): void {
@@ -234,7 +236,7 @@ export class TeamBuilderService {
   async importJson(json: string): Promise<void> {
     let parsed: { team?: StoredMember[] };
     try {
-      parsed = JSON.parse(json);
+      parsed = JSON.parse(json) as { team?: StoredMember[] };
     } catch {
       this.error.set('That does not look like valid team JSON.');
       return;
@@ -298,9 +300,7 @@ export class TeamBuilderService {
     const abilities = [...new Set(dto.abilities.map((a) => a.ability.name))];
     const movePool = [...new Set(dto.moves.map((m) => m.move.name))].sort();
     const levelUp = dto.moves
-      .filter((m) =>
-        m.version_group_details.some((d) => d.move_learn_method.name === 'level-up'),
-      )
+      .filter((m) => m.version_group_details.some((d) => d.move_learn_method.name === 'level-up'))
       .map((m) => m.move.name)
       .slice(0, MAX_MOVES);
     return {
@@ -316,8 +316,7 @@ export class TeamBuilderService {
       moves: levelUp,
       level: 50,
       natureName: 'Hardy',
-      artwork:
-        dto.sprites.other?.['official-artwork']?.front_default ?? officialArtwork(dto.id),
+      artwork: dto.sprites.other?.['official-artwork']?.front_default ?? officialArtwork(dto.id),
     };
   }
 
@@ -347,5 +346,5 @@ function toStored(m: TeamMember): StoredMember {
 }
 
 function pickRandom<T>(items: readonly T[]): T {
-  return items[Math.floor(Math.random() * items.length)];
+  return items[Math.floor(Math.random() * items.length)]!;
 }

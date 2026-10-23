@@ -24,10 +24,15 @@
 }
 
 @keyframes cmd-fade {
-  from { opacity: 0; }
+  from {
+    opacity: 0;
+  }
 }
 @keyframes cmd-pop {
-  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
 }
 
 /* ---------------------------------------------------------------- search */
@@ -49,7 +54,9 @@
     font-size: 1.05rem;
     color: var(--text);
 
-    &::placeholder { color: var(--text-faint); }
+    &::placeholder {
+      color: var(--text-faint);
+    }
   }
 }
 
@@ -101,7 +108,9 @@ kbd {
     );
     box-shadow: inset 2px 0 0 var(--accent);
 
-    .cmd-go { opacity: 1; }
+    .cmd-go {
+      opacity: 1;
+    }
   }
 }
 
@@ -163,9 +172,16 @@ kbd {
   font-size: 0.72rem;
   color: var(--text-faint);
 
-  span { display: inline-flex; align-items: center; gap: 0.3rem; }
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
 }
 
 @include below(sm) {
-  .cmd-hint, .cmd-foot { display: none; }
+  .cmd-hint,
+  .cmd-foot {
+    display: none;
+  }
 }

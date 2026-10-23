@@ -84,7 +84,6 @@ describe('analyzeTeamTypes', () => {
   });
 });
 
-
 import { groupDefenses } from './type-chart';
 
 describe('groupDefenses', () => {

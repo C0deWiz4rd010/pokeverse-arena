@@ -26,12 +26,17 @@
   animation: toast-in 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.1);
 
   @include hover-capable {
-    &:hover { border-color: var(--accent); }
+    &:hover {
+      border-color: var(--accent);
+    }
   }
 }
 
 @keyframes toast-in {
-  from { opacity: 0; transform: translateX(24px) scale(0.96); }
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.96);
+  }
 }
 
 .t-icon {
@@ -57,7 +62,9 @@
   gap: 0.1rem;
   min-width: 0;
 
-  strong { font-size: 0.95rem; }
+  strong {
+    font-size: 0.95rem;
+  }
 }
 
 .t-text {
@@ -68,6 +75,10 @@
 .toast.achievement {
   border-color: color-mix(in srgb, var(--accent-3) 45%, var(--glass-border));
   background:
-    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent-3) 14%, transparent), transparent 60%),
+    radial-gradient(
+      120% 140% at 0% 0%,
+      color-mix(in srgb, var(--accent-3) 14%, transparent),
+      transparent 60%
+    ),
     var(--glass);
 }

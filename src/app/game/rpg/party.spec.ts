@@ -34,20 +34,20 @@ describe('party ops', () => {
   it('renames by uid (trimmed, capped, clearable)', () => {
     const a = mk('a');
     const renamed = rename([a], a.uid, '  Sparky  ');
-    expect(renamed[0].nickname).toBe('Sparky');
-    expect(rename(renamed, a.uid, '')[0].nickname).toBeUndefined();
+    expect(renamed[0]!.nickname).toBe('Sparky');
+    expect(rename(renamed, a.uid, '')[0]!.nickname).toBeUndefined();
   });
 
   it('gives a held item and reports the swapped-out one', () => {
     const a = mk('a'), b = mk('b');
     const r1 = giveHeldItem([a, b], 0, 'leftovers');
-    expect(r1.party[0].heldItem).toBe('leftovers');
+    expect(r1.party[0]!.heldItem).toBe('leftovers');
     expect(r1.replaced).toBeUndefined();
-    expect(r1.party[1].heldItem).toBeUndefined();
+    expect(r1.party[1]!.heldItem).toBeUndefined();
     const r2 = giveHeldItem(r1.party, 0, 'sitrus-berry');
-    expect(r2.party[0].heldItem).toBe('sitrus-berry');
+    expect(r2.party[0]!.heldItem).toBe('sitrus-berry');
     expect(r2.replaced).toBe('leftovers'); // goes back to the bag
-    expect(giveHeldItem([a], 5, 'lum-berry').party[0].heldItem).toBeUndefined(); // bad index no-op
+    expect(giveHeldItem([a], 5, 'lum-berry').party[0]!.heldItem).toBeUndefined(); // bad index no-op
   });
 
   it('takes a held item back off a member', () => {
@@ -55,7 +55,7 @@ describe('party ops', () => {
     const given = giveHeldItem([a], 0, 'lum-berry').party;
     const r = takeHeldItem(given, 0);
     expect(r.taken).toBe('lum-berry');
-    expect(r.party[0].heldItem).toBeUndefined();
+    expect(r.party[0]!.heldItem).toBeUndefined();
     expect(takeHeldItem(r.party, 0).taken).toBeUndefined(); // nothing held → no-op
   });
 });

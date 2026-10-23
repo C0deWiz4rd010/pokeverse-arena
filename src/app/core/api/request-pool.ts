@@ -41,6 +41,11 @@ export function isRetryableStatus(status: number | undefined): boolean {
 }
 
 /** Exponential backoff with full jitter: attempt 0 → ≤ base, 1 → ≤ 2·base, … capped. */
-export function backoffDelay(attempt: number, rand: () => number = Math.random, baseMs = 400, capMs = 5000): number {
+export function backoffDelay(
+  attempt: number,
+  rand: () => number = Math.random,
+  baseMs = 400,
+  capMs = 5000,
+): number {
   return Math.floor(rand() * Math.min(capMs, baseMs * 2 ** attempt));
 }

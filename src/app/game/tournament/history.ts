@@ -4,7 +4,6 @@
  */
 import { safeGet, safeSet } from '../../core/storage/safe-storage';
 
-
 export interface TournamentRecord {
   /** ISO date the run finished. */
   readonly date: string;

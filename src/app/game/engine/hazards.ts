@@ -27,7 +27,10 @@ export function freshHazards(): HazardState {
 }
 
 /** Add a layer of a hazard, capped at its max; returns whether it stuck. */
-export function addHazard(state: HazardState, kind: HazardKind): { state: HazardState; added: boolean } {
+export function addHazard(
+  state: HazardState,
+  kind: HazardKind,
+): { state: HazardState; added: boolean } {
   const max = HAZARD_INFO[kind].maxLayers;
   if (state[kind] >= max) return { state, added: false };
   return { state: { ...state, [kind]: state[kind] + 1 }, added: true };
@@ -75,7 +78,7 @@ export function resolveSwitchInHazards(
   }
 
   if (grounded && state.spikes > 0) {
-    const spikes = Math.max(1, Math.floor(maxHp * SPIKE_FRACTION[state.spikes]));
+    const spikes = Math.max(1, Math.floor(maxHp * SPIKE_FRACTION[state.spikes]!));
     damage += spikes;
     messages.push(`${name} is hurt by spikes!`);
   }

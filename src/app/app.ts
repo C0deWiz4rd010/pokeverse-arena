@@ -23,7 +23,17 @@ interface NavItem {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ToastsComponent, BottomNavComponent, InstallPromptComponent, CommandPaletteComponent],
+  imports: [
+    TranslatePipe,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    IconComponent,
+    ToastsComponent,
+    BottomNavComponent,
+    InstallPromptComponent,
+    CommandPaletteComponent,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {

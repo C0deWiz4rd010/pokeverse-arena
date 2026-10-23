@@ -2,9 +2,28 @@ import { describe, expect, it } from 'vitest';
 import { TeamBattle } from './team-battle';
 import type { Battler, BattleMove } from './battle-types';
 
-const tackle: BattleMove = { name: 'Tackle', type: 'normal', power: 40, accuracy: 100, damageClass: 'physical' };
-const weak: BattleMove = { name: 'Tap', type: 'normal', power: 5, accuracy: 100, damageClass: 'physical' };
-const sd: BattleMove = { name: 'Swords Dance', type: 'normal', power: 0, accuracy: 0, damageClass: 'status', boosts: { attack: 2 } };
+const tackle: BattleMove = {
+  name: 'Tackle',
+  type: 'normal',
+  power: 40,
+  accuracy: 100,
+  damageClass: 'physical',
+};
+const weak: BattleMove = {
+  name: 'Tap',
+  type: 'normal',
+  power: 5,
+  accuracy: 100,
+  damageClass: 'physical',
+};
+const sd: BattleMove = {
+  name: 'Swords Dance',
+  type: 'normal',
+  power: 0,
+  accuracy: 0,
+  damageClass: 'status',
+  boosts: { attack: 2 },
+};
 
 function mk(o: Partial<Battler>): Battler {
   return {
@@ -12,7 +31,14 @@ function mk(o: Partial<Battler>): Battler {
     name: 'Mon',
     level: 50,
     types: ['normal'],
-    stats: { hp: 250, attack: 120, defense: 100, 'special-attack': 100, 'special-defense': 100, speed: 100 },
+    stats: {
+      hp: 250,
+      attack: 120,
+      defense: 100,
+      'special-attack': 100,
+      'special-defense': 100,
+      speed: 100,
+    },
     moves: [tackle],
     ...o,
   };
@@ -52,20 +78,26 @@ describe('TeamBattle', () => {
   });
 
   it('switches the active Pokémon and resets its stat stages on the way out', () => {
-    const teamA = [mk({ name: 'Lead', moves: [sd, tackle], stats: { ...mk({}).stats, speed: 200 } }), mk({ name: 'Bench' })];
+    const teamA = [
+      mk({ name: 'Lead', moves: [sd, tackle], stats: { ...mk({}).stats, speed: 200 } }),
+      mk({ name: 'Bench' }),
+    ];
     const teamB = [mk({ name: 'Foe', moves: [weak], stats: { ...mk({}).stats, speed: 1 } })];
     const tb = new TeamBattle(teamA, teamB, 'switch');
     tb.takeTurn(move(0), move(0)); // Lead uses Swords Dance → +2 Attack
     expect(tb.active(0).stages.attack).toBe(2);
     tb.takeTurn(swap(1), move(0)); // switch Lead → Bench
     expect(tb.active(0).battler.name).toBe('Bench');
-    expect(teamA[0].stats.hp).toBeGreaterThan(0);
+    expect(teamA[0]!.stats.hp).toBeGreaterThan(0);
     // The switched-out Lead's stages were cleared.
-    expect(tb.state.parties[0][0].stages.attack).toBe(0);
+    expect(tb.state.parties[0][0]!.stages.attack).toBe(0);
   });
 
   it('bites a switch-in with Stealth Rock', () => {
-    const teamA = [mk({ name: 'Lead', stats: { ...mk({}).stats, speed: 200 } }), mk({ name: 'Fire', types: ['fire'] })];
+    const teamA = [
+      mk({ name: 'Lead', stats: { ...mk({}).stats, speed: 200 } }),
+      mk({ name: 'Fire', types: ['fire'] }),
+    ];
     const teamB = [mk({ name: 'Foe', moves: [weak], stats: { ...mk({}).stats, speed: 1 } })];
     const tb = new TeamBattle(teamA, teamB, 'rocks');
     tb.state.field.hazards[0] = { 'stealth-rock': 1, spikes: 0, 'toxic-spikes': 0 };
@@ -75,7 +107,10 @@ describe('TeamBattle', () => {
   });
 
   it('fires Intimidate when a Pokémon switches in', () => {
-    const teamA = [mk({ name: 'Lead', stats: { ...mk({}).stats, speed: 200 } }), mk({ name: 'Scary', ability: 'intimidate' })];
+    const teamA = [
+      mk({ name: 'Lead', stats: { ...mk({}).stats, speed: 200 } }),
+      mk({ name: 'Scary', ability: 'intimidate' }),
+    ];
     const teamB = [mk({ name: 'Foe', moves: [weak], stats: { ...mk({}).stats, speed: 1 } })];
     const tb = new TeamBattle(teamA, teamB, 'intim');
     tb.takeTurn(swap(1), move(0));
@@ -84,7 +119,9 @@ describe('TeamBattle', () => {
 
   it('lets one side pass while the other still attacks', () => {
     const teamA = [mk({ name: 'A', stats: { ...mk({}).stats, speed: 1 } })];
-    const teamB = [mk({ name: 'B', moves: [tackle], stats: { ...mk({}).stats, attack: 200, speed: 200 } })];
+    const teamB = [
+      mk({ name: 'B', moves: [tackle], stats: { ...mk({}).stats, attack: 200, speed: 200 } }),
+    ];
     const tb = new TeamBattle(teamA, teamB, 'pass');
     const beforeA = tb.active(0).currentHp;
     const beforeB = tb.active(1).currentHp;
@@ -102,7 +139,10 @@ describe('TeamBattle', () => {
   });
 
   it('keeps weather on the field across a switch', () => {
-    const teamA = [mk({ name: 'Sun', ability: 'drought', stats: { ...mk({}).stats, speed: 200 } }), mk({ name: 'Bench' })];
+    const teamA = [
+      mk({ name: 'Sun', ability: 'drought', stats: { ...mk({}).stats, speed: 200 } }),
+      mk({ name: 'Bench' }),
+    ];
     const teamB = [mk({ name: 'Foe', moves: [weak], stats: { ...mk({}).stats, speed: 1 } })];
     const tb = new TeamBattle(teamA, teamB, 'wx');
     tb.takeTurn(move(0), move(0));
@@ -118,16 +158,18 @@ describe('TeamBattle', () => {
       startHpA: [200, 200, 0],
       startStatusA: ['poison', 'sleep', 'burn'],
     });
-    expect(tb.state.parties[0][0].status).toBe('poison');
-    expect(tb.state.parties[0][1].status).toBe('sleep');
-    expect(tb.state.parties[0][1].sleepTurns).toBeGreaterThan(0);
+    expect(tb.state.parties[0][0]!.status).toBe('poison');
+    expect(tb.state.parties[0][1]!.status).toBe('sleep');
+    expect(tb.state.parties[0][1]!.sleepTurns).toBeGreaterThan(0);
     // A fainted member never receives a carried status.
-    expect(tb.state.parties[0][2].status).toBe('none');
+    expect(tb.state.parties[0][2]!.status).toBe('none');
   });
 
   it('ticks residual damage from a carried-in poison at end of turn', () => {
     const teamA = [mk({ name: 'Poisoned', moves: [weak] })];
-    const teamB = [mk({ name: 'Foe', moves: [weak], stats: { ...mk({}).stats, attack: 1, speed: 1 } })];
+    const teamB = [
+      mk({ name: 'Foe', moves: [weak], stats: { ...mk({}).stats, attack: 1, speed: 1 } }),
+    ];
     const tb = new TeamBattle(teamA, teamB, 'psn', { startStatusA: ['poison'] });
     const before = tb.active(0).currentHp;
     tb.takeTurn(move(0), move(0));

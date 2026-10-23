@@ -21,10 +21,14 @@ const errors = [];
 const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 950 }, locale: 'en-US' });
 const page = await ctx.newPage();
-page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`); });
+page.on('console', (m) => {
+  if (m.type() === 'error') errors.push(`console: ${m.text()}`);
+});
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 const log = (...a) => console.log('▸', ...a);
-const fail = (msg) => { errors.push(msg); };
+const fail = (msg) => {
+  errors.push(msg);
+};
 
 await page.goto(`${BASE}/#/adventure`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(1000);
@@ -51,14 +55,19 @@ async function clearDialogue(maxClicks = 24) {
       await page.waitForTimeout(400); // a follow-up line may still be loading
       if (!(await box.count())) return;
     }
-    await box.first().click().catch(() => {});
+    await box
+      .first()
+      .click()
+      .catch(() => {});
     await page.waitForTimeout(320);
   }
 }
 
 // 2 — Advance intro dialogue until the starter picker appears.
 await clearDialogue(8);
-await page.waitForSelector('.starter button, pv-starter button', { timeout: 20000 }).catch(() => {});
+await page
+  .waitForSelector('.starter button, pv-starter button', { timeout: 20000 })
+  .catch(() => {});
 const starterBtn = page.locator('.starter button, pv-starter button').first();
 if (!(await starterBtn.count())) fail('starter: picker never appeared');
 else {
@@ -79,8 +88,18 @@ await page.screenshot({ path: `${OUT}/e2e-adv-overworld.png` });
 // 4 — Walk a fixed path: bedroom (3,4) → door (3,6) → Verdant Town (3,4) →
 //     right to x5 → down to the tall-grass row (y10), then sweep it until a
 //     wild battle rolls (32%/grass step).
-const path = ['ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight',
-  'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown'];
+const path = [
+  'ArrowDown',
+  'ArrowDown',
+  'ArrowRight',
+  'ArrowRight',
+  'ArrowDown',
+  'ArrowDown',
+  'ArrowDown',
+  'ArrowDown',
+  'ArrowDown',
+  'ArrowDown',
+];
 let inBattle = false;
 // The overworld tracks *held* keys per animation frame, so hold each arrow for
 // one full 150ms step instead of a fleeting press.
@@ -93,7 +112,7 @@ async function stepKey(key) {
 // After the fixed path we bounce up/down at column 5 — outside every wandering
 // NPC's range — so each downward step re-enters tall grass and rolls (32%).
 for (let i = 0; i < 80 && !inBattle; i++) {
-  const dir = i < path.length ? path[i] : (i % 2 === 0 ? 'ArrowUp' : 'ArrowDown');
+  const dir = i < path.length ? path[i] : i % 2 === 0 ? 'ArrowUp' : 'ArrowDown';
   await stepKey(dir);
   inBattle = (await page.locator('.rb, pv-rpg-battle').count()) > 0;
 }

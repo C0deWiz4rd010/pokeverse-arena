@@ -1,6 +1,6 @@
 {
   "name": "pokeverse-arena",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,10 +9,12 @@
     "test": "ng test",
     "shots": "node tools/ui-shots.mjs",
     "e2e": "node tools/e2e-adventure.mjs",
-    "lint": "eslint \"src/**/*.{ts,html}\"",
+    "lint": "eslint \"src/**/*.{ts,html}\" \"tools/**/*.mjs\" --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,scss}\" \"tools/**/*.mjs\"",
+    "format:check": "prettier --check \"src/**/*.{ts,scss}\" \"tools/**/*.mjs\"",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.spec.json",
     "test:ci": "ng test --no-watch --coverage",
-    "verify": "npm run typecheck && npm run lint && npm run i18n:check && npm run test:ci && npm run build",
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run i18n:check && npm run test:ci && npm run build",
     "postbuild": "node tools/postbuild.mjs",
     "i18n:check": "node tools/i18n-check.mjs",
     "i18n:scan": "node tools/i18n-scan.mjs",

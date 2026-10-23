@@ -62,35 +62,209 @@ export interface Achievement {
 }
 
 export const ACHIEVEMENTS: readonly Achievement[] = [
-  { id: 'first-badge', name: 'First Steps', desc: 'Earn your first gym badge.', icon: 'shield-check', test: (s) => s.badges >= 1 },
-  { id: 'half-badges', name: 'Halfway There', desc: 'Earn 9 gym badges.', icon: 'shield-half', test: (s) => s.badges >= 9 },
-  { id: 'all-badges', name: 'Badge Master', desc: 'Earn all 18 gym badges.', icon: 'shield', test: (s) => s.badges >= s.totalBadges && s.totalBadges > 0 },
-  { id: 'champion', name: 'Arena Champion', desc: 'Conquer the Champion Gauntlet.', icon: 'crown', test: (s) => s.arenaChampion },
-  { id: 'tour-win', name: 'Cup Winner', desc: 'Win a tournament.', icon: 'trophy', test: (s) => s.tournamentWins >= 1 },
-  { id: 'tour-veteran', name: 'Circuit Veteran', desc: 'Enter 10 tournaments.', icon: 'clipboard-list', test: (s) => s.tournamentRuns >= 10 },
-  { id: 'spire-climb', name: 'Spire Climber', desc: 'Reach floor 8 of the Spire.', icon: 'mountain', test: (s) => s.bestDepth >= 8 },
-  { id: 'spire-clear', name: 'Summit Reached', desc: 'Clear the Ascension Spire.', icon: 'mountain-snow', test: (s) => s.spireClears >= 1 },
-  { id: 'ascendant', name: 'Ascendant', desc: 'Reach ascension tier 3.', icon: 'star', test: (s) => s.ascension >= 3 },
-  { id: 'wealthy', name: 'Well Funded', desc: 'Bank 1000 coins across all modes.', icon: 'gem', test: (s) => s.coins >= 1000 },
-  { id: 'adv-badge', name: 'Trail Blazer', desc: 'Earn a gym badge in the Adventure.', icon: 'map', test: (s) => s.adventureBadges >= 1 },
-  { id: 'adv-catcher', name: 'Field Researcher', desc: 'Catch 10 Pokémon in the Adventure.', icon: 'map-pin', test: (s) => s.adventureCaught >= 10 },
-  { id: 'world-50', name: 'Registrar', desc: 'Register 50 species in the World Dex.', icon: 'book', test: (s) => s.worldCaught >= 50 },
-  { id: 'shiny-one', name: 'Shiny Hunter', desc: 'Catch a shiny on a World expedition.', icon: 'sparkles', test: (s) => s.shinyCaught >= 1 },
-  { id: 'ribbon-one', name: 'Stage Debut', desc: 'Win a contest ribbon.', icon: 'wand-sparkles', test: (s) => s.contestRibbons >= 1 },
-  { id: 'ribbon-all', name: 'Ribbon Royalty', desc: 'Collect all five contest ribbons.', icon: 'heart', test: (s) => s.contestRibbons >= 5 },
-  { id: 'rival-lead', name: 'Rival Slayer', desc: 'Lead your rival head-to-head by 3.', icon: 'zap', test: (s) => s.rivalWins >= s.rivalLosses + 3 },
-  { id: 'oracle', name: 'Crystal Oracle', desc: 'Hit a crystal-ball champion call.', icon: 'dices', test: (s) => s.pickemHits >= 1 },
-  { id: 'daily-3', name: 'On Fire', desc: 'Reach a 3-day Daily Challenge streak.', icon: 'flame', test: (s) => s.dailyBest >= 3 },
-  { id: 'daily-7', name: 'Eternal Flame', desc: 'Reach a 7-day Daily Challenge streak.', icon: 'sun', test: (s) => s.dailyBest >= 7 },
-  { id: 'odyssey-10', name: 'Wayfarer', desc: 'Reach wave 10 of the Odyssey.', icon: 'map-pin', test: (s) => s.odysseyBestWave >= 10 },
-  { id: 'odyssey-30', name: 'Endless Marcher', desc: 'Reach wave 30 of the Odyssey.', icon: 'mountain-snow', test: (s) => s.odysseyBestWave >= 30 },
-  { id: 'odyssey-roster', name: 'Roster Builder', desc: 'Unlock 12 Odyssey starters.', icon: 'egg', test: (s) => s.odysseyUnlocked >= 12 },
-  { id: 'fusion-first', name: 'Mad Scientist', desc: 'Register your first fusion in the Fusion Dex.', icon: 'flask-conical', test: (s) => s.fusionsRegistered >= 1 },
-  { id: 'fusion-10', name: 'Gene Weaver', desc: 'Register 10 fusions in the Fusion Dex.', icon: 'brain', test: (s) => s.fusionsRegistered >= 10 },
-  { id: 'nuz-survivor', name: 'Survivor', desc: 'Earn a gym badge on a Nuzlocke run.', icon: 'skull', test: (s) => s.nuzlockeBadges >= 1 },
-  { id: 'nuz-iron', name: 'Iron Grit', desc: 'Hold all four Adventure badges on a single Nuzlocke run.', icon: 'mountain-snow', test: (s) => s.nuzlockeBadges >= 4 },
-  { id: 'chimera-slayer', name: 'Chimera Slayer', desc: 'Defeat a secret chimera boss in the Spire.', icon: 'flask-conical', test: (s) => s.chimeraWins >= 1 },
-  { id: 'chimera-hunter', name: 'Myth Hunter', desc: 'Defeat 3 secret chimera bosses.', icon: 'crown', test: (s) => s.chimeraWins >= 3 },
+  {
+    id: 'first-badge',
+    name: 'First Steps',
+    desc: 'Earn your first gym badge.',
+    icon: 'shield-check',
+    test: (s) => s.badges >= 1,
+  },
+  {
+    id: 'half-badges',
+    name: 'Halfway There',
+    desc: 'Earn 9 gym badges.',
+    icon: 'shield-half',
+    test: (s) => s.badges >= 9,
+  },
+  {
+    id: 'all-badges',
+    name: 'Badge Master',
+    desc: 'Earn all 18 gym badges.',
+    icon: 'shield',
+    test: (s) => s.badges >= s.totalBadges && s.totalBadges > 0,
+  },
+  {
+    id: 'champion',
+    name: 'Arena Champion',
+    desc: 'Conquer the Champion Gauntlet.',
+    icon: 'crown',
+    test: (s) => s.arenaChampion,
+  },
+  {
+    id: 'tour-win',
+    name: 'Cup Winner',
+    desc: 'Win a tournament.',
+    icon: 'trophy',
+    test: (s) => s.tournamentWins >= 1,
+  },
+  {
+    id: 'tour-veteran',
+    name: 'Circuit Veteran',
+    desc: 'Enter 10 tournaments.',
+    icon: 'clipboard-list',
+    test: (s) => s.tournamentRuns >= 10,
+  },
+  {
+    id: 'spire-climb',
+    name: 'Spire Climber',
+    desc: 'Reach floor 8 of the Spire.',
+    icon: 'mountain',
+    test: (s) => s.bestDepth >= 8,
+  },
+  {
+    id: 'spire-clear',
+    name: 'Summit Reached',
+    desc: 'Clear the Ascension Spire.',
+    icon: 'mountain-snow',
+    test: (s) => s.spireClears >= 1,
+  },
+  {
+    id: 'ascendant',
+    name: 'Ascendant',
+    desc: 'Reach ascension tier 3.',
+    icon: 'star',
+    test: (s) => s.ascension >= 3,
+  },
+  {
+    id: 'wealthy',
+    name: 'Well Funded',
+    desc: 'Bank 1000 coins across all modes.',
+    icon: 'gem',
+    test: (s) => s.coins >= 1000,
+  },
+  {
+    id: 'adv-badge',
+    name: 'Trail Blazer',
+    desc: 'Earn a gym badge in the Adventure.',
+    icon: 'map',
+    test: (s) => s.adventureBadges >= 1,
+  },
+  {
+    id: 'adv-catcher',
+    name: 'Field Researcher',
+    desc: 'Catch 10 Pokémon in the Adventure.',
+    icon: 'map-pin',
+    test: (s) => s.adventureCaught >= 10,
+  },
+  {
+    id: 'world-50',
+    name: 'Registrar',
+    desc: 'Register 50 species in the World Dex.',
+    icon: 'book',
+    test: (s) => s.worldCaught >= 50,
+  },
+  {
+    id: 'shiny-one',
+    name: 'Shiny Hunter',
+    desc: 'Catch a shiny on a World expedition.',
+    icon: 'sparkles',
+    test: (s) => s.shinyCaught >= 1,
+  },
+  {
+    id: 'ribbon-one',
+    name: 'Stage Debut',
+    desc: 'Win a contest ribbon.',
+    icon: 'wand-sparkles',
+    test: (s) => s.contestRibbons >= 1,
+  },
+  {
+    id: 'ribbon-all',
+    name: 'Ribbon Royalty',
+    desc: 'Collect all five contest ribbons.',
+    icon: 'heart',
+    test: (s) => s.contestRibbons >= 5,
+  },
+  {
+    id: 'rival-lead',
+    name: 'Rival Slayer',
+    desc: 'Lead your rival head-to-head by 3.',
+    icon: 'zap',
+    test: (s) => s.rivalWins >= s.rivalLosses + 3,
+  },
+  {
+    id: 'oracle',
+    name: 'Crystal Oracle',
+    desc: 'Hit a crystal-ball champion call.',
+    icon: 'dices',
+    test: (s) => s.pickemHits >= 1,
+  },
+  {
+    id: 'daily-3',
+    name: 'On Fire',
+    desc: 'Reach a 3-day Daily Challenge streak.',
+    icon: 'flame',
+    test: (s) => s.dailyBest >= 3,
+  },
+  {
+    id: 'daily-7',
+    name: 'Eternal Flame',
+    desc: 'Reach a 7-day Daily Challenge streak.',
+    icon: 'sun',
+    test: (s) => s.dailyBest >= 7,
+  },
+  {
+    id: 'odyssey-10',
+    name: 'Wayfarer',
+    desc: 'Reach wave 10 of the Odyssey.',
+    icon: 'map-pin',
+    test: (s) => s.odysseyBestWave >= 10,
+  },
+  {
+    id: 'odyssey-30',
+    name: 'Endless Marcher',
+    desc: 'Reach wave 30 of the Odyssey.',
+    icon: 'mountain-snow',
+    test: (s) => s.odysseyBestWave >= 30,
+  },
+  {
+    id: 'odyssey-roster',
+    name: 'Roster Builder',
+    desc: 'Unlock 12 Odyssey starters.',
+    icon: 'egg',
+    test: (s) => s.odysseyUnlocked >= 12,
+  },
+  {
+    id: 'fusion-first',
+    name: 'Mad Scientist',
+    desc: 'Register your first fusion in the Fusion Dex.',
+    icon: 'flask-conical',
+    test: (s) => s.fusionsRegistered >= 1,
+  },
+  {
+    id: 'fusion-10',
+    name: 'Gene Weaver',
+    desc: 'Register 10 fusions in the Fusion Dex.',
+    icon: 'brain',
+    test: (s) => s.fusionsRegistered >= 10,
+  },
+  {
+    id: 'nuz-survivor',
+    name: 'Survivor',
+    desc: 'Earn a gym badge on a Nuzlocke run.',
+    icon: 'skull',
+    test: (s) => s.nuzlockeBadges >= 1,
+  },
+  {
+    id: 'nuz-iron',
+    name: 'Iron Grit',
+    desc: 'Hold all four Adventure badges on a single Nuzlocke run.',
+    icon: 'mountain-snow',
+    test: (s) => s.nuzlockeBadges >= 4,
+  },
+  {
+    id: 'chimera-slayer',
+    name: 'Chimera Slayer',
+    desc: 'Defeat a secret chimera boss in the Spire.',
+    icon: 'flask-conical',
+    test: (s) => s.chimeraWins >= 1,
+  },
+  {
+    id: 'chimera-hunter',
+    name: 'Myth Hunter',
+    desc: 'Defeat 3 secret chimera bosses.',
+    icon: 'crown',
+    test: (s) => s.chimeraWins >= 3,
+  },
 ];
 
 export interface AchievementView {
@@ -136,7 +310,7 @@ export function progressScore(state: ProfileState): number {
 /** A simple rank title derived from total progression, used for flavour. */
 export function rankFor(state: ProfileState): string {
   const score = progressScore(state);
-  let rank = RANK_TIERS[0].name;
+  let rank = RANK_TIERS[0]!.name;
   for (const tier of RANK_TIERS) if (score >= tier.min) rank = tier.name;
   return rank;
 }
@@ -159,8 +333,8 @@ export interface RankProgress {
 export function rankProgress(state: ProfileState): RankProgress {
   const score = progressScore(state);
   let i = 0;
-  for (let t = 0; t < RANK_TIERS.length; t++) if (score >= RANK_TIERS[t].min) i = t;
-  const current = RANK_TIERS[i];
+  for (let t = 0; t < RANK_TIERS.length; t++) if (score >= RANK_TIERS[t]!.min) i = t;
+  const current = RANK_TIERS[i]!;
   const next = i < RANK_TIERS.length - 1 ? RANK_TIERS[i + 1] : null;
   const floor = current.min;
   const ceil = next ? next.min : null;

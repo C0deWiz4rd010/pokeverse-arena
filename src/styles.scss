@@ -24,7 +24,11 @@ html {
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -38,7 +42,10 @@ body {
   color: var(--text);
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   margin: 0 0 0.5rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -102,10 +109,15 @@ img {
   }
 }
 @keyframes vt-out {
-  to { opacity: 0; }
+  to {
+    opacity: 0;
+  }
 }
 @keyframes vt-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 
 /* Honor user motion preference globally */

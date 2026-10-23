@@ -4,12 +4,7 @@ import { SPRITE_BASE, idFromUrl } from '../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../core/ui/format';
 import { SaveService } from '../../core/storage/save.service';
 import { CryService } from '../../core/audio/cry.service';
-import {
-  REGIONS,
-  regionDexCount,
-  regionForDex,
-  type Region,
-} from '../../game/world/regions';
+import { REGIONS, regionDexCount, regionForDex, type Region } from '../../game/world/regions';
 import {
   BALLS,
   attemptCatch,
@@ -80,9 +75,13 @@ export class WorldService {
   readonly members = signal<readonly RegionMember[]>([]);
 
   /* ----- expedition: wild encounters + a personal dex ----- */
-  readonly caught = signal<ReadonlySet<number>>(new Set(this.save.read<number[]>('world:caught', [])));
+  readonly caught = signal<ReadonlySet<number>>(
+    new Set(this.save.read<number[]>('world:caught', [])),
+  );
   /** Dex numbers caught in their shiny variant — a separate collector's goal. */
-  readonly shinyCaught = signal<ReadonlySet<number>>(new Set(this.save.read<number[]>('world:shiny', [])));
+  readonly shinyCaught = signal<ReadonlySet<number>>(
+    new Set(this.save.read<number[]>('world:shiny', [])),
+  );
   readonly shinyCount = computed(() => this.shinyCaught().size);
   readonly ball = signal<BallId>('poke');
   readonly encounter = signal<ActiveEncounter | null>(null);
@@ -135,7 +134,9 @@ export class WorldService {
     this.encounter.set({
       ...enc,
       displayName: member?.name ?? `#${enc.dex}`,
-      sprite: shiny ? shinySpriteFor(enc.dex) : member?.sprite ?? `${SPRITE_BASE}/pokemon/${enc.dex}.png`,
+      sprite: shiny
+        ? shinySpriteFor(enc.dex)
+        : (member?.sprite ?? `${SPRITE_BASE}/pokemon/${enc.dex}.png`),
       chancePct: Math.round(catchChance(enc, this.ball()) * 100),
       shiny,
       caught: false,
@@ -250,10 +251,7 @@ export class WorldService {
     this.clearSearch();
   }
 
-  private speciesName(
-    species: { name: string; url: string }[],
-    dex: number,
-  ): string {
+  private speciesName(species: { name: string; url: string }[], dex: number): string {
     const match = species.find((s) => idFromUrl(s.url) === dex);
     return titleCase(match?.name ?? `#${dex}`);
   }

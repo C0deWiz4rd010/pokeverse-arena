@@ -39,14 +39,25 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
   });
 }
 
-function roundedPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+function roundedPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
 }
 
 /** Render the card and return it as a PNG blob (null when canvas is unavailable). */
 export async function renderTrainerCard(data: TrainerCardData): Promise<Blob | null> {
-  const T = (text: string, params?: readonly unknown[]): string => data.t?.(text, params) ?? text.replace(/\{(\d+)\}/g, (_w, i: string) => String(params?.[Number(i)] ?? ''));
+  const T = (text: string, params?: readonly unknown[]): string =>
+    data.t?.(text, params) ??
+    text.replace(/\{(\d+)\}/g, (_w, i: string) =>
+      String((params?.[Number(i)] as string | number | undefined) ?? ''),
+    );
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;

@@ -28,20 +28,31 @@ import { animatedSprite, officialArtwork } from '../../core/api/pokeapi-endpoint
 import { groupDefenses } from '../../core/utils/type-chart';
 import { onSwipe } from '../../core/ui/gestures';
 import { HapticsService } from '../../core/haptics/haptics.service';
-import type { AbilityInfo, LearnableMove, MoveInfo, PokemonStats } from '../../core/models/pokemon.model';
+import type {
+  AbilityInfo,
+  LearnableMove,
+  MoveInfo,
+  PokemonStats,
+} from '../../core/models/pokemon.model';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 type MoveTab = 'level-up' | 'machine' | 'egg' | 'tutor';
 
 const ZERO_STATS: PokemonStats = {
-  hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0,
+  hp: 0,
+  attack: 0,
+  defense: 0,
+  'special-attack': 0,
+  'special-defense': 0,
+  speed: 0,
 };
 const DEX_MAX = 1025;
 
 @Component({
   selector: 'pv-pokemon-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, 
+  imports: [
+    TranslatePipe,
     StateComponent,
     StatRadarComponent,
     EvolutionTreeComponent,
@@ -63,13 +74,15 @@ export class PokemonDetailComponent {
   private readonly team = inject(TeamBuilderService);
   private readonly location = inject(Location);
   private readonly router = inject(Router);
-  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly haptics = inject(HapticsService);
 
   protected readonly shiny = signal(false);
   protected readonly back = signal(false);
   /** Animated GIFs start off for people who asked for reduced motion (the toggle still works). */
-  protected readonly animated = signal(!(typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches));
+  protected readonly animated = signal(
+    !(typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches),
+  );
   protected readonly sparkle = signal(0);
   protected readonly revealed = signal(false);
   protected readonly moveTab = signal<MoveTab>('level-up');
@@ -114,8 +127,10 @@ export class PokemonDetailComponent {
     const p = this.pokemon();
     if (!p) return '';
     if (this.animated()) {
-      if (this.back()) return p.sprites.animatedBack ?? animatedSprite(p.id) ;
-      return this.shiny() ? animatedSprite(p.id, true) : (p.sprites.animatedFront ?? animatedSprite(p.id));
+      if (this.back()) return p.sprites.animatedBack ?? animatedSprite(p.id);
+      return this.shiny()
+        ? animatedSprite(p.id, true)
+        : (p.sprites.animatedFront ?? animatedSprite(p.id));
     }
     return this.shiny() ? p.sprites.shiny : p.sprites.default;
   });
@@ -191,8 +206,13 @@ export class PokemonDetailComponent {
       onSwipe(
         this.host.nativeElement,
         ({ dir }) => {
-          if (dir === 'left') { this.haptics.fire('select'); this.go(this.nextId()); }
-          else if (dir === 'right') { this.haptics.fire('select'); this.go(this.prevId()); }
+          if (dir === 'left') {
+            this.haptics.fire('select');
+            this.go(this.nextId());
+          } else if (dir === 'right') {
+            this.haptics.fire('select');
+            this.go(this.prevId());
+          }
         },
         { threshold: 60 },
       );
@@ -208,7 +228,7 @@ export class PokemonDetailComponent {
     clearTimeout(this.revealTimer);
     this.revealTimer = setTimeout(() => this.revealed.set(true), 40);
     this.countUpBst();
-    this.dex.ensureLoaded();
+    void this.dex.ensureLoaded();
   }
 
   private countUpBst(): void {
@@ -264,9 +284,9 @@ export class PokemonDetailComponent {
     }
     this.expandedAbility.set(name);
     if (!this.abilityInfo()[name]) {
-      void this.store.ability(name).then((info) =>
-        this.abilityInfo.update((m) => ({ ...m, [name]: info })),
-      );
+      void this.store
+        .ability(name)
+        .then((info) => this.abilityInfo.update((m) => ({ ...m, [name]: info })));
     }
   }
 
@@ -277,9 +297,9 @@ export class PokemonDetailComponent {
     }
     this.expandedMove.set(name);
     if (!this.moveInfo()[name]) {
-      void this.store.move(name).then((info) =>
-        this.moveInfo.update((m) => ({ ...m, [name]: info })),
-      );
+      void this.store
+        .move(name)
+        .then((info) => this.moveInfo.update((m) => ({ ...m, [name]: info })));
     }
   }
 

@@ -9,7 +9,14 @@ function mon(types: PokemonType[]): Battler {
     name: 'mon',
     level: 50,
     types,
-    stats: { hp: 80, attack: 80, defense: 80, 'special-attack': 80, 'special-defense': 80, speed: 80 },
+    stats: {
+      hp: 80,
+      attack: 80,
+      defense: 80,
+      'special-attack': 80,
+      'special-defense': 80,
+      speed: 80,
+    },
     moves: [],
   };
 }
@@ -55,7 +62,10 @@ describe('bestLead', () => {
 
   it('picks the member with the strongest type edge', () => {
     // vs Fire: Water threatens it (offense 1, risk 0); Grass is threatened (0/1).
-    const pick = bestLead([named('Vaporeon', ['water']), named('Leafeon', ['grass'])], [mon(['fire'])]);
+    const pick = bestLead(
+      [named('Vaporeon', ['water']), named('Leafeon', ['grass'])],
+      [mon(['fire'])],
+    );
     expect(pick?.name).toBe('Vaporeon');
     expect(pick?.offense).toBe(1);
     expect(pick?.risk).toBe(0);
@@ -64,7 +74,10 @@ describe('bestLead', () => {
   it('prefers lower risk when offence ties', () => {
     // Both hit nothing super-effectively vs Normal; Fighting is at risk (Normal
     // does not threaten it here), Normal-normal is neutral both ways.
-    const pick = bestLead([named('Snorlax', ['normal']), named('Machamp', ['fighting'])], [mon(['ghost'])]);
+    const pick = bestLead(
+      [named('Snorlax', ['normal']), named('Machamp', ['fighting'])],
+      [mon(['ghost'])],
+    );
     // Ghost is immune to Normal/Fighting damage-wise but for type-chart ≥2× we
     // just check no crash and a defined pick is returned.
     expect(pick).not.toBeNull();

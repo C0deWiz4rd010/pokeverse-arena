@@ -54,7 +54,11 @@ export interface QuickviewRequest {
       <div class="top">
         <span class="num">{{ id() }}</span>
         <span class="badges">
-          @if (caught()) { <span class="dot caught" [attr.title]="'Caught in the World' | t"><pv-icon name="check" /></span> }
+          @if (caught()) {
+            <span class="dot caught" [attr.title]="'Caught in the World' | t"
+              ><pv-icon name="check"
+            /></span>
+          }
           <button
             class="fav-btn"
             type="button"
@@ -69,7 +73,9 @@ export interface QuickviewRequest {
       </div>
 
       <div class="art">
-        @if (!loaded()) { <span class="skeleton" aria-hidden="true"></span> }
+        @if (!loaded()) {
+          <span class="skeleton" aria-hidden="true"></span>
+        }
         <img
           class="still"
           [src]="art()"
@@ -80,18 +86,32 @@ export interface QuickviewRequest {
           (error)="onError($event)"
         />
         @if (hovering() && !animFail()) {
-          <img decoding="async" class="anim" [src]="animSrc()" [alt]="''" aria-hidden="true" (error)="animFail.set(true)" />
+          <img
+            decoding="async"
+            class="anim"
+            [src]="animSrc()"
+            [alt]="''"
+            aria-hidden="true"
+            (error)="animFail.set(true)"
+          />
         }
       </div>
 
       <span class="name">{{ name() }}</span>
       @if (entry().types.length) {
         <div class="types">
-          @for (t of entry().types; track t) { <pv-type-badge [type]="t" /> }
+          @for (t of entry().types; track t) {
+            <pv-type-badge [type]="t" />
+          }
         </div>
       }
 
-      <button class="info" type="button" [attr.aria-label]="'Quick view' | t" (click)="onInfo($event)">
+      <button
+        class="info"
+        type="button"
+        [attr.aria-label]="'Quick view' | t"
+        (click)="onInfo($event)"
+      >
         <pv-icon name="search" />
       </button>
       <button
@@ -101,7 +121,9 @@ export interface QuickviewRequest {
         [attr.aria-label]="'Add to compare' | t"
         [attr.title]="'Compare' | t"
         (click)="onCompare($event)"
-      >⇄</button>
+      >
+        ⇄
+      </button>
     </a>
   `,
   styleUrl: './pokemon-card.scss',
@@ -125,10 +147,14 @@ export class PokemonCardComponent {
 
   protected id = () => padId(this.entry().id);
   protected name = () => titleCase(this.entry().name);
-  protected art = computed(() => (this.shiny() ? officialArtwork(this.entry().id, true) : this.entry().artwork));
+  protected art = computed(() =>
+    this.shiny() ? officialArtwork(this.entry().id, true) : this.entry().artwork,
+  );
   protected animSrc = computed(() => animatedSprite(this.entry().id, this.shiny()));
   protected t1 = computed(() => typeColorVar(this.entry().types[0] ?? 'normal'));
-  protected t2 = computed(() => typeColorVar(this.entry().types[1] ?? this.entry().types[0] ?? 'normal'));
+  protected t2 = computed(() =>
+    typeColorVar(this.entry().types[1] ?? this.entry().types[0] ?? 'normal'),
+  );
   protected delay = computed(() => (REDUCED_MOTION ? '0ms' : `${(this.index() % 24) * 22}ms`));
 
   protected transform = computed(() => {

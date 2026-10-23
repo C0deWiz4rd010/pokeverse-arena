@@ -45,7 +45,8 @@ const VIEWS: { id: DexView; label: string; glyph: string }[] = [
 @Component({
   selector: 'pv-pokedex',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, 
+  imports: [
+    TranslatePipe,
     StateComponent,
     PokemonCardComponent,
     PokemonQuickviewComponent,
@@ -80,7 +81,8 @@ export class PokedexComponent {
   }
 
   protected scrollTop(): void {
-    const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced =
+      typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
   }
   protected readonly generations = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -198,7 +200,9 @@ export class PokedexComponent {
     }
     const cards = Array.from(document.querySelectorAll<HTMLElement>('.grid .card'));
     if (!cards.length) return;
-    const current = (document.activeElement as HTMLElement | null)?.closest('.card') as HTMLElement | null;
+    const current = (document.activeElement as HTMLElement | null)?.closest(
+      '.card',
+    ) as HTMLElement | null;
     const i = current ? cards.indexOf(current) : -1;
     if (event.key === 'f' && current) {
       const id = Number(current.dataset['id']);
@@ -208,11 +212,20 @@ export class PokedexComponent {
     const cols = this.columns(cards);
     let next: number;
     switch (event.key) {
-      case 'ArrowRight': next = i + 1; break;
-      case 'ArrowLeft': next = i - 1; break;
-      case 'ArrowDown': next = i + cols; break;
-      case 'ArrowUp': next = i - cols; break;
-      default: return;
+      case 'ArrowRight':
+        next = i + 1;
+        break;
+      case 'ArrowLeft':
+        next = i - 1;
+        break;
+      case 'ArrowDown':
+        next = i + cols;
+        break;
+      case 'ArrowUp':
+        next = i - cols;
+        break;
+      default:
+        return;
     }
     event.preventDefault();
     if (i === -1) next = 0;
@@ -222,9 +235,9 @@ export class PokedexComponent {
   /** How many cards sit in the first row (for up/down arrow steps). */
   private columns(cards: HTMLElement[]): number {
     if (cards.length < 2) return 1;
-    const top = cards[0].offsetTop;
+    const top = cards[0]!.offsetTop;
     let c = 1;
-    while (c < cards.length && cards[c].offsetTop === top) c++;
+    while (c < cards.length && cards[c]!.offsetTop === top) c++;
     return c;
   }
 

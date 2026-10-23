@@ -63,7 +63,12 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+        background: linear-gradient(
+          120deg,
+          transparent 30%,
+          rgba(255, 255, 255, 0.45) 50%,
+          transparent 70%
+        );
         transform: translateX(-120%);
         animation: sheen 5s ease-in-out infinite;
       }

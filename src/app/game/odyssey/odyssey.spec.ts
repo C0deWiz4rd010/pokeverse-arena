@@ -51,7 +51,7 @@ describe('odyssey waves', () => {
   it('boss waves field the biome guardian last with a low catch chance', () => {
     const s = waveSpec(10, 'x');
     expect(s.kind).toBe('boss');
-    expect(s.species[s.species.length - 1]).toBe(BIOMES[0].boss);
+    expect(s.species[s.species.length - 1]).toBe(BIOMES[0]!.boss);
     expect(s.catchChance).toBeLessThan(waveSpec(1, 'x').catchChance);
   });
 
@@ -94,7 +94,7 @@ describe('odyssey waves', () => {
     const relics = s.filter((e) => e.kind === 'relic').map((e) => e.payload);
     expect(new Set(relics).size).toBe(2);
     const later = generateOdysseyShop(40, 'x');
-    expect(later[0].cost).toBeGreaterThan(s[0].cost);
+    expect(later[0]!.cost).toBeGreaterThan(s[0]!.cost);
   });
 });
 

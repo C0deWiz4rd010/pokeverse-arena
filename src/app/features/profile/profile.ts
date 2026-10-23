@@ -54,13 +54,25 @@ export class ProfileComponent {
       { icon: 'map-pin' as const, label: 'Adventure catches', value: `${s.adventureCaught}` },
       { icon: 'book' as const, label: 'World dex', value: `${s.worldCaught}` },
       { icon: 'sparkles' as const, label: 'Shiny catches', value: `${s.shinyCaught}` },
-      { icon: 'wand-sparkles' as const, label: 'Contest ribbons', value: `${s.contestRibbons} / 5` },
-      { icon: 'flame' as const, label: 'Daily streak', value: `${s.dailyStreak} (best ${s.dailyBest})` },
+      {
+        icon: 'wand-sparkles' as const,
+        label: 'Contest ribbons',
+        value: `${s.contestRibbons} / 5`,
+      },
+      {
+        icon: 'flame' as const,
+        label: 'Daily streak',
+        value: `${s.dailyStreak} (best ${s.dailyBest})`,
+      },
       { icon: 'map-pin' as const, label: 'Odyssey wave', value: `${s.odysseyBestWave}` },
       { icon: 'egg' as const, label: 'Odyssey starters', value: `${s.odysseyUnlocked}` },
       { icon: 'zap' as const, label: 'Rivalry (W–L)', value: `${s.rivalWins}–${s.rivalLosses}` },
       { icon: 'dices' as const, label: 'Crystal-ball hits', value: `${s.pickemHits}` },
-      { icon: 'flask-conical' as const, label: 'Fusions registered', value: `${s.fusionsRegistered}` },
+      {
+        icon: 'flask-conical' as const,
+        label: 'Fusions registered',
+        value: `${s.fusionsRegistered}`,
+      },
       { icon: 'skull' as const, label: 'Nuzlocke badges', value: `${s.nuzlockeBadges}` },
       { icon: 'flask-conical' as const, label: 'Chimeras slain', value: `${s.chimeraWins}` },
     ];
@@ -71,12 +83,42 @@ export class ProfileComponent {
     const s = this.svc.state();
     const winRate = s.tournamentRuns ? Math.round((s.tournamentWins / s.tournamentRuns) * 100) : 0;
     return [
-      { icon: 'shield' as const, label: 'Gym badges', text: `${s.badges}/${s.totalBadges}`, pct: s.totalBadges ? Math.round((s.badges / s.totalBadges) * 100) : 0 },
-      { icon: 'mountain' as const, label: 'Spire depth', text: `floor ${s.bestDepth}`, pct: Math.min(100, Math.round((s.bestDepth / 12) * 100)) },
-      { icon: 'star' as const, label: 'Ascension', text: `tier ${s.ascension}`, pct: Math.min(100, Math.round((s.ascension / 5) * 100)) },
-      { icon: 'trophy' as const, label: 'Cup win rate', text: s.tournamentRuns ? `${winRate}%` : '—', pct: winRate },
-      { icon: 'book' as const, label: 'World dex', text: `${s.worldCaught}/1025`, pct: Math.min(100, Math.round((s.worldCaught / 1025) * 100)) },
-      { icon: 'wand-sparkles' as const, label: 'Contest ribbons', text: `${s.contestRibbons}/5`, pct: Math.round((s.contestRibbons / 5) * 100) },
+      {
+        icon: 'shield' as const,
+        label: 'Gym badges',
+        text: `${s.badges}/${s.totalBadges}`,
+        pct: s.totalBadges ? Math.round((s.badges / s.totalBadges) * 100) : 0,
+      },
+      {
+        icon: 'mountain' as const,
+        label: 'Spire depth',
+        text: `floor ${s.bestDepth}`,
+        pct: Math.min(100, Math.round((s.bestDepth / 12) * 100)),
+      },
+      {
+        icon: 'star' as const,
+        label: 'Ascension',
+        text: `tier ${s.ascension}`,
+        pct: Math.min(100, Math.round((s.ascension / 5) * 100)),
+      },
+      {
+        icon: 'trophy' as const,
+        label: 'Cup win rate',
+        text: s.tournamentRuns ? `${winRate}%` : '—',
+        pct: winRate,
+      },
+      {
+        icon: 'book' as const,
+        label: 'World dex',
+        text: `${s.worldCaught}/1025`,
+        pct: Math.min(100, Math.round((s.worldCaught / 1025) * 100)),
+      },
+      {
+        icon: 'wand-sparkles' as const,
+        label: 'Contest ribbons',
+        text: `${s.contestRibbons}/5`,
+        pct: Math.round((s.contestRibbons / 5) * 100),
+      },
     ];
   });
 
@@ -151,11 +193,21 @@ export class ProfileComponent {
         a.download = 'trainer-card.png';
         a.click();
         setTimeout(() => URL.revokeObjectURL(url), 4000);
-        this.toasts.show({ title: 'Trainer Card saved', text: 'trainer-card.png is in your downloads.', icon: 'download', kind: 'info' });
+        this.toasts.show({
+          title: 'Trainer Card saved',
+          text: 'trainer-card.png is in your downloads.',
+          icon: 'download',
+          kind: 'info',
+        });
       }
     } catch (err) {
       if ((err as Error)?.name !== 'AbortError') {
-        this.toasts.show({ title: 'Could not create the card', text: 'Please try again.', icon: 'triangle-alert', kind: 'info' });
+        this.toasts.show({
+          title: 'Could not create the card',
+          text: 'Please try again.',
+          icon: 'triangle-alert',
+          kind: 'info',
+        });
       }
     } finally {
       this.rendering.set(false);
@@ -175,9 +227,19 @@ export class ProfileComponent {
       a.download = `pokeverse-save-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      this.toasts.show({ title: 'Save exported', text: `${Object.keys(backup.entries).length} entries in your downloads.`, icon: 'download', kind: 'info' });
+      this.toasts.show({
+        title: 'Save exported',
+        text: `${Object.keys(backup.entries).length} entries in your downloads.`,
+        icon: 'download',
+        kind: 'info',
+      });
     } catch {
-      this.toasts.show({ title: 'Export failed', text: 'Browser storage is not readable.', icon: 'triangle-alert', kind: 'info' });
+      this.toasts.show({
+        title: 'Export failed',
+        text: 'Browser storage is not readable.',
+        icon: 'triangle-alert',
+        kind: 'info',
+      });
     }
   }
 
@@ -189,15 +251,30 @@ export class ProfileComponent {
     if (!file) return;
     const parsed = parseBackup(await file.text());
     if (!parsed.ok) {
-      this.toasts.show({ title: 'Import failed', text: parsed.error, icon: 'triangle-alert', kind: 'info' });
+      this.toasts.show({
+        title: 'Import failed',
+        text: parsed.error,
+        icon: 'triangle-alert',
+        kind: 'info',
+      });
       return;
     }
     const count = Object.keys(parsed.entries).length;
-    if (!confirm(`Restore ${count} saved entries? Matching progress on this device will be overwritten.`)) return;
+    if (
+      !confirm(
+        `Restore ${count} saved entries? Matching progress on this device will be overwritten.`,
+      )
+    )
+      return;
     let failed = 0;
     for (const [key, value] of Object.entries(parsed.entries)) if (!safeSet(key, value)) failed++;
     if (failed) {
-      this.toasts.show({ title: 'Import incomplete', text: `${failed} entries could not be written (storage full?).`, icon: 'triangle-alert', kind: 'info' });
+      this.toasts.show({
+        title: 'Import incomplete',
+        text: `${failed} entries could not be written (storage full?).`,
+        icon: 'triangle-alert',
+        kind: 'info',
+      });
       return;
     }
     location.reload();

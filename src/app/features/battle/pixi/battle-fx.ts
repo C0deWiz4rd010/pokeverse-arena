@@ -38,10 +38,24 @@ type Shape = 'circle' | 'rect' | 'shard' | 'leaf' | 'star';
 /** How a type's hits look: each one has its own silhouette and motion. */
 type Style = 'ember' | 'splash' | 'bolt' | 'leaf' | 'shard' | 'psy' | 'burst' | 'debris';
 const STYLE: Record<PokemonType, Style> = {
-  fire: 'ember', water: 'splash', poison: 'splash', electric: 'bolt', grass: 'leaf', bug: 'leaf',
-  ice: 'shard', psychic: 'psy', ghost: 'psy', fairy: 'psy', dark: 'psy',
-  fighting: 'burst', normal: 'burst', steel: 'burst', dragon: 'burst', flying: 'burst',
-  ground: 'debris', rock: 'debris',
+  fire: 'ember',
+  water: 'splash',
+  poison: 'splash',
+  electric: 'bolt',
+  grass: 'leaf',
+  bug: 'leaf',
+  ice: 'shard',
+  psychic: 'psy',
+  ghost: 'psy',
+  fairy: 'psy',
+  dark: 'psy',
+  fighting: 'burst',
+  normal: 'burst',
+  steel: 'burst',
+  dragon: 'burst',
+  flying: 'burst',
+  ground: 'debris',
+  rock: 'debris',
 };
 
 interface SparkOpts {
@@ -85,13 +99,15 @@ const ANCHOR: Record<SideIndex, { x: number; y: number }> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
   styles: [
-    `:host {
-      position: absolute;
-      inset: 0;
-      display: block;
-      pointer-events: none;
-      z-index: 2;
-    }`,
+    `
+      :host {
+        position: absolute;
+        inset: 0;
+        display: block;
+        pointer-events: none;
+        z-index: 2;
+      }
+    `,
   ],
 })
 export class BattleFxComponent implements OnDestroy {
@@ -128,7 +144,7 @@ export class BattleFxComponent implements OnDestroy {
     const { x, y } = this.point(side);
     const color = TYPE_HEX[type] ?? 0xffffff;
     this.ring(x, y, color);
-    this.styled((crit ? 1.5 : 1), STYLE[type] ?? 'burst', x, y, color);
+    this.styled(crit ? 1.5 : 1, STYLE[type] ?? 'burst', x, y, color);
     if (crit) {
       this.ring(x, y, 0xffffff);
       for (let i = 0; i < 10; i++) this.spark(x, y, 0xffffff);
@@ -142,7 +158,14 @@ export class BattleFxComponent implements OnDestroy {
     const color = TYPE_HEX[type] ?? 0xffffff;
     for (let i = 0; i < 10; i++) {
       const a = (Math.PI * 2 * i) / 10;
-      this.spark(x + Math.cos(a) * 24, y + Math.sin(a) * 24, color, -Math.cos(a) * 2, -Math.sin(a) * 2, 0.9);
+      this.spark(
+        x + Math.cos(a) * 24,
+        y + Math.sin(a) * 24,
+        color,
+        -Math.cos(a) * 2,
+        -Math.sin(a) * 2,
+        0.9,
+      );
     }
   }
 
@@ -154,38 +177,83 @@ export class BattleFxComponent implements OnDestroy {
     switch (style) {
       case 'ember':
         for (let i = 0; i < 16 * n; i++)
-          this.spark(x + (r() - 0.5) * 24, y + (r() - 0.2) * 12, i % 3 === 0 ? 0xffe27a : color, (r() - 0.5) * 2, -1.2 - r() * 2.6, 1, { grav: -0.05, shape: 'circle', size: 2 + r() * 3, ttl: 34 + r() * 14, drag: 0.97 });
+          this.spark(
+            x + (r() - 0.5) * 24,
+            y + (r() - 0.2) * 12,
+            i % 3 === 0 ? 0xffe27a : color,
+            (r() - 0.5) * 2,
+            -1.2 - r() * 2.6,
+            1,
+            { grav: -0.05, shape: 'circle', size: 2 + r() * 3, ttl: 34 + r() * 14, drag: 0.97 },
+          );
         break;
       case 'splash':
         for (let i = 0; i < 16 * n; i++) {
           const a = -Math.PI / 2 + (r() - 0.5) * 2.4;
           const m = 2.5 + r() * 3.5;
-          this.spark(x, y, color, Math.cos(a) * m, Math.sin(a) * m, 1, { grav: 0.3, shape: 'circle', size: 1.8 + r() * 2.6, ttl: 34 });
+          this.spark(x, y, color, Math.cos(a) * m, Math.sin(a) * m, 1, {
+            grav: 0.3,
+            shape: 'circle',
+            size: 1.8 + r() * 2.6,
+            ttl: 34,
+          });
         }
         this.ring(x, y + 6, color);
         break;
       case 'bolt':
         for (let i = 0; i < 4 * n; i++) this.bolt(x, y, color);
-        for (let i = 0; i < 8 * n; i++) this.spark(x, y, 0xfff6b0, undefined, undefined, 1.4, { shape: 'rect', size: 2, ttl: 20, grav: 0 });
+        for (let i = 0; i < 8 * n; i++)
+          this.spark(x, y, 0xfff6b0, undefined, undefined, 1.4, {
+            shape: 'rect',
+            size: 2,
+            ttl: 20,
+            grav: 0,
+          });
         break;
       case 'leaf':
         for (let i = 0; i < 14 * n; i++)
-          this.spark(x, y, color, undefined, undefined, 0.8, { shape: 'leaf', size: 6 + r() * 4, grav: 0.05, spin: (r() - 0.5) * 0.4, ttl: 46, drag: 0.96 });
+          this.spark(x, y, color, undefined, undefined, 0.8, {
+            shape: 'leaf',
+            size: 6 + r() * 4,
+            grav: 0.05,
+            spin: (r() - 0.5) * 0.4,
+            ttl: 46,
+            drag: 0.96,
+          });
         break;
       case 'shard':
         for (let i = 0; i < 14 * n; i++)
-          this.spark(x, y, i % 2 ? 0xe9fbff : color, undefined, undefined, 1.1, { shape: 'shard', size: 5 + r() * 5, grav: 0.14, spin: (r() - 0.5) * 0.5, ttl: 38 });
+          this.spark(x, y, i % 2 ? 0xe9fbff : color, undefined, undefined, 1.1, {
+            shape: 'shard',
+            size: 5 + r() * 5,
+            grav: 0.14,
+            spin: (r() - 0.5) * 0.5,
+            ttl: 38,
+          });
         break;
       case 'psy':
         this.ring(x, y, color);
         for (let i = 0; i < 10 * n; i++)
-          this.spark(x, y, color, undefined, undefined, 0.7, { shape: 'star', size: 5 + r() * 4, grav: 0, spin: 0.08, ttl: 50, drag: 0.94 });
+          this.spark(x, y, color, undefined, undefined, 0.7, {
+            shape: 'star',
+            size: 5 + r() * 4,
+            grav: 0,
+            spin: 0.08,
+            ttl: 50,
+            drag: 0.94,
+          });
         break;
       case 'debris':
         for (let i = 0; i < 14 * n; i++) {
           const a = -Math.PI / 2 + (r() - 0.5) * 2.2;
           const m = 2 + r() * 3.5;
-          this.spark(x, y, color, Math.cos(a) * m, Math.sin(a) * m, 1, { shape: 'rect', size: 3 + r() * 4, grav: 0.34, spin: (r() - 0.5) * 0.5, ttl: 36 });
+          this.spark(x, y, color, Math.cos(a) * m, Math.sin(a) * m, 1, {
+            shape: 'rect',
+            size: 3 + r() * 4,
+            grav: 0.34,
+            spin: (r() - 0.5) * 0.5,
+            ttl: 36,
+          });
         }
         break;
       default: {
@@ -198,15 +266,28 @@ export class BattleFxComponent implements OnDestroy {
 
   private shapeAt(gfx: Graphics, shape: Shape, size: number, color: number): Graphics {
     switch (shape) {
-      case 'rect': return gfx.rect(-size / 2, -size / 2, size, size).fill(color);
-      case 'shard': return gfx.poly([0, -size, size * 0.45, size * 0.6, -size * 0.45, size * 0.6]).fill(color);
-      case 'leaf': return gfx.ellipse(0, 0, size, size * 0.45).fill(color).moveTo(-size, 0).lineTo(size, 0).stroke({ width: 0.8, color: 0xffffff, alpha: 0.35 });
+      case 'rect':
+        return gfx.rect(-size / 2, -size / 2, size, size).fill(color);
+      case 'shard':
+        return gfx.poly([0, -size, size * 0.45, size * 0.6, -size * 0.45, size * 0.6]).fill(color);
+      case 'leaf':
+        return gfx
+          .ellipse(0, 0, size, size * 0.45)
+          .fill(color)
+          .moveTo(-size, 0)
+          .lineTo(size, 0)
+          .stroke({ width: 0.8, color: 0xffffff, alpha: 0.35 });
       case 'star': {
         const pts: number[] = [];
-        for (let i = 0; i < 8; i++) { const rr = i % 2 ? size * 0.4 : size; const a = (Math.PI / 4) * i; pts.push(Math.cos(a) * rr, Math.sin(a) * rr); }
+        for (let i = 0; i < 8; i++) {
+          const rr = i % 2 ? size * 0.4 : size;
+          const a = (Math.PI / 4) * i;
+          pts.push(Math.cos(a) * rr, Math.sin(a) * rr);
+        }
         return gfx.poly(pts).fill(color);
       }
-      default: return gfx.circle(0, 0, size).fill({ color, alpha: 1 });
+      default:
+        return gfx.circle(0, 0, size).fill({ color, alpha: 1 });
     }
   }
 
@@ -218,15 +299,33 @@ export class BattleFxComponent implements OnDestroy {
     const a = Math.random() * Math.PI * 2;
     g.moveTo(0, 0);
     for (let i = 1; i <= 5; i++) {
-      g.lineTo(Math.cos(a) * i * 9 + (Math.random() - 0.5) * 10, Math.sin(a) * i * 9 + (Math.random() - 0.5) * 10);
+      g.lineTo(
+        Math.cos(a) * i * 9 + (Math.random() - 0.5) * 10,
+        Math.sin(a) * i * 9 + (Math.random() - 0.5) * 10,
+      );
     }
     g.stroke({ width: 3, color, alpha: 0.9 });
     g.moveTo(0, 0);
-    for (let i = 1; i <= 5; i++) g.lineTo(Math.cos(a) * i * 9 + (Math.random() - 0.5) * 6, Math.sin(a) * i * 9 + (Math.random() - 0.5) * 6);
+    for (let i = 1; i <= 5; i++)
+      g.lineTo(
+        Math.cos(a) * i * 9 + (Math.random() - 0.5) * 6,
+        Math.sin(a) * i * 9 + (Math.random() - 0.5) * 6,
+      );
     g.stroke({ width: 1, color: 0xffffff, alpha: 1 });
     g.position.set(x, y);
     this.layer.addChild(g);
-    this.particles.push({ gfx: g, kind: 'bolt', vx: 0, vy: 0, life: 1, ttl: 16, grow: 0, grav: 0, spin: 0, drag: 1 });
+    this.particles.push({
+      gfx: g,
+      kind: 'bolt',
+      vx: 0,
+      vy: 0,
+      life: 1,
+      ttl: 16,
+      grow: 0,
+      grav: 0,
+      spin: 0,
+      drag: 1,
+    });
   }
 
   /** Radiating impact lines (they scale outward like a ring). */
@@ -241,7 +340,18 @@ export class BattleFxComponent implements OnDestroy {
     g.stroke({ width: 2.5, color, alpha: 1 });
     g.position.set(x, y);
     this.layer.addChild(g);
-    this.particles.push({ gfx: g, kind: 'ring', vx: 0, vy: 0, life: 1, ttl: 18, grow: 0.12, grav: 0, spin: 0, drag: 1 });
+    this.particles.push({
+      gfx: g,
+      kind: 'ring',
+      vx: 0,
+      vy: 0,
+      life: 1,
+      ttl: 18,
+      grow: 0.12,
+      grav: 0,
+      spin: 0,
+      drag: 1,
+    });
   }
 
   private async init(): Promise<void> {
@@ -286,17 +396,28 @@ export class BattleFxComponent implements OnDestroy {
     const { width, height } = this.app!.screen;
     // aim at the real sprite when it can be found; the fixed anchors are only a fallback
     const root = this.host.nativeElement.parentElement;
-    const img = root?.querySelector<HTMLElement>(side === 1 ? '.fighter.foe .sprite' : '.fighter:not(.foe) .sprite');
+    const img = root?.querySelector<HTMLElement>(
+      side === 1 ? '.fighter.foe .sprite' : '.fighter:not(.foe) .sprite',
+    );
     if (img) {
       const r = img.getBoundingClientRect();
       const h = this.host.nativeElement.getBoundingClientRect();
-      if (r.width > 0 && h.width > 0) return { x: r.left - h.left + r.width / 2, y: r.top - h.top + r.height * 0.5 };
+      if (r.width > 0 && h.width > 0)
+        return { x: r.left - h.left + r.width / 2, y: r.top - h.top + r.height * 0.5 };
     }
     const a = ANCHOR[side];
     return { x: width * a.x, y: height * a.y };
   }
 
-  private spark(x: number, y: number, color: number, vx?: number, vy?: number, speed = 1, o: SparkOpts = {}): void {
+  private spark(
+    x: number,
+    y: number,
+    color: number,
+    vx?: number,
+    vy?: number,
+    speed = 1,
+    o: SparkOpts = {},
+  ): void {
     if (!this.pixi || !this.layer || this.particles.length >= 140) return;
     this.wake();
     const r = o.size ?? 2 + Math.random() * 3;
@@ -325,7 +446,18 @@ export class BattleFxComponent implements OnDestroy {
     const g = new this.pixi.Graphics().circle(0, 0, 10).stroke({ color, width: 3, alpha: 1 });
     g.position.set(x, y);
     this.layer.addChild(g);
-    this.particles.push({ gfx: g, kind: 'ring', vx: 0, vy: 0, life: 1, ttl: 22, grow: 0.12, grav: 0, spin: 0, drag: 1 });
+    this.particles.push({
+      gfx: g,
+      kind: 'ring',
+      vx: 0,
+      vy: 0,
+      life: 1,
+      ttl: 22,
+      grow: 0.12,
+      grav: 0,
+      spin: 0,
+      drag: 1,
+    });
   }
 
   private wake(): void {
@@ -339,7 +471,7 @@ export class BattleFxComponent implements OnDestroy {
     }
     delta = Math.min(delta, 3);
     for (let i = this.particles.length - 1; i >= 0; i--) {
-      const p = this.particles[i];
+      const p = this.particles[i]!;
       p.life -= delta / p.ttl;
       if (p.life <= 0) {
         p.gfx.destroy();

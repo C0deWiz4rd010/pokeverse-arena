@@ -172,7 +172,14 @@ export type BattleEvent =
   | { kind: 'status-set'; side: SideIndex; status: StatusCondition; text: string }
   | { kind: 'cure'; side: SideIndex; text: string }
   | { kind: 'stage-change'; side: SideIndex; stat: BoostableStat; delta: number; text: string }
-  | { kind: 'heal'; side: SideIndex; amount: number; remainingHp: number; maxHp: number; text: string }
+  | {
+      kind: 'heal';
+      side: SideIndex;
+      amount: number;
+      remainingHp: number;
+      maxHp: number;
+      text: string;
+    }
   | { kind: 'weather'; weather: Weather; text: string }
   | { kind: 'terrain'; terrain: Terrain; text: string }
   | { kind: 'hazard'; side: SideIndex; hazard: HazardKind; text: string }

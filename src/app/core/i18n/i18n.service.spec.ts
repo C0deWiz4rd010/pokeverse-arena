@@ -51,12 +51,16 @@ describe('I18nService', () => {
     await i18n.set('de');
     expect(i18n.t('Pikachu fell asleep!')).toBe('Pikachu ist eingeschlafen!');
     // the captured stat name is itself translated
-    expect(i18n.t('Pikachu’s Attack fell!'.replace('’', "'"))).toBe('Pikachus Angriff ist gesunken!');
+    expect(i18n.t('Pikachu’s Attack fell!'.replace('’', "'"))).toBe(
+      'Pikachus Angriff ist gesunken!',
+    );
   });
 
   it('translates both sides of a "Speaker: line" sentence', async () => {
     await i18n.set('de');
-    expect(i18n.t('Prof. Oak: Take one of these three partners — choose well!')).toContain('Prof. Eich');
+    expect(i18n.t('Prof. Oak: Take one of these three partners — choose well!')).toContain(
+      'Prof. Eich',
+    );
   });
 
   it('persists the choice and updates the document language', async () => {

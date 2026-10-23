@@ -26,7 +26,15 @@ const DEX: PokedexEntry[] = [
 ];
 
 function crit(over: Partial<DexCriteria> = {}): DexCriteria {
-  return { query: '', types: [], typeMode: 'or', gen: null, favOnly: false, favorites: new Set(), ...over };
+  return {
+    query: '',
+    types: [],
+    typeMode: 'or',
+    gen: null,
+    favOnly: false,
+    favorites: new Set(),
+    ...over,
+  };
 }
 
 describe('query parsing', () => {
@@ -37,7 +45,7 @@ describe('query parsing', () => {
   });
 
   it('matches name, id, range and type', () => {
-    const pika = DEX[3];
+    const pika = DEX[3]!;
     expect(matchesQuery(pika, 'pika')).toBe(true);
     expect(matchesQuery(pika, '25')).toBe(true);
     expect(matchesQuery(pika, '#25')).toBe(true);
@@ -54,22 +62,32 @@ describe('filtering', () => {
   });
 
   it('AND requires all types, OR requires any', () => {
-    expect(applyDexFilters(DEX, crit({ types: ['grass', 'poison'], typeMode: 'and' })).map((x) => x.name)).toEqual(['bulbasaur']);
-    expect(applyDexFilters(DEX, crit({ types: ['fire', 'water'], typeMode: 'or' })).map((x) => x.name)).toEqual(['charmander', 'squirtle']);
-    expect(applyDexFilters(DEX, crit({ types: ['fire', 'water'], typeMode: 'and' }))).toHaveLength(0);
+    expect(
+      applyDexFilters(DEX, crit({ types: ['grass', 'poison'], typeMode: 'and' })).map(
+        (x) => x.name,
+      ),
+    ).toEqual(['bulbasaur']);
+    expect(
+      applyDexFilters(DEX, crit({ types: ['fire', 'water'], typeMode: 'or' })).map((x) => x.name),
+    ).toEqual(['charmander', 'squirtle']);
+    expect(applyDexFilters(DEX, crit({ types: ['fire', 'water'], typeMode: 'and' }))).toHaveLength(
+      0,
+    );
   });
 
   it('filters by generation and favourites', () => {
     expect(applyDexFilters(DEX, crit({ gen: 2 })).map((x) => x.name)).toEqual(['chikorita']);
-    expect(applyDexFilters(DEX, crit({ favOnly: true, favorites: new Set([25]) })).map((x) => x.id)).toEqual([25]);
+    expect(
+      applyDexFilters(DEX, crit({ favOnly: true, favorites: new Set([25]) })).map((x) => x.id),
+    ).toEqual([25]);
   });
 });
 
 describe('sorting', () => {
   it('sorts by id, id-desc, name, gen and favourites', () => {
-    expect(sortDex(DEX, 'id-desc', new Set())[0].id).toBe(152);
-    expect(sortDex(DEX, 'name', new Set())[0].name).toBe('bulbasaur');
-    expect(sortDex(DEX, 'fav', new Set([133]))[0].id).toBe(133);
+    expect(sortDex(DEX, 'id-desc', new Set())[0]!.id).toBe(152);
+    expect(sortDex(DEX, 'name', new Set())[0]!.name).toBe('bulbasaur');
+    expect(sortDex(DEX, 'fav', new Set([133]))[0]!.id).toBe(133);
   });
 
   it('shuffles deterministically for a seed', () => {

@@ -58,11 +58,9 @@ export function pickWeather(
 ): Weather {
   const candidates = [
     ...new Set(
-      [...foeTypes, ...playerTypes]
-        .map((t) => TYPE_WEATHER[t])
-        .filter((w): w is Weather => !!w),
+      [...foeTypes, ...playerTypes].map((t) => TYPE_WEATHER[t]).filter((w): w is Weather => !!w),
     ),
   ];
   if (!candidates.length) return 'clear';
-  return pick ? pick(candidates) : candidates[0];
+  return pick ? pick(candidates) : candidates[0]!;
 }

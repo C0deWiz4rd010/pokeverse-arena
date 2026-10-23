@@ -69,7 +69,11 @@ export function takesWeatherChip(weather: Weather, types: readonly PokemonType[]
 }
 
 /** Residual damage from weather for one Pokémon (0 when immune / no chip). */
-export function weatherChipDamage(weather: Weather, maxHp: number, types: readonly PokemonType[]): number {
+export function weatherChipDamage(
+  weather: Weather,
+  maxHp: number,
+  types: readonly PokemonType[],
+): number {
   if (!takesWeatherChip(weather, types)) return 0;
   return Math.max(1, Math.floor(maxHp * WEATHER_CHIP_FRACTION));
 }

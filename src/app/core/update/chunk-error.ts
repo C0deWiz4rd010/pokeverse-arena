@@ -7,8 +7,10 @@ const RELOAD_COOLDOWN_MS = 60_000;
 
 /** True for the errors a browser throws when a lazy chunk vanished after a deploy. */
 export function isChunkLoadError(error: unknown): boolean {
-  const msg = error instanceof Error ? error.message : String(error ?? '');
-  return /dynamically imported module|Importing a module script failed|Loading chunk|ChunkLoadError/i.test(msg);
+  const msg = error instanceof Error ? error.message : String(error);
+  return /dynamically imported module|Importing a module script failed|Loading chunk|ChunkLoadError/i.test(
+    msg,
+  );
 }
 
 /** Reload at most once per cooldown so a genuinely broken deploy can't loop. */

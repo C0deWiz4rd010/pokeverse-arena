@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { attemptCatch, catchChance, regionCaught, regionCompletion, rollEncounter } from './encounters';
+import {
+  attemptCatch,
+  catchChance,
+  regionCaught,
+  regionCompletion,
+  rollEncounter,
+} from './encounters';
 import { regionById } from './regions';
 
 const kanto = regionById('kanto')!;

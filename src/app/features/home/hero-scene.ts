@@ -1,4 +1,20 @@
-import { AmbientLight, BufferAttribute, BufferGeometry, Group, IcosahedronGeometry, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, PointLight, Points, PointsMaterial, Scene, WebGLRenderer } from 'three';
+import {
+  AmbientLight,
+  BufferAttribute,
+  BufferGeometry,
+  Group,
+  IcosahedronGeometry,
+  Material,
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  PerspectiveCamera,
+  PointLight,
+  Points,
+  PointsMaterial,
+  Scene,
+  WebGLRenderer,
+} from 'three';
 
 /**
  * Lazily-imported Three.js hero: a holographic Poke Ball energy core made of an
@@ -9,7 +25,12 @@ import { AmbientLight, BufferAttribute, BufferGeometry, Group, IcosahedronGeomet
 export function createHeroScene(canvas: HTMLCanvasElement): () => void {
   const nav = navigator as Navigator & { deviceMemory?: number };
   const lean = (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4;
-  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: !lean, powerPreference: 'low-power' });
+  const renderer = new WebGLRenderer({
+    canvas,
+    alpha: true,
+    antialias: !lean,
+    powerPreference: 'low-power',
+  });
   let pixelRatio = Math.min(window.devicePixelRatio, lean ? 1.5 : 2);
   renderer.setPixelRatio(pixelRatio);
 
@@ -129,8 +150,15 @@ export function createHeroScene(canvas: HTMLCanvasElement): () => void {
     sync();
   });
   io.observe(canvas);
-  const onLost = (e: Event) => { e.preventDefault(); ctxLost = true; sync(); };
-  const onRestored = () => { ctxLost = false; sync(); };
+  const onLost = (e: Event) => {
+    e.preventDefault();
+    ctxLost = true;
+    sync();
+  };
+  const onRestored = () => {
+    ctxLost = false;
+    sync();
+  };
   canvas.addEventListener('webglcontextlost', onLost);
   canvas.addEventListener('webglcontextrestored', onRestored);
   document.addEventListener('visibilitychange', sync);

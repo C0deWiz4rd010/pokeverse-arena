@@ -12,12 +12,19 @@
   border-radius: var(--radius);
   border: 1px solid var(--glass-border);
   background:
-    radial-gradient(120% 90% at 50% -10%, color-mix(in srgb, var(--t1) 26%, transparent), transparent 70%),
+    radial-gradient(
+      120% 90% at 50% -10%,
+      color-mix(in srgb, var(--t1) 26%, transparent),
+      transparent 70%
+    ),
     linear-gradient(160deg, color-mix(in srgb, var(--t2) 12%, transparent), transparent 60%),
     var(--glass);
   overflow: hidden;
   transform-style: preserve-3d;
-  transition: border-color 0.18s ease, box-shadow 0.2s ease, transform 0.12s ease;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.2s ease,
+    transform 0.12s ease;
   animation: card-in 0.4s ease both;
   text-decoration: none;
   color: var(--text);
@@ -26,7 +33,9 @@
   border-color: color-mix(in srgb, var(--t1) 70%, transparent);
   box-shadow: 0 16px 38px color-mix(in srgb, var(--t1) 28%, transparent);
 }
-.card.fav { border-color: color-mix(in srgb, #ff6b9d 45%, var(--glass-border)); }
+.card.fav {
+  border-color: color-mix(in srgb, #ff6b9d 45%, var(--glass-border));
+}
 
 .sheen {
   position: absolute;
@@ -41,7 +50,9 @@
   transition: opacity 0.2s ease;
   pointer-events: none;
 }
-.card.hover .sheen { opacity: 0.9; }
+.card.hover .sheen {
+  opacity: 0.9;
+}
 
 /* TCG-style holo foil: a pointer-angled rainbow that lights up under the
    glare and blends additively — subtle on every card, loud on shiny/favs. */
@@ -58,15 +69,23 @@
     rgba(192, 132, 252, 0.16) 74%,
     transparent 88%
   );
-  mask-image: radial-gradient(240px 240px at var(--mx, 50%) var(--my, 30%), #000 0%, transparent 75%);
+  mask-image: radial-gradient(
+    240px 240px at var(--mx, 50%) var(--my, 30%),
+    #000 0%,
+    transparent 75%
+  );
   mix-blend-mode: color-dodge;
   opacity: 0;
   transition: opacity 0.25s ease;
   pointer-events: none;
 }
-.card.hover .holo { opacity: 0.7; }
+.card.hover .holo {
+  opacity: 0.7;
+}
 .card.shiny.hover .holo,
-.card.fav.hover .holo { opacity: 1; }
+.card.fav.hover .holo {
+  opacity: 1;
+}
 
 .top {
   width: 100%;
@@ -85,7 +104,12 @@
   color: color-mix(in srgb, var(--t1) 60%, var(--text-faint));
   font-variant-numeric: tabular-nums;
 }
-.badges { display: inline-flex; align-items: center; gap: 0.3rem; pointer-events: auto; }
+.badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  pointer-events: auto;
+}
 .dot {
   display: grid;
   place-items: center;
@@ -94,7 +118,10 @@
   border-radius: 50%;
   font-size: 0.62rem;
 }
-.dot.caught { color: #0b0a1f; background: #5be08a; }
+.dot.caught {
+  color: #0b0a1f;
+  background: #5be08a;
+}
 .fav-btn {
   display: grid;
   place-items: center;
@@ -106,15 +133,36 @@
   cursor: pointer;
   color: var(--text-faint);
   font-size: 0.8rem;
-  transition: transform 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
 }
 @include hover-capable {
-  .fav-btn:hover { color: #ff6b9d; transform: scale(1.15); }
+  .fav-btn:hover {
+    color: #ff6b9d;
+    transform: scale(1.15);
+  }
 }
-.fav-btn.on { color: #ff6b9d; }
-.fav-btn.on ::ng-deep svg { fill: #ff6b9d; }
-.fav-btn.on { animation: fav-pop 0.3s ease; }
-@keyframes fav-pop { 0% { transform: scale(1); } 45% { transform: scale(1.4); } 100% { transform: scale(1); } }
+.fav-btn.on {
+  color: #ff6b9d;
+}
+.fav-btn.on ::ng-deep svg {
+  fill: #ff6b9d;
+}
+.fav-btn.on {
+  animation: fav-pop 0.3s ease;
+}
+@keyframes fav-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 
 .art {
   position: relative;
@@ -126,17 +174,31 @@
   transform-style: preserve-3d;
 }
 /* the artwork gently levitates while idle (staggered per card via delay) */
-.card.loaded .art { animation: art-float 3.6s ease-in-out infinite; }
-.card.hover .art { animation-play-state: paused; }
+.card.loaded .art {
+  animation: art-float 3.6s ease-in-out infinite;
+}
+.card.hover .art {
+  animation-play-state: paused;
+}
 @keyframes art-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 .skeleton {
   position: absolute;
   inset: 8%;
   border-radius: 50%;
-  background: linear-gradient(110deg, rgba(255, 255, 255, 0.05) 30%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 70%);
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.05) 70%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.2s linear infinite;
 }
@@ -150,27 +212,50 @@
 .art .still {
   opacity: 0;
   transform: translateY(6px) scale(0.96);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
 }
-.card.loaded .art .still { opacity: 1; transform: none; }
-.card.hover .art .still { opacity: 0; }
-.card.hover .art .still { transform: translateZ(34px) scale(1.06); }
+.card.loaded .art .still {
+  opacity: 1;
+  transform: none;
+}
+.card.hover .art .still {
+  opacity: 0;
+}
+.card.hover .art .still {
+  transform: translateZ(34px) scale(1.06);
+}
 .art .anim {
   image-rendering: pixelated;
   opacity: 0;
   transform: translateZ(0);
-  transition: opacity 0.2s ease 0.05s, transform 0.25s ease;
+  transition:
+    opacity 0.2s ease 0.05s,
+    transform 0.25s ease;
 }
-.card.hover .art .anim { opacity: 1; transform: translateZ(34px) scale(1.08); }
+.card.hover .art .anim {
+  opacity: 1;
+  transform: translateZ(34px) scale(1.08);
+}
 
 /* depth layers: name and types ride above the card plane while tilted */
-.name, .types { transition: transform 0.25s ease; }
-.card.hover .name { transform: translateZ(20px); }
-.card.hover .types { transform: translateZ(14px); }
+.name,
+.types {
+  transition: transform 0.25s ease;
+}
+.card.hover .name {
+  transform: translateZ(20px);
+}
+.card.hover .types {
+  transform: translateZ(14px);
+}
 
 /* Shiny mode: two golden sparkles twinkle over the artwork, offset per card
    via the entrance-stagger delay so the grid doesn't blink in unison. */
-.card.shiny .art { animation-delay: inherit; }
+.card.shiny .art {
+  animation-delay: inherit;
+}
 .card.shiny .art::before,
 .card.shiny .art::after {
   content: '✦';
@@ -194,13 +279,32 @@
   animation-duration: 3.1s;
 }
 @keyframes twinkle {
-  0%, 100% { opacity: 0.15; transform: scale(0.7) rotate(0deg); }
-  50% { opacity: 1; transform: scale(1.15) rotate(45deg); }
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(45deg);
+  }
 }
 
-.name { font-weight: 700; font-size: 0.92rem; text-align: center; }
-.types { display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: center; }
-.types ::ng-deep .badge { padding: 0.12rem 0.45rem; font-size: 0.64rem; }
+.name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-align: center;
+}
+.types {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.types ::ng-deep .badge {
+  padding: 0.12rem 0.45rem;
+  font-size: 0.64rem;
+}
 
 .info {
   position: absolute;
@@ -217,30 +321,83 @@
   cursor: pointer;
   opacity: 0;
   transform: scale(0.8);
-  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    color 0.15s ease;
 }
 .card:hover .info,
-.card:focus-within .info { opacity: 1; transform: none; }
+.card:focus-within .info {
+  opacity: 1;
+  transform: none;
+}
 @include hover-capable {
-  .info:hover { color: var(--t1); border-color: color-mix(in srgb, var(--t1) 60%, transparent); }
+  .info:hover {
+    color: var(--t1);
+    border-color: color-mix(in srgb, var(--t1) 60%, transparent);
+  }
 }
 
-@keyframes shimmer { to { background-position: -200% 0; } }
-@keyframes card-in { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .card, .art, .art img, .skeleton, .info, .name, .types { animation: none; transition: none; }
-  .card.loaded .art .still { opacity: 1; transform: none; }
-  .card.hover .name, .card.hover .types { transform: none; }
-  .sheen, .holo { display: none; }
-  .info { opacity: 1; transform: none; }
+  .card,
+  .art,
+  .art img,
+  .skeleton,
+  .info,
+  .name,
+  .types {
+    animation: none;
+    transition: none;
+  }
+  .card.loaded .art .still {
+    opacity: 1;
+    transform: none;
+  }
+  .card.hover .name,
+  .card.hover .types {
+    transform: none;
+  }
+  .sheen,
+  .holo {
+    display: none;
+  }
+  .info {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ---- compact view: denser tiles ---- */
-.card.compact { padding: 0.55rem 0.5rem 0.5rem; gap: 0.2rem; }
-.card.compact .name { font-size: 0.8rem; }
-.card.compact .types ::ng-deep .badge { padding: 0.08rem 0.36rem; font-size: 0.58rem; }
-.card.compact .art { margin-top: 0.7rem; }
+.card.compact {
+  padding: 0.55rem 0.5rem 0.5rem;
+  gap: 0.2rem;
+}
+.card.compact .name {
+  font-size: 0.8rem;
+}
+.card.compact .types ::ng-deep .badge {
+  padding: 0.08rem 0.36rem;
+  font-size: 0.58rem;
+}
+.card.compact .art {
+  margin-top: 0.7rem;
+}
 
 /* ---- list view: horizontal rows ---- */
 .card.list {
@@ -258,12 +415,30 @@
   align-items: flex-start;
   order: 3;
 }
-.card.list .art { width: 64px; height: 64px; aspect-ratio: 1; margin: 0; flex: none; order: 1; }
-.card.list .name { order: 2; flex: 1; font-size: 1rem; }
-.card.list .types { order: 2; }
-.card.list .info { bottom: 50%; transform: translateY(50%); }
+.card.list .art {
+  width: 64px;
+  height: 64px;
+  aspect-ratio: 1;
+  margin: 0;
+  flex: none;
+  order: 1;
+}
+.card.list .name {
+  order: 2;
+  flex: 1;
+  font-size: 1rem;
+}
+.card.list .types {
+  order: 2;
+}
+.card.list .info {
+  bottom: 50%;
+  transform: translateY(50%);
+}
 @include hover-capable {
-  .card.list:hover .info { transform: translateY(50%); }
+  .card.list:hover .info {
+    transform: translateY(50%);
+  }
 }
 
 /* ---- keyboard focus ring ---- */
@@ -291,17 +466,38 @@
   cursor: pointer;
   opacity: 0;
   transform: scale(0.8);
-  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    color 0.15s ease;
 }
 .card:hover .compare-btn,
 .card:focus-within .compare-btn,
-.compare-btn.on { opacity: 1; transform: none; }
-@include hover-capable {
-  .compare-btn:hover { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 60%, transparent); }
+.compare-btn.on {
+  opacity: 1;
+  transform: none;
 }
-.compare-btn.on { color: #0b0a1f; background: var(--accent-2); border-color: var(--accent-2); }
-.card.list .compare-btn { bottom: 0.5rem; left: auto; right: 2.6rem; }
+@include hover-capable {
+  .compare-btn:hover {
+    color: var(--accent-2);
+    border-color: color-mix(in srgb, var(--accent-2) 60%, transparent);
+  }
+}
+.compare-btn.on {
+  color: #0b0a1f;
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+.card.list .compare-btn {
+  bottom: 0.5rem;
+  left: auto;
+  right: 2.6rem;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .compare-btn { opacity: 1; transform: none; transition: none; }
+  .compare-btn {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

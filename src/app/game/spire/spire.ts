@@ -4,7 +4,7 @@
  * run seed + floor so a given seed always produces the same climb (daily runs).
  */
 import { SeededRng } from '../../core/utils/rng';
-import { HELD_ITEMS, type AiTier, type ItemId } from '../engine';
+import { HELD_ITEMS, type AiTier } from '../engine';
 import { RELICS, type RelicId } from './relics';
 import { rewardChoiceBonus } from './relics';
 import type { FoeSpec, RewardOption, ShopEntry, SpireNode, SpireNodeType } from './spire-types';
@@ -14,7 +14,14 @@ export const TOTAL_FLOORS = 15;
 export const BOSS_FLOORS: readonly number[] = [5, 10, 15];
 const DEX_MAX = 1025;
 
-const FOE_NAMES = ['Wanderer Kade', 'Seeker Iyla', 'Ronin Vex', 'Adept Sol', 'Nomad Bryn', 'Drifter Wren'];
+const FOE_NAMES = [
+  'Wanderer Kade',
+  'Seeker Iyla',
+  'Ronin Vex',
+  'Adept Sol',
+  'Nomad Bryn',
+  'Drifter Wren',
+];
 const BOSS_NAMES = ['Warden of Ash', 'The Tide Sovereign', 'Stormcaller Prime', 'The Hollow Crown'];
 const CHIMERA_KEEPERS = ['Geneweaver Syl', 'Dr. Helix', 'The Splice Warden', 'Curator Myx'];
 /** A stitched-together tease for chimera boss doors — hints, never spoils. */
@@ -55,7 +62,12 @@ export function chimeraChance(floor: number): number {
 }
 
 /** Build a CPU encounter for a floor. */
-export function generateFoe(floor: number, seed: string | number, boss = false, ascension = 0): FoeSpec {
+export function generateFoe(
+  floor: number,
+  seed: string | number,
+  boss = false,
+  ascension = 0,
+): FoeSpec {
   const rng = new SeededRng(`foe-${seed}-${floor}-${boss ? 'b' : 'n'}`);
   const chimera = boss && rng.int(1, 100) <= chimeraChance(floor);
   // A chimera keeper fields 3 regular mons — the fused ace is appended as #4.
@@ -79,7 +91,11 @@ export function generateFoe(floor: number, seed: string | number, boss = false, 
 }
 
 /** The 1–3 node choices offered at a floor (a single boss on boss floors). */
-export function generateFloorChoices(floor: number, seed: string | number, ascension = 0): SpireNode[] {
+export function generateFloorChoices(
+  floor: number,
+  seed: string | number,
+  ascension = 0,
+): SpireNode[] {
   if (isBossFloor(floor)) {
     return [node('boss', floor, generateFoe(floor, seed, true, ascension))];
   }
@@ -89,7 +105,9 @@ export function generateFloorChoices(floor: number, seed: string | number, ascen
   const third = rng.pick<SpireNodeType>(['rest', 'shop', 'treasure']);
   return [
     battle,
-    second === 'elite' ? node('elite', floor, generateFoe(floor, `${seed}-e`, false, ascension)) : node(second, floor),
+    second === 'elite'
+      ? node('elite', floor, generateFoe(floor, `${seed}-e`, false, ascension))
+      : node(second, floor),
     node(third, floor),
   ];
 }
@@ -101,13 +119,17 @@ function node(type: SpireNodeType, floor: number, foe?: FoeSpec): SpireNode {
 }
 
 /** A reward draft after winning a fight. */
-export function generateRewards(floor: number, seed: string | number, relics: readonly RelicId[]): RewardOption[] {
+export function generateRewards(
+  floor: number,
+  seed: string | number,
+  relics: readonly RelicId[],
+): RewardOption[] {
   const rng = new SeededRng(`reward-${seed}-${floor}`);
   const count = 3 + rewardChoiceBonus(relics);
   const out: RewardOption[] = [];
   const kinds = rng.shuffle(['mon', 'item', 'relic', 'heal', 'coins'] as const);
   for (let i = 0; i < count; i++) {
-    out.push(rewardOption(kinds[i % kinds.length], rng, floor));
+    out.push(rewardOption(kinds[i % kinds.length]!, rng, floor));
   }
   return out;
 }
@@ -116,20 +138,44 @@ function rewardOption(kind: RewardOption['kind'], rng: SeededRng, floor: number)
   switch (kind) {
     case 'mon': {
       const dex = rng.int(1, DEX_MAX);
-      return { kind, label: 'Recruit a Pokémon', icon: 'sparkles', blurb: 'Add a fresh ally to your party.', payload: dex };
+      return {
+        kind,
+        label: 'Recruit a Pokémon',
+        icon: 'sparkles',
+        blurb: 'Add a fresh ally to your party.',
+        payload: dex,
+      };
     }
     case 'item': {
-      const item = rng.pick(HELD_ITEMS).id as ItemId;
-      return { kind, label: 'Held Item', icon: 'gem', blurb: 'Equip one of your team.', payload: item };
+      const item = rng.pick(HELD_ITEMS).id;
+      return {
+        kind,
+        label: 'Held Item',
+        icon: 'gem',
+        blurb: 'Equip one of your team.',
+        payload: item,
+      };
     }
     case 'relic': {
       const relic = rng.pick(RELICS).id;
       return { kind, label: 'Relic', icon: 'crown', blurb: 'A run-long blessing.', payload: relic };
     }
     case 'heal':
-      return { kind, label: 'Potion', icon: 'heart', blurb: 'Heal your party by 40%.', payload: 0.4 };
+      return {
+        kind,
+        label: 'Potion',
+        icon: 'heart',
+        blurb: 'Heal your party by 40%.',
+        payload: 0.4,
+      };
     default:
-      return { kind: 'coins', label: 'Coin Pouch', icon: 'gem', blurb: 'A handful of coins.', payload: 30 + floor * 6 };
+      return {
+        kind: 'coins',
+        label: 'Coin Pouch',
+        icon: 'gem',
+        blurb: 'A handful of coins.',
+        payload: 30 + floor * 6,
+      };
   }
 }
 
@@ -144,7 +190,13 @@ export function generateShop(floor: number, seed: string | number): ShopEntry[] 
     cost: 40 + floor * 4,
     payload: it.id,
   }));
-  out.push({ kind: 'relic', label: rng.pick(RELICS).name, icon: 'crown', cost: 80 + floor * 6, payload: rng.pick(RELICS).id });
+  out.push({
+    kind: 'relic',
+    label: rng.pick(RELICS).name,
+    icon: 'crown',
+    cost: 80 + floor * 6,
+    payload: rng.pick(RELICS).id,
+  });
   out.push({ kind: 'heal', label: 'Full Restore', icon: 'heart', cost: 50, payload: 1 });
   return out;
 }

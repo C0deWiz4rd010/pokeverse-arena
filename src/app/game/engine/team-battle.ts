@@ -75,7 +75,7 @@ export type TeamAction =
   | { type: 'pass' };
 
 function critChanceForStage(stage: number): number {
-  return [CRIT_CHANCE, 1 / 8, 1 / 2, 1][Math.max(0, Math.min(3, stage))];
+  return [CRIT_CHANCE, 1 / 8, 1 / 2, 1][Math.max(0, Math.min(3, stage))]!;
 }
 
 function other(side: SideIndex): SideIndex {
@@ -84,7 +84,10 @@ function other(side: SideIndex): SideIndex {
 
 function makeSide(battler: Battler, startHp?: number): BattleSide {
   const maxHp = battler.stats.hp;
-  const hp = startHp === undefined || !Number.isFinite(startHp) ? maxHp : Math.max(0, Math.min(startHp, maxHp));
+  const hp =
+    startHp === undefined || !Number.isFinite(startHp)
+      ? maxHp
+      : Math.max(0, Math.min(startHp, maxHp));
   return {
     battler,
     currentHp: hp,
@@ -169,14 +172,14 @@ export class TeamBattle {
   }
 
   active(side: SideIndex): BattleSide {
-    return this.state.parties[side][this.state.active[side]];
+    return this.state.parties[side][this.state.active[side]]!;
   }
 
   /** Indices of benched, non-fainted Pokémon a side could switch to. */
   benchedSwitches(side: SideIndex): number[] {
     return this.state.parties[side]
       .map((_s, i) => i)
-      .filter((i) => i !== this.state.active[side] && this.state.parties[side][i].currentHp > 0);
+      .filter((i) => i !== this.state.active[side] && this.state.parties[side][i]!.currentHp > 0);
   }
 
   /** A side must switch when its active Pokémon has fainted but the team lives. */
@@ -208,7 +211,13 @@ export class TeamBattle {
 
   private aiMove(side: SideIndex): number {
     return chooseAiMove(
-      { attacker: this.active(side), defender: this.active(other(side)), field: this.state.field, rng: this.rng, rules: this.rules },
+      {
+        attacker: this.active(side),
+        defender: this.active(other(side)),
+        field: this.state.field,
+        rng: this.rng,
+        rules: this.rules,
+      },
       this.aiTier,
     );
   }
@@ -217,7 +226,14 @@ export class TeamBattle {
     const me = this.active(side);
     const foe = this.active(other(side));
     return me.battler.moves.some(
-      (mv) => estimateDamage(mv, { attacker: me, defender: foe, field: this.state.field, rng: this.rng, rules: this.rules }) >= foe.currentHp,
+      (mv) =>
+        estimateDamage(mv, {
+          attacker: me,
+          defender: foe,
+          field: this.state.field,
+          rng: this.rng,
+          rules: this.rules,
+        }) >= foe.currentHp,
     );
   }
 
@@ -233,7 +249,9 @@ export class TeamBattle {
     let bestMult = Infinity;
     for (const i of this.benchedSwitches(side)) {
       const cand = this.state.parties[side][i];
-      const worst = Math.max(...foe.battler.types.map((t) => effectiveness(t, cand.battler.types)));
+      const worst = Math.max(
+        ...foe.battler.types.map((t) => effectiveness(t, cand!.battler.types)),
+      );
       if (worst < bestMult) {
         bestMult = worst;
         best = i;
@@ -255,7 +273,7 @@ export class TeamBattle {
   /** Auto-resolve a forced switch with the AI's best pick. */
   autoForceSwitch(side: SideIndex): BattleEvent[] {
     const options = this.benchedSwitches(side);
-    const pick = this.bestSwitch(side) ?? options[0];
+    const pick = this.bestSwitch(side) ?? options[0]!;
     return this.forceSwitch(side, pick);
   }
 
@@ -306,7 +324,8 @@ export class TeamBattle {
 
   private switchIn(side: SideIndex, to: number, events: BattleEvent[], voluntary: boolean): void {
     const party = this.state.parties[side];
-    if (to < 0 || to >= party.length || party[to].currentHp <= 0 || to === this.state.active[side]) return;
+    if (to < 0 || to >= party.length || party[to]!.currentHp <= 0 || to === this.state.active[side])
+      return;
 
     const outgoing = this.active(side);
     if (voluntary && outgoing.currentHp > 0) {
@@ -324,7 +343,12 @@ export class TeamBattle {
     const incoming = this.active(side);
     incoming.stages = freshStages();
     incoming.volatiles = freshVolatiles();
-    events.push({ kind: 'switch', side, name: incoming.battler.name, text: `${incoming.battler.name} was sent out!` });
+    events.push({
+      kind: 'switch',
+      side,
+      name: incoming.battler.name,
+      text: `${incoming.battler.name} was sent out!`,
+    });
 
     this.applySwitchInHazards(side, events);
     if (incoming.currentHp > 0) this.fireEntryAbility(side, events);
@@ -336,14 +360,28 @@ export class TeamBattle {
     const hz = this.state.field.hazards[side];
     if (hz['stealth-rock'] === 0 && hz.spikes === 0 && hz['toxic-spikes'] === 0) return;
     if (!grounded && hz['stealth-rock'] === 0) return; // only Stealth Rock hits non-grounded
-    const res = resolveSwitchInHazards(hz, incoming.battler.name, incoming.battler.types, incoming.maxHp);
+    const res = resolveSwitchInHazards(
+      hz,
+      incoming.battler.name,
+      incoming.battler.types,
+      incoming.maxHp,
+    );
     if (res.clearsToxicSpikes) this.state.field.hazards[side] = { ...hz, 'toxic-spikes': 0 };
     for (const msg of res.messages) events.push({ kind: 'status', text: msg });
     if (res.damage > 0) {
       incoming.currentHp = Math.max(0, incoming.currentHp - res.damage);
-      events.push({ kind: 'damage', side, amount: res.damage, effectiveness: 1, crit: false, remainingHp: incoming.currentHp, maxHp: incoming.maxHp });
+      events.push({
+        kind: 'damage',
+        side,
+        amount: res.damage,
+        effectiveness: 1,
+        crit: false,
+        remainingHp: incoming.currentHp,
+        maxHp: incoming.maxHp,
+      });
     }
-    if (res.status !== 'none' && incoming.currentHp > 0) this.inflictStatus(side, res.status, events);
+    if (res.status !== 'none' && incoming.currentHp > 0)
+      this.inflictStatus(side, res.status, events);
   }
 
   private applyEntryAbilities(events: BattleEvent[]): void {
@@ -358,7 +396,12 @@ export class TeamBattle {
     if (ability.terrainOnEntry) this.setTerrain(ability.terrainOnEntry, events);
     if (ability.intimidate) {
       this.changeStage(other(side), 'attack', -ability.intimidate, events);
-      events.push({ kind: 'ability', side, ability: ability.id, text: `${s.battler.name}'s Intimidate cut the foe's Attack!` });
+      events.push({
+        kind: 'ability',
+        side,
+        ability: ability.id,
+        text: `${s.battler.name}'s Intimidate cut the foe's Attack!`,
+      });
     }
   }
 
@@ -368,13 +411,18 @@ export class TeamBattle {
     const attacker = this.active(side);
     const defenderIndex = other(side);
     const defender = this.active(defenderIndex);
-    const move = attacker.battler.moves[moveIndex];
+    const move = attacker.battler.moves[moveIndex]!;
 
     if (attacker.volatiles.flinch) {
       events.push({ kind: 'flinch', side, text: `${attacker.battler.name} flinched!` });
       return;
     }
-    const gate = resolveMoveGate(attacker.battler.name, attacker.status, attacker.sleepTurns, this.rng.next());
+    const gate = resolveMoveGate(
+      attacker.battler.name,
+      attacker.status,
+      attacker.sleepTurns,
+      this.rng.next(),
+    );
     attacker.status = gate.status;
     attacker.sleepTurns = gate.sleepTurns;
     if (gate.message) {
@@ -384,7 +432,7 @@ export class TeamBattle {
     if (!gate.canMove) return;
 
     if (move.pp !== undefined && Number.isFinite(attacker.pp[moveIndex])) {
-      attacker.pp[moveIndex] = Math.max(0, attacker.pp[moveIndex] - 1);
+      attacker.pp[moveIndex] = Math.max(0, attacker.pp[moveIndex]! - 1);
     }
     events.push({ kind: 'move', side, attacker: attacker.battler.name, move: move.name });
 
@@ -397,13 +445,20 @@ export class TeamBattle {
       return;
     }
 
-    if (terrainBlocksPriority(this.state.field.terrain, move.priority ?? 0, battlerGrounded(defender))) {
-      events.push({ kind: 'status', text: `${defender.battler.name} is protected by the terrain!` });
+    if (
+      terrainBlocksPriority(this.state.field.terrain, move.priority ?? 0, battlerGrounded(defender))
+    ) {
+      events.push({
+        kind: 'status',
+        text: `${defender.battler.name} is protected by the terrain!`,
+      });
       return;
     }
 
     if (move.accuracy > 0) {
-      const acc = move.accuracy * stageMultiplier('accuracy', attacker.stages.accuracy) / stageMultiplier('evasion', defender.stages.evasion);
+      const acc =
+        (move.accuracy * stageMultiplier('accuracy', attacker.stages.accuracy)) /
+        stageMultiplier('evasion', defender.stages.evasion);
       if (this.rng.next() * 100 >= acc) {
         events.push({ kind: 'miss', side, attacker: attacker.battler.name, move: move.name });
         return;
@@ -419,24 +474,51 @@ export class TeamBattle {
       if (defender.currentHp <= 0) break;
       const crit = this.rng.chance(critChanceForStage(move.critStage ?? 0));
       const roll = MIN_ROLL + this.rng.next() * (MAX_ROLL - MIN_ROLL);
-      const result = computeMoveDamage({ attacker, defender, field: this.state.field, move, crit, roll, rules: this.rules, flashFire: attacker.volatiles.flashFire });
+      const result = computeMoveDamage({
+        attacker,
+        defender,
+        field: this.state.field,
+        move,
+        crit,
+        roll,
+        rules: this.rules,
+        flashFire: attacker.volatiles.flashFire,
+      });
       let dealt = result.damage;
       if (dealt >= defender.currentHp && defender.currentHp === defender.maxHp) {
         const defAbility = abilityById(defender.battler.ability);
         const defItem = itemById(defender.battler.item);
         if (defAbility?.sturdy) {
           dealt = defender.maxHp - 1;
-          events.push({ kind: 'ability', side: defenderIndex, ability: defAbility.id, text: `${defender.battler.name} endured with Sturdy!` });
+          events.push({
+            kind: 'ability',
+            side: defenderIndex,
+            ability: defAbility.id,
+            text: `${defender.battler.name} endured with Sturdy!`,
+          });
         } else if (defItem?.focusSash && !defender.itemUsed) {
           dealt = defender.maxHp - 1;
           defender.itemUsed = true;
-          events.push({ kind: 'item', side: defenderIndex, item: defItem.id, text: `${defender.battler.name} hung on with its Focus Sash!` });
+          events.push({
+            kind: 'item',
+            side: defenderIndex,
+            item: defItem.id,
+            text: `${defender.battler.name} hung on with its Focus Sash!`,
+          });
         }
       }
       defender.currentHp = Math.max(0, defender.currentHp - dealt);
       total += dealt;
       connected = true;
-      events.push({ kind: 'damage', side: defenderIndex, amount: dealt, effectiveness: result.effectiveness, crit: result.crit, remainingHp: defender.currentHp, maxHp: defender.maxHp });
+      events.push({
+        kind: 'damage',
+        side: defenderIndex,
+        amount: dealt,
+        effectiveness: result.effectiveness,
+        crit: result.crit,
+        remainingHp: defender.currentHp,
+        maxHp: defender.maxHp,
+      });
       this.applyContactEffects(side, defenderIndex, move, events);
       if (defender.currentHp <= 0 || attacker.currentHp <= 0) break;
     }
@@ -445,16 +527,43 @@ export class TeamBattle {
     }
     if (!connected) return;
 
-    if (move.drain && total > 0) this.heal(side, Math.max(1, Math.floor(total * move.drain)), events, `${attacker.battler.name} drained energy!`);
-    if (move.recoil && total > 0) this.indirectDamage(side, Math.max(1, Math.floor(total * move.recoil)), events, `${attacker.battler.name} is hit with recoil!`);
+    if (move.drain && total > 0)
+      this.heal(
+        side,
+        Math.max(1, Math.floor(total * move.drain)),
+        events,
+        `${attacker.battler.name} drained energy!`,
+      );
+    if (move.recoil && total > 0)
+      this.indirectDamage(
+        side,
+        Math.max(1, Math.floor(total * move.recoil)),
+        events,
+        `${attacker.battler.name} is hit with recoil!`,
+      );
     const atkItem = itemById(attacker.battler.item);
     const atkAbility = abilityById(attacker.battler.ability);
     if (atkItem?.recoil && total > 0 && !atkAbility?.magicGuard && attacker.currentHp > 0) {
-      this.indirectDamage(side, Math.max(1, Math.floor(attacker.maxHp * atkItem.recoil)), events, `${attacker.battler.name} is hurt by its Life Orb!`);
+      this.indirectDamage(
+        side,
+        Math.max(1, Math.floor(attacker.maxHp * atkItem.recoil)),
+        events,
+        `${attacker.battler.name} is hurt by its Life Orb!`,
+      );
     }
-    if (move.secondary && total > 0 && defender.currentHp > 0 && this.rng.next() * 100 < move.secondary.chance) {
+    if (
+      move.secondary &&
+      total > 0 &&
+      defender.currentHp > 0 &&
+      this.rng.next() * 100 < move.secondary.chance
+    ) {
       if (move.secondary.status) this.inflictStatus(defenderIndex, move.secondary.status, events);
-      if (move.secondary.boosts) this.applyMoveBoosts(move.secondary.boostTarget === 'self' ? side : defenderIndex, move.secondary.boosts, events);
+      if (move.secondary.boosts)
+        this.applyMoveBoosts(
+          move.secondary.boostTarget === 'self' ? side : defenderIndex,
+          move.secondary.boosts,
+          events,
+        );
       if (move.secondary.flinch) defender.volatiles.flinch = true;
     }
   }
@@ -465,16 +574,36 @@ export class TeamBattle {
     if (!ability?.absorb || ability.absorb.type !== move.type) return false;
     if (ability.absorb.effect === 'flash-fire') {
       defender.volatiles.flashFire = true;
-      events.push({ kind: 'ability', side: defenderIndex, ability: ability.id, text: `${defender.battler.name}'s Flash Fire activated!` });
+      events.push({
+        kind: 'ability',
+        side: defenderIndex,
+        ability: ability.id,
+        text: `${defender.battler.name}'s Flash Fire activated!`,
+      });
     } else if (ability.absorb.effect === 'heal25') {
-      this.heal(defenderIndex, Math.floor(defender.maxHp / 4), events, `${defender.battler.name}'s ${ability.name} restored HP!`);
+      this.heal(
+        defenderIndex,
+        Math.floor(defender.maxHp / 4),
+        events,
+        `${defender.battler.name}'s ${ability.name} restored HP!`,
+      );
     } else {
-      events.push({ kind: 'ability', side: defenderIndex, ability: ability.id, text: `${defender.battler.name} avoids it with ${ability.name}!` });
+      events.push({
+        kind: 'ability',
+        side: defenderIndex,
+        ability: ability.id,
+        text: `${defender.battler.name} avoids it with ${ability.name}!`,
+      });
     }
     return true;
   }
 
-  private applyContactEffects(side: SideIndex, defenderIndex: SideIndex, move: BattleMove, events: BattleEvent[]): void {
+  private applyContactEffects(
+    side: SideIndex,
+    defenderIndex: SideIndex,
+    move: BattleMove,
+    events: BattleEvent[],
+  ): void {
     if (!move.flags?.contact) return;
     const attacker = this.active(side);
     const defender = this.active(defenderIndex);
@@ -484,19 +613,61 @@ export class TeamBattle {
     if (defAbility?.contactStatus && this.rng.next() * 100 < defAbility.contactStatus.chance) {
       this.inflictStatus(side, defAbility.contactStatus.status, events);
     }
-    if (defAbility?.roughSkin) this.indirectDamage(side, Math.max(1, Math.floor(attacker.maxHp * defAbility.roughSkin)), events, `${attacker.battler.name} was hurt by Rough Skin!`);
-    if (defItem?.rockyHelmet && attacker.currentHp > 0) this.indirectDamage(side, Math.max(1, Math.floor(attacker.maxHp * defItem.rockyHelmet)), events, `${attacker.battler.name} was hurt by the Rocky Helmet!`);
+    if (defAbility?.roughSkin)
+      this.indirectDamage(
+        side,
+        Math.max(1, Math.floor(attacker.maxHp * defAbility.roughSkin)),
+        events,
+        `${attacker.battler.name} was hurt by Rough Skin!`,
+      );
+    if (defItem?.rockyHelmet && attacker.currentHp > 0)
+      this.indirectDamage(
+        side,
+        Math.max(1, Math.floor(attacker.maxHp * defItem.rockyHelmet)),
+        events,
+        `${attacker.battler.name} was hurt by the Rocky Helmet!`,
+      );
   }
 
-  private applyStatusMove(side: SideIndex, defenderIndex: SideIndex, move: BattleMove, events: BattleEvent[]): void {
+  private applyStatusMove(
+    side: SideIndex,
+    defenderIndex: SideIndex,
+    move: BattleMove,
+    events: BattleEvent[],
+  ): void {
     const attacker = this.active(side);
     let did = false;
-    if (move.boosts) did = this.applyMoveBoosts(move.target === 'opponent' ? defenderIndex : side, move.boosts, events) || did;
-    if (move.inflictStatus) did = this.inflictStatus(defenderIndex, move.inflictStatus, events) || did;
-    if (move.setsWeather) { this.setWeather(move.setsWeather, attacker, events); did = true; }
-    if (move.setsTerrain) { this.setTerrain(move.setsTerrain, events); did = true; }
-    if (move.setsHazard) { this.layHazard(defenderIndex, move.setsHazard, events); did = true; }
-    if (move.healing) { const b = attacker.currentHp; this.heal(side, Math.floor(attacker.maxHp * move.healing), events, `${attacker.battler.name} regained health!`); did = attacker.currentHp !== b || did; }
+    if (move.boosts)
+      did =
+        this.applyMoveBoosts(
+          move.target === 'opponent' ? defenderIndex : side,
+          move.boosts,
+          events,
+        ) || did;
+    if (move.inflictStatus)
+      did = this.inflictStatus(defenderIndex, move.inflictStatus, events) || did;
+    if (move.setsWeather) {
+      this.setWeather(move.setsWeather, attacker, events);
+      did = true;
+    }
+    if (move.setsTerrain) {
+      this.setTerrain(move.setsTerrain, events);
+      did = true;
+    }
+    if (move.setsHazard) {
+      this.layHazard(defenderIndex, move.setsHazard, events);
+      did = true;
+    }
+    if (move.healing) {
+      const b = attacker.currentHp;
+      this.heal(
+        side,
+        Math.floor(attacker.maxHp * move.healing),
+        events,
+        `${attacker.battler.name} regained health!`,
+      );
+      did = attacker.currentHp !== b || did;
+    }
     if (!did) events.push({ kind: 'status', text: `${attacker.battler.name} used ${move.name}.` });
   }
 
@@ -512,37 +683,68 @@ export class TeamBattle {
       const magicGuard = ability?.magicGuard === true;
 
       if (!magicGuard && takesWeatherChip(field.weather, s.battler.types)) {
-        this.indirectDamage(side, weatherChipDamage(field.weather, s.maxHp, s.battler.types), events, weatherChipMessage(s.battler.name, field.weather));
+        this.indirectDamage(
+          side,
+          weatherChipDamage(field.weather, s.maxHp, s.battler.types),
+          events,
+          weatherChipMessage(s.battler.name, field.weather),
+        );
         if (s.currentHp <= 0) continue;
       }
       const heal = terrainHeal(field.terrain, s.maxHp, battlerGrounded(s));
-      if (heal > 0 && s.currentHp < s.maxHp) this.heal(side, heal, events, `${s.battler.name} is healed by the terrain!`);
+      if (heal > 0 && s.currentHp < s.maxHp)
+        this.heal(side, heal, events, `${s.battler.name} is healed by the terrain!`);
       if (ability?.speedBoost) this.changeStage(side, 'speed', 1, events);
       if (item?.leftovers && s.currentHp < s.maxHp) {
         if (item.id === 'black-sludge' && !s.battler.types.includes('poison')) {
-          this.indirectDamage(side, Math.max(1, Math.floor(s.maxHp / 16)), events, `${s.battler.name} is hurt by the Black Sludge!`);
+          this.indirectDamage(
+            side,
+            Math.max(1, Math.floor(s.maxHp / 16)),
+            events,
+            `${s.battler.name} is hurt by the Black Sludge!`,
+          );
           if (s.currentHp <= 0) continue;
         } else {
-          this.heal(side, Math.max(1, Math.floor(s.maxHp * item.leftovers)), events, `${s.battler.name} restored a little HP!`);
+          this.heal(
+            side,
+            Math.max(1, Math.floor(s.maxHp * item.leftovers)),
+            events,
+            `${s.battler.name} restored a little HP!`,
+          );
         }
       }
       if (!magicGuard && (s.status === 'burn' || s.status === 'poison' || s.status === 'toxic')) {
         if (s.status === 'toxic') s.toxicCounter += 1;
-        this.indirectDamage(side, residualDamage(s.status, s.maxHp, s.toxicCounter), events, residualMessage(s.battler.name, s.status));
+        this.indirectDamage(
+          side,
+          residualDamage(s.status, s.maxHp, s.toxicCounter),
+          events,
+          residualMessage(s.battler.name, s.status),
+        );
         if (s.currentHp <= 0) continue;
       }
-      if (item?.selfStatus && s.status === 'none') this.inflictStatus(side, item.selfStatus, events, true);
+      if (item?.selfStatus && s.status === 'none')
+        this.inflictStatus(side, item.selfStatus, events, true);
       if (item?.curesStatus && s.status !== 'none' && !s.itemUsed) {
         if (item.curesStatus === 'all' || item.curesStatus === s.status) {
           s.status = 'none';
           s.toxicCounter = 0;
           s.itemUsed = true;
-          events.push({ kind: 'cure', side, text: `${s.battler.name}'s ${item.name} cured its status!` });
+          events.push({
+            kind: 'cure',
+            side,
+            text: `${s.battler.name}'s ${item.name} cured its status!`,
+          });
         }
       }
       if (item?.pinchHeal && !s.itemUsed && s.currentHp > 0 && s.currentHp <= s.maxHp / 2) {
         s.itemUsed = true;
-        this.heal(side, Math.floor(s.maxHp * item.pinchHeal), events, `${s.battler.name} restored HP with its Berry!`);
+        this.heal(
+          side,
+          Math.floor(s.maxHp * item.pinchHeal),
+          events,
+          `${s.battler.name} restored HP with its Berry!`,
+        );
       }
     }
     if (field.weatherTurns > 0 && --field.weatherTurns === 0 && field.weather !== 'none') {
@@ -569,7 +771,12 @@ export class TeamBattle {
 
   /* --------------------------------------------------------------- atoms */
 
-  private inflictStatus(side: SideIndex, status: StatusCondition, events: BattleEvent[], force = false): boolean {
+  private inflictStatus(
+    side: SideIndex,
+    status: StatusCondition,
+    events: BattleEvent[],
+    force = false,
+  ): boolean {
     const s = this.active(side);
     const ability = abilityById(s.battler.ability);
     if (ability?.statusImmunity === 'all' || ability?.statusImmunity === status) return false;
@@ -580,11 +787,20 @@ export class TeamBattle {
     s.status = status;
     s.toxicCounter = 0;
     if (status === 'sleep') s.sleepTurns = rollSleepTurns((a, b) => this.rng.int(a, b));
-    events.push({ kind: 'status-set', side, status, text: statusSetMessage(s.battler.name, status) });
+    events.push({
+      kind: 'status-set',
+      side,
+      status,
+      text: statusSetMessage(s.battler.name, status),
+    });
     return true;
   }
 
-  private applyMoveBoosts(side: SideIndex, boosts: Partial<Record<BoostableStat, number>>, events: BattleEvent[]): boolean {
+  private applyMoveBoosts(
+    side: SideIndex,
+    boosts: Partial<Record<BoostableStat, number>>,
+    events: BattleEvent[],
+  ): boolean {
     let any = false;
     const s = this.active(side);
     for (const stat of Object.keys(boosts) as BoostableStat[]) {
@@ -593,18 +809,35 @@ export class TeamBattle {
       const delta = s.stages[stat] - before;
       if (delta !== 0) {
         any = true;
-        events.push({ kind: 'stage-change', side, stat, delta, text: stageText(s.battler.name, stat, delta) });
+        events.push({
+          kind: 'stage-change',
+          side,
+          stat,
+          delta,
+          text: stageText(s.battler.name, stat, delta),
+        });
       }
     }
     return any;
   }
 
-  private changeStage(side: SideIndex, stat: BoostableStat, delta: number, events: BattleEvent[]): void {
+  private changeStage(
+    side: SideIndex,
+    stat: BoostableStat,
+    delta: number,
+    events: BattleEvent[],
+  ): void {
     const s = this.active(side);
     const before = s.stages[stat];
     s.stages = applyBoost(s.stages, stat, delta).stages;
     if (s.stages[stat] !== before) {
-      events.push({ kind: 'stage-change', side, stat, delta: s.stages[stat] - before, text: stageText(s.battler.name, stat, s.stages[stat] - before) });
+      events.push({
+        kind: 'stage-change',
+        side,
+        stat,
+        delta: s.stages[stat] - before,
+        text: stageText(s.battler.name, stat, s.stages[stat] - before),
+      });
     }
   }
 
@@ -626,7 +859,13 @@ export class TeamBattle {
   private layHazard(targetSide: SideIndex, kind: HazardKind, events: BattleEvent[]): void {
     const res = addHazard(this.state.field.hazards[targetSide], kind);
     this.state.field.hazards[targetSide] = res.state;
-    if (res.added) events.push({ kind: 'hazard', side: targetSide, hazard: kind, text: hazardSetMessage(kind, targetSide === 0 ? 'your side' : 'the foe') });
+    if (res.added)
+      events.push({
+        kind: 'hazard',
+        side: targetSide,
+        hazard: kind,
+        text: hazardSetMessage(kind, targetSide === 0 ? 'your side' : 'the foe'),
+      });
   }
 
   private heal(side: SideIndex, amount: number, events: BattleEvent[], text: string): void {
@@ -636,18 +875,34 @@ export class TeamBattle {
     events.push({ kind: 'heal', side, amount, remainingHp: s.currentHp, maxHp: s.maxHp, text });
   }
 
-  private indirectDamage(side: SideIndex, amount: number, events: BattleEvent[], text: string): void {
+  private indirectDamage(
+    side: SideIndex,
+    amount: number,
+    events: BattleEvent[],
+    text: string,
+  ): void {
     if (amount <= 0) return;
     const s = this.active(side);
     s.currentHp = Math.max(0, s.currentHp - amount);
-    events.push({ kind: 'damage', side, amount, effectiveness: 1, crit: false, remainingHp: s.currentHp, maxHp: s.maxHp });
+    events.push({
+      kind: 'damage',
+      side,
+      amount,
+      effectiveness: 1,
+      crit: false,
+      remainingHp: s.currentHp,
+      maxHp: s.maxHp,
+    });
     if (text) events.push({ kind: 'status', text });
     if (s.currentHp <= 0) events.push({ kind: 'faint', side, name: s.battler.name });
   }
 
   private effectiveSpeed(side: SideIndex): number {
     const s = this.active(side);
-    let spe = s.battler.stats.speed * stageMultiplier('speed', s.stages.speed) * paralysisSpeedFactor(s.status);
+    let spe =
+      s.battler.stats.speed *
+      stageMultiplier('speed', s.stages.speed) *
+      paralysisSpeedFactor(s.status);
     const item = itemById(s.battler.item);
     if (item?.statMultiplier?.stat === 'speed') spe *= item.statMultiplier.factor;
     const ability = abilityById(s.battler.ability);
@@ -661,7 +916,7 @@ export class TeamBattle {
 
   private moveOf(side: SideIndex, action: TeamAction): BattleMove {
     const i = action.type === 'move' ? action.index : 0;
-    return this.active(side).battler.moves[i];
+    return this.active(side).battler.moves[i]!;
   }
 }
 
@@ -672,7 +927,13 @@ function firstLiving(party: BattleSide[]): number {
 
 function stageText(name: string, stat: BoostableStat, delta: number): string {
   const label: Record<BoostableStat, string> = {
-    attack: 'Attack', defense: 'Defense', 'special-attack': 'Sp. Atk', 'special-defense': 'Sp. Def', speed: 'Speed', accuracy: 'accuracy', evasion: 'evasion',
+    attack: 'Attack',
+    defense: 'Defense',
+    'special-attack': 'Sp. Atk',
+    'special-defense': 'Sp. Def',
+    speed: 'Speed',
+    accuracy: 'accuracy',
+    evasion: 'evasion',
   };
   if (delta >= 2) return `${name}'s ${label[stat]} rose sharply!`;
   if (delta === 1) return `${name}'s ${label[stat]} rose!`;

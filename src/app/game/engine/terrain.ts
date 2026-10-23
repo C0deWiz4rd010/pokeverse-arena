@@ -63,7 +63,8 @@ export function terrainBlocksStatus(
 
 /** Grassy Terrain end-of-turn heal for a grounded Pokémon. */
 export function terrainHeal(terrain: Terrain, maxHp: number, grounded: boolean): number {
-  if (terrain === 'grassy' && grounded) return Math.max(1, Math.floor(maxHp * GRASSY_HEAL_FRACTION));
+  if (terrain === 'grassy' && grounded)
+    return Math.max(1, Math.floor(maxHp * GRASSY_HEAL_FRACTION));
   return 0;
 }
 

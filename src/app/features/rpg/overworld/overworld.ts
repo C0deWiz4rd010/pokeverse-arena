@@ -206,7 +206,7 @@ export class OverworldComponent implements OnDestroy {
     this.waterTiles = [];
     for (let ty = 0; ty < map.height; ty++) {
       for (let tx = 0; tx < map.width; tx++) {
-        const kind = map.tiles[ty][tx];
+        const kind = map.tiles[ty]![tx]!;
         if (kind === 'water') this.waterTiles.push({ x: tx, y: ty });
         drawTile(cctx, kind, tx * ts, ty * ts, ts, 0);
       }
@@ -254,7 +254,7 @@ export class OverworldComponent implements OnDestroy {
     }
 
     // player at camera centre
-    const [body, cap] = LOOK_COLORS[this.svc.appearance()] ?? LOOK_COLORS['boy'];
+    const [body, cap] = LOOK_COLORS[this.svc.appearance()] ?? LOOK_COLORS['boy']!;
     drawCharacter(ctx, this.cssW / 2 - ts / 2, this.cssH / 2 - ts / 2, ts, player.facing, body, cap);
   }
 }

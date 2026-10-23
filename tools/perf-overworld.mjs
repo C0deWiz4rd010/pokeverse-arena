@@ -15,21 +15,37 @@ const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, l
 const page = await ctx.newPage();
 await page.goto(`${BASE}/#/adventure`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(1000);
-await page.evaluate((mute) => { for (const k of Object.keys(localStorage)) if (k.startsWith('pv:rpg')) localStorage.removeItem(k); if (mute) localStorage.setItem('sfx:muted', '1'); }, !!process.env.PERF_MUTE);
+await page.evaluate((mute) => {
+  for (const k of Object.keys(localStorage)) if (k.startsWith('pv:rpg')) localStorage.removeItem(k);
+  if (mute) localStorage.setItem('sfx:muted', '1');
+}, !!process.env.PERF_MUTE);
 await page.reload({ waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(800);
-await page.locator('button', { hasText: /New Adventure/i }).first().click();
+await page
+  .locator('button', { hasText: /New Adventure/i })
+  .first()
+  .click();
 
 async function clearDialogue(n = 10) {
   for (let i = 0; i < n; i++) {
     const box = page.locator('.dbox');
-    if (!(await box.count())) { await page.waitForTimeout(350); if (!(await box.count())) return; }
-    await box.first().click().catch(() => {});
+    if (!(await box.count())) {
+      await page.waitForTimeout(350);
+      if (!(await box.count())) return;
+    }
+    await box
+      .first()
+      .click()
+      .catch(() => {});
     await page.waitForTimeout(300);
   }
 }
 await clearDialogue(8);
-await page.locator('.starter button, [class*=starter] button').first().click({ timeout: 4000 }).catch(() => {});
+await page
+  .locator('.starter button, [class*=starter] button')
+  .first()
+  .click({ timeout: 4000 })
+  .catch(() => {});
 await clearDialogue(8);
 await page.waitForSelector('.party-hud .ph-mon', { timeout: 10000 }).catch(() => {});
 
@@ -38,7 +54,11 @@ await cdp.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
 await page.evaluate(() => {
   window.__ft = [];
   let last = performance.now();
-  const f = (t) => { window.__ft.push(t - last); last = t; requestAnimationFrame(f); };
+  const f = (t) => {
+    window.__ft.push(t - last);
+    last = t;
+    requestAnimationFrame(f);
+  };
   requestAnimationFrame(f);
 });
 const dirs = ['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft'];
@@ -54,4 +74,14 @@ await browser.close();
 ft.sort((a, b) => a - b);
 const avg = ft.reduce((s, x) => s + x, 0) / ft.length;
 const pct = (p) => ft[Math.min(ft.length - 1, Math.floor(ft.length * p))];
-console.log(JSON.stringify({ frames: ft.length, throttle: THROTTLE, avgFps: +(1000 / avg).toFixed(1), avgMs: +avg.toFixed(1), p50: +pct(0.5).toFixed(1), p95: +pct(0.95).toFixed(1), p99: +pct(0.99).toFixed(1) }));
+console.log(
+  JSON.stringify({
+    frames: ft.length,
+    throttle: THROTTLE,
+    avgFps: +(1000 / avg).toFixed(1),
+    avgMs: +avg.toFixed(1),
+    p50: +pct(0.5).toFixed(1),
+    p95: +pct(0.95).toFixed(1),
+    p99: +pct(0.99).toFixed(1),
+  }),
+);

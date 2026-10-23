@@ -143,7 +143,8 @@ export class ArenaService {
         this.buildLeaderTeam(leader, level, rematch),
         this.buildPlayerTeam(level),
       ]);
-      if (!foeTeam.length || !rawPlayerTeam.length) throw new Error('Could not assemble a team for this challenge.');
+      if (!foeTeam.length || !rawPlayerTeam.length)
+        throw new Error('Could not assemble a team for this challenge.');
       const playerTeam = this.applyBadgeBoosts(rawPlayerTeam);
 
       const foe: Trainer = {
@@ -166,7 +167,14 @@ export class ArenaService {
         accent: typeColorVar(leader.type),
         foeAce: leader.dialogue.ace,
       });
-      this.intro.set({ leader, level, rematch, foeTeam, playerTeam, boostSummary: this.boostSummary() });
+      this.intro.set({
+        leader,
+        level,
+        rematch,
+        foeTeam,
+        playerTeam,
+        boostSummary: this.boostSummary(),
+      });
       this.status.set('intro');
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Something went wrong. Try again.');
@@ -247,8 +255,13 @@ export class ArenaService {
     this.gauntletResult.set(null);
     try {
       this.gauntletPlayerTeam = this.applyBadgeBoosts(await this.buildPlayerTeam(GAUNTLET_LEVEL));
-      if (!this.gauntletPlayerTeam.length) throw new Error('Assemble a team in the Team Builder first.');
-      this.run = { trainers: GAUNTLET, index: 0, playerHp: this.gauntletPlayerTeam.map((m) => m.stats.hp) };
+      if (!this.gauntletPlayerTeam.length)
+        throw new Error('Assemble a team in the Team Builder first.');
+      this.run = {
+        trainers: GAUNTLET,
+        index: 0,
+        playerHp: this.gauntletPlayerTeam.map((m) => m.stats.hp),
+      };
       await this.loadGauntletMatch();
       this.status.set('gauntlet');
     } catch (err) {
@@ -294,7 +307,7 @@ export class ArenaService {
 
   private async loadGauntletMatch(): Promise<void> {
     const run = this.run!;
-    const trainer = run.trainers[run.index];
+    const trainer = run.trainers[run.index]!;
     const foeTeam = await this.buildEliteTeam(trainer);
     const player = this.playerTrainer(this.gauntletPlayerTeam, true);
     const foe: Trainer = {
@@ -362,13 +375,18 @@ export class ArenaService {
     const mult = badgeStatMultipliers(this.badges());
     return team.map((mon) => {
       const stats = { ...mon.stats };
-      for (const key of Object.keys(stats) as StatKey[]) stats[key] = Math.round(stats[key] * mult[key]);
+      for (const key of Object.keys(stats) as StatKey[])
+        stats[key] = Math.round(stats[key] * mult[key]);
       return { ...mon, stats };
     });
   }
 
-  private async buildLeaderTeam(leader: GymLeader, level: number, rematch: boolean): Promise<Battler[]> {
-    const team = rematch ? [...leader.team, leader.team[leader.team.length - 1]] : leader.team;
+  private async buildLeaderTeam(
+    leader: GymLeader,
+    level: number,
+    rematch: boolean,
+  ): Promise<Battler[]> {
+    const team = rematch ? [...leader.team, leader.team[leader.team.length - 1]!] : leader.team;
     return this.buildLoadout(team, level);
   }
 

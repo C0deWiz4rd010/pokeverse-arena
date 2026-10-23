@@ -4,8 +4,8 @@
 @use 'sass:map';
 
 $breakpoints: (
-  xs: 361px, /* below(xs) = phones up to and including 360px wide */
-  sm: 480px,
+  xs: 361px,
+  /* below(xs) = phones up to and including 360px wide */ sm: 480px,
   md: 768px,
   lg: 1024px,
   xl: 1280px,

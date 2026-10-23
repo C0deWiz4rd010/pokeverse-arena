@@ -46,9 +46,13 @@ export class PokedexService {
   readonly view = signal<DexView>(asView(this.save.read('pokedex:view', 'gallery')));
   readonly shiny = signal<boolean>(this.save.read('pokedex:shiny', false));
   readonly favOnly = signal(false);
-  readonly favorites = signal<ReadonlySet<number>>(new Set(this.save.read<number[]>('pokedex:favorites', [])));
+  readonly favorites = signal<ReadonlySet<number>>(
+    new Set(this.save.read<number[]>('pokedex:favorites', [])),
+  );
   /** Caught species mirrored (read-only) from the World expedition system. */
-  readonly caught = signal<ReadonlySet<number>>(new Set(this.save.readLegacy<number[]>('world:caught', [])));
+  readonly caught = signal<ReadonlySet<number>>(
+    new Set(this.save.readLegacy<number[]>('world:caught', [])),
+  );
   private readonly shuffleSeed = signal(0);
   private readonly visibleCount = signal(PAGE_SIZE);
 
@@ -75,7 +79,11 @@ export class PokedexService {
   readonly count = computed(() => this.index().length);
   readonly hasMore = computed(() => this.visibleCount() < this.total());
   readonly activeFilterCount = computed(
-    () => this.typeFilters().size + (this.generationFilter() ? 1 : 0) + (this.favOnly() ? 1 : 0) + (this.query() ? 1 : 0),
+    () =>
+      this.typeFilters().size +
+      (this.generationFilter() ? 1 : 0) +
+      (this.favOnly() ? 1 : 0) +
+      (this.query() ? 1 : 0),
   );
 
   /** All Pokémon names, for autocomplete/datalist consumers (e.g. Team Builder). */
@@ -113,11 +121,13 @@ export class PokedexService {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const list = await this.api.get<NamedApiResourceList>(`${POKEAPI_BASE}/pokemon?limit=100000&offset=0`);
+      const list = await this.api.get<NamedApiResourceList>(
+        `${POKEAPI_BASE}/pokemon?limit=100000&offset=0`,
+      );
       const entries = list.results
         .map((r) => {
           const id = idFromUrl(r.url);
-          return { id, name: r.name, artwork: officialArtwork(id), types: [], gen: 0 } as PokedexEntry;
+          return { id, name: r.name, artwork: officialArtwork(id), types: [], gen: 0 };
         })
         .filter((e) => e.id <= 10000)
         .sort((a, b) => a.id - b.id);
@@ -137,7 +147,9 @@ export class PokedexService {
     try {
       const [typeLists, genLists] = await Promise.all([
         Promise.all(
-          POKEMON_TYPES.map(async (t) => [t, (await this.api.type(t)).pokemon.map((p) => p.pokemon.name)] as const),
+          POKEMON_TYPES.map(
+            async (t) => [t, (await this.api.type(t)).pokemon.map((p) => p.pokemon.name)] as const,
+          ),
         ),
         Promise.all(
           GENERATIONS.map(async (g) => {

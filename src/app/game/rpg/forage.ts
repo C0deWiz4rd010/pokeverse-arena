@@ -54,5 +54,5 @@ export function forageLoot(id: string, day: string): ItemId {
     r -= l.weight;
     if (r <= 0) return l.item;
   }
-  return LOOT[0].item;
+  return LOOT[0]!.item;
 }

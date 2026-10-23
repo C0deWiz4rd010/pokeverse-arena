@@ -69,8 +69,8 @@
       @for (member of store.team(); track member.uid) {
         <article
           class="member glass"
-          [style.--t1]="typeColorVar(member.types[0])"
-          [style.--t2]="typeColorVar(member.types.length > 1 ? member.types[1] : member.types[0])"
+          [style.--t1]="typeColorVar(member.types[0]!)"
+          [style.--t2]="typeColorVar(member.types.length > 1 ? member.types[1]! : member.types[0]!)"
         >
           <header class="m-head">
             <div class="m-art">

@@ -4,8 +4,7 @@
  */
 
 export const POKEAPI_BASE = 'https://pokeapi.co/api/v2';
-export const SPRITE_BASE =
-  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites';
+export const SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites';
 
 export type ResourceId = number | string;
 

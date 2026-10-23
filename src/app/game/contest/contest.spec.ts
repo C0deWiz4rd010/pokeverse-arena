@@ -45,25 +45,19 @@ describe('contest', () => {
 
   it('rewards higher conditions with a higher appeal score', () => {
     const low = mixConditions([berry('Cheri', { spicy: 10 })]);
-    const high = mixConditions([
-      berry('Cheri', { spicy: 40 }),
-      berry('Tamato', { spicy: 40 }),
-    ]);
+    const high = mixConditions([berry('Cheri', { spicy: 40 }), berry('Tamato', { spicy: 40 })]);
     const lowScore = appealScore(low, 'cool', 1, new SeededRng('x'));
     const highScore = appealScore(high, 'cool', 2, new SeededRng('x'));
     expect(highScore).toBeGreaterThan(lowScore);
   });
 
   it('runs a deterministic, fully-ranked contest', () => {
-    const cond = mixConditions([
-      berry('A', { spicy: 50 }),
-      berry('B', { spicy: 50 }),
-    ]);
+    const cond = mixConditions([berry('A', { spicy: 50 }), berry('B', { spicy: 50 })]);
     const a = runContest('Star', cond, 'cool', 2, 'seed-1');
     const b = runContest('Star', cond, 'cool', 2, 'seed-1');
     expect(a).toEqual(b);
     expect(a.ranking).toHaveLength(4);
-    expect(a.ranking[0].score).toBeGreaterThanOrEqual(a.ranking[3].score);
+    expect(a.ranking[0]!.score).toBeGreaterThanOrEqual(a.ranking[3]!.score);
     expect(a.playerRank).toBeGreaterThanOrEqual(1);
   });
 });
@@ -76,7 +70,7 @@ describe('multi-round appeals', () => {
     const b = runAppealContest('Star', cond, 'cool', 2, 'normal', 'seed');
     expect(a).toEqual(b);
     expect(a.rounds).toHaveLength(APPEAL_ROUNDS);
-    expect(a.rounds[0].lines).toHaveLength(4);
+    expect(a.rounds[0]!.lines).toHaveLength(4);
     expect(a.ranking).toHaveLength(4);
     expect(a.playerRank).toBeGreaterThanOrEqual(1);
   });
@@ -84,7 +78,7 @@ describe('multi-round appeals', () => {
   it('accumulates running totals across rounds', () => {
     const r = runAppealContest('Star', cond, 'cool', 2, 'normal', 's2');
     const playerLines = r.rounds.map((rd) => rd.lines.find((l) => l.isPlayer)!);
-    expect(playerLines[3].total).toBeGreaterThan(playerLines[0].total);
+    expect(playerLines[3]!.total).toBeGreaterThan(playerLines[0]!.total);
   });
 
   it('only promotes on a win below Master rank', () => {

@@ -4,6 +4,23 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.2 — 2026-10-23
+
+🧹 **Stricter types, lint & formatting** (phase 2 of the [improvement plan](improvement-plan.md)).
+
+### Changed
+
+- **TypeScript:** `noUncheckedIndexedAccess` and `strictTemplates` (extended diagnostics as errors) are on. Indexing is
+  checked everywhere; in-range lookups use `!`, everything else got a real guard. No behaviour change.
+- **ESLint:** type-aware rules (`recommendedTypeChecked`: floating/misused promises, unsafe `any`, redundant assertions …),
+  `no-explicit-any` / `no-unused-vars` are errors, `--max-warnings 0`, and `tools/**` is linted too.
+- **Prettier:** `npm run format` / `format:check` (part of `verify` and CI); the code base was formatted once.
+  The Adventure code and the i18n dictionaries are excluded on purpose (`.prettierignore`).
+
+### Fixed
+
+- Unawaited promises in the compare view and the detail page, an `any`-typed host element, a needless `async` in Odyssey.
+
 ## v3.0.1 — 2026-10-23
 
 🔧 **Quick wins & bugfixes** (phase 1 of the [improvement plan](improvement-plan.md)).

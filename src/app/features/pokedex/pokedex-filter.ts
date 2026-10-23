@@ -79,7 +79,9 @@ export function sortDex(
     case 'type':
       return out.sort((a, b) => (a.types[0] ?? '').localeCompare(b.types[0] ?? '') || a.id - b.id);
     case 'fav':
-      return out.sort((a, b) => Number(favorites.has(b.id)) - Number(favorites.has(a.id)) || a.id - b.id);
+      return out.sort(
+        (a, b) => Number(favorites.has(b.id)) - Number(favorites.has(a.id)) || a.id - b.id,
+      );
     case 'random':
       return new SeededRng(`dex-${seed}`).shuffle(out);
     default:
@@ -102,5 +104,8 @@ export function asView(value: string | null): DexView {
 /** Parse a comma-separated list of type names, keeping only valid types. */
 export function parseTypes(csv: string | null): PokemonType[] {
   if (!csv) return [];
-  return csv.split(',').map((s) => s.trim()).filter(isPokemonType);
+  return csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter(isPokemonType);
 }

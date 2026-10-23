@@ -60,6 +60,8 @@ export class PokeApiClient {
 
     const missing = this.notFound.get(url);
     if (missing !== undefined && missing > Date.now()) {
+      // Callers expect the same HttpErrorResponse a real 404 produces.
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw new HttpErrorResponse({ status: 404, url });
     }
 
@@ -142,7 +144,8 @@ export class PokeApiClient {
 
   /** Follows a `url` field from an API response; only PokeAPI itself is allowed. */
   byUrl<T>(url: string): Promise<T> {
-    if (!url.startsWith(API_ORIGIN)) return Promise.reject(new Error(`Refusing non-PokeAPI url: ${url}`));
+    if (!url.startsWith(API_ORIGIN))
+      return Promise.reject(new Error(`Refusing non-PokeAPI url: ${url}`));
     return this.get<T>(url);
   }
 }

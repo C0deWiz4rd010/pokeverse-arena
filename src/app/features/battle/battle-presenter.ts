@@ -97,14 +97,22 @@ export abstract class BattlePresenterBase {
   protected abstract readonly fx: Signal<BattleFxComponent | undefined>;
 
   protected readonly times: PresenterTimes = {
-    switch: 460, move: 520, miss: 440, damage: 500, heal: 340, note: 300, stage: 270, faint: 700, end: 280,
+    switch: 460,
+    move: 520,
+    miss: 440,
+    damage: 500,
+    heal: 340,
+    note: 300,
+    stage: 270,
+    faint: 700,
+    end: 280,
   };
 
   /** Playback speed (1×/2×/3×) — divides every pacing beat; persisted app-wide. */
   protected readonly speed = signal<BattleSpeed>(readSpeed());
 
   protected cycleSpeed(): void {
-    const next = SPEEDS[(SPEEDS.indexOf(this.speed()) + 1) % SPEEDS.length];
+    const next = SPEEDS[(SPEEDS.indexOf(this.speed()) + 1) % SPEEDS.length]!;
     this.speed.set(next);
     try {
       safeSet(SPEED_KEY, String(next));
@@ -167,7 +175,8 @@ export abstract class BattlePresenterBase {
           await this.onImpact(ev.side, ev.crit);
           const before = ev.side === 0 ? this.pHp() : this.fHp();
           const dealt = Math.max(0, before - ev.remainingHp);
-          if (dealt > 0) this.spawnFloat(ev.side, `-${dealt}`, this.dmgClass(ev.crit, ev.effectiveness));
+          if (dealt > 0)
+            this.spawnFloat(ev.side, `-${dealt}`, this.dmgClass(ev.crit, ev.effectiveness));
           this.setHp(ev.side, ev.remainingHp);
           if (ev.crit) {
             this.critSide.set(ev.side);

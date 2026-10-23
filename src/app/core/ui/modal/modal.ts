@@ -53,8 +53,8 @@ export class ModalDirective implements AfterViewInit, OnDestroy {
       event.preventDefault();
       return;
     }
-    const first = items[0];
-    const last = items[items.length - 1];
+    const first = items[0]!;
+    const last = items[items.length - 1]!;
     const active = document.activeElement;
     if (event.shiftKey && (active === first || !this.host.nativeElement.contains(active))) {
       event.preventDefault();

@@ -74,14 +74,14 @@ export function moveEffectiveness(
   defenderTypes: readonly PokemonType[],
   rules?: BattleRules,
 ): number {
-  return rules ? effectivenessRuled(move.type, defenderTypes, rules) : effectiveness(move.type, defenderTypes);
+  return rules
+    ? effectivenessRuled(move.type, defenderTypes, rules)
+    : effectiveness(move.type, defenderTypes);
 }
 
 /** Pick the correct offensive/defensive stats for a move's damage class. */
 export function offensiveStat(attacker: Battler, move: BattleMove): number {
-  return move.damageClass === 'special'
-    ? attacker.stats['special-attack']
-    : attacker.stats.attack;
+  return move.damageClass === 'special' ? attacker.stats['special-attack'] : attacker.stats.attack;
 }
 
 export function defensiveStat(defender: Battler, move: BattleMove): number {
@@ -191,7 +191,8 @@ export function computeMoveDamage(ctx: MoveDamageContext): DamageResult {
   if (atkAbility?.unaware) defStage = 0; // Unaware attacker ignores the boosts
   let D = def.stats[defKey] * stageMultiplier(defKey, defStage);
   if (defItem?.eviolite) D *= 1.5;
-  if (special && defItem?.statMultiplier?.stat === 'special-defense') D *= defItem.statMultiplier.factor;
+  if (special && defItem?.statMultiplier?.stat === 'special-defense')
+    D *= defItem.statMultiplier.factor;
   D *= weatherDefenseFactor(field.weather, def.types, special);
   D = Math.max(1, Math.floor(D));
 
@@ -200,11 +201,17 @@ export function computeMoveDamage(ctx: MoveDamageContext): DamageResult {
   if (stab > 1 && atkAbility?.adaptability) stab = 2;
   mod *= weatherDamageFactor(field.weather, move.type);
   mod *= weatherBoost(move.type, rules); // tournament "Weather Wars" boost
-  mod *= terrainDamageFactor(field.terrain, move.type, battlerGrounded(attacker), battlerGrounded(defender));
+  mod *= terrainDamageFactor(
+    field.terrain,
+    move.type,
+    battlerGrounded(attacker),
+    battlerGrounded(defender),
+  );
   if (ctx.flashFire && move.type === 'fire') mod *= 1.5;
   if (atkItem?.damageMultiplier) mod *= atkItem.damageMultiplier;
   if (atkItem?.expertBelt && typeEff > 1) mod *= atkItem.expertBelt;
-  if (atkItem?.classBoost && atkItem.classBoost.special === special) mod *= atkItem.classBoost.factor;
+  if (atkItem?.classBoost && atkItem.classBoost.special === special)
+    mod *= atkItem.classBoost.factor;
   if (atkItem?.typeBoost && atkItem.typeBoost.type === move.type) mod *= atkItem.typeBoost.factor;
   if (defAbility?.thickFat && (move.type === 'fire' || move.type === 'ice')) mod *= 0.5;
   if (defAbility?.multiscale && defender.currentHp >= defender.maxHp) mod *= 0.5;

@@ -12,21 +12,10 @@
  * Pure damage maths live in {@link computeMoveDamage}; this class handles flow.
  */
 import { SeededRng } from '../../core/utils/rng';
-import {
-  CRIT_CHANCE,
-  MIN_ROLL,
-  MAX_ROLL,
-  computeMoveDamage,
-  battlerGrounded,
-} from './damage';
+import { CRIT_CHANCE, MIN_ROLL, MAX_ROLL, computeMoveDamage, battlerGrounded } from './damage';
 import { chooseAiMove, type AiTier } from './ai';
 import type { BattleRules } from './rules';
-import {
-  applyBoost,
-  applyBoosts,
-  stageMultiplier,
-  type BoostableStat,
-} from './stat-stages';
+import { applyBoost, applyBoosts, stageMultiplier, type BoostableStat } from './stat-stages';
 import {
   canApplyStatus,
   paralysisSpeedFactor,
@@ -84,7 +73,7 @@ const STAT_LABEL: Record<BoostableStat, string> = {
 /** Critical-hit probability for an extra crit-stage count. */
 function critChanceForStage(stage: number): number {
   const table = [CRIT_CHANCE, 1 / 8, 1 / 2, 1];
-  return table[Math.max(0, Math.min(3, stage))];
+  return table[Math.max(0, Math.min(3, stage))]!;
 }
 
 export class Battle {
@@ -195,7 +184,12 @@ export class Battle {
       if (ability.intimidate) {
         const foe = this.state.sides[other(side)];
         this.changeStage(other(side), 'attack', -ability.intimidate, events, foe);
-        events.push({ kind: 'ability', side, ability: ability.id, text: `${s.battler.name}'s Intimidate cut the foe's Attack!` });
+        events.push({
+          kind: 'ability',
+          side,
+          ability: ability.id,
+          text: `${s.battler.name}'s Intimidate cut the foe's Attack!`,
+        });
       }
     }
   }
@@ -231,14 +225,19 @@ export class Battle {
     const attackerSide = this.state.sides[side];
     const defenderIndex = other(side);
     const defenderSide = this.state.sides[defenderIndex];
-    const move = attackerSide.battler.moves[action.moveIndex];
+    const move = attackerSide.battler.moves[action.moveIndex]!;
 
     // --- Pre-move gates -----------------------------------------------------
     if (attackerSide.volatiles.flinch) {
       events.push({ kind: 'flinch', side, text: `${attackerSide.battler.name} flinched!` });
       return;
     }
-    const gate = resolveMoveGate(attackerSide.battler.name, attackerSide.status, attackerSide.sleepTurns, this.rng.next());
+    const gate = resolveMoveGate(
+      attackerSide.battler.name,
+      attackerSide.status,
+      attackerSide.sleepTurns,
+      this.rng.next(),
+    );
     attackerSide.status = gate.status;
     attackerSide.sleepTurns = gate.sleepTurns;
     if (gate.message && (gate.status === 'none' || !gate.canMove)) {
@@ -248,7 +247,7 @@ export class Battle {
     if (!gate.canMove) return;
 
     if (move.pp !== undefined && Number.isFinite(attackerSide.pp[action.moveIndex])) {
-      attackerSide.pp[action.moveIndex] = Math.max(0, attackerSide.pp[action.moveIndex] - 1);
+      attackerSide.pp[action.moveIndex] = Math.max(0, attackerSide.pp[action.moveIndex]! - 1);
     }
 
     events.push({ kind: 'move', side, attacker: attackerSide.battler.name, move: move.name });
@@ -264,16 +263,24 @@ export class Battle {
     }
 
     // --- Psychic Terrain blocks increased-priority moves vs grounded --------
-    if (terrainBlocksPriority(this.state.field.terrain, move.priority ?? 0, battlerGrounded(defenderSide))) {
-      events.push({ kind: 'status', text: `${defenderSide.battler.name} is protected by the terrain!` });
+    if (
+      terrainBlocksPriority(
+        this.state.field.terrain,
+        move.priority ?? 0,
+        battlerGrounded(defenderSide),
+      )
+    ) {
+      events.push({
+        kind: 'status',
+        text: `${defenderSide.battler.name} is protected by the terrain!`,
+      });
       return;
     }
 
     // --- Accuracy -----------------------------------------------------------
     if (move.accuracy > 0) {
       const acc =
-        move.accuracy *
-        stageMultiplier('accuracy', attackerSide.stages.accuracy) /
+        (move.accuracy * stageMultiplier('accuracy', attackerSide.stages.accuracy)) /
         stageMultiplier('evasion', defenderSide.stages.evasion);
       if (this.rng.next() * 100 >= acc) {
         events.push({ kind: 'miss', side, attacker: attackerSide.battler.name, move: move.name });
@@ -310,11 +317,21 @@ export class Battle {
         const defItem = itemById(defenderSide.battler.item);
         if (defAbility?.sturdy) {
           dealt = defenderSide.maxHp - 1;
-          events.push({ kind: 'ability', side: defenderIndex, ability: defAbility.id, text: `${defenderSide.battler.name} endured the hit with Sturdy!` });
+          events.push({
+            kind: 'ability',
+            side: defenderIndex,
+            ability: defAbility.id,
+            text: `${defenderSide.battler.name} endured the hit with Sturdy!`,
+          });
         } else if (defItem?.focusSash && !defenderSide.itemUsed) {
           dealt = defenderSide.maxHp - 1;
           defenderSide.itemUsed = true;
-          events.push({ kind: 'item', side: defenderIndex, item: defItem.id, text: `${defenderSide.battler.name} hung on with its Focus Sash!` });
+          events.push({
+            kind: 'item',
+            side: defenderIndex,
+            item: defItem.id,
+            text: `${defenderSide.battler.name} hung on with its Focus Sash!`,
+          });
         }
       }
 
@@ -339,19 +356,44 @@ export class Battle {
 
     // --- Drain / recoil / Life Orb -----------------------------------------
     if (move.drain && totalDamage > 0) {
-      this.heal(side, Math.max(1, Math.floor(totalDamage * move.drain)), events, `${attackerSide.battler.name} drained energy!`);
+      this.heal(
+        side,
+        Math.max(1, Math.floor(totalDamage * move.drain)),
+        events,
+        `${attackerSide.battler.name} drained energy!`,
+      );
     }
     if (move.recoil && totalDamage > 0) {
-      this.indirectDamage(side, Math.max(1, Math.floor(totalDamage * move.recoil)), events, `${attackerSide.battler.name} is hit with recoil!`);
+      this.indirectDamage(
+        side,
+        Math.max(1, Math.floor(totalDamage * move.recoil)),
+        events,
+        `${attackerSide.battler.name} is hit with recoil!`,
+      );
     }
     const atkItem = itemById(attackerSide.battler.item);
     const atkAbility = abilityById(attackerSide.battler.ability);
-    if (atkItem?.recoil && totalDamage > 0 && !atkAbility?.magicGuard && attackerSide.currentHp > 0) {
-      this.indirectDamage(side, Math.max(1, Math.floor(attackerSide.maxHp * atkItem.recoil)), events, `${attackerSide.battler.name} is hurt by its Life Orb!`);
+    if (
+      atkItem?.recoil &&
+      totalDamage > 0 &&
+      !atkAbility?.magicGuard &&
+      attackerSide.currentHp > 0
+    ) {
+      this.indirectDamage(
+        side,
+        Math.max(1, Math.floor(attackerSide.maxHp * atkItem.recoil)),
+        events,
+        `${attackerSide.battler.name} is hurt by its Life Orb!`,
+      );
     }
 
     // --- Secondary effect ---------------------------------------------------
-    if (move.secondary && totalDamage > 0 && defenderSide.currentHp > 0 && this.rng.next() * 100 < move.secondary.chance) {
+    if (
+      move.secondary &&
+      totalDamage > 0 &&
+      defenderSide.currentHp > 0 &&
+      this.rng.next() * 100 < move.secondary.chance
+    ) {
       this.applySecondary(side, defenderIndex, move, events);
     }
 
@@ -361,23 +403,48 @@ export class Battle {
 
   /* ----------------------------------------------------- move sub-routines */
 
-  private tryAbsorb(_side: SideIndex, defenderIndex: SideIndex, move: BattleMove, events: BattleEvent[]): boolean {
+  private tryAbsorb(
+    _side: SideIndex,
+    defenderIndex: SideIndex,
+    move: BattleMove,
+    events: BattleEvent[],
+  ): boolean {
     const defenderSide = this.state.sides[defenderIndex];
     const ability = abilityById(defenderSide.battler.ability);
     if (!ability?.absorb || ability.absorb.type !== move.type) return false;
     const { effect } = ability.absorb;
     if (effect === 'flash-fire') {
       defenderSide.volatiles.flashFire = true;
-      events.push({ kind: 'ability', side: defenderIndex, ability: ability.id, text: `${defenderSide.battler.name}'s Flash Fire raised its power!` });
+      events.push({
+        kind: 'ability',
+        side: defenderIndex,
+        ability: ability.id,
+        text: `${defenderSide.battler.name}'s Flash Fire raised its power!`,
+      });
     } else if (effect === 'heal25') {
-      this.heal(defenderIndex, Math.floor(defenderSide.maxHp / 4), events, `${defenderSide.battler.name}'s ${ability.name} restored HP!`);
+      this.heal(
+        defenderIndex,
+        Math.floor(defenderSide.maxHp / 4),
+        events,
+        `${defenderSide.battler.name}'s ${ability.name} restored HP!`,
+      );
     } else {
-      events.push({ kind: 'ability', side: defenderIndex, ability: ability.id, text: `${defenderSide.battler.name} avoids it with ${ability.name}!` });
+      events.push({
+        kind: 'ability',
+        side: defenderIndex,
+        ability: ability.id,
+        text: `${defenderSide.battler.name} avoids it with ${ability.name}!`,
+      });
     }
     return true;
   }
 
-  private applyContactEffects(side: SideIndex, defenderIndex: SideIndex, move: BattleMove, events: BattleEvent[]): void {
+  private applyContactEffects(
+    side: SideIndex,
+    defenderIndex: SideIndex,
+    move: BattleMove,
+    events: BattleEvent[],
+  ): void {
     if (!move.flags?.contact) return;
     const attackerSide = this.state.sides[side];
     const defenderSide = this.state.sides[defenderIndex];
@@ -389,14 +456,29 @@ export class Battle {
       this.inflictStatus(side, defAbility.contactStatus.status, events);
     }
     if (defAbility?.roughSkin) {
-      this.indirectDamage(side, Math.max(1, Math.floor(attackerSide.maxHp * defAbility.roughSkin)), events, `${attackerSide.battler.name} was hurt by Rough Skin!`);
+      this.indirectDamage(
+        side,
+        Math.max(1, Math.floor(attackerSide.maxHp * defAbility.roughSkin)),
+        events,
+        `${attackerSide.battler.name} was hurt by Rough Skin!`,
+      );
     }
     if (defItem?.rockyHelmet && attackerSide.currentHp > 0) {
-      this.indirectDamage(side, Math.max(1, Math.floor(attackerSide.maxHp * defItem.rockyHelmet)), events, `${attackerSide.battler.name} was hurt by the Rocky Helmet!`);
+      this.indirectDamage(
+        side,
+        Math.max(1, Math.floor(attackerSide.maxHp * defItem.rockyHelmet)),
+        events,
+        `${attackerSide.battler.name} was hurt by the Rocky Helmet!`,
+      );
     }
   }
 
-  private applySecondary(side: SideIndex, defenderIndex: SideIndex, move: BattleMove, events: BattleEvent[]): void {
+  private applySecondary(
+    side: SideIndex,
+    defenderIndex: SideIndex,
+    move: BattleMove,
+    events: BattleEvent[],
+  ): void {
     const sec = move.secondary!;
     if (sec.status) this.inflictStatus(defenderIndex, sec.status, events);
     if (sec.boosts) {
@@ -409,7 +491,12 @@ export class Battle {
     }
   }
 
-  private applyStatusMove(side: SideIndex, defenderIndex: SideIndex, move: BattleMove, events: BattleEvent[]): void {
+  private applyStatusMove(
+    side: SideIndex,
+    defenderIndex: SideIndex,
+    move: BattleMove,
+    events: BattleEvent[],
+  ): void {
     const attackerSide = this.state.sides[side];
     let didSomething = false;
 
@@ -434,7 +521,12 @@ export class Battle {
     }
     if (move.healing) {
       const before = attackerSide.currentHp;
-      this.heal(side, Math.floor(attackerSide.maxHp * move.healing), events, `${attackerSide.battler.name} regained health!`);
+      this.heal(
+        side,
+        Math.floor(attackerSide.maxHp * move.healing),
+        events,
+        `${attackerSide.battler.name} regained health!`,
+      );
       didSomething = attackerSide.currentHp !== before || didSomething;
     }
 
@@ -476,10 +568,20 @@ export class Battle {
       // Leftovers / Black Sludge
       if (item?.leftovers && s.currentHp < s.maxHp) {
         if (item.id === 'black-sludge' && !s.battler.types.includes('poison')) {
-          this.indirectDamage(side, Math.max(1, Math.floor(s.maxHp / 16)), events, `${s.battler.name} is hurt by the Black Sludge!`);
+          this.indirectDamage(
+            side,
+            Math.max(1, Math.floor(s.maxHp / 16)),
+            events,
+            `${s.battler.name} is hurt by the Black Sludge!`,
+          );
           if (this.afterResidual(side, events)) continue;
         } else {
-          this.heal(side, Math.max(1, Math.floor(s.maxHp * item.leftovers)), events, `${s.battler.name} restored a little HP!`);
+          this.heal(
+            side,
+            Math.max(1, Math.floor(s.maxHp * item.leftovers)),
+            events,
+            `${s.battler.name} restored a little HP!`,
+          );
         }
       }
 
@@ -494,7 +596,12 @@ export class Battle {
       // Leech Seed drain
       if (s.volatiles.leechSeed && !magicGuard) {
         const dmg = Math.max(1, Math.floor(s.maxHp / 8));
-        this.indirectDamage(side, dmg, events, `${s.battler.name}'s health is sapped by Leech Seed!`);
+        this.indirectDamage(
+          side,
+          dmg,
+          events,
+          `${s.battler.name}'s health is sapped by Leech Seed!`,
+        );
         if (this.state.sides[other(side)].currentHp > 0) this.heal(other(side), dmg, events, '');
         if (this.afterResidual(side, events)) continue;
       }
@@ -510,13 +617,22 @@ export class Battle {
           s.status = 'none';
           s.toxicCounter = 0;
           s.itemUsed = true;
-          events.push({ kind: 'cure', side, text: `${s.battler.name}'s ${item.name} cured its status!` });
+          events.push({
+            kind: 'cure',
+            side,
+            text: `${s.battler.name}'s ${item.name} cured its status!`,
+          });
         }
       }
       // Sitrus pinch heal
       if (item?.pinchHeal && !s.itemUsed && s.currentHp > 0 && s.currentHp <= s.maxHp / 2) {
         s.itemUsed = true;
-        this.heal(side, Math.floor(s.maxHp * item.pinchHeal), events, `${s.battler.name} restored HP with its Berry!`);
+        this.heal(
+          side,
+          Math.floor(s.maxHp * item.pinchHeal),
+          events,
+          `${s.battler.name} restored HP with its Berry!`,
+        );
       }
     }
 
@@ -548,7 +664,12 @@ export class Battle {
 
   /* --------------------------------------------------------------- helpers */
 
-  private inflictStatus(side: SideIndex, status: StatusCondition, events: BattleEvent[], force = false): boolean {
+  private inflictStatus(
+    side: SideIndex,
+    status: StatusCondition,
+    events: BattleEvent[],
+    force = false,
+  ): boolean {
     const s = this.state.sides[side];
     const ability = abilityById(s.battler.ability);
     if (ability?.statusImmunity === 'all' || ability?.statusImmunity === status) return false;
@@ -561,11 +682,20 @@ export class Battle {
     s.status = status;
     s.toxicCounter = 0;
     if (status === 'sleep') s.sleepTurns = rollSleepTurns((a, b) => this.rng.int(a, b));
-    events.push({ kind: 'status-set', side, status, text: statusSetMessage(s.battler.name, status) });
+    events.push({
+      kind: 'status-set',
+      side,
+      status,
+      text: statusSetMessage(s.battler.name, status),
+    });
     return true;
   }
 
-  private applyMoveBoosts(side: SideIndex, boosts: Partial<Record<BoostableStat, number>>, events: BattleEvent[]): boolean {
+  private applyMoveBoosts(
+    side: SideIndex,
+    boosts: Partial<Record<BoostableStat, number>>,
+    events: BattleEvent[],
+  ): boolean {
     let any = false;
     const s = this.state.sides[side];
     for (const stat of Object.keys(boosts) as BoostableStat[]) {
@@ -574,18 +704,36 @@ export class Battle {
       const delta = s.stages[stat] - before;
       if (delta !== 0) {
         any = true;
-        events.push({ kind: 'stage-change', side, stat, delta, text: stageChangeText(s.battler.name, stat, delta) });
+        events.push({
+          kind: 'stage-change',
+          side,
+          stat,
+          delta,
+          text: stageChangeText(s.battler.name, stat, delta),
+        });
       }
     }
     return any;
   }
 
-  private changeStage(side: SideIndex, stat: BoostableStat, delta: number, events: BattleEvent[], s: BattleSide): void {
+  private changeStage(
+    side: SideIndex,
+    stat: BoostableStat,
+    delta: number,
+    events: BattleEvent[],
+    s: BattleSide,
+  ): void {
     const before = s.stages[stat];
     const res = applyBoost(s.stages, stat, delta);
     s.stages = res.stages;
     if (s.stages[stat] !== before) {
-      events.push({ kind: 'stage-change', side, stat, delta: s.stages[stat] - before, text: stageChangeText(s.battler.name, stat, s.stages[stat] - before) });
+      events.push({
+        kind: 'stage-change',
+        side,
+        stat,
+        delta: s.stages[stat] - before,
+        text: stageChangeText(s.battler.name, stat, s.stages[stat] - before),
+      });
     }
   }
 
@@ -610,7 +758,12 @@ export class Battle {
     this.state.field.hazards[targetSide] = res.state;
     if (res.added) {
       const label = targetSide === 0 ? 'your side' : 'the foe';
-      events.push({ kind: 'hazard', side: targetSide, hazard: kind, text: hazardSetMessage(kind, label) });
+      events.push({
+        kind: 'hazard',
+        side: targetSide,
+        hazard: kind,
+        text: hazardSetMessage(kind, label),
+      });
     }
   }
 
@@ -621,7 +774,12 @@ export class Battle {
     events.push({ kind: 'heal', side, amount, remainingHp: s.currentHp, maxHp: s.maxHp, text });
   }
 
-  private indirectDamage(side: SideIndex, amount: number, events: BattleEvent[], text: string): void {
+  private indirectDamage(
+    side: SideIndex,
+    amount: number,
+    events: BattleEvent[],
+    text: string,
+  ): void {
     if (amount <= 0) return;
     const s = this.state.sides[side];
     // Magic Guard blocks every kind of indirect damage (recoil, Rough Skin, Rocky Helmet, chip, hazards …)
@@ -642,7 +800,11 @@ export class Battle {
   private checkFaint(faintedSide: SideIndex, winnerSide: SideIndex, events: BattleEvent[]): void {
     if (this.state.finished) return;
     if (this.state.sides[faintedSide].currentHp > 0) return;
-    events.push({ kind: 'faint', side: faintedSide, name: this.state.sides[faintedSide].battler.name });
+    events.push({
+      kind: 'faint',
+      side: faintedSide,
+      name: this.state.sides[faintedSide].battler.name,
+    });
     this.state.finished = true;
     this.state.winner = winnerSide;
     events.push({ kind: 'end', winner: winnerSide, loser: faintedSide });
@@ -653,7 +815,7 @@ export class Battle {
   }
 
   private moveOf(action: Action): BattleMove {
-    return this.state.sides[action.side].battler.moves[action.moveIndex];
+    return this.state.sides[action.side].battler.moves[action.moveIndex]!;
   }
 }
 

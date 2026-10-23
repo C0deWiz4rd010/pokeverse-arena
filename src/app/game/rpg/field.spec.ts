@@ -19,19 +19,19 @@ function mon(overrides: Partial<PartyMon> = {}): PartyMon {
 describe('applyFieldPoison', () => {
   it('damages poisoned members and lists them by name', () => {
     const res = applyFieldPoison([mon({ status: 'poison', currentHp: 10, species: 'ekans' })]);
-    expect(res.party[0].currentHp).toBe(10 - FIELD_POISON_DAMAGE);
+    expect(res.party[0]!.currentHp).toBe(10 - FIELD_POISON_DAMAGE);
     expect(res.hurt).toEqual(['ekans']);
   });
 
   it('also affects toxic and prefers the nickname when set', () => {
     const res = applyFieldPoison([mon({ status: 'toxic', currentHp: 8, nickname: 'Fang' })]);
-    expect(res.party[0].currentHp).toBe(8 - FIELD_POISON_DAMAGE);
+    expect(res.party[0]!.currentHp).toBe(8 - FIELD_POISON_DAMAGE);
     expect(res.hurt).toEqual(['Fang']);
   });
 
   it('never drops a member below 1 HP and never faints it', () => {
     const res = applyFieldPoison([mon({ status: 'poison', currentHp: 1 })]);
-    expect(res.party[0].currentHp).toBe(1);
+    expect(res.party[0]!.currentHp).toBe(1);
     expect(res.hurt).toEqual([]);
   });
 
@@ -47,8 +47,8 @@ describe('applyFieldPoison', () => {
 
   it('does not mutate the input array or members', () => {
     const input = [mon({ status: 'poison', currentHp: 10 })];
-    const snapshot = input[0].currentHp;
+    const snapshot = input[0]!.currentHp;
     applyFieldPoison(input);
-    expect(input[0].currentHp).toBe(snapshot);
+    expect(input[0]!.currentHp).toBe(snapshot);
   });
 });

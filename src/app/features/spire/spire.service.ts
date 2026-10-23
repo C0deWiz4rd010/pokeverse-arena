@@ -77,7 +77,11 @@ export class SpireService {
   /** The fused ace of a chimera boss fight — recruitable once beaten. */
   private pendingChimera: Battler | null = null;
 
-  readonly relicList = computed(() => this.relics().map((id) => relicById(id)).filter((r) => !!r));
+  readonly relicList = computed(() =>
+    this.relics()
+      .map((id) => relicById(id))
+      .filter((r) => !!r),
+  );
   readonly partyView = computed(() =>
     this.party.map((m, i) => ({ mon: m, hpPct: Math.round((this.hpFraction[i] ?? 0) * 100) })),
   );
@@ -94,7 +98,9 @@ export class SpireService {
       const rng = new SeededRng(`${this.seed}-draft`);
       const ids = new Set<number>();
       while (ids.size < DRAFT_POOL) ids.add(rng.int(1, DEX_MAX));
-      const pool = await Promise.all([...ids].map((id) => this.battle.buildBattler(id, PLAYER_LEVEL)));
+      const pool = await Promise.all(
+        [...ids].map((id) => this.battle.buildBattler(id, PLAYER_LEVEL)),
+      );
       this.draftPool.set(pool);
     } catch {
       this.error.set('Could not prepare the spire. Try again.');
@@ -165,19 +171,56 @@ export class SpireService {
     this.error.set(null);
     try {
       const foeTeam = await this.buildFoe(foeSpec);
-      this.pendingChimera = foeSpec.fusion ? foeTeam[foeTeam.length - 1] : null;
+      this.pendingChimera = foeSpec.fusion ? (foeTeam[foeTeam.length - 1] ?? null) : null;
       const playerTeam = applyRelicsToTeam(this.party, this.relics());
       this.activeTeam = playerTeam;
-      const startHp = playerTeam.map((m, i) => Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)));
-      const player: Trainer = { id: 'player', name: 'You', title: 'Climber', avatar: avatar('Spire-Ace', true), team: playerTeam, isPlayer: true };
-      const foeTitle = foeSpec.fusion ? 'Chimera Keeper' : foeSpec.boss ? 'Floor Guardian' : 'Challenger';
-      const foe: Trainer = { id: foeSpec.name, name: foeSpec.name, title: foeTitle, avatar: avatar(foeSpec.name, foeSpec.boss), team: foeTeam };
-      const match: BracketMatch = { id: `spire-${this.floor()}`, round: 'final', slot: 0, a: player, b: foe, winner: null, played: false };
+      const startHp = playerTeam.map((m, i) =>
+        Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)),
+      );
+      const player: Trainer = {
+        id: 'player',
+        name: 'You',
+        title: 'Climber',
+        avatar: avatar('Spire-Ace', true),
+        team: playerTeam,
+        isPlayer: true,
+      };
+      const foeTitle = foeSpec.fusion
+        ? 'Chimera Keeper'
+        : foeSpec.boss
+          ? 'Floor Guardian'
+          : 'Challenger';
+      const foe: Trainer = {
+        id: foeSpec.name,
+        name: foeSpec.name,
+        title: foeTitle,
+        avatar: avatar(foeSpec.name, foeSpec.boss),
+        team: foeTeam,
+      };
+      const match: BracketMatch = {
+        id: `spire-${this.floor()}`,
+        round: 'final',
+        slot: 0,
+        a: player,
+        b: foe,
+        winner: null,
+        played: false,
+      };
       this.pendingNode = node;
       const foeAce = this.pendingChimera
         ? `"Behold ${this.pendingChimera.name} — my forbidden splice!"`
         : undefined;
-      this.setup.set({ match, round: 'final', player, foe, playerTeam, foeTeam, aiTier: foeSpec.aiTier, playerStartHp: startHp, foeAce });
+      this.setup.set({
+        match,
+        round: 'final',
+        player,
+        foe,
+        playerTeam,
+        foeTeam,
+        aiTier: foeSpec.aiTier,
+        playerStartHp: startHp,
+        foeAce,
+      });
       this.phase.set('battle');
     } catch {
       this.error.set('The challenger never showed. Try the floor again.');
@@ -190,7 +233,9 @@ export class SpireService {
   onBattleFinished(outcome: MatchOutcome): void {
     this.setup.set(null);
     // Read carried HP back as fractions of the (relic-boosted) max HP.
-    this.hpFraction = this.activeTeam.map((m, i) => Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)));
+    this.hpFraction = this.activeTeam.map((m, i) =>
+      Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)),
+    );
     if (!outcome.playerWon) {
       this.endRun(false);
       return;
@@ -286,7 +331,12 @@ export class SpireService {
   /* --------------------------------------------------------------- abandon */
 
   abandon(): void {
-    if (this.phase() === 'battle' || this.phase() === 'map' || this.phase() === 'reward' || this.phase() === 'shop') {
+    if (
+      this.phase() === 'battle' ||
+      this.phase() === 'map' ||
+      this.phase() === 'reward' ||
+      this.phase() === 'shop'
+    ) {
       this.endRun(false);
     } else {
       this.phase.set('setup');
@@ -327,7 +377,7 @@ export class SpireService {
     const idx = this.party.findIndex((m) => !m.item);
     const target = idx >= 0 ? idx : 0;
     this.party = this.party.map((m, i) => (i === target ? { ...m, item } : m));
-    this.toast.set(`${this.party[target].name} is now holding an item.`);
+    this.toast.set(`${this.party[target]!.name} is now holding an item.`);
   }
 
   /** Add the beaten chimera boss ace to the party, fully healed and itemless. */
@@ -364,7 +414,13 @@ export class SpireService {
   private grantTreasure(): void {
     const rng = new SeededRng(`treasure-${this.seed}-${this.floor()}`);
     this.addCoins(40 + this.floor() * 8);
-    const relics = (['lucky-coin', 'leftovers-aura', 'swift-feather', 'guardian-shell', 'focus-charm'] as RelicId[]);
+    const relics = [
+      'lucky-coin',
+      'leftovers-aura',
+      'swift-feather',
+      'guardian-shell',
+      'focus-charm',
+    ] as RelicId[];
     this.addRelic(rng.pick(relics));
   }
 

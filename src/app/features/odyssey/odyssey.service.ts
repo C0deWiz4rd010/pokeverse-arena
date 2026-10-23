@@ -23,9 +23,22 @@ import {
   type OdysseyShopEntry,
   type WaveSpec,
 } from '../../game/odyssey/odyssey';
-import { applyRelicsToTeam, coinMultiplier, relicById, type RelicId } from '../../game/spire/relics';
+import {
+  applyRelicsToTeam,
+  coinMultiplier,
+  relicById,
+  type RelicId,
+} from '../../game/spire/relics';
 
-export type OdysseyPhase = 'hub' | 'starter' | 'wave' | 'battle' | 'catch' | 'reward' | 'shop' | 'lost';
+export type OdysseyPhase =
+  | 'hub'
+  | 'starter'
+  | 'wave'
+  | 'battle'
+  | 'catch'
+  | 'reward'
+  | 'shop'
+  | 'lost';
 
 const PARTY_CAP = 6;
 const START_LEVEL = 15;
@@ -98,7 +111,11 @@ export class OdysseyService {
   private readonly version = signal(0);
 
   readonly starters = computed(() => starterRoster(this.meta()));
-  readonly relicList = computed(() => this.relics().map((id) => relicById(id)).filter((r) => !!r));
+  readonly relicList = computed(() =>
+    this.relics()
+      .map((id) => relicById(id))
+      .filter((r) => !!r),
+  );
 
   /* --------------------------------------------------------------- setup */
 
@@ -124,7 +141,7 @@ export class OdysseyService {
       this.relics.set([]);
       this.wave.set(0);
       this.version.update((v) => v + 1);
-      await this.nextWave();
+      this.nextWave();
     } catch {
       this.error.set('Your starter overslept. Pick again.');
       this.phase.set('starter');
@@ -135,7 +152,7 @@ export class OdysseyService {
 
   /* ---------------------------------------------------------------- waves */
 
-  private async nextWave(): Promise<void> {
+  private nextWave(): void {
     const wave = this.wave() + 1;
     this.wave.set(wave);
     this.spec.set(waveSpec(wave, this.seed));
@@ -149,22 +166,66 @@ export class OdysseyService {
     this.error.set(null);
     try {
       const foeTeam = (
-        await Promise.all(spec.species.map((id) => this.battle.buildBattler(id, spec.level).catch(() => null)))
+        await Promise.all(
+          spec.species.map((id) => this.battle.buildBattler(id, spec.level).catch(() => null)),
+        )
       ).filter((b): b is Battler => b !== null);
       if (!foeTeam.length) throw new Error('no foe');
       this.lastFoe = foeTeam;
       // Relics boost the live team for this fight; HP rides as fractions of the boosted max.
       const playerTeam = applyRelicsToTeam(this.party, this.relics());
       this.activeTeam = playerTeam;
-      const startHp = playerTeam.map((m, i) => Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)));
-      const player: Trainer = { id: 'player', name: 'You', title: 'Wanderer', avatar: avatar('Odyssey-You', true), team: playerTeam, isPlayer: true };
-      const foeName = spec.kind === 'boss' ? `${spec.biome.name} Guardian` : spec.kind === 'elite' ? 'Elite Pack' : 'Wild Encounter';
-      const foe: Trainer = { id: `w${spec.wave}`, name: foeName, title: spec.biome.name, avatar: avatar(`${spec.biome.id}-${spec.wave}`, spec.kind === 'boss'), team: foeTeam };
-      const match: BracketMatch = { id: `ody-${spec.wave}`, round: 'final', slot: 0, a: player, b: foe, winner: null, played: false };
+      const startHp = playerTeam.map((m, i) =>
+        Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)),
+      );
+      const player: Trainer = {
+        id: 'player',
+        name: 'You',
+        title: 'Wanderer',
+        avatar: avatar('Odyssey-You', true),
+        team: playerTeam,
+        isPlayer: true,
+      };
+      const foeName =
+        spec.kind === 'boss'
+          ? `${spec.biome.name} Guardian`
+          : spec.kind === 'elite'
+            ? 'Elite Pack'
+            : 'Wild Encounter';
+      const foe: Trainer = {
+        id: `w${spec.wave}`,
+        name: foeName,
+        title: spec.biome.name,
+        avatar: avatar(`${spec.biome.id}-${spec.wave}`, spec.kind === 'boss'),
+        team: foeTeam,
+      };
+      const match: BracketMatch = {
+        id: `ody-${spec.wave}`,
+        round: 'final',
+        slot: 0,
+        a: player,
+        b: foe,
+        winner: null,
+        played: false,
+      };
       const aiTier: AiTier = spec.wave < 10 ? 'basic' : spec.wave < 30 ? 'strong' : 'elite';
       // Guardians impose their biome's field condition from turn one.
-      const field = spec.kind === 'boss' ? { weather: spec.biome.field.weather, terrain: spec.biome.field.terrain } : undefined;
-      this.setup.set({ match, round: 'final', player, foe, playerTeam, foeTeam, aiTier, playerStartHp: startHp, field, accent: spec.biome.tint });
+      const field =
+        spec.kind === 'boss'
+          ? { weather: spec.biome.field.weather, terrain: spec.biome.field.terrain }
+          : undefined;
+      this.setup.set({
+        match,
+        round: 'final',
+        player,
+        foe,
+        playerTeam,
+        foeTeam,
+        aiTier,
+        playerStartHp: startHp,
+        field,
+        accent: spec.biome.tint,
+      });
       this.phase.set('battle');
     } catch {
       this.error.set('The wave scattered. Try again.');
@@ -177,7 +238,9 @@ export class OdysseyService {
   onBattleFinished(outcome: MatchOutcome): void {
     this.setup.set(null);
     const ref = this.activeTeam.length === this.party.length ? this.activeTeam : this.party;
-    this.hpFraction = ref.map((m, i) => Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)));
+    this.hpFraction = ref.map((m, i) =>
+      Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)),
+    );
     this.version.update((v) => v + 1);
     if (!outcome.playerWon) {
       this.endRun();
@@ -197,7 +260,7 @@ export class OdysseyService {
     }
     // The defeated lead foe is dazed — one catch window while balls last.
     const dazed = this.lastFoe[this.lastFoe.length - 1];
-    const dexId = dazed?.id ?? spec.species[spec.species.length - 1];
+    const dexId = dazed?.id ?? spec.species[spec.species.length - 1]!;
     this.catchAttempt = 0;
     this.daze.set({
       dexId,
@@ -219,7 +282,11 @@ export class OdysseyService {
       void this.captureDazed(d);
       return;
     }
-    this.toast.set(this.balls() > 0 ? 'It broke free! Throw again?' : 'It broke free — and that was your last ball.');
+    this.toast.set(
+      this.balls() > 0
+        ? 'It broke free! Throw again?'
+        : 'It broke free — and that was your last ball.',
+    );
     if (this.balls() <= 0) this.finishCatch();
   }
 
@@ -228,7 +295,9 @@ export class OdysseyService {
     this.meta.set(unlockSpecies(this.meta(), d.dexId));
     if (wasNew) this.runUnlocks.update((u) => [...u, d.dexId]);
     if (this.party.length >= PARTY_CAP) {
-      this.toast.set(`Caught! The team is full — it joins your starter roster${wasNew ? ' (new!)' : ''}.`);
+      this.toast.set(
+        `Caught! The team is full — it joins your starter roster${wasNew ? ' (new!)' : ''}.`,
+      );
       this.finishCatch();
       return;
     }
@@ -239,7 +308,9 @@ export class OdysseyService {
       this.party = [...this.party, mon];
       this.hpFraction = [...this.hpFraction, 1];
       this.version.update((v) => v + 1);
-      this.toast.set(`Caught! ${mon.name} joins the march${wasNew ? ' — new starter unlocked!' : ''}.`);
+      this.toast.set(
+        `Caught! ${mon.name} joins the march${wasNew ? ' — new starter unlocked!' : ''}.`,
+      );
     } catch {
       this.toast.set('Caught! It joins your starter roster.');
     } finally {
@@ -271,10 +342,10 @@ export class OdysseyService {
         break;
       case 'candy': {
         // The lowest-level member snacks first.
-        const idx = this.party.reduce((lo, m, i) => (m.level < this.party[lo].level ? i : lo), 0);
+        const idx = this.party.reduce((lo, m, i) => (m.level < this.party[lo]!.level ? i : lo), 0);
         this.busy.set(true);
         try {
-          await this.rebuildMember(idx, Math.min(100, this.party[idx].level + Number(r.payload)));
+          await this.rebuildMember(idx, Math.min(100, this.party[idx]!.level + Number(r.payload)));
         } finally {
           this.busy.set(false);
         }
@@ -295,7 +366,7 @@ export class OdysseyService {
       this.phase.set('shop');
       return;
     }
-    await this.nextWave();
+    this.nextWave();
   }
 
   /* ----------------------------------------------------------------- shop */
@@ -321,9 +392,9 @@ export class OdysseyService {
     this.shop.update((s) => s.filter((e) => e !== entry));
   }
 
-  async leaveShop(): Promise<void> {
+  leaveShop(): void {
     this.shop.set([]);
-    await this.nextWave();
+    this.nextWave();
   }
 
   private addRelic(id: RelicId): void {
@@ -353,12 +424,12 @@ export class OdysseyService {
   /** Raise every member by `gain` levels, evolving those that qualify. */
   private async levelUpTeam(gain: number): Promise<void> {
     for (let i = 0; i < this.party.length; i++) {
-      await this.rebuildMember(i, Math.min(100, this.party[i].level + gain));
+      await this.rebuildMember(i, Math.min(100, this.party[i]!.level + gain));
     }
   }
 
   private async rebuildMember(index: number, level: number): Promise<void> {
-    const mon = this.party[index];
+    const mon = this.party[index]!;
     let species = mon.name;
     try {
       const evo = await this.evolutionFor(mon.name, level);
@@ -371,14 +442,19 @@ export class OdysseyService {
     }
     try {
       const rebuilt = await this.battle.buildBattler(species, level);
-      this.party = this.party.map((m, i) => (i === index ? (mon.item ? { ...rebuilt, item: mon.item } : rebuilt) : m));
+      this.party = this.party.map((m, i) =>
+        i === index ? (mon.item ? { ...rebuilt, item: mon.item } : rebuilt) : m,
+      );
       this.version.update((v) => v + 1);
     } catch {
       /* keep the old build on network hiccups */
     }
   }
 
-  private async evolutionFor(species: string, level: number): Promise<{ to: string; toId: number } | null> {
+  private async evolutionFor(
+    species: string,
+    level: number,
+  ): Promise<{ to: string; toId: number } | null> {
     const sp = await this.api.species(species);
     const chain = await this.api.evolutionChain(idFromUrl(sp.evolution_chain.url));
     return evolutionAt(levelUpEvolutions(chain), species, level);

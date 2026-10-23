@@ -28,7 +28,7 @@ describe('ToastService', () => {
   it('pauses on hover and resumes with the remaining time (at least 1.5 s)', () => {
     toasts.show(t('read me'), 3000);
     vi.advanceTimersByTime(2900);
-    const id = toasts.toasts()[0].id;
+    const id = toasts.toasts()[0]!.id;
     toasts.pause(id);
     vi.advanceTimersByTime(20_000);
     expect(toasts.toasts().length).toBe(1); // still there while paused
@@ -41,13 +41,16 @@ describe('ToastService', () => {
 
   it('dismiss removes immediately and cancels the timer', () => {
     toasts.show(t('x'), 5000);
-    const id = toasts.toasts()[0].id;
+    const id = toasts.toasts()[0]!.id;
     toasts.dismiss(id);
     expect(toasts.toasts()).toEqual([]);
     expect(() => vi.advanceTimersByTime(6000)).not.toThrow();
   });
 
   it('ignores pause/resume for unknown ids', () => {
-    expect(() => { toasts.pause(999); toasts.resume(999); }).not.toThrow();
+    expect(() => {
+      toasts.pause(999);
+      toasts.resume(999);
+    }).not.toThrow();
   });
 });

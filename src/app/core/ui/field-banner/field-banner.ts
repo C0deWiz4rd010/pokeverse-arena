@@ -1,10 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import {
-  TERRAIN_INFO,
-  WEATHER_INFO,
-  type Terrain,
-  type Weather,
-} from '../../../game/engine';
+import { TERRAIN_INFO, WEATHER_INFO, type Terrain, type Weather } from '../../../game/engine';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 interface Chip {
@@ -15,16 +10,22 @@ interface Chip {
 
 /** A compact banner showing the active battle weather/terrain and turns left. */
 @Component({
-    imports: [TranslatePipe],
-selector: 'pv-field-banner',
+  imports: [TranslatePipe],
+  selector: 'pv-field-banner',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (chips().length) {
       <div class="field-banner" aria-live="polite">
         @for (c of chips(); track c.label) {
-          <span class="chip" [class.weather]="c.kind === 'weather'" [class.terrain]="c.kind === 'terrain'">
+          <span
+            class="chip"
+            [class.weather]="c.kind === 'weather'"
+            [class.terrain]="c.kind === 'terrain'"
+          >
             {{ c.label | t }}
-            @if (c.turns > 0) { <small>{{ c.turns }}</small> }
+            @if (c.turns > 0) {
+              <small>{{ c.turns }}</small>
+            }
           </span>
         }
       </div>
@@ -72,9 +73,11 @@ export class FieldBannerComponent {
   protected readonly chips = computed<Chip[]>(() => {
     const out: Chip[] = [];
     const w = this.weather();
-    if (w !== 'none') out.push({ label: WEATHER_INFO[w].label, turns: this.weatherTurns(), kind: 'weather' });
+    if (w !== 'none')
+      out.push({ label: WEATHER_INFO[w].label, turns: this.weatherTurns(), kind: 'weather' });
     const t = this.terrain();
-    if (t !== 'none') out.push({ label: TERRAIN_INFO[t].label, turns: this.terrainTurns(), kind: 'terrain' });
+    if (t !== 'none')
+      out.push({ label: TERRAIN_INFO[t].label, turns: this.terrainTurns(), kind: 'terrain' });
     return out;
   });
 }

@@ -67,8 +67,9 @@ export function bestLead(
     const score = offense - risk;
     if (
       score > bestScore ||
-      (score === bestScore && pick !== null && (offense > pick.offense ||
-        (offense === pick.offense && risk < pick.risk)))
+      (score === bestScore &&
+        pick !== null &&
+        (offense > pick.offense || (offense === pick.offense && risk < pick.risk)))
     ) {
       bestScore = score;
       pick = { name: mon.name, offense, risk };

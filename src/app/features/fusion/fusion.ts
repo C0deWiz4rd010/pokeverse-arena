@@ -40,7 +40,13 @@ type Slot = 'head' | 'body';
 @Component({
   selector: 'pv-fusion',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, PageHeaderComponent, TypeBadgeComponent, StatBarComponent, IconComponent],
+  imports: [
+    TranslatePipe,
+    PageHeaderComponent,
+    TypeBadgeComponent,
+    StatBarComponent,
+    IconComponent,
+  ],
   templateUrl: './fusion.html',
   styleUrl: './fusion.scss',
 })
@@ -199,7 +205,9 @@ export class FusionComponent {
     const other = slot === 'head' ? this.lab.bodyId() : this.lab.headId();
     const id = this.lab.randomId(other);
     const entry = this.dex.entryById(id);
-    (slot === 'head' ? this.headQuery : this.bodyQuery).set(entry ? titleCase(entry.name) : `#${id}`);
+    (slot === 'head' ? this.headQuery : this.bodyQuery).set(
+      entry ? titleCase(entry.name) : `#${id}`,
+    );
     void this.lab.setSlot(slot, id);
   }
 
@@ -237,7 +245,12 @@ export class FusionComponent {
     const text = `⚗️ ${f.name} (#${f.code}) — ${f.types.map(titleCase).join(' / ')} · BST ${f.bst}\n${url}`;
     try {
       await navigator.clipboard.writeText(text);
-      this.toasts.show({ title: 'Fusion copied', text: 'Share link is on your clipboard.', icon: 'copy', kind: 'info' });
+      this.toasts.show({
+        title: 'Fusion copied',
+        text: 'Share link is on your clipboard.',
+        icon: 'copy',
+        kind: 'info',
+      });
     } catch {
       this.toasts.show({ title: 'Could not copy', text, icon: 'triangle-alert', kind: 'info' });
     }
@@ -248,7 +261,12 @@ export class FusionComponent {
     this.lab.toggleSaved();
     const f = this.fusion();
     if (!wasSaved && f) {
-      this.toasts.show({ title: `${f.name} registered!`, text: 'Added to your Fusion Dex.', icon: 'flask-conical', kind: 'achievement' });
+      this.toasts.show({
+        title: `${f.name} registered!`,
+        text: 'Added to your Fusion Dex.',
+        icon: 'flask-conical',
+        kind: 'achievement',
+      });
     }
   }
 
@@ -258,7 +276,8 @@ export class FusionComponent {
     this.headQuery.set(head ? titleCase(head.name) : `#${entry.headId}`);
     this.bodyQuery.set(body ? titleCase(body.name) : `#${entry.bodyId}`);
     void this.lab.setPair(entry.headId, entry.bodyId);
-    if (typeof scrollTo === 'function') scrollTo({ top: 0, behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+    if (typeof scrollTo === 'function')
+      scrollTo({ top: 0, behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
   }
 
   protected removeSaved(event: Event, code: string): void {

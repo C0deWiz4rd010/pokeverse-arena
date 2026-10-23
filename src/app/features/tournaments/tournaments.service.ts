@@ -88,13 +88,43 @@ const FIELD = 16;
 const LEAGUE_FIELD = 8;
 
 const TITLES = [
-  'Ace Trainer', 'Veteran', 'Gym Hopeful', 'Elite Hopeful', 'Ranger', 'Hex Maniac',
-  'Black Belt', 'Cooltrainer', 'Dragon Tamer', 'Psychic', 'Bug Catcher', 'Champion-in-Training',
-  'Ruin Maniac', 'Beauty', 'Guitarist',
+  'Ace Trainer',
+  'Veteran',
+  'Gym Hopeful',
+  'Elite Hopeful',
+  'Ranger',
+  'Hex Maniac',
+  'Black Belt',
+  'Cooltrainer',
+  'Dragon Tamer',
+  'Psychic',
+  'Bug Catcher',
+  'Champion-in-Training',
+  'Ruin Maniac',
+  'Beauty',
+  'Guitarist',
 ];
 const NAMES = [
-  'Rowan', 'Sable', 'Iris', 'Cyrus', 'Lyra', 'Volk', 'Mira', 'Ezra', 'Nova', 'Kael',
-  'Wren', 'Drake', 'Suki', 'Bram', 'Faye', 'Onyx', 'Vesper', 'Cleo', 'Roan', 'Thea',
+  'Rowan',
+  'Sable',
+  'Iris',
+  'Cyrus',
+  'Lyra',
+  'Volk',
+  'Mira',
+  'Ezra',
+  'Nova',
+  'Kael',
+  'Wren',
+  'Drake',
+  'Suki',
+  'Bram',
+  'Faye',
+  'Onyx',
+  'Vesper',
+  'Cleo',
+  'Roan',
+  'Thea',
 ];
 
 /**
@@ -107,9 +137,7 @@ function trainerAvatar(seed: string, accent = false): string {
     seed,
     radius: '50',
     backgroundType: 'gradientLinear',
-    backgroundColor: accent
-      ? 'ffd166,ffb703,fb8500'
-      : 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c8f7c5',
+    backgroundColor: accent ? 'ffd166,ffb703,fb8500' : 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c8f7c5',
   });
   return `https://api.dicebear.com/9.x/adventurer/svg?${params.toString()}`;
 }
@@ -167,7 +195,13 @@ export class TournamentService {
   /** Everyone in the current field (for the crystal-ball pick strip). */
   readonly fieldList = signal<Trainer[]>([]);
   /** The run's champion call (null = no call made). */
-  readonly pick = signal<{ trainerId: string; name: string; avatar: string; mult: number; payout: number } | null>(null);
+  readonly pick = signal<{
+    trainerId: string;
+    name: string;
+    avatar: string;
+    mult: number;
+    payout: number;
+  } | null>(null);
   /** Picks lock the moment you fight your first match. */
   readonly pickLocked = signal(false);
   /** Outcome of the call once the run is done (null when no call was made). */
@@ -189,7 +223,7 @@ export class TournamentService {
   private historyLogged = false;
 
   readonly champion = computed<Trainer | null>(() =>
-    this.format() === 'single-elim' ? this.bracket()?.champion ?? null : this.leagueWinner(),
+    this.format() === 'single-elim' ? (this.bracket()?.champion ?? null) : this.leagueWinner(),
   );
 
   readonly rankedStandings = computed(() => {
@@ -242,13 +276,15 @@ export class TournamentService {
     this.status.set('loading');
     try {
       if (mode.monotype) {
-        this.chosenType = POKEMON_TYPES[Math.floor(Math.random() * POKEMON_TYPES.length)];
+        this.chosenType = POKEMON_TYPES[Math.floor(Math.random() * POKEMON_TYPES.length)]!;
         this.monoType.set(this.chosenType);
       }
       // Draft picks only apply to the knockout bracket.
       if (mode.draft && format === 'single-elim') {
         const dtos = await this.selectDtos(mode, 9);
-        const pool = await Promise.all(dtos.map((d) => this.battle.buildBattlerFromDto(d, mode.baseLevel)));
+        const pool = await Promise.all(
+          dtos.map((d) => this.battle.buildBattlerFromDto(d, mode.baseLevel)),
+        );
         this.draftPool.set(pool);
         this.status.set('draft');
         return;
@@ -291,18 +327,22 @@ export class TournamentService {
     trainers.forEach((t, i) => {
       if (t.isPlayer) return;
       const s = this.teamStrength(t);
-      if (s > best) { best = s; strongest = i; }
+      if (s > best) {
+        best = s;
+        strongest = i;
+      }
     });
     if (strongest < 0) return trainers;
     const boost = rivalLevelBoost(state);
-    const host = trainers[strongest];
-    const team = boost > 0
-      ? host.team.map((b) => ({
-          ...b,
-          level: b.level + boost,
-          stats: this.scaleStats(b.stats, (b.level + boost) / b.level),
-        }))
-      : host.team;
+    const host = trainers[strongest]!;
+    const team =
+      boost > 0
+        ? host.team.map((b) => ({
+            ...b,
+            level: b.level + boost,
+            stats: this.scaleStats(b.stats, (b.level + boost) / b.level),
+          }))
+        : host.team;
     const rival: Trainer = {
       ...host,
       id: 'rival',
@@ -362,9 +402,10 @@ export class TournamentService {
     this.standings.set(standings);
     const ids = trainers.map((t) => t.id);
     const swissTotal = format === 'swiss' ? swissRounds(ids.length) : 0;
-    const fixtures = format === 'round-robin'
-      ? roundRobinSchedule(ids).flat()
-      : swissPairings(standings, new Set());
+    const fixtures =
+      format === 'round-robin'
+        ? roundRobinSchedule(ids).flat()
+        : swissPairings(standings, new Set());
     this.league = {
       format,
       byId: new Map(trainers.map((t) => [t.id, t])),
@@ -386,14 +427,16 @@ export class TournamentService {
     if (!lg) return;
     let guard = 0;
     while (lg.cursor < lg.fixtures.length && guard++ < 256) {
-      const fx = lg.fixtures[lg.cursor];
+      const fx = lg.fixtures[lg.cursor]!;
       const a = lg.byId.get(fx.aId)!;
       const b = lg.byId.get(fx.bId)!;
       if (a.isPlayer || b.isPlayer) {
         this.exposeLeagueMatch(fx, a, b);
         return;
       }
-      const res = simulateMatch(a.team, b.team, `lg-${lg.format}-${fx.aId}-${fx.bId}`, { rules: this.leagueRules(fx) });
+      const res = simulateMatch(a.team, b.team, `lg-${lg.format}-${fx.aId}-${fx.bId}`, {
+        rules: this.leagueRules(fx),
+      });
       this.recordFixture(fx, res.winner, res.survivorsA, res.survivorsB);
       lg.cursor++;
     }
@@ -414,7 +457,15 @@ export class TournamentService {
     const foe = playerIsA ? b : a;
     this.league!.pending = { fixture: fx, playerIsA };
     this.leagueMatch.set({
-      match: { id: `lg-${fx.aId}-${fx.bId}`, round: 'final', slot: 0, a: player, b: foe, winner: null, played: false },
+      match: {
+        id: `lg-${fx.aId}-${fx.bId}`,
+        round: 'final',
+        slot: 0,
+        a: player,
+        b: foe,
+        winner: null,
+        played: false,
+      },
       round: 'final',
       player,
       foe,
@@ -426,7 +477,9 @@ export class TournamentService {
 
   private recordFixture(fx: Fixture, winner: 0 | 1, survivorsA: number, survivorsB: number): void {
     const lg = this.league!;
-    this.standings.update((s) => applyMatch(s!, fx.aId, fx.bId, { winner, survivorsA, survivorsB }, lg.teamSize));
+    this.standings.update((s) =>
+      applyMatch(s!, fx.aId, fx.bId, { winner, survivorsA, survivorsB }, lg.teamSize),
+    );
     lg.played.add(pairKey(fx.aId, fx.bId));
   }
 
@@ -435,7 +488,7 @@ export class TournamentService {
     if (!lg) return;
     const ranked = rankStandings(this.standings()!);
     const championId = ranked[0]?.trainerId;
-    const champ = championId ? lg.byId.get(championId) ?? null : null;
+    const champ = championId ? (lg.byId.get(championId) ?? null) : null;
     this.leagueWinner.set(champ);
     this.leagueMatch.set(null);
     this.status.set('done');
@@ -462,9 +515,15 @@ export class TournamentService {
     try {
       const dtos = await this.selectDtos(mode, (FIELD - 1) * mode.teamSize);
       const cpuTeams = this.distribute(dtos, FIELD - 1, mode.teamSize, mode.balanced);
-      const cpu = this.injectRival(cpuTeams.map((team, i) =>
-        this.makeTrainer(i + 1, false, team.map((d) => this.buildLight(d, mode.baseLevel))),
-      ));
+      const cpu = this.injectRival(
+        cpuTeams.map((team, i) =>
+          this.makeTrainer(
+            i + 1,
+            false,
+            team.map((d) => this.buildLight(d, mode.baseLevel)),
+          ),
+        ),
+      );
       const player = this.makeTrainer(0, true, picks);
       this.fieldList.set([player, ...cpu]);
       this.bracket.set(buildBracket([player, ...cpu]));
@@ -646,8 +705,10 @@ export class TournamentService {
     for (let i = 0; i < teams.length; i++) {
       const isPlayer = i === playerIndex;
       const team = isPlayer
-        ? await Promise.all(teams[i].map((d) => this.battle.buildBattlerFromDto(d, mode.baseLevel)))
-        : teams[i].map((d) => this.buildLight(d, mode.baseLevel));
+        ? await Promise.all(
+            teams[i]!.map((d) => this.battle.buildBattlerFromDto(d, mode.baseLevel)),
+          )
+        : teams[i]!.map((d) => this.buildLight(d, mode.baseLevel));
       out.push(this.makeTrainer(i, isPlayer, team));
     }
     return out;
@@ -688,11 +749,11 @@ export class TournamentService {
         isPlayer: true,
       };
     }
-    const name = NAMES[(index * 7) % NAMES.length];
+    const name = NAMES[(index * 7) % NAMES.length]!;
     return {
       id: `cpu-${index}`,
       name,
-      title: TITLES[index % TITLES.length],
+      title: TITLES[index % TITLES.length]!,
       avatar: trainerAvatar(`${name}-${index}`),
       team,
     };
@@ -703,16 +764,19 @@ export class TournamentService {
   /** Fetch a pool of DTOs sized for the mode, honouring type/BST restrictions. */
   private async selectDtos(mode: TournamentMode, count: number): Promise<PokemonDto[]> {
     const over = Math.ceil(count * (mode.pool === 'all' ? 1.4 : 2.4));
-    const ids = mode.monotype && this.chosenType
-      ? await this.sampleTypeIds(this.chosenType, over)
-      : this.randomIds(over);
+    const ids =
+      mode.monotype && this.chosenType
+        ? await this.sampleTypeIds(this.chosenType, over)
+        : this.randomIds(over);
     let dtos = await this.fetchDtos(ids);
 
     while (dtos.length < count) {
       dtos = dtos.concat(await this.fetchDtos(this.randomIds(count)));
     }
-    if (mode.pool === 'little') dtos.sort((a, b) => this.battle.totalBaseStats(a) - this.battle.totalBaseStats(b));
-    else if (mode.pool === 'legendary') dtos.sort((a, b) => this.battle.totalBaseStats(b) - this.battle.totalBaseStats(a));
+    if (mode.pool === 'little')
+      dtos.sort((a, b) => this.battle.totalBaseStats(a) - this.battle.totalBaseStats(b));
+    else if (mode.pool === 'legendary')
+      dtos.sort((a, b) => this.battle.totalBaseStats(b) - this.battle.totalBaseStats(a));
     return dtos.slice(0, count);
   }
 
@@ -722,7 +786,7 @@ export class TournamentService {
       .map((p) => idFromUrl(p.pokemon.url))
       .filter((id): id is number => id !== null && id <= DEX_MAX);
     if (!pool.length) return this.randomIds(n);
-    return Array.from({ length: n }, () => pool[Math.floor(Math.random() * pool.length)]);
+    return Array.from({ length: n }, () => pool[Math.floor(Math.random() * pool.length)]!);
   }
 
   private randomIds(n: number): number[] {
@@ -735,7 +799,12 @@ export class TournamentService {
   }
 
   /** Snake-distribute DTOs into teams; balanced mode sorts by BST first to even out totals. */
-  private distribute(dtos: PokemonDto[], teams: number, size: number, balanced: boolean): PokemonDto[][] {
+  private distribute(
+    dtos: PokemonDto[],
+    teams: number,
+    size: number,
+    balanced: boolean,
+  ): PokemonDto[][] {
     const ordered = balanced
       ? [...dtos].sort((a, b) => this.battle.totalBaseStats(b) - this.battle.totalBaseStats(a))
       : this.shuffle(dtos);
@@ -744,7 +813,7 @@ export class TournamentService {
     for (let r = 0; r < size; r++) {
       const order = r % 2 === 0 ? this.range(teams) : this.range(teams).reverse();
       for (const t of order) {
-        if (idx < ordered.length) out[t].push(ordered[idx++]);
+        if (idx < ordered.length) out[t]!.push(ordered[idx++]!);
       }
     }
     return out;
@@ -758,7 +827,7 @@ export class TournamentService {
     const copy = [...items];
     for (let i = copy.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
+      [copy[i], copy[j]] = [copy[j]!, copy[i]!];
     }
     return copy;
   }

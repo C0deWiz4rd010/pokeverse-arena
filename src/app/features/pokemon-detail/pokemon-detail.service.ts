@@ -38,9 +38,7 @@ export class PokemonDetailService {
       const pokemon = mapPokemon(await this.api.pokemon(idOrName));
       const speciesDto = await this.api.species(pokemon.speciesId);
       const species = mapSpecies(speciesDto);
-      const evolution = mapEvolutionChain(
-        await this.api.evolutionChain(species.evolutionChainId),
-      );
+      const evolution = mapEvolutionChain(await this.api.evolutionChain(species.evolutionChainId));
       this.state.set({ pokemon, species, evolution });
       this.recent.record(pokemon.id, pokemon.name);
     } catch {

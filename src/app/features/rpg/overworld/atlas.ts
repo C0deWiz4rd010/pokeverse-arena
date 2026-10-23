@@ -131,7 +131,7 @@ function blob(
     [b.tl, b.t, b.tr],
     [b.l, b.c, b.r],
     [b.bl, b.b, b.br],
-  ][row][col];
+  ][row]![col]!;
 }
 
 const PATH_BLOB = {
@@ -193,7 +193,7 @@ export const CHAR_DIR_COL: Record<'down' | 'up' | 'left' | 'right', number> = {
 };
 
 export function charSheetUrl(key: string): string {
-  return CHAR_SHEETS[key] ?? CHAR_SHEETS[CHAR_DEFAULT];
+  return CHAR_SHEETS[key] ?? CHAR_SHEETS[CHAR_DEFAULT]!;
 }
 
 /** Pixel rect (x,y,w,h) of an atlas index within its packed sheet. */

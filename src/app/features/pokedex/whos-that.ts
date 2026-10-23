@@ -14,25 +14,43 @@ import { TranslatePipe } from '../../core/i18n/translate.pipe';
   imports: [TranslatePipe, IconComponent, ModalDirective],
   template: `
     <div class="backdrop" role="presentation" (click)="close.emit()"></div>
-    <div class="panel" role="dialog" [attr.aria-label]="'Who’s That Pokémon?' | t" pvModal (pvModalClose)="close.emit()">
+    <div
+      class="panel"
+      role="dialog"
+      [attr.aria-label]="'Who’s That Pokémon?' | t"
+      pvModal
+      (pvModalClose)="close.emit()"
+    >
       <header class="head">
         <h2>{{ 'Who’s That Pokémon?' | t }}</h2>
-        <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t"><pv-icon name="x" /></button>
+        <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t">
+          <pv-icon name="x" />
+        </button>
       </header>
 
       <div class="score">
-        <span>{{ 'Streak' | t }} <strong>{{ streak() }}</strong></span>
-        <span>{{ 'Best' | t }} <strong>{{ best() }}</strong></span>
+        <span
+          >{{ 'Streak' | t }} <strong>{{ streak() }}</strong></span
+        >
+        <span
+          >{{ 'Best' | t }} <strong>{{ best() }}</strong></span
+        >
       </div>
 
       @if (answer(); as a) {
         <div class="silhouette" [class.revealed]="revealed()">
-          <img decoding="async" [src]="art(a)" [alt]="revealed() ? a.name : ('Mystery Pokémon' | t)" />
+          <img
+            decoding="async"
+            [src]="art(a)"
+            [alt]="revealed() ? a.name : ('Mystery Pokémon' | t)"
+          />
         </div>
 
         @if (revealed()) {
           <p class="verdict" [class.right]="lastCorrect()" [class.wrong]="!lastCorrect()">
-            {{ lastCorrect() ? ("It's " | t) : ('It was ' | t) }}<strong>{{ titleCase(a.name) }}</strong>{{ lastCorrect() ? '!' : '.' }}
+            {{ lastCorrect() ? ("It's " | t) : ('It was ' | t)
+            }}<strong>{{ titleCase(a.name) }}</strong
+            >{{ lastCorrect() ? '!' : '.' }}
           </p>
           <button class="btn next" type="button" (click)="newRound()">{{ 'Next ›' | t }}</button>
         } @else {
@@ -74,10 +92,10 @@ export class WhosThatComponent {
   protected newRound(): void {
     const pool = this.pool();
     if (pool.length < 3) return;
-    const answer = pool[Math.floor(Math.random() * pool.length)];
+    const answer = pool[Math.floor(Math.random() * pool.length)]!;
     const opts = new Set<PokedexEntry>([answer]);
     let guard = 0;
-    while (opts.size < 3 && guard++ < 50) opts.add(pool[Math.floor(Math.random() * pool.length)]);
+    while (opts.size < 3 && guard++ < 50) opts.add(pool[Math.floor(Math.random() * pool.length)]!);
     this.answer.set(answer);
     this.options.set(shuffle([...opts]));
     this.revealed.set(false);
@@ -104,7 +122,7 @@ function shuffle<T>(items: T[]): T[] {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+    [copy[i], copy[j]] = [copy[j]!, copy[i]!];
   }
   return copy;
 }

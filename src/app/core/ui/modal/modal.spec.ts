@@ -38,7 +38,9 @@ describe('ModalDirective', () => {
   }
 
   const key = (target: Element, k: string, shiftKey = false) =>
-    target.dispatchEvent(new KeyboardEvent('keydown', { key: k, shiftKey, bubbles: true, cancelable: true }));
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key: k, shiftKey, bubbles: true, cancelable: true }),
+    );
 
   it('moves focus into the dialog and marks it modal', () => {
     const { el } = setup();

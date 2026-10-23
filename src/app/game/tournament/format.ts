@@ -25,21 +25,24 @@ export const TOURNAMENT_FORMATS: readonly FormatInfo[] = [
     name: 'Single Elimination',
     icon: 'trophy',
     tagline: 'Win or go home.',
-    description: 'A seeded 16-trainer knockout bracket — one loss and you are out. Win four rounds to take the cup.',
+    description:
+      'A seeded 16-trainer knockout bracket — one loss and you are out. Win four rounds to take the cup.',
   },
   {
     id: 'round-robin',
     name: 'Round Robin',
     icon: 'clipboard-list',
     tagline: 'Everyone plays everyone.',
-    description: 'A full league: every trainer faces every other once. The table decides the champion — wins first, KO differential breaks ties.',
+    description:
+      'A full league: every trainer faces every other once. The table decides the champion — wins first, KO differential breaks ties.',
   },
   {
     id: 'swiss',
     name: 'Swiss',
     icon: 'refresh-cw',
     tagline: 'Paired by record, no eliminations.',
-    description: 'A fixed number of rounds; each round you are paired against someone on your record. No knockouts — the standings crown the winner.',
+    description:
+      'A fixed number of rounds; each round you are paired against someone on your record. No knockouts — the standings crown the winner.',
   },
 ];
 
@@ -73,5 +76,5 @@ export function seedSlots(size: number): number[] {
  */
 export function seedTrainers(sortedStrongestFirst: readonly Trainer[]): Trainer[] {
   const slots = seedSlots(sortedStrongestFirst.length);
-  return slots.map((seed) => ({ ...sortedStrongestFirst[seed - 1], seed }));
+  return slots.map((seed) => ({ ...sortedStrongestFirst[seed - 1]!, seed }));
 }

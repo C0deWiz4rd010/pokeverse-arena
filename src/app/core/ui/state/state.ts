@@ -19,19 +19,30 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
         <pv-spinner [label]="title()" />
       } @else {
         <span class="icon" aria-hidden="true">
-          <pv-icon [name]="icon() ?? (kind() === 'error' ? 'triangle-alert' : 'search')" [size]="28" />
+          <pv-icon
+            [name]="icon() ?? (kind() === 'error' ? 'triangle-alert' : 'search')"
+            [size]="28"
+          />
         </span>
-        @if (title()) { <strong class="title">{{ title() | t }}</strong> }
-        @if (text()) { <p class="text">{{ text() }}</p> }
+        @if (title()) {
+          <strong class="title">{{ title() | t }}</strong>
+        }
+        @if (text()) {
+          <p class="text">{{ text() }}</p>
+        }
         @if (actionLabel()) {
-          <button class="btn btn-primary" type="button" (click)="action.emit()">{{ actionLabel() }}</button>
+          <button class="btn btn-primary" type="button" (click)="action.emit()">
+            {{ actionLabel() }}
+          </button>
         }
       }
     </div>
   `,
   styles: [
     `
-      :host { display: block; }
+      :host {
+        display: block;
+      }
       .state {
         display: grid;
         place-items: center;
@@ -42,9 +53,17 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
         text-align: center;
         color: var(--text-dim);
       }
-      .icon { color: var(--accent); }
-      .title { color: var(--text); font-size: 1.05rem; }
-      .text { margin: 0; max-width: 34rem; }
+      .icon {
+        color: var(--accent);
+      }
+      .title {
+        color: var(--text);
+        font-size: 1.05rem;
+      }
+      .text {
+        margin: 0;
+        max-width: 34rem;
+      }
     `,
   ],
 })

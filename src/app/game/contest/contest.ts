@@ -131,9 +131,7 @@ export function runContest(
     { name: playerName, score: playerScore, isPlayer: true },
     ...rivals,
   ];
-  const ranking = field
-    .slice()
-    .sort((a, b) => b.score - a.score || (a.isPlayer ? -1 : 1));
+  const ranking = field.slice().sort((a, b) => b.score - a.score || (a.isPlayer ? -1 : 1));
   const playerRank = ranking.findIndex((e) => e.isPlayer) + 1;
   return { ranking, playerRank, won: playerRank === 1 };
 }
@@ -162,7 +160,7 @@ export function rankInfo(rank: ContestRank): RankInfo {
 
 export function nextRank(rank: ContestRank): ContestRank | null {
   const i = CONTEST_RANKS.findIndex((r) => r.key === rank);
-  return i >= 0 && i < CONTEST_RANKS.length - 1 ? CONTEST_RANKS[i + 1].key : null;
+  return i >= 0 && i < CONTEST_RANKS.length - 1 ? CONTEST_RANKS[i + 1]!.key : null;
 }
 
 /** Number of appeal turns in a performance. */
@@ -230,9 +228,9 @@ export function runAppealContest(
       if (combo) appeal += rng.int(5, 12);
       const jammed = t > 0 && idx === leader;
       if (jammed) appeal = Math.max(1, appeal - rng.int(3, 10));
-      totals[idx] += appeal;
+      totals[idx]! += appeal;
       roundAppeal.push(appeal);
-      lines.push({ name, isPlayer: isPlayer[idx], appeal, total: totals[idx], combo, jammed });
+      lines.push({ name, isPlayer: isPlayer[idx]!, appeal, total: totals[idx]!, combo, jammed });
     });
 
     // The round's top appeal earns the combo carry into the next turn.
@@ -241,7 +239,7 @@ export function runAppealContest(
   }
 
   const ranking = names
-    .map((name, i) => ({ name, score: totals[i], isPlayer: isPlayer[i] }))
+    .map((name, i) => ({ name, score: totals[i]!, isPlayer: isPlayer[i]! }))
     .sort((a, b) => b.score - a.score || (a.isPlayer ? -1 : 1));
   const playerRank = ranking.findIndex((e) => e.isPlayer) + 1;
   const won = playerRank === 1;

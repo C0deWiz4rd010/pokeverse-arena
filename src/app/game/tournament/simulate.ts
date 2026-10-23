@@ -56,7 +56,15 @@ export function simulateMatch(
   const hpB = tb.hp(1);
   const survivorsA = tb.survivors(0);
   const survivorsB = tb.survivors(1);
-  const winner: 0 | 1 = decideWinner(tb.state.winner, survivorsA, survivorsB, hpA, hpB, teamA, teamB);
+  const winner: 0 | 1 = decideWinner(
+    tb.state.winner,
+    survivorsA,
+    survivorsB,
+    hpA,
+    hpB,
+    teamA,
+    teamB,
+  );
   return { winner, log, survivorsA, survivorsB, hpA, hpB };
 }
 

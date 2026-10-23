@@ -16,15 +16,26 @@ await new Promise((r) => setTimeout(r, 1200));
 const run = (name, file, env) =>
   new Promise((resolve) => {
     console.log(`\n▶ ${name}`);
-    const p = spawn(process.execPath, [file], { stdio: 'inherit', env: { ...process.env, ...env } });
+    const p = spawn(process.execPath, [file], {
+      stdio: 'inherit',
+      env: { ...process.env, ...env },
+    });
     p.on('exit', (code) => resolve(code ?? 1));
   });
 
 const base = `http://localhost:${PORT}`;
 const results = [
-  ['routes x viewports', await run('routes x viewports', 'tools/ui-shots.mjs', { SHOTS_BASE: base, SHOTS_LOCALE: 'en' })],
+  [
+    'routes x viewports',
+    await run('routes x viewports', 'tools/ui-shots.mjs', { SHOTS_BASE: base, SHOTS_LOCALE: 'en' }),
+  ],
   ['adventure flow', await run('adventure flow', 'tools/e2e-adventure.mjs', { SHOTS_BASE: base })],
-  ['offline start', await run('offline start', 'tools/e2e-offline.mjs', { OFFLINE_BASE: `http://pv.localhost:${PORT}` })],
+  [
+    'offline start',
+    await run('offline start', 'tools/e2e-offline.mjs', {
+      OFFLINE_BASE: `http://pv.localhost:${PORT}`,
+    }),
+  ],
 ];
 server.kill();
 console.log('\n===== ACCEPTANCE =====');

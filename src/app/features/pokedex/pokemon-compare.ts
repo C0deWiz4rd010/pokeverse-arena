@@ -17,7 +17,14 @@ import { padId, titleCase } from '../../core/ui/format';
 import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import { defensiveProfile, POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import type { StatKey } from '../../core/utils/stat-calculator';
-import { RADAR_RINGS, RADAR_STATS, RADAR_VIEWBOX, labelPoint, radarPoint, shapePoints } from './stat-radar';
+import {
+  RADAR_RINGS,
+  RADAR_STATS,
+  RADAR_VIEWBOX,
+  labelPoint,
+  radarPoint,
+  shapePoints,
+} from './stat-radar';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 /** Distinct polygon colors for up to four compared Pokémon. */
@@ -39,10 +46,18 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
   imports: [TranslatePipe, RouterLink, TypeBadgeComponent, IconComponent, ModalDirective],
   template: `
     <div class="backdrop" role="presentation" (click)="close.emit()"></div>
-    <div class="panel" role="dialog" [attr.aria-label]="'Compare Pokémon' | t" pvModal (pvModalClose)="close.emit()">
+    <div
+      class="panel"
+      role="dialog"
+      [attr.aria-label]="'Compare Pokémon' | t"
+      pvModal
+      (pvModalClose)="close.emit()"
+    >
       <header class="head">
         <h2>{{ 'Compare' | t }}</h2>
-        <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t"><pv-icon name="x" /></button>
+        <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t">
+          <pv-icon name="x" />
+        </button>
       </header>
 
       @if (!mons().length) {
@@ -50,14 +65,28 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
       } @else {
         <!-- overlaid stat radars: one polygon per Pokémon, color-coded -->
         <div class="radar-wrap">
-          <svg class="radar" [attr.viewBox]="viewBox" role="img" [attr.aria-label]="'Overlaid stat radars' | t">
-            @for (ring of rings; track $index) { <polygon class="ring" [attr.points]="ring" /> }
+          <svg
+            class="radar"
+            [attr.viewBox]="viewBox"
+            role="img"
+            [attr.aria-label]="'Overlaid stat radars' | t"
+          >
+            @for (ring of rings; track $index) {
+              <polygon class="ring" [attr.points]="ring" />
+            }
             @for (r of radarStats; track r.key; let i = $index) {
               <line class="axis" x1="90" y1="86" [attr.x2]="axisPt(i).x" [attr.y2]="axisPt(i).y" />
-              <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">{{ r.label | t }}</text>
+              <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">
+                {{ r.label | t }}
+              </text>
             }
             @for (m of mons(); track m.id; let i = $index) {
-              <polygon class="shape" [attr.points]="shape(m)" [attr.stroke]="color(i)" [style.fill]="fill(i)" />
+              <polygon
+                class="shape"
+                [attr.points]="shape(m)"
+                [attr.stroke]="color(i)"
+                [style.fill]="fill(i)"
+              />
             }
           </svg>
           <div class="legend">
@@ -72,11 +101,24 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
           <div class="corner"></div>
           @for (m of mons(); track m.id) {
             <div class="mon-head">
-              <button class="rm" type="button" (click)="removeId.emit(m.id)" [attr.aria-label]="'Remove' | t"><pv-icon name="x" /></button>
-              <a [routerLink]="['/pokemon', m.id]"><img decoding="async" [src]="art(m)" [alt]="m.name" /></a>
+              <button
+                class="rm"
+                type="button"
+                (click)="removeId.emit(m.id)"
+                [attr.aria-label]="'Remove' | t"
+              >
+                <pv-icon name="x" />
+              </button>
+              <a [routerLink]="['/pokemon', m.id]"
+                ><img decoding="async" [src]="art(m)" [alt]="m.name"
+              /></a>
               <strong>{{ titleCase(m.name) }}</strong>
               <span class="num">{{ padId(m.id) }}</span>
-              <div class="types">@for (t of m.types; track t) { <pv-type-badge [type]="t" /> }</div>
+              <div class="types">
+                @for (t of m.types; track t) {
+                  <pv-type-badge [type]="t" />
+                }
+              </div>
             </div>
           }
 
@@ -86,7 +128,9 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
             @for (m of mons(); track m.id) {
               <div class="cell" [class.best]="m.stats[r.key] === maxStat(r.key)">
                 <span class="v">{{ m.stats[r.key] }}</span>
-                <span class="bar"><span class="fill" [style.width.%]="pct(m.stats[r.key])"></span></span>
+                <span class="bar"
+                  ><span class="fill" [style.width.%]="pct(m.stats[r.key])"></span
+                ></span>
               </div>
             }
           }
@@ -94,14 +138,18 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
           <!-- BST -->
           <div class="row-label bst">{{ 'BST' | t }}</div>
           @for (m of mons(); track m.id) {
-            <div class="cell bst" [class.best]="m.baseStatTotal === maxBst()"><strong>{{ m.baseStatTotal }}</strong></div>
+            <div class="cell bst" [class.best]="m.baseStatTotal === maxBst()">
+              <strong>{{ m.baseStatTotal }}</strong>
+            </div>
           }
 
           <!-- weaknesses -->
           <div class="row-label">{{ 'Weak to' | t }}</div>
           @for (m of mons(); track m.id) {
             <div class="cell weak">
-              @for (t of weaknesses(m); track t) { <pv-type-badge [type]="t" /> }
+              @for (t of weaknesses(m); track t) {
+                <pv-type-badge [type]="t" />
+              }
             </div>
           }
         </div>
@@ -136,7 +184,7 @@ export class PokemonCompareComponent {
     return shapePoints(m.stats);
   }
   protected color(i: number): string {
-    return COMPARE_COLORS[i % COMPARE_COLORS.length];
+    return COMPARE_COLORS[i % COMPARE_COLORS.length]!;
   }
   /** Translucent fill derived from the stroke color. */
   protected fill(i: number): string {
@@ -148,7 +196,7 @@ export class PokemonCompareComponent {
   constructor() {
     effect(() => {
       const ids = this.ids();
-      Promise.all(ids.map((id) => this.detailSvc.load(id).catch(() => null))).then((list) =>
+      void Promise.all(ids.map((id) => this.detailSvc.load(id).catch(() => null))).then((list) =>
         this.mons.set(list.filter((m): m is QuickDetail => m !== null)),
       );
     });

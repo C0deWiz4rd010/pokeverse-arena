@@ -2,10 +2,35 @@ import { describe, expect, it } from 'vitest';
 import { Battle } from './battle';
 import type { Battler, BattleMove } from './battle-types';
 
-const tackle: BattleMove = { name: 'Tackle', type: 'normal', power: 40, accuracy: 100, damageClass: 'physical' };
-const ember: BattleMove = { name: 'Ember', type: 'fire', power: 40, accuracy: 100, damageClass: 'special' };
-const quickAttack: BattleMove = { name: 'Quick Attack', type: 'normal', power: 40, accuracy: 100, damageClass: 'physical', priority: 1 };
-const vineWhip: BattleMove = { name: 'Vine Whip', type: 'grass', power: 45, accuracy: 100, damageClass: 'physical' };
+const tackle: BattleMove = {
+  name: 'Tackle',
+  type: 'normal',
+  power: 40,
+  accuracy: 100,
+  damageClass: 'physical',
+};
+const ember: BattleMove = {
+  name: 'Ember',
+  type: 'fire',
+  power: 40,
+  accuracy: 100,
+  damageClass: 'special',
+};
+const quickAttack: BattleMove = {
+  name: 'Quick Attack',
+  type: 'normal',
+  power: 40,
+  accuracy: 100,
+  damageClass: 'physical',
+  priority: 1,
+};
+const vineWhip: BattleMove = {
+  name: 'Vine Whip',
+  type: 'grass',
+  power: 45,
+  accuracy: 100,
+  damageClass: 'physical',
+};
 
 function mk(overrides: Partial<Battler>): Battler {
   return {
@@ -13,7 +38,14 @@ function mk(overrides: Partial<Battler>): Battler {
     name: 'Mon',
     level: 50,
     types: ['normal'],
-    stats: { hp: 120, attack: 100, defense: 100, 'special-attack': 100, 'special-defense': 100, speed: 100 },
+    stats: {
+      hp: 120,
+      attack: 100,
+      defense: 100,
+      'special-attack': 100,
+      'special-defense': 100,
+      speed: 100,
+    },
     moves: [tackle],
     ...overrides,
   };
@@ -55,7 +87,11 @@ describe('Battle', () => {
   });
 
   it('honours move priority over speed', () => {
-    const slowButPriority = mk({ name: 'Priority', moves: [quickAttack], stats: { ...mk({}).stats, speed: 1 } });
+    const slowButPriority = mk({
+      name: 'Priority',
+      moves: [quickAttack],
+      stats: { ...mk({}).stats, speed: 1 },
+    });
     const fast = mk({ name: 'Fast', stats: { ...mk({}).stats, speed: 300 } });
     const b = new Battle(slowButPriority, fast, 'prio');
     const events = b.takeTurn(0);

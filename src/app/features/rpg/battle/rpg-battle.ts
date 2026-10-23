@@ -119,7 +119,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
     if (!side) return [];
     return side.battler.moves.map((move, i) => ({
       move,
-      pp: Number.isFinite(side.pp[i]) ? side.pp[i] : Infinity,
+      pp: Number.isFinite(side.pp[i]) ? side.pp[i]! : Infinity,
       maxPp: move.pp ?? null,
     }));
   });
@@ -204,7 +204,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
     if (this.menu() === 'fight') {
       const n = Number(e.key);
       const slots = this.moveSlots();
-      if (n >= 1 && n <= slots.length && slots[n - 1].pp > 0) {
+      if (n >= 1 && n <= slots.length && slots[n - 1]!.pp > 0) {
         e.preventDefault();
         void this.useMove(n - 1);
       } else if (e.key === 'Escape' || e.key === 'x') {
@@ -247,7 +247,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
         this.trainerBadge = setup.badge;
         this.trainerEnding = setup.ending;
         this.xpReward = setup.team.reduce((s, t) => s + xpYield(64, t.level), 0);
-        this.foeLevel.set(setup.team[0].level);
+        this.foeLevel.set(setup.team[0]!.level);
       } else {
         const dto = await this.api.pokemon(setup.foeSpecies);
         this.foeCatchRate = setup.foeCatchRate;
@@ -412,7 +412,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
       await this.reviveTarget(index);
       return;
     }
-    if (index === tb.state.active[0] || tb.state.parties[0][index].currentHp <= 0) return;
+    if (index === tb.state.active[0] || tb.state.parties[0]![index]!.currentHp <= 0) return;
     if (this.forcedSwitch()) {
       this.forcedSwitch.set(false);
       this.busy.set(true);
@@ -514,7 +514,7 @@ export class RpgBattleComponent extends BattlePresenterBase {
     const updated: PartyMon[] = [];
 
     for (let i = 0; i < party.length; i++) {
-      const mon = { ...party[i] };
+      const mon = { ...party[i]! };
       mon.currentHp = Math.max(0, Math.min(mon.maxHp, finalHp[i] ?? mon.currentHp));
       // Status sticks after battle (burn/poison/…); fainting clears it.
       mon.status = mon.currentHp <= 0 ? 'none' : finalStatus[i] ?? mon.status;
@@ -564,9 +564,9 @@ export class RpgBattleComponent extends BattlePresenterBase {
     this.pendingEvos = [];
     if (won) {
       for (let i = 0; i < updated.length; i++) {
-        if (updated[i].level > party[i].level) {
-          const step = await this.svc.evolutionFor(updated[i].species, updated[i].level);
-          if (step) this.pendingEvos.push({ uid: updated[i].uid, from: updated[i].species, fromId: party[i].dexId, to: step.to, toId: step.toId, level: updated[i].level });
+        if (updated[i]!.level > party[i]!.level) {
+          const step = await this.svc.evolutionFor(updated[i]!.species, updated[i]!.level);
+          if (step) this.pendingEvos.push({ uid: updated[i]!.uid, from: updated[i]!.species, fromId: party[i]!.dexId, to: step.to, toId: step.toId, level: updated[i]!.level });
         }
       }
     }

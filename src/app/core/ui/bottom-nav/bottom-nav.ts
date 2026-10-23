@@ -1,11 +1,5 @@
 import { ModalDirective } from '../modal/modal';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IconComponent } from '../icon/icon';
 import type { IconName } from '../icon/icons.data';
@@ -29,7 +23,13 @@ export interface BottomNavItem {
   imports: [TranslatePipe, RouterLink, RouterLinkActive, IconComponent, ModalDirective],
   template: `
     <nav class="bnav glass" [attr.aria-label]="'Primary' | t">
-      <a class="bslot" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="tap()">
+      <a
+        class="bslot"
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        (click)="tap()"
+      >
         <pv-icon name="home" [size]="22" />
         <span>{{ 'Home' | t }}</span>
       </a>
@@ -37,14 +37,26 @@ export interface BottomNavItem {
         <pv-icon name="book" [size]="22" />
         <span>{{ 'Dex' | t }}</span>
       </a>
-      <a class="bslot center" routerLink="/battle" routerLinkActive="active" (click)="tap()" [attr.aria-label]="'Battle' | t">
+      <a
+        class="bslot center"
+        routerLink="/battle"
+        routerLinkActive="active"
+        (click)="tap()"
+        [attr.aria-label]="'Battle' | t"
+      >
         <span class="orb"><pv-icon name="swords" [size]="24" /></span>
       </a>
       <a class="bslot" routerLink="/adventure" routerLinkActive="active" (click)="tap()">
         <pv-icon name="scroll-text" [size]="22" />
         <span>{{ 'Quest' | t }}</span>
       </a>
-      <button class="bslot" type="button" (click)="openSheet()" [attr.aria-expanded]="sheet()" [attr.aria-label]="'More' | t">
+      <button
+        class="bslot"
+        type="button"
+        (click)="openSheet()"
+        [attr.aria-expanded]="sheet()"
+        [attr.aria-label]="'More' | t"
+      >
         <pv-icon name="grid" [size]="22" />
         <span>{{ 'More' | t }}</span>
       </button>
@@ -52,7 +64,13 @@ export interface BottomNavItem {
 
     @if (sheet()) {
       <div class="sheet-scrim" role="presentation" (click)="closeSheet()"></div>
-      <div class="sheet glass" role="dialog" [attr.aria-label]="'All sections' | t" pvModal (pvModalClose)="closeSheet()">
+      <div
+        class="sheet glass"
+        role="dialog"
+        [attr.aria-label]="'All sections' | t"
+        pvModal
+        (pvModalClose)="closeSheet()"
+      >
         <div class="sheet-grip" aria-hidden="true"></div>
         <div class="sheet-grid">
           @for (item of items(); track item.path) {

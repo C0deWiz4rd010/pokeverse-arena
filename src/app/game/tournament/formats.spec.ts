@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { applyMatch, initStandings, rankStandings, matchPoints } from './standings';
-import { pairKey, roundRobinFixtureCount, roundRobinSchedule, swissPairings, swissRounds } from './round-robin';
+import {
+  pairKey,
+  roundRobinFixtureCount,
+  roundRobinSchedule,
+  swissPairings,
+  swissRounds,
+} from './round-robin';
 import { seedSlots, seedTrainers } from './format';
 import { prizeFor } from './history';
 import type { Trainer } from './types';
@@ -29,8 +35,8 @@ describe('standings', () => {
     s = applyMatch(s, 'a', 'b', { winner: 0, survivorsA: 3, survivorsB: 0 }, 3);
     s = applyMatch(s, 'c', 'b', { winner: 0, survivorsA: 1, survivorsB: 0 }, 3);
     const ranked = rankStandings(s);
-    expect(ranked[0].trainerId).toBe('a'); // same points as c, better KO diff
-    expect(ranked[2].trainerId).toBe('b');
+    expect(ranked[0]!.trainerId).toBe('a'); // same points as c, better KO diff
+    expect(ranked[2]!.trainerId).toBe('b');
   });
 });
 
@@ -87,7 +93,7 @@ describe('seeding', () => {
   it('places the strongest trainer in the first slot', () => {
     const sorted = Array.from({ length: 8 }, (_, i) => trainer(`t${i}`, `T${i}`));
     const seeded = seedTrainers(sorted);
-    expect(seeded[0].id).toBe('t0');
+    expect(seeded[0]!.id).toBe('t0');
   });
 });
 

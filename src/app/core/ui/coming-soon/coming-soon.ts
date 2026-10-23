@@ -15,19 +15,42 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
         <div class="emoji" aria-hidden="true"><pv-icon [name]="icon()" [size]="64" /></div>
         <h1 class="gradient-text">{{ title() | t }}</h1>
         <p>{{ description() | t }}</p>
-        <p class="tag"><pv-icon name="construction" /> {{ 'Under construction — coming in a future update.' | t }}</p>
+        <p class="tag">
+          <pv-icon name="construction" />
+          {{ 'Under construction — coming in a future update.' | t }}
+        </p>
         <a class="btn btn-primary" routerLink="/pokedex">{{ 'Explore the Pokédex' | t }}</a>
       </div>
     </section>
   `,
   styles: [
     `
-      .wrap { display: grid; place-items: center; min-height: calc(var(--dvh) * 60); padding: 2rem 0; }
-      .card { text-align: center; padding: 3rem 2rem; max-width: 560px; }
-      .emoji { font-size: 4rem; margin-bottom: 0.5rem; }
-      h1 { font-size: 2rem; }
-      p { color: var(--text-dim); }
-      .tag { color: var(--accent-3); font-weight: 600; margin: 1.2rem 0; }
+      .wrap {
+        display: grid;
+        place-items: center;
+        min-height: calc(var(--dvh) * 60);
+        padding: 2rem 0;
+      }
+      .card {
+        text-align: center;
+        padding: 3rem 2rem;
+        max-width: 560px;
+      }
+      .emoji {
+        font-size: 4rem;
+        margin-bottom: 0.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      p {
+        color: var(--text-dim);
+      }
+      .tag {
+        color: var(--accent-3);
+        font-weight: 600;
+        margin: 1.2rem 0;
+      }
     `,
   ],
 })

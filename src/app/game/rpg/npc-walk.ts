@@ -67,7 +67,7 @@ export function stepWanderers(
     if (range <= 0) continue;
     const cur = next[npc.id] ?? { x: npc.x, y: npc.y, facing: npc.facing };
     if (rand() >= ACT_CHANCE) continue;
-    const dir = DIRS[Math.min(3, Math.floor(rand() * 4))];
+    const dir = DIRS[Math.min(3, Math.floor(rand() * 4))]!;
     const d = DELTA[dir];
     const tx = cur.x + d.dx;
     const ty = cur.y + d.dy;

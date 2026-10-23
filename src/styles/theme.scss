@@ -146,7 +146,10 @@
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text);
-  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 .btn:hover {
   transform: translateY(-2px);
@@ -172,7 +175,12 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 65%
+  );
   transform: translateX(-130%);
   pointer-events: none;
 }
@@ -181,7 +189,9 @@
   transition: transform 0.55s ease;
 }
 @media (prefers-reduced-motion: reduce) {
-  .btn-primary::after { display: none; }
+  .btn-primary::after {
+    display: none;
+  }
 }
 
 /* Small overlay chip cycling battle playback speed (1×/2×/3×) — shared by
@@ -202,7 +212,10 @@
   letter-spacing: 0.03em;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease;
 }
 .speed-chip:hover {
   color: var(--accent);
@@ -247,7 +260,9 @@ input:not([type='range']):not([type='checkbox']):not([type='radio']):not([type='
 textarea {
   min-height: 2.5rem;
 }
-textarea { min-height: 4.5rem; }
+textarea {
+  min-height: 4.5rem;
+}
 
 /* Touch screens: every shared control reaches a comfortable finger-sized hit area. */
 @media (pointer: coarse) {

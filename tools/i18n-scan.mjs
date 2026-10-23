@@ -8,14 +8,32 @@
 import { chromium } from 'playwright';
 import { knownEnglish } from './i18n-dict.mjs';
 
-
 const BASE = process.env.SHOTS_BASE ?? 'http://localhost:4200';
-const ALL = ['#/', '#/pokedex', '#/pokemon/25', '#/type-lab', '#/team-builder', '#/battle', '#/arena', '#/tournaments', '#/spire', '#/odyssey', '#/world', '#/fusion', '#/contest', '#/showdown', '#/adventure', '#/profile'];
+const ALL = [
+  '#/',
+  '#/pokedex',
+  '#/pokemon/25',
+  '#/type-lab',
+  '#/team-builder',
+  '#/battle',
+  '#/arena',
+  '#/tournaments',
+  '#/spire',
+  '#/odyssey',
+  '#/world',
+  '#/fusion',
+  '#/contest',
+  '#/showdown',
+  '#/adventure',
+  '#/profile',
+];
 const routes = process.argv[2] ? process.argv[2].split(',') : ALL;
 
-const ENGLISH = /\b(the|and|your|you|you're|with|from|this|that|for|of|to|is|are|will|have|has|into|once|every|each|more|than|not|only|first|then|their|when|before|after|can|per|any|all|its|it's|one|new|best|win|lose)\b/i;
+const ENGLISH =
+  /\b(the|and|your|you|you're|with|from|this|that|for|of|to|is|are|will|have|has|into|once|every|each|more|than|not|only|first|then|their|when|before|after|can|per|any|all|its|it's|one|new|best|win|lose)\b/i;
 // proper names / product words that legitimately stay as they are
-const IGNORE = /PokéVerse|PokéAPI|Pokédex|Pokémon|Angular|PixiJS|Three\.js|GitHub|Nuzlocke|Showdown|Arena|Dex|JSON|Seed/;
+const IGNORE =
+  /PokéVerse|PokéAPI|Pokédex|Pokémon|Angular|PixiJS|Three\.js|GitHub|Nuzlocke|Showdown|Arena|Dex|JSON|Seed/;
 
 const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });

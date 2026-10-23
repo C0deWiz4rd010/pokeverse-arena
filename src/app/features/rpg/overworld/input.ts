@@ -131,7 +131,7 @@ export class OverworldInput {
   pollGamepad(): void {
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : null;
     let gp: Gamepad | null = null;
-    if (pads) for (let i = 0; i < pads.length; i++) if (pads[i]?.connected) { gp = pads[i]; break; }
+    if (pads) for (let i = 0; i < pads.length; i++) if (pads[i]?.connected) { gp = pads[i]!; break; }
     this.pad.clear();
     if (!gp) { this.padRun = false; return; }
     const ax = gp.axes[0] ?? 0;

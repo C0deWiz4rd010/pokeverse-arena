@@ -22,7 +22,14 @@ interface ScoutMon {
 @Component({
   selector: 'pv-arena',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, PageHeaderComponent, SpinnerComponent, TypeBadgeComponent, IconComponent, TournamentMatchComponent],
+  imports: [
+    TranslatePipe,
+    PageHeaderComponent,
+    SpinnerComponent,
+    TypeBadgeComponent,
+    IconComponent,
+    TournamentMatchComponent,
+  ],
   templateUrl: './arena.html',
   styleUrl: './arena.scss',
 })
@@ -68,7 +75,15 @@ export class ArenaComponent {
     const scout = scoutMatchup(g.playerTeam, g.foeTeam);
     const lead = bestLead(g.playerTeam, g.foeTeam);
     const verdict =
-      odds >= 66 ? 'Favoured' : odds >= 55 ? 'Slight edge' : odds > 45 ? 'Even match' : odds > 34 ? 'Underdog' : 'Long shot';
+      odds >= 66
+        ? 'Favoured'
+        : odds >= 55
+          ? 'Slight edge'
+          : odds > 45
+            ? 'Even match'
+            : odds > 34
+              ? 'Underdog'
+              : 'Long shot';
     return { odds, verdict, scout, lead, tier: odds >= 55 ? 'up' : odds > 45 ? 'even' : 'down' };
   });
 

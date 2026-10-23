@@ -53,7 +53,7 @@ export class EvolutionComponent implements OnDestroy {
     }
     this.i = i;
     this.advancing = false;
-    const e = list[i];
+    const e = list[i]!;
     this.spriteId.set(e.fromId);
     this.caption.set(`What? ${titleCase(e.from)} is evolving!`);
     this.flash.set(false);

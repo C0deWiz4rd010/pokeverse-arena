@@ -18,7 +18,14 @@ import { TranslatePipe } from '../../core/i18n/translate.pipe';
 @Component({
   selector: 'pv-odyssey',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, NgTemplateOutlet, PageHeaderComponent, IconComponent, SpinnerComponent, TournamentMatchComponent],
+  imports: [
+    TranslatePipe,
+    NgTemplateOutlet,
+    PageHeaderComponent,
+    IconComponent,
+    SpinnerComponent,
+    TournamentMatchComponent,
+  ],
   templateUrl: './odyssey.html',
   styleUrl: './odyssey.scss',
 })

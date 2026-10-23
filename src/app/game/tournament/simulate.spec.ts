@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { simulateMatch } from './simulate';
 import type { Battler, BattleMove } from '../engine';
 
-const tackle: BattleMove = { name: 'Tackle', type: 'normal', power: 60, accuracy: 100, damageClass: 'physical' };
+const tackle: BattleMove = {
+  name: 'Tackle',
+  type: 'normal',
+  power: 60,
+  accuracy: 100,
+  damageClass: 'physical',
+};
 
 function mon(name: string, overrides: Partial<Battler> = {}): Battler {
   return {
@@ -10,16 +16,41 @@ function mon(name: string, overrides: Partial<Battler> = {}): Battler {
     name,
     level: 50,
     types: ['normal'],
-    stats: { hp: 120, attack: 100, defense: 100, 'special-attack': 100, 'special-defense': 100, speed: 100 },
+    stats: {
+      hp: 120,
+      attack: 100,
+      defense: 100,
+      'special-attack': 100,
+      'special-defense': 100,
+      speed: 100,
+    },
     moves: [tackle],
     ...overrides,
   };
 }
 
 const strong = (name: string) =>
-  mon(name, { stats: { hp: 160, attack: 220, defense: 120, 'special-attack': 120, 'special-defense': 120, speed: 200 } });
+  mon(name, {
+    stats: {
+      hp: 160,
+      attack: 220,
+      defense: 120,
+      'special-attack': 120,
+      'special-defense': 120,
+      speed: 200,
+    },
+  });
 const frail = (name: string) =>
-  mon(name, { stats: { hp: 40, attack: 50, defense: 10, 'special-attack': 50, 'special-defense': 10, speed: 5 } });
+  mon(name, {
+    stats: {
+      hp: 40,
+      attack: 50,
+      defense: 10,
+      'special-attack': 50,
+      'special-defense': 10,
+      speed: 5,
+    },
+  });
 
 describe('simulateMatch', () => {
   it('lets the stronger team sweep', () => {
@@ -35,7 +66,11 @@ describe('simulateMatch', () => {
 
   it('is deterministic for a given seed', () => {
     const run = () =>
-      simulateMatch([strong('A1'), frail('A2'), mon('A3')], [mon('B1'), strong('B2'), frail('B3')], 'repro');
+      simulateMatch(
+        [strong('A1'), frail('A2'), mon('A3')],
+        [mon('B1'), strong('B2'), frail('B3')],
+        'repro',
+      );
     const first = run();
     const second = run();
     expect(second.winner).toBe(first.winner);

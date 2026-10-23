@@ -21,39 +21,64 @@
   background:
     linear-gradient(120deg, color-mix(in srgb, var(--accent-3) 10%, transparent), transparent 55%),
     var(--glass);
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease;
 
   @include hover-capable {
     &:hover {
-    transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--accent-3) 70%, transparent);
-    box-shadow: 0 10px 26px color-mix(in srgb, var(--accent-3) 18%, transparent);
-  }
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--accent-3) 70%, transparent);
+      box-shadow: 0 10px 26px color-mix(in srgb, var(--accent-3) 18%, transparent);
+    }
   }
   &.active {
     border-color: color-mix(in srgb, var(--success) 55%, transparent);
     cursor: default;
     @include hover-capable {
-      &:hover { transform: none; box-shadow: var(--shadow); }
+      &:hover {
+        transform: none;
+        box-shadow: var(--shadow);
+      }
     }
   }
 }
-.sp-flair { font-size: 1.4rem; }
+.sp-flair {
+  font-size: 1.4rem;
+}
 .sp-copy {
   display: flex;
   flex-direction: column;
   min-width: 0;
 
-  small { color: var(--text-faint); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; }
-  strong { font-size: 1.05rem; letter-spacing: -0.01em; }
+  small {
+    color: var(--text-faint);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  strong {
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
 }
-.sp-parents { color: var(--text-dim); font-size: 0.75rem; }
+.sp-parents {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
 .sp-imgs {
   display: flex;
   margin-left: auto;
 
-  img { width: 46px; height: 46px; image-rendering: pixelated; }
-  img + img { margin-left: -10px; }
+  img {
+    width: 46px;
+    height: 46px;
+    image-rendering: pixelated;
+  }
+  img + img {
+    margin-left: -10px;
+  }
 }
 .sp-go {
   flex: none;
@@ -62,9 +87,13 @@
   color: var(--accent-3);
   white-space: nowrap;
 }
-.special.active .sp-go { color: var(--success); }
+.special.active .sp-go {
+  color: var(--success);
+}
 @include below(sm) {
-  .sp-imgs { display: none; }
+  .sp-imgs {
+    display: none;
+  }
 }
 
 /* ------------------------------------------------------------- pickers */
@@ -113,7 +142,9 @@
   border: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
-  transition: border-color 0.15s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.2s ease;
 
   &:focus {
     outline: none;
@@ -121,7 +152,9 @@
     box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 25%, transparent);
   }
 }
-.dice { padding: 0.5rem 0.7rem; }
+.dice {
+  padding: 0.5rem 0.7rem;
+}
 
 .suggest {
   position: absolute;
@@ -149,10 +182,19 @@
     cursor: pointer;
 
     @include hover-capable {
-      &:hover { background: rgba(255, 255, 255, 0.08); }
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
     }
-    img { width: 34px; height: 34px; image-rendering: pixelated; }
-    small { margin-left: auto; color: var(--text-faint); }
+    img {
+      width: 34px;
+      height: 34px;
+      image-rendering: pixelated;
+    }
+    small {
+      margin-left: auto;
+      color: var(--text-faint);
+    }
   }
 }
 
@@ -169,9 +211,13 @@
     padding-top: 1.4rem;
   }
 }
-.swap ::ng-deep svg { transition: transform 0.35s ease; }
+.swap ::ng-deep svg {
+  transition: transform 0.35s ease;
+}
 @include hover-capable {
-  .swap:hover ::ng-deep svg { transform: rotate(180deg); }
+  .swap:hover ::ng-deep svg {
+    transform: rotate(180deg);
+  }
 }
 
 .error {
@@ -194,8 +240,15 @@
   text-align: center;
   color: var(--text-dim);
 }
-.empty-lead { font-size: 1.05rem; margin: 0 0 0.3rem; }
-.empty-sub { font-size: 0.85rem; margin: 0; color: var(--text-faint); }
+.empty-lead {
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.empty-sub {
+  font-size: 0.85rem;
+  margin: 0;
+  color: var(--text-faint);
+}
 
 /* Parents hover at the sides, streaming into the fusion while merging. */
 .parents {
@@ -213,7 +266,9 @@
   object-fit: contain;
   opacity: 0.85;
   filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease;
 }
 .beam {
   position: absolute;
@@ -226,8 +281,14 @@
   border-radius: 999px;
   opacity: 0;
 }
-.stage.merging .parent.left { transform: translateX(28%) scale(0.85); opacity: 0.35; }
-.stage.merging .parent.right { transform: translateX(-28%) scale(0.85); opacity: 0.35; }
+.stage.merging .parent.left {
+  transform: translateX(28%) scale(0.85);
+  opacity: 0.35;
+}
+.stage.merging .parent.right {
+  transform: translateX(-28%) scale(0.85);
+  opacity: 0.35;
+}
 .stage.merging .beam {
   opacity: 1;
   animation: beam-pulse 0.5s ease-in-out infinite alternate;
@@ -235,8 +296,12 @@
   transition: transform 0.3s ease;
 }
 @keyframes beam-pulse {
-  from { box-shadow: 0 0 6px var(--accent); }
-  to { box-shadow: 0 0 22px var(--accent-2); }
+  from {
+    box-shadow: 0 0 6px var(--accent);
+  }
+  to {
+    box-shadow: 0 0 22px var(--accent-2);
+  }
 }
 
 .result {
@@ -251,14 +316,31 @@
   inset: 6%;
   border-radius: 50%;
   background:
-    radial-gradient(closest-side, color-mix(in srgb, var(--h1, var(--accent)) 26%, transparent), transparent 72%),
-    conic-gradient(from 0deg, color-mix(in srgb, var(--h1, var(--accent)) 35%, transparent), color-mix(in srgb, var(--h2, var(--accent-2)) 35%, transparent), color-mix(in srgb, var(--h1, var(--accent)) 35%, transparent));
-  -webkit-mask: radial-gradient(closest-side, transparent 62%, #000 66%, #000 72%, transparent 76%), radial-gradient(closest-side, #000 55%, transparent 62%);
-  mask: radial-gradient(closest-side, transparent 62%, #000 66%, #000 72%, transparent 76%), radial-gradient(closest-side, #000 55%, transparent 62%);
+    radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--h1, var(--accent)) 26%, transparent),
+      transparent 72%
+    ),
+    conic-gradient(
+      from 0deg,
+      color-mix(in srgb, var(--h1, var(--accent)) 35%, transparent),
+      color-mix(in srgb, var(--h2, var(--accent-2)) 35%, transparent),
+      color-mix(in srgb, var(--h1, var(--accent)) 35%, transparent)
+    );
+  -webkit-mask:
+    radial-gradient(closest-side, transparent 62%, #000 66%, #000 72%, transparent 76%),
+    radial-gradient(closest-side, #000 55%, transparent 62%);
+  mask:
+    radial-gradient(closest-side, transparent 62%, #000 66%, #000 72%, transparent 76%),
+    radial-gradient(closest-side, #000 55%, transparent 62%);
   animation: halo-spin 9s linear infinite;
   opacity: 0.9;
 }
-@keyframes halo-spin { to { transform: rotate(360deg); } }
+@keyframes halo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .fused {
   width: 82%;
@@ -271,7 +353,9 @@
 .stage.done .fused {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    opacity 0.45s ease,
+    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .stage.merging .fused {
   opacity: 0.25;
@@ -291,20 +375,59 @@
   pointer-events: none;
   text-shadow: 0 0 8px currentColor;
 }
-.stage.done .spark { animation: spark-fly 0.9s ease-out both; }
-.spark.s1 { --dx: -110px; --dy: -70px; color: var(--accent); }
-.spark.s2 { --dx: 120px; --dy: -55px; animation-delay: 0.05s; }
-.spark.s3 { --dx: -85px; --dy: 80px; color: var(--accent-2); animation-delay: 0.1s; }
-.spark.s4 { --dx: 95px; --dy: 85px; animation-delay: 0.12s; }
-.spark.s5 { --dx: 0px; --dy: -120px; color: var(--accent-2); animation-delay: 0.08s; }
-.spark.s6 { --dx: 10px; --dy: 115px; color: var(--accent); animation-delay: 0.15s; }
+.stage.done .spark {
+  animation: spark-fly 0.9s ease-out both;
+}
+.spark.s1 {
+  --dx: -110px;
+  --dy: -70px;
+  color: var(--accent);
+}
+.spark.s2 {
+  --dx: 120px;
+  --dy: -55px;
+  animation-delay: 0.05s;
+}
+.spark.s3 {
+  --dx: -85px;
+  --dy: 80px;
+  color: var(--accent-2);
+  animation-delay: 0.1s;
+}
+.spark.s4 {
+  --dx: 95px;
+  --dy: 85px;
+  animation-delay: 0.12s;
+}
+.spark.s5 {
+  --dx: 0px;
+  --dy: -120px;
+  color: var(--accent-2);
+  animation-delay: 0.08s;
+}
+.spark.s6 {
+  --dx: 10px;
+  --dy: 115px;
+  color: var(--accent);
+  animation-delay: 0.15s;
+}
 @keyframes spark-fly {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
-  25% { opacity: 1; }
-  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15) rotate(40deg); }
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15) rotate(40deg);
+  }
 }
 
-.identity { text-align: center; }
+.identity {
+  text-align: center;
+}
 .fused-name {
   margin: 0;
   font-size: clamp(1.6rem, 5vw, 2.3rem);
@@ -316,7 +439,11 @@
   font-size: 0.85rem;
   font-style: italic;
 }
-.types { display: flex; gap: 0.35rem; justify-content: center; }
+.types {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: center;
+}
 
 .actions {
   display: flex;
@@ -352,13 +479,22 @@
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
 
-  small { color: var(--text-faint); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; }
-  strong { font-size: 0.95rem; }
+  small {
+    color: var(--text-faint);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  strong {
+    font-size: 0.95rem;
+  }
 }
 
 /* ------------------------------------------------------------- fusion dex */
 
-.dex-section { margin-top: 0.6rem; }
+.dex-section {
+  margin-top: 0.6rem;
+}
 .section-title {
   display: flex;
   align-items: center;
@@ -388,23 +524,39 @@
   color: var(--text);
   text-align: center;
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease;
 
   @include hover-capable {
     &:hover {
-    transform: translateY(-3px);
-    border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border));
-    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+      transform: translateY(-3px);
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border));
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+    }
   }
+  img {
+    width: 72px;
+    height: 72px;
+    image-rendering: pixelated;
   }
-  img { width: 72px; height: 72px; image-rendering: pixelated; }
 }
-.dex-name { font-weight: 700; font-size: 0.88rem; }
-.dex-meta { font-size: 0.68rem; color: var(--text-faint); }
+.dex-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+.dex-meta {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
 .dex-types {
   display: flex;
   gap: 0.25rem;
-  ::ng-deep .badge { padding: 0.1rem 0.4rem; font-size: 0.6rem; }
+  ::ng-deep .badge {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.6rem;
+  }
 }
 .dex-remove {
   position: absolute;
@@ -417,17 +569,35 @@
   border-radius: 50%;
   color: var(--text-faint);
   opacity: 0;
-  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
 }
 .dex-card:hover .dex-remove,
-.dex-card:focus-within .dex-remove { opacity: 1; }
+.dex-card:focus-within .dex-remove {
+  opacity: 1;
+}
 @include hover-capable {
-  .dex-remove:hover { color: var(--danger); background: rgba(255, 93, 115, 0.15); }
+  .dex-remove:hover {
+    color: var(--danger);
+    background: rgba(255, 93, 115, 0.15);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .halo { animation: none; }
-  .fused { opacity: 1; transform: none; transition: none; }
-  .spark { display: none; }
-  .parent { transition: none; }
+  .halo {
+    animation: none;
+  }
+  .fused {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .spark {
+    display: none;
+  }
+  .parent {
+    transition: none;
+  }
 }

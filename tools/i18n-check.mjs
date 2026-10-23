@@ -20,7 +20,9 @@ function walk(dir, out = []) {
 }
 
 // Dictionary keys: 'English': 'German' pairs in de.ui.ts / de.data.ts (exact) and [en, de] tuples (patterns).
-const dictSrc = ['core/i18n/de.ui.ts', 'core/i18n/de.data.ts'].map((f) => readFileSync(join(root, f), 'utf8')).join('\n');
+const dictSrc = ['core/i18n/de.ui.ts', 'core/i18n/de.data.ts']
+  .map((f) => readFileSync(join(root, f), 'utf8'))
+  .join('\n');
 const unq = (s) => s.replace(/\\(.)/g, '$1');
 const keys = new Set();
 for (const m of dictSrc.matchAll(/^\s*'((?:[^'\\]|\\.)*)':\s*'/gm)) keys.add(unq(m[1]));

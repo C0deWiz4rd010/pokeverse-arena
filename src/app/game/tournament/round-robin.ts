@@ -22,20 +22,20 @@ export function roundRobinSchedule(ids: readonly string[]): Fixture[][] {
   if (players.length % 2 === 1) players.push('__bye__');
   const n = players.length;
   const rounds: Fixture[][] = [];
-  const fixed = players[0];
+  const fixed = players[0]!;
   let rotating = players.slice(1);
 
   for (let r = 0; r < n - 1; r++) {
     const lineup = [fixed, ...rotating];
     const fixtures: Fixture[] = [];
     for (let i = 0; i < n / 2; i++) {
-      const a = lineup[i];
-      const b = lineup[n - 1 - i];
+      const a = lineup[i]!;
+      const b = lineup[n - 1 - i]!;
       if (a !== '__bye__' && b !== '__bye__') fixtures.push({ aId: a, bId: b });
     }
     rounds.push(fixtures);
     // Rotate all but the fixed player clockwise.
-    rotating = [lineup[n - 1], ...rotating.slice(0, rotating.length - 1)];
+    rotating = [lineup[n - 1]!, ...rotating.slice(0, rotating.length - 1)];
   }
   return rounds;
 }
@@ -67,12 +67,12 @@ export function swissPairings(
   const fixtures: Fixture[] = [];
 
   for (let i = 0; i < ids.length; i++) {
-    const a = ids[i];
+    const a = ids[i]!;
     if (used.has(a)) continue;
     let partner: string | null = null;
     let fallback: string | null = null;
     for (let j = i + 1; j < ids.length; j++) {
-      const b = ids[j];
+      const b = ids[j]!;
       if (used.has(b)) continue;
       if (fallback === null) fallback = b;
       if (!played.has(pairKey(a, b))) {

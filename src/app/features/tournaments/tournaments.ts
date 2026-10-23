@@ -30,7 +30,8 @@ import { TranslatePipe } from '../../core/i18n/translate.pipe';
 @Component({
   selector: 'pv-tournaments',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, 
+  imports: [
+    TranslatePipe,
     NgTemplateOutlet,
     TournamentMatchComponent,
     PageHeaderComponent,
@@ -54,7 +55,9 @@ export class TournamentsComponent {
   protected readonly inMatch = signal(false);
   protected readonly draftPicks = signal<Battler[]>([]);
   protected readonly draftSize = computed(() => this.svc.mode()?.teamSize ?? 3);
-  protected readonly canConfirmDraft = computed(() => this.draftPicks().length === this.draftSize());
+  protected readonly canConfirmDraft = computed(
+    () => this.draftPicks().length === this.draftSize(),
+  );
 
   /* ----------------------------------------------------- bracket groupings */
 

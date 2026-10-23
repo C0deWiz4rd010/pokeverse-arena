@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  REGIONS,
-  regionById,
-  regionDexCount,
-  regionForDex,
-} from './regions';
+import { REGIONS, regionById, regionDexCount, regionForDex } from './regions';
 
 describe('regions', () => {
   it('covers the nine core regions in generation order', () => {
@@ -15,9 +10,9 @@ describe('regions', () => {
   });
 
   it('has contiguous, non-overlapping dex ranges starting at 1', () => {
-    expect(REGIONS[0].dexStart).toBe(1);
+    expect(REGIONS[0]!.dexStart).toBe(1);
     for (let i = 1; i < REGIONS.length; i++) {
-      expect(REGIONS[i].dexStart).toBe(REGIONS[i - 1].dexEnd + 1);
+      expect(REGIONS[i]!.dexStart).toBe(REGIONS[i - 1]!.dexEnd + 1);
     }
   });
 

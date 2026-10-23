@@ -41,7 +41,7 @@ export class ThemeService {
   }
 
   current(): AccentTheme {
-    return ACCENT_THEMES.find((t) => t.id === this._themeId()) ?? ACCENT_THEMES[0];
+    return ACCENT_THEMES.find((t) => t.id === this._themeId()) ?? ACCENT_THEMES[0]!;
   }
 
   setTheme(id: string): void {

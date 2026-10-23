@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { animatedSprite, cryUrl, endpoints, idFromUrl, officialArtwork, POKEAPI_BASE } from './pokeapi-endpoints';
+import {
+  animatedSprite,
+  cryUrl,
+  endpoints,
+  idFromUrl,
+  officialArtwork,
+  POKEAPI_BASE,
+} from './pokeapi-endpoints';
 
 describe('pokeapi endpoint helpers', () => {
   it('extracts the trailing id from a resource url', () => {

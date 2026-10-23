@@ -14,7 +14,7 @@ export function inBounds(map: MapDef, x: number, y: number): boolean {
 }
 
 export function tileAt(map: MapDef, x: number, y: number): TileKind | null {
-  return inBounds(map, x, y) ? map.tiles[y][x] : null;
+  return inBounds(map, x, y) ? map.tiles[y]![x]! : null;
 }
 
 export function npcAt(map: MapDef, x: number, y: number): NpcDef | undefined {

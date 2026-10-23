@@ -43,7 +43,10 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    transform 0.12s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .bslot span {
@@ -72,11 +75,13 @@
   border-radius: 50%;
   color: #0b0a1f;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent),
+  box-shadow:
+    0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent),
     0 0 0 4px color-mix(in srgb, var(--bg) 70%, #000);
 }
 .bslot.center.active .orb {
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 70%, transparent),
+  box-shadow:
+    0 8px 22px color-mix(in srgb, var(--accent) 70%, transparent),
     0 0 0 4px color-mix(in srgb, var(--bg) 70%, #000);
 }
 
@@ -125,7 +130,10 @@
   font-size: var(--fs-xs);
   font-weight: 700;
   text-align: center;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease;
 }
 .sheet-item:active {
   transform: scale(0.94);
@@ -147,25 +155,60 @@
 
 /* Landscape phone: a slim icon-only bar and a wider, shorter sheet. */
 @include short {
-  .bnav { padding-block: 0.15rem; }
-  .bslot { flex-direction: row; min-height: 44px; }
+  .bnav {
+    padding-block: 0.15rem;
+  }
+  .bslot {
+    flex-direction: row;
+    min-height: 44px;
+  }
   /* visually hidden, still announced */
-  .bslot:not(.center) span { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .bslot.center { margin-top: -0.5rem; }
-  .orb { width: 2.6rem; height: 2.6rem; }
-  .sheet-grid { grid-template-columns: repeat(7, 1fr); }
-  .sheet-icon { width: 2.3rem; height: 2.3rem; }
+  .bslot:not(.center) span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .bslot.center {
+    margin-top: -0.5rem;
+  }
+  .orb {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+  .sheet-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .sheet-icon {
+    width: 2.3rem;
+    height: 2.3rem;
+  }
 }
 
 @keyframes scrim-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes sheet-in {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .sheet-scrim,
-  .sheet { animation: none; }
+  .sheet {
+    animation: none;
+  }
 }

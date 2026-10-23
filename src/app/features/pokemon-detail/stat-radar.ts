@@ -45,18 +45,39 @@ const LABELS: { key: keyof PokemonStats; short: string }[] = [
   `,
   styles: [
     `
-      svg { width: 100%; max-width: 280px; height: auto; }
-      .grid { fill: none; stroke: rgba(255, 255, 255, 0.08); }
-      .spoke { stroke: rgba(255, 255, 255, 0.08); }
+      svg {
+        width: 100%;
+        max-width: 280px;
+        height: auto;
+      }
+      .grid {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.08);
+      }
+      .spoke {
+        stroke: rgba(255, 255, 255, 0.08);
+      }
       .area {
         fill: rgba(108, 224, 255, 0.25);
         stroke: var(--accent);
         stroke-width: 2;
         transition: all 0.5s ease;
       }
-      .dot { fill: var(--accent); }
-      .lbl { fill: var(--text-dim); font-size: 10px; font-weight: 700; text-anchor: middle; }
-      .val { fill: var(--text); font-size: 11px; font-weight: 800; text-anchor: middle; }
+      .dot {
+        fill: var(--accent);
+      }
+      .lbl {
+        fill: var(--text-dim);
+        font-size: 10px;
+        font-weight: 700;
+        text-anchor: middle;
+      }
+      .val {
+        fill: var(--text);
+        font-size: 11px;
+        font-weight: 800;
+        text-anchor: middle;
+      }
     `,
   ],
 })
@@ -102,6 +123,8 @@ export class StatRadarComponent {
   }
 
   protected areaPoints(): string {
-    return this.points().map((p) => `${p.vx.toFixed(1)},${p.vy.toFixed(1)}`).join(' ');
+    return this.points()
+      .map((p) => `${p.vx.toFixed(1)},${p.vy.toFixed(1)}`)
+      .join(' ');
   }
 }

@@ -7,8 +7,10 @@ bootstrapApplication(App, appConfig).catch((err: unknown) => {
   const root = document.querySelector('app-root') ?? document.body;
   const box = document.createElement('div');
   box.setAttribute('role', 'alert');
-  box.style.cssText = 'padding:2rem 1rem;max-width:32rem;margin:10vh auto;font:16px system-ui,sans-serif;text-align:center;color:#e8ecf4';
-  box.textContent = 'PokéVerse Arena could not start. Please reload the page — if this keeps happening, clear the site data and try again.';
+  box.style.cssText =
+    'padding:2rem 1rem;max-width:32rem;margin:10vh auto;font:16px system-ui,sans-serif;text-align:center;color:#e8ecf4';
+  box.textContent =
+    'PokéVerse Arena could not start. Please reload the page — if this keeps happening, clear the site data and try again.';
   root.replaceChildren(box);
 });
 

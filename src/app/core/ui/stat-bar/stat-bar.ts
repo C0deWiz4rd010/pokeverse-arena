@@ -3,8 +3,8 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 /** Animated horizontal stat bar with a color that reflects the value. */
 @Component({
-    imports: [TranslatePipe],
-selector: 'pv-stat-bar',
+  imports: [TranslatePipe],
+  selector: 'pv-stat-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="row">

@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { IconComponent } from '../icon/icon';
 import { SaveService } from '../../storage/save.service';
 import { HapticsService } from '../../haptics/haptics.service';
@@ -42,9 +37,13 @@ interface BeforeInstallPromptEvent extends Event {
           }
         </span>
         @if (!ios()) {
-          <button class="btn btn-primary go" type="button" (click)="install()">{{ 'Install' | t }}</button>
+          <button class="btn btn-primary go" type="button" (click)="install()">
+            {{ 'Install' | t }}
+          </button>
         }
-        <button class="x" type="button" [attr.aria-label]="'Dismiss' | t" (click)="dismiss()"><pv-icon name="x" /></button>
+        <button class="x" type="button" [attr.aria-label]="'Dismiss' | t" (click)="dismiss()">
+          <pv-icon name="x" />
+        </button>
       </div>
     }
   `,
@@ -106,7 +105,8 @@ export class InstallPromptComponent {
   private isStandalone(): boolean {
     return (
       (typeof matchMedia !== 'undefined' && matchMedia('(display-mode: standalone)').matches) ||
-      (typeof navigator !== 'undefined' && (navigator as { standalone?: boolean }).standalone === true)
+      (typeof navigator !== 'undefined' &&
+        (navigator as { standalone?: boolean }).standalone === true)
     );
   }
   private isIos(): boolean {

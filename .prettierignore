@@ -1,0 +1,12 @@
+dist
+.angular
+coverage
+public
+node_modules
+package-lock.json
+# Adventure (RPG) is maintained separately; keep its history untouched
+src/app/features/rpg
+src/app/game/rpg
+# Dictionaries are parsed line by line by tools/i18n-*.mjs
+src/app/core/i18n/de.*.ts
+src/app/core/i18n/de.ts

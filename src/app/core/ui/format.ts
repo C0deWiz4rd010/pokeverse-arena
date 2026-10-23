@@ -1,10 +1,6 @@
-import type { PokemonType } from '../utils/type-chart';
-
 /** "bulbasaur" -> "Bulbasaur"; "mr-mime" -> "Mr Mime". */
 export function titleCase(value: string): string {
-  return value
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return value.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /** 25 -> "#025". */
@@ -13,7 +9,7 @@ export function padId(id: number): string {
 }
 
 /** CSS variable for a type color, e.g. type 'fire' -> var(--type-fire). */
-export function typeColorVar(type: PokemonType | string): string {
+export function typeColorVar(type: string): string {
   return `var(--type-${type})`;
 }
 

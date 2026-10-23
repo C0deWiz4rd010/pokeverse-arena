@@ -50,27 +50,30 @@ describe('performance flow', () => {
     let s = startPerformance('normal', 'combo');
     s = appeal(s, 'cool', FLAT, 'cool', 'normal', 'combo'); // round 1
     const comboRound = appeal(s, 'beauty', FLAT, 'beauty', 'normal', 'combo').history[1];
-    expect(comboRound.combo).toBeGreaterThan(0);
+    expect(comboRound!.combo).toBeGreaterThan(0);
 
     let r = startPerformance('normal', 'bore');
     r = appeal(r, 'cool', FLAT, 'cool', 'normal', 'bore');
     const repeat = appeal(r, 'cool', FLAT, 'cool', 'normal', 'bore').history[1];
-    expect(repeat.boredom).toBeGreaterThan(0);
+    expect(repeat!.boredom).toBeGreaterThan(0);
   });
 
   it('lets conditions from the Poffin mix boost matching appeals', () => {
-    const cond = mixConditions([{ name: 'A', flavors: { spicy: 60, dry: 0, sweet: 0, bitter: 0, sour: 0 } }]);
+    const cond = mixConditions([
+      { name: 'A', flavors: { spicy: 60, dry: 0, sweet: 0, bitter: 0, sour: 0 } },
+    ]);
     const s = startPerformance('normal', 'cond');
     const out = appeal(s, 'cool', cond, 'cool', 'normal', 'cond').history[0];
-    expect(out.condition).toBeGreaterThan(0);
+    expect(out!.condition).toBeGreaterThan(0);
   });
 
   it('ranks the field once finished', () => {
     let s = startPerformance('normal', 'rank');
-    for (let i = 0; i < PERFORMANCE_ROUNDS; i++) s = appeal(s, 'cool', FLAT, 'cool', 'normal', 'rank');
+    for (let i = 0; i < PERFORMANCE_ROUNDS; i++)
+      s = appeal(s, 'cool', FLAT, 'cool', 'normal', 'rank');
     const result = performanceRanking(s, 'Star');
     expect(result.ranking).toHaveLength(4);
     expect(result.playerRank).toBeGreaterThanOrEqual(1);
-    expect(result.ranking[0].score).toBeGreaterThanOrEqual(result.ranking[3].score);
+    expect(result.ranking[0]!.score).toBeGreaterThanOrEqual(result.ranking[3]!.score);
   });
 });

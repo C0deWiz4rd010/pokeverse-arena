@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { ICONS, type IconName } from './icons.data';
 

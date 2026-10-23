@@ -25,7 +25,7 @@ describe('map registry integrity', () => {
         if (w.to === '@return') continue; // resolved from the door-return save state
         const target = MAPS[w.to];
         expect(target, `${m.id} warp → ${w.to}`).toBeDefined();
-        const tile = tileAt(target, w.toX, w.toY);
+        const tile = tileAt(target!, w.toX, w.toY);
         expect(tile, `${m.id} warp → ${w.to} (${w.toX},${w.toY}) in bounds`).not.toBeNull();
         expect(TILE[tile!].walkable, `${m.id} warp → ${w.to} lands on walkable '${tile}'`).toBe(true);
       }

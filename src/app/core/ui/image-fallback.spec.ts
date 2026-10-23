@@ -29,7 +29,9 @@ describe('installImageFallback', () => {
 
   it('leaves an image alone when the component already swapped its source', () => {
     const img = brokenImg('https://cdn.example/a.png');
-    img.addEventListener('error', () => img.setAttribute('src', 'https://cdn.example/fallback.png'));
+    img.addEventListener('error', () =>
+      img.setAttribute('src', 'https://cdn.example/fallback.png'),
+    );
     img.dispatchEvent(new Event('error'));
     vi.runAllTimers();
     expect(img.src).toBe('https://cdn.example/fallback.png');

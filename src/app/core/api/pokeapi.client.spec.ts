@@ -30,7 +30,10 @@ describe('PokeApiClient', () => {
   const err = (status: number) => throwError(() => new HttpErrorResponse({ status }));
 
   it('retries transient failures and then succeeds', async () => {
-    http.get.mockReturnValueOnce(err(503)).mockReturnValueOnce(err(0)).mockReturnValueOnce(of({ ok: 1 }));
+    http.get
+      .mockReturnValueOnce(err(503))
+      .mockReturnValueOnce(err(0))
+      .mockReturnValueOnce(of({ ok: 1 }));
     const data = await TestBed.inject(PokeApiClient).get<{ ok: number }>('https://x/a');
     expect(data).toEqual({ ok: 1 });
     expect(http.get).toHaveBeenCalledTimes(3);
@@ -38,13 +41,17 @@ describe('PokeApiClient', () => {
 
   it('does not retry a 404', async () => {
     http.get.mockReturnValue(err(404));
-    await expect(TestBed.inject(PokeApiClient).get('https://x/missing')).rejects.toBeInstanceOf(HttpErrorResponse);
+    await expect(TestBed.inject(PokeApiClient).get('https://x/missing')).rejects.toBeInstanceOf(
+      HttpErrorResponse,
+    );
     expect(http.get).toHaveBeenCalledTimes(1);
   });
 
   it('gives up after the retry budget', async () => {
     http.get.mockReturnValue(err(500));
-    await expect(TestBed.inject(PokeApiClient).get('https://x/down')).rejects.toBeInstanceOf(HttpErrorResponse);
+    await expect(TestBed.inject(PokeApiClient).get('https://x/down')).rejects.toBeInstanceOf(
+      HttpErrorResponse,
+    );
     expect(http.get).toHaveBeenCalledTimes(3);
   });
 

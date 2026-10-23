@@ -1,18 +1,65 @@
 import { describe, expect, it } from 'vitest';
 import { SeededRng } from '../../core/utils/rng';
 import { chooseAiMove, estimateDamage, type AiContext } from './ai';
-import { freshField, freshVolatiles, type Battler, type BattleMove, type BattleSide } from './battle-types';
+import {
+  freshField,
+  freshVolatiles,
+  type Battler,
+  type BattleMove,
+  type BattleSide,
+} from './battle-types';
 import { freshStages } from './stat-stages';
 
-const tackle: BattleMove = { name: 'Tackle', type: 'normal', power: 40, accuracy: 100, damageClass: 'physical' };
-const ember: BattleMove = { name: 'Ember', type: 'fire', power: 40, accuracy: 100, damageClass: 'special' };
-const quickKo: BattleMove = { name: 'Quick KO', type: 'normal', power: 200, accuracy: 100, damageClass: 'physical', priority: 1 };
-const bigKo: BattleMove = { name: 'Big KO', type: 'normal', power: 200, accuracy: 100, damageClass: 'physical' };
-const swordsDance: BattleMove = { name: 'Swords Dance', type: 'normal', power: 0, accuracy: 0, damageClass: 'status', boosts: { attack: 2 } };
+const tackle: BattleMove = {
+  name: 'Tackle',
+  type: 'normal',
+  power: 40,
+  accuracy: 100,
+  damageClass: 'physical',
+};
+const ember: BattleMove = {
+  name: 'Ember',
+  type: 'fire',
+  power: 40,
+  accuracy: 100,
+  damageClass: 'special',
+};
+const quickKo: BattleMove = {
+  name: 'Quick KO',
+  type: 'normal',
+  power: 200,
+  accuracy: 100,
+  damageClass: 'physical',
+  priority: 1,
+};
+const bigKo: BattleMove = {
+  name: 'Big KO',
+  type: 'normal',
+  power: 200,
+  accuracy: 100,
+  damageClass: 'physical',
+};
+const swordsDance: BattleMove = {
+  name: 'Swords Dance',
+  type: 'normal',
+  power: 0,
+  accuracy: 0,
+  damageClass: 'status',
+  boosts: { attack: 2 },
+};
 
-const BASE_STATS = { hp: 150, attack: 120, defense: 80, 'special-attack': 120, 'special-defense': 80, speed: 100 };
+const BASE_STATS = {
+  hp: 150,
+  attack: 120,
+  defense: 80,
+  'special-attack': 120,
+  'special-defense': 80,
+  speed: 100,
+};
 
-function battler(o: Omit<Partial<Battler>, 'stats'> & { stats?: Partial<Battler['stats']> } = {}): Battler {
+function battler(
+  o: Omit<Partial<Battler>, 'stats'> & { stats?: Partial<Battler['stats']> } = {},
+): Battler {
   return {
     id: 1,
     name: 'Mon',
@@ -50,7 +97,10 @@ function ctx(attacker: Battler, defender: Battler, defHp?: number): AiContext {
 
 describe('chooseAiMove', () => {
   it('basic tier prefers the super-effective move (legacy behaviour)', () => {
-    const c = ctx(battler({ types: ['fire'], moves: [tackle, ember] }), battler({ types: ['grass'] }));
+    const c = ctx(
+      battler({ types: ['fire'], moves: [tackle, ember] }),
+      battler({ types: ['grass'] }),
+    );
     expect(chooseAiMove(c, 'basic')).toBe(1);
   });
 
@@ -73,7 +123,11 @@ describe('chooseAiMove', () => {
 
   it('strong tier values setup when it cannot threaten a KO yet', () => {
     // Foe is a huge wall at full HP; chip is futile, so set up instead.
-    const c = ctx(battler({ moves: [tackle, swordsDance], stats: { attack: 60 } }), battler({ stats: { defense: 250, hp: 600 } }), 600);
+    const c = ctx(
+      battler({ moves: [tackle, swordsDance], stats: { attack: 60 } }),
+      battler({ stats: { defense: 250, hp: 600 } }),
+      600,
+    );
     expect(chooseAiMove(c, 'strong')).toBe(1);
   });
 });

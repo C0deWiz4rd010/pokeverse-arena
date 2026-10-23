@@ -7,7 +7,6 @@
  */
 import { safeGet, safeSet } from '../../core/storage/safe-storage';
 
-
 export interface RivalState {
   readonly v: 1;
   readonly name: string;
@@ -28,11 +27,11 @@ const RIVAL_TITLES = ['Your Rival', 'The Rival', 'Eternal Rival'];
 
 /** Generate a fresh rival identity (rand ∈ [0,1) — injectable for tests). */
 export function createRival(rand: () => number = Math.random): RivalState {
-  const name = RIVAL_NAMES[Math.floor(rand() * RIVAL_NAMES.length)];
+  const name = RIVAL_NAMES[Math.floor(rand() * RIVAL_NAMES.length)]!;
   return {
     v: 1,
     name,
-    title: RIVAL_TITLES[Math.floor(rand() * RIVAL_TITLES.length)],
+    title: RIVAL_TITLES[Math.floor(rand() * RIVAL_TITLES.length)]!,
     seed: `rival-${name}-${Math.floor(rand() * 1e6)}`,
     playerWins: 0,
     rivalWins: 0,
@@ -115,6 +114,6 @@ export function rivalTaunt(state: RivalState): string {
         : state.playerWins > state.rivalWins
           ? PLAYER_LEADS
           : TIED;
-  const line = pool[meetings % pool.length];
+  const line = pool[meetings % pool.length]!;
   return line.replace('{p}', String(state.playerWins)).replace('{r}', String(state.rivalWins));
 }

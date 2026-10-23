@@ -30,11 +30,11 @@ export function chooseAiMove(ctx: AiContext, tier: AiTier): number {
   const pool = usable.length ? usable : moves.map((_, i) => i);
   if (tier === 'random') return ctx.rng.pick(pool);
 
-  let best = pool[0];
+  let best = pool[0]!;
   let bestScore = -Infinity;
   for (const i of pool) {
     // Tiny deterministic jitter breaks ties without changing rankings.
-    const score = scoreMove(moves[i], ctx, tier) + ctx.rng.next() * 0.001;
+    const score = scoreMove(moves[i]!, ctx, tier) + ctx.rng.next() * 0.001;
     if (score > bestScore) {
       bestScore = score;
       best = i;

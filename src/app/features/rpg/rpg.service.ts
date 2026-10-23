@@ -586,7 +586,7 @@ export class RpgService {
     }
     this.battleSetup.set(setup);
     const styles: EncounterFx[] = setup.kind === 'trainer' ? ['alert'] : ['flash', 'spiral', 'split'];
-    this.encounterFx.set(styles[Math.floor(Math.random() * styles.length)]);
+    this.encounterFx.set(styles[Math.floor(Math.random() * styles.length)]!);
     this.phase.set('battle');
     this.sfx.play('encounter');
     if (this.fxTimer) clearTimeout(this.fxTimer);
@@ -861,12 +861,12 @@ export class RpgService {
     if (this.dialogue()?.choices) return; // must pick a choice
     this.dialogue.set(null);
     while (this.scriptStack.length) {
-      const top = this.scriptStack[this.scriptStack.length - 1];
+      const top = this.scriptStack[this.scriptStack.length - 1]!;
       if (top.i >= top.nodes.length) {
         this.scriptStack.pop();
         continue;
       }
-      const node = top.nodes[top.i++];
+      const node = top.nodes[top.i++]!;
       if (this.execNode(node) === 'pause') return;
       if (this.phase() !== 'dialogue') return; // a node changed phase (battle/shop)
     }
@@ -963,8 +963,8 @@ export class RpgService {
     this.showToast(`${this.i18n.t(trainer.name)}: ${this.i18n.t(trainer.intro)}`, 3200);
     this.startEncounter({
       kind: 'trainer',
-      foeSpecies: trainer.team[0].species,
-      foeLevel: trainer.team[0].level,
+      foeSpecies: trainer.team[0]!.species,
+      foeLevel: trainer.team[0]!.level,
       foeCatchRate: 0,
       trainerName: trainer.name,
       team: trainer.team,
@@ -1011,7 +1011,7 @@ export class RpgService {
     if (!g) return;
     const idx = g.party.findIndex((m) => m.uid === uid);
     if (idx < 0) return;
-    const mon = g.party[idx];
+    const mon = g.party[idx]!;
     let maxHp = mon.maxHp;
     try {
       const built = await this.battle.buildBattler(to, mon.level);
@@ -1146,7 +1146,7 @@ export class RpgService {
     const bag = backId ? { ...g.bag, [backId]: (g.bag[backId] ?? 0) + 1 } : g.bag;
     this.game.set({ ...g, party: r.party, bag });
     this.persist();
-    const mon = g.party[index];
+    const mon = g.party[index]!;
     this.showToast(`Took the ${backId ? ITEMS[backId].name : 'item'} from ${titleCase(mon.nickname ?? mon.species)}.`);
   }
 

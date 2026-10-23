@@ -46,7 +46,10 @@ export class DailyService {
     if (won) {
       this.toast.show({
         title: `Daily Challenge complete — ${after.streak}-day streak!`,
-        text: after.streak > 1 ? `Best run: ${after.best} days. Come back tomorrow!` : 'Come back tomorrow to start a streak.',
+        text:
+          after.streak > 1
+            ? `Best run: ${after.best} days. Come back tomorrow!`
+            : 'Come back tomorrow to start a streak.',
         icon: 'flame',
         kind: 'achievement',
       });

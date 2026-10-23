@@ -1,12 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { dailyFusionPair, fuseBattlers, fuseStats, fuseTypes, fusePokemon, fusionHueShift, spliceName } from './fusion';
+import {
+  dailyFusionPair,
+  fuseBattlers,
+  fuseStats,
+  fuseTypes,
+  fusePokemon,
+  fusionHueShift,
+  spliceName,
+} from './fusion';
 import type { Pokemon, PokemonStats } from '../../core/models/pokemon.model';
 import type { Battler, BattleMove } from '../engine';
 
 const stats = (
-  hp: number, attack: number, defense: number, spa: number, spd: number, speed: number,
+  hp: number,
+  attack: number,
+  defense: number,
+  spa: number,
+  spd: number,
+  speed: number,
 ): PokemonStats => ({
-  hp, attack, defense, 'special-attack': spa, 'special-defense': spd, speed,
+  hp,
+  attack,
+  defense,
+  'special-attack': spa,
+  'special-defense': spd,
+  speed,
 });
 
 function mon(partial: Partial<Pokemon>): Pokemon {
@@ -119,7 +137,13 @@ describe('dailyFusionPair', () => {
 });
 
 describe('fuseBattlers', () => {
-  const move = (name: string): BattleMove => ({ name, type: 'normal', power: 60, accuracy: 100, damageClass: 'physical' });
+  const move = (name: string): BattleMove => ({
+    name,
+    type: 'normal',
+    power: 60,
+    accuracy: 100,
+    damageClass: 'physical',
+  });
   const battler = (partial: Partial<Battler>): Battler => ({
     id: 6,
     name: 'charizard',
@@ -169,8 +193,18 @@ describe('fuseBattlers', () => {
 });
 
 describe('fusePokemon', () => {
-  const head = mon({ id: 6, name: 'charizard', types: ['fire', 'flying'], stats: stats(78, 84, 78, 109, 85, 100) });
-  const body = mon({ id: 9, name: 'blastoise', types: ['water'], stats: stats(79, 83, 100, 85, 105, 78) });
+  const head = mon({
+    id: 6,
+    name: 'charizard',
+    types: ['fire', 'flying'],
+    stats: stats(78, 84, 78, 109, 85, 100),
+  });
+  const body = mon({
+    id: 9,
+    name: 'blastoise',
+    types: ['water'],
+    stats: stats(79, 83, 100, 85, 105, 78),
+  });
 
   it('is fully deterministic for the same pair', () => {
     expect(fusePokemon(head, body)).toEqual(fusePokemon(head, body));

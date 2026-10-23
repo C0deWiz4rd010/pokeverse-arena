@@ -50,7 +50,12 @@ export function badgeStatMultipliers(badges: ReadonlySet<PokemonType>): Record<S
 export function badgeBoostSummary(badges: ReadonlySet<PokemonType>): string {
   const mult = badgeStatMultipliers(badges);
   const short: Record<StatKey, string> = {
-    hp: 'HP', attack: 'Atk', defense: 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', speed: 'Spe',
+    hp: 'HP',
+    attack: 'Atk',
+    defense: 'Def',
+    'special-attack': 'SpA',
+    'special-defense': 'SpD',
+    speed: 'Spe',
   };
   const parts = (Object.keys(mult) as StatKey[])
     .filter((k) => mult[k] > 1)

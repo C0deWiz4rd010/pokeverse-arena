@@ -59,7 +59,7 @@ export function setLead(party: readonly PartyMon[], i: number): PartyMon[] {
   if (i <= 0 || i >= party.length) return [...party];
   const next = [...party];
   const [mon] = next.splice(i, 1);
-  next.unshift(mon);
+  next.unshift(mon!);
   return next;
 }
 
@@ -72,7 +72,7 @@ export function depositToBox(
   if (party.length <= 1 || i < 0 || i >= party.length) return { party: [...party], box: [...box], ok: false };
   const p = [...party];
   const [mon] = p.splice(i, 1);
-  return { party: p, box: [...box, mon], ok: true };
+  return { party: p, box: [...box, mon!], ok: true };
 }
 
 /** Move box[i] into the party (if there is room). */
@@ -84,7 +84,7 @@ export function withdrawFromBox(
   if (party.length >= PARTY_MAX || i < 0 || i >= box.length) return { party: [...party], box: [...box], ok: false };
   const b = [...box];
   const [mon] = b.splice(i, 1);
-  return { party: [...party, mon], box: b, ok: true };
+  return { party: [...party, mon!], box: b, ok: true };
 }
 
 /** Set (or clear) a Pokémon's nickname by uid in a list. */

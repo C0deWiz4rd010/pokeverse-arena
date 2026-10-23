@@ -36,7 +36,7 @@ const VOWELS = new Set(['a', 'e', 'i', 'o', 'u', 'y']);
 function syllableStarts(name: string): number[] {
   const starts: number[] = [];
   for (let i = 1; i < name.length; i++) {
-    if (VOWELS.has(name[i]) && !VOWELS.has(name[i - 1])) starts.push(i);
+    if (VOWELS.has(name[i]!) && !VOWELS.has(name[i - 1]!)) starts.push(i);
   }
   return starts;
 }
@@ -69,7 +69,7 @@ export function spliceName(head: string, body: string): string {
   if (spliced === a || spliced === b) {
     spliced = a.slice(0, Math.ceil(a.length / 2)) + b.slice(Math.floor(b.length / 2));
   }
-  return spliced[0].toUpperCase() + spliced.slice(1);
+  return spliced[0]!.toUpperCase() + spliced.slice(1);
 }
 
 /** Head donates the mental stats (2:1), body donates the physique (2:1). */
@@ -95,9 +95,24 @@ export function fuseTypes(head: PokemonType[], body: PokemonType[]): PokemonType
 
 /** Approximate hue (degrees) of each type's theme color, for palette-shifting. */
 const TYPE_HUE: Record<PokemonType, number> = {
-  normal: 210, fire: 26, water: 210, electric: 48, grass: 114, ice: 172,
-  fighting: 343, poison: 281, ground: 20, flying: 221, psychic: 357, bug: 80,
-  rock: 44, ghost: 224, dragon: 208, dark: 270, steel: 196, fairy: 304,
+  normal: 210,
+  fire: 26,
+  water: 210,
+  electric: 48,
+  grass: 114,
+  ice: 172,
+  fighting: 343,
+  poison: 281,
+  ground: 20,
+  flying: 221,
+  psychic: 357,
+  bug: 80,
+  rock: 44,
+  ghost: 224,
+  dragon: 208,
+  dark: 270,
+  steel: 196,
+  fairy: 304,
 };
 
 /** Signed shortest rotation from the body's palette hue to the head's. */
@@ -122,10 +137,18 @@ export function dailyFusionPair(seed: string, maxId = 1025): { head: number; bod
 }
 
 const EPITHETS = [
-  'the Twin-Soul Chimera', 'the Impossible Splice', 'the Gene-Woven Wonder',
-  'the Laboratory Legend', 'the Double Helix', 'the Spliced Sovereign',
-  'the Hybrid Horizon', 'the Mended Myth', 'the Chromatic Chimera',
-  'the Fused Frontier', 'the Patchwork Prodigy', 'the Synthesis Spirit',
+  'the Twin-Soul Chimera',
+  'the Impossible Splice',
+  'the Gene-Woven Wonder',
+  'the Laboratory Legend',
+  'the Double Helix',
+  'the Spliced Sovereign',
+  'the Hybrid Horizon',
+  'the Mended Myth',
+  'the Chromatic Chimera',
+  'the Fused Frontier',
+  'the Patchwork Prodigy',
+  'the Synthesis Spirit',
 ];
 
 /**
@@ -142,7 +165,7 @@ export function fuseBattlers(head: Battler, body: Battler): Battler {
   const moves: Battler['moves'] = [];
   const pool = [head.moves, body.moves];
   for (let i = 0; moves.length < 4 && i < 8; i++) {
-    const move = pool[i % 2][Math.floor(i / 2)];
+    const move = pool[i % 2]![Math.floor(i / 2)];
     if (move && !seen.has(move.name)) {
       seen.add(move.name);
       moves.push(move);
@@ -157,7 +180,7 @@ export function fuseBattlers(head: Battler, body: Battler): Battler {
     moves: moves.length ? moves : head.moves,
     ability: head.ability ?? body.ability,
     sprite: body.sprite,
-    hue: fusionHueShift(types[0], body.types[0] ?? 'normal'),
+    hue: fusionHueShift(types[0]!, body.types[0] ?? 'normal'),
   };
 }
 
@@ -176,11 +199,11 @@ export function fusePokemon(head: Pokemon, body: Pokemon): FusionResult {
     code: `${head.id}.${body.id}`,
     types,
     stats,
-    bst: Object.values(stats).reduce((sum, v) => sum + v, 0),
+    bst: Object.values(stats as unknown as Record<string, number>).reduce((sum, v) => sum + v, 0),
     ability,
     heightM: Math.round(((head.heightM + body.heightM) / 2) * 10) / 10,
     weightKg: Math.round(((head.weightKg + body.weightKg) / 2) * 10) / 10,
-    hueShift: fusionHueShift(types[0], body.types[0] ?? 'normal'),
+    hueShift: fusionHueShift(types[0]!, body.types[0] ?? 'normal'),
     epithet: rng.pick(EPITHETS),
   };
 }

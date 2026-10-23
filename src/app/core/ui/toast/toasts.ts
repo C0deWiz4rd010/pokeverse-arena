@@ -25,7 +25,9 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
           <span class="t-icon" aria-hidden="true"><pv-icon [name]="t.icon" /></span>
           <span class="t-body">
             <strong>{{ t.title | t }}</strong>
-            @if (t.text) { <span class="t-text">{{ t.text | t }}</span> }
+            @if (t.text) {
+              <span class="t-text">{{ t.text | t }}</span>
+            }
           </span>
         </button>
       }

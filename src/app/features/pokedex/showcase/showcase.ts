@@ -16,7 +16,14 @@ import { IconComponent } from '../../../core/ui/icon/icon';
 import { CryService } from '../../../core/audio/cry.service';
 import { padId, titleCase, typeColorVar } from '../../../core/ui/format';
 import { SPRITE_BASE, officialArtwork } from '../../../core/api/pokeapi-endpoints';
-import { RADAR_RINGS, RADAR_STATS, RADAR_VIEWBOX, labelPoint, radarPoint, shapePoints } from '../stat-radar';
+import {
+  RADAR_RINGS,
+  RADAR_STATS,
+  RADAR_VIEWBOX,
+  labelPoint,
+  radarPoint,
+  shapePoints,
+} from '../stat-radar';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 const REDUCED =
@@ -48,11 +55,15 @@ const DEX_MAX = 1025;
         <span class="glow"></span>
         <span class="ring"></span>
         <span class="ring r2"></span>
-        @if (detail(); as d) { <img decoding="async" class="echo" [src]="art()" alt="" /> }
+        @if (detail(); as d) {
+          <img decoding="async" class="echo" [src]="art()" alt="" />
+        }
       </div>
 
       <header class="bar">
-        <a class="chip" routerLink="/pokedex" [attr.title]="'Back to the classic Pokédex' | t"><pv-icon name="book" /> {{ 'Classic' | t }}</a>
+        <a class="chip" routerLink="/pokedex" [attr.title]="'Back to the classic Pokédex' | t"
+          ><pv-icon name="book" /> {{ 'Classic' | t }}</a
+        >
         <span class="ttl">{{ 'Showcase' | t }}</span>
         <div class="jump">
           <input
@@ -68,10 +79,18 @@ const DEX_MAX = 1025;
       </header>
 
       <div class="body" [class.entering]="entering()">
-        <button class="nav prev" type="button" (click)="step(-1)" [attr.aria-label]="'Previous Pokémon' | t">‹</button>
+        <button
+          class="nav prev"
+          type="button"
+          (click)="step(-1)"
+          [attr.aria-label]="'Previous Pokémon' | t"
+        >
+          ‹
+        </button>
 
         <figure class="art-wrap" [style.transform]="tiltT()">
-          <img decoding="async"
+          <img
+            decoding="async"
             class="art"
             [src]="art()"
             [alt]="name()"
@@ -82,14 +101,27 @@ const DEX_MAX = 1025;
           <figcaption class="plate">
             <span class="num">{{ num() }}</span>
             <h1 class="name">{{ name() }}</h1>
-            @if (detail(); as d) { <span class="genus">{{ i18n.isGerman() && d.genusDe ? d.genusDe : d.genus }}</span> }
+            @if (detail(); as d) {
+              <span class="genus">{{ i18n.isGerman() && d.genusDe ? d.genusDe : d.genus }}</span>
+            }
             <div class="types">
-              @if (detail(); as d) { @for (t of d.types; track t) { <pv-type-badge [type]="t" /> } }
+              @if (detail(); as d) {
+                @for (t of d.types; track t) {
+                  <pv-type-badge [type]="t" />
+                }
+              }
             </div>
           </figcaption>
         </figure>
 
-        <button class="nav next" type="button" (click)="step(1)" [attr.aria-label]="'Next Pokémon' | t">›</button>
+        <button
+          class="nav next"
+          type="button"
+          (click)="step(1)"
+          [attr.aria-label]="'Next Pokémon' | t"
+        >
+          ›
+        </button>
       </div>
 
       <div class="panels">
@@ -98,26 +130,50 @@ const DEX_MAX = 1025;
             <p class="flavor">{{ i18n.isGerman() && d.flavorDe ? d.flavorDe : d.flavor }}</p>
             <div class="quick-facts">
               <span>{{ d.heightM }} m</span>
-              <span>{{ '{0} kg' | t: [(d.weightKg)] }}</span>
-              <span>{{ 'BST' | t }} <strong>{{ d.baseStatTotal }}</strong></span>
+              <span>{{ '{0} kg' | t: [d.weightKg] }}</span>
+              <span
+                >{{ 'BST' | t }} <strong>{{ d.baseStatTotal }}</strong></span
+              >
             </div>
             <div class="actions">
-              <button class="chip" type="button" (click)="playCry()" [class.on]="cry.playing() === id()">
+              <button
+                class="chip"
+                type="button"
+                (click)="playCry()"
+                [class.on]="cry.playing() === id()"
+              >
                 <pv-icon name="volume-2" /> {{ 'Cry' | t }}
               </button>
               <button class="chip" type="button" (click)="shiny.set(!shiny())" [class.on]="shiny()">
                 <pv-icon name="sparkles" /> {{ 'Shiny' | t }}
               </button>
-              <a class="chip" [routerLink]="['/pokemon', id()]"><pv-icon name="arrow-right" /> {{ 'Full page' | t }}</a>
+              <a class="chip" [routerLink]="['/pokemon', id()]"
+                ><pv-icon name="arrow-right" /> {{ 'Full page' | t }}</a
+              >
             </div>
           </div>
 
           <div class="panel radar-panel">
-            <svg class="radar" [attr.viewBox]="viewBox" role="img" [attr.aria-label]="'Stat radar for {0}' | t: [name()]">
-              @for (ring of rings; track $index) { <polygon class="ring-l" [attr.points]="ring" /> }
+            <svg
+              class="radar"
+              [attr.viewBox]="viewBox"
+              role="img"
+              [attr.aria-label]="'Stat radar for {0}' | t: [name()]"
+            >
+              @for (ring of rings; track $index) {
+                <polygon class="ring-l" [attr.points]="ring" />
+              }
               @for (r of radarStats; track r.key; let i = $index) {
-                <line class="axis" x1="90" y1="86" [attr.x2]="axisPt(i).x" [attr.y2]="axisPt(i).y" />
-                <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">{{ r.label | t }} {{ d.stats[r.key] }}</text>
+                <line
+                  class="axis"
+                  x1="90"
+                  y1="86"
+                  [attr.x2]="axisPt(i).x"
+                  [attr.y2]="axisPt(i).y"
+                />
+                <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">
+                  {{ r.label | t }} {{ d.stats[r.key] }}
+                </text>
               }
               <polygon class="shape" [attr.points]="shape(d)" />
             </svg>
@@ -131,19 +187,34 @@ const DEX_MAX = 1025;
                   @for (stage of chain; track $index; let last = $last) {
                     <div class="evo-stage">
                       @for (s of stage; track s.id) {
-                        <button class="evo-mon" type="button" [class.cur]="s.id === id()" (click)="jump(s.id)" [title]="titleCase(s.name)">
-                          <img decoding="async" [src]="evoSprite(s.id)" [alt]="s.name" loading="lazy" />
+                        <button
+                          class="evo-mon"
+                          type="button"
+                          [class.cur]="s.id === id()"
+                          (click)="jump(s.id)"
+                          [title]="titleCase(s.name)"
+                        >
+                          <img
+                            decoding="async"
+                            [src]="evoSprite(s.id)"
+                            [alt]="s.name"
+                            loading="lazy"
+                          />
                         </button>
                       }
                     </div>
-                    @if (!last) { <span class="evo-arrow" aria-hidden="true">›</span> }
+                    @if (!last) {
+                      <span class="evo-arrow" aria-hidden="true">›</span>
+                    }
                   }
                 </div>
               </div>
             }
           }
         } @else {
-          <div class="panel"><p class="loading">{{ 'Summoning…' | t }}</p></div>
+          <div class="panel">
+            <p class="loading">{{ 'Summoning…' | t }}</p>
+          </div>
         }
       </div>
     </section>
@@ -177,7 +248,9 @@ export class ShowcaseComponent {
   protected num = () => padId(this.id());
   protected name = computed(() => titleCase(this.detail()?.name ?? '…'));
   protected t1 = computed(() => typeColorVar(this.detail()?.types[0] ?? 'normal'));
-  protected t2 = computed(() => typeColorVar(this.detail()?.types[1] ?? this.detail()?.types[0] ?? 'normal'));
+  protected t2 = computed(() =>
+    typeColorVar(this.detail()?.types[1] ?? this.detail()?.types[0] ?? 'normal'),
+  );
 
   protected art = computed(() => officialArtwork(this.id(), this.shiny()));
 
@@ -229,8 +302,13 @@ export class ShowcaseComponent {
   protected onKey(e: KeyboardEvent): void {
     const t = e.target as HTMLElement | null;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); this.step(-1); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); this.step(1); }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      this.step(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      this.step(1);
+    }
   }
 
   protected onTouchStart(e: TouchEvent): void {

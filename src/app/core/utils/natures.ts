@@ -47,7 +47,7 @@ export const NATURES: readonly Nature[] = [
 const BY_NAME = new Map(NATURES.map((n) => [n.name, n]));
 
 export function natureByName(name: string): Nature {
-  return BY_NAME.get(name) ?? NATURES[0];
+  return BY_NAME.get(name) ?? NATURES[0]!;
 }
 
 /** Short label like "+Atk / -SpA" or "Neutral" for the UI. */

@@ -323,10 +323,10 @@ export class PixiOverworldComponent implements OnDestroy {
       pixi.Assets.load(abs(SHEET_URL.interior)),
       pixi.Assets.load(abs(SHEET_URL.wall)),
       ...keys.map((k) => pixi.Assets.load(abs(charSheetUrl(k)))),
-    ])) as PTexture[];
+    ])) as [PTexture, PTexture, PTexture, ...PTexture[]];
     for (const t of [world, interior, wall, ...chars]) t.source.scaleMode = 'nearest';
     this.sheets = { world, interior, wall };
-    keys.forEach((k, idx) => this.charBases.set(k, chars[idx]));
+    keys.forEach((k, idx) => this.charBases.set(k, chars[idx]!));
   }
 
   private texFor(sheet: Sheet, i: number): PTexture {
@@ -372,15 +372,15 @@ export class PixiOverworldComponent implements OnDestroy {
 
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        const kind = map.tiles[y][x] as TileKind;
+        const kind = map.tiles[y]![x]! as TileKind;
         // ground underlay so decorations/walls sit on something; outdoor grass
         // sprinkles seeded texture variants for a hand-planted meadow look
         if (map.outdoor) {
           const h = tileHash(x, y);
-          this.drawArt(h % 4 === 0 ? GRASS_VARIANTS[h % GRASS_VARIANTS.length] : GRASS, x, y);
+          this.drawArt(h % 4 === 0 ? GRASS_VARIANTS[h % GRASS_VARIANTS.length]! : GRASS, x, y);
           // sprinkle rare colour-graded wildflowers on open grass for a lived-in meadow
           if (kind === 'grass' && h % 37 === 0)
-            this.drawArt(FLOWER_VARIANTS[(h >> 3) % FLOWER_VARIANTS.length], x, y);
+            this.drawArt(FLOWER_VARIANTS[(h >> 3) % FLOWER_VARIANTS.length]!, x, y);
           // scatter the odd mossy rock elsewhere so meadows aren't a flat carpet
           else if (kind === 'grass' && h % 53 === 0) this.drawRock(x, y, h);
         } else {
@@ -978,7 +978,7 @@ export class PixiOverworldComponent implements OnDestroy {
 
   private updateParticles(): void {
     for (let i = this.parts.length - 1; i >= 0; i--) {
-      const p = this.parts[i];
+      const p = this.parts[i]!;
       p.vy += p.grav * this.dt;
       p.node.x += p.vx * this.dt; p.node.y += p.vy * this.dt;
       p.life -= this.dt;

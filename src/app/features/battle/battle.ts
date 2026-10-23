@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { BattleService } from './battle.service';
 import { DailyService } from './daily.service';
 import { buildShareText, turnEmoji } from '../../game/daily/daily';
@@ -62,7 +73,8 @@ const STAGE_SHORT: Record<BoostableStat, string> = {
 @Component({
   selector: 'pv-battle',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, 
+  imports: [
+    TranslatePipe,
     TypeBadgeComponent,
     SpinnerComponent,
     PageHeaderComponent,
@@ -207,7 +219,11 @@ export class BattleComponent extends BattlePresenterBase {
     }
   }
 
-  private beginBattle(player: Battler, opponent: Battler, seed: number | string = Date.now()): void {
+  private beginBattle(
+    player: Battler,
+    opponent: Battler,
+    seed: number | string = Date.now(),
+  ): void {
     this.dailyMarks = [];
     this.battle = new Battle(player, opponent, seed, undefined, 'strong');
     this.player.set(player);
@@ -285,9 +301,18 @@ export class BattleComponent extends BattlePresenterBase {
     } catch {
       try {
         await navigator.clipboard.writeText(text);
-        this.toasts.show({ title: 'Result copied to clipboard', text: 'Paste it anywhere to challenge a friend.', icon: 'copy', kind: 'info' });
+        this.toasts.show({
+          title: 'Result copied to clipboard',
+          text: 'Paste it anywhere to challenge a friend.',
+          icon: 'copy',
+          kind: 'info',
+        });
       } catch {
-        this.toasts.show({ title: 'Could not copy the result', icon: 'triangle-alert', kind: 'info' });
+        this.toasts.show({
+          title: 'Could not copy the result',
+          icon: 'triangle-alert',
+          kind: 'info',
+        });
       }
     }
   }
@@ -297,7 +322,11 @@ export class BattleComponent extends BattlePresenterBase {
     const opponent = this.opponent();
     if (!player || !opponent) return;
     // A daily rematch replays the exact same seeded battle.
-    this.beginBattle(player, opponent, this.mode() === 'daily' ? this.daily.matchup.seed : Date.now());
+    this.beginBattle(
+      player,
+      opponent,
+      this.mode() === 'daily' ? this.daily.matchup.seed : Date.now(),
+    );
   }
 
   protected newBattle(): void {
@@ -316,7 +345,10 @@ export class BattleComponent extends BattlePresenterBase {
   protected syncSide(): void {}
 
   protected override onEnd(winner: SideIndex): void {
-    this.append(winner === 0 ? 'You won the battle!' : 'You were defeated…', winner === 0 ? 'win' : 'faint');
+    this.append(
+      winner === 0 ? 'You won the battle!' : 'You were defeated…',
+      winner === 0 ? 'win' : 'faint',
+    );
   }
 
   /** Pull authoritative status/stages/field state from the engine after a turn. */
@@ -336,7 +368,6 @@ export class BattleComponent extends BattlePresenterBase {
     this.weatherTurns.set(f.weatherTurns);
     this.terrainTurns.set(f.terrainTurns);
   }
-
 }
 
 function chips(stages: Stages): StageChip[] {

@@ -16,7 +16,7 @@ describe('gym ladder', () => {
   it('orders 18 leaders by ascending order with sane level/tier curves', () => {
     expect(LEADER_LADDER).toHaveLength(18);
     for (let i = 1; i < LEADER_LADDER.length; i++) {
-      expect(LEADER_LADDER[i].order).toBeGreaterThan(LEADER_LADDER[i - 1].order);
+      expect(LEADER_LADDER[i]!.order).toBeGreaterThan(LEADER_LADDER[i - 1]!.order);
     }
     expect(leaderLevel(1)).toBeLessThan(leaderLevel(18));
     expect(leaderTier(1)).toBe('basic');
@@ -32,23 +32,32 @@ describe('gym ladder', () => {
 
   it('recommends the lowest-order unbeaten leader', () => {
     const none = new Set<PokemonType>();
-    expect(recommendedNext(none)?.type).toBe(LEADER_LADDER[0].type);
-    const first = new Set<PokemonType>([LEADER_LADDER[0].type]);
-    expect(recommendedNext(first)?.type).toBe(LEADER_LADDER[1].type);
+    expect(recommendedNext(none)?.type).toBe(LEADER_LADDER[0]!.type);
+    const first = new Set<PokemonType>([LEADER_LADDER[0]!.type]);
+    expect(recommendedNext(first)?.type).toBe(LEADER_LADDER[1]!.type);
   });
 
   it('flags cleared and next entries on the ladder', () => {
-    const badges = new Set<PokemonType>([LEADER_LADDER[0].type]);
+    const badges = new Set<PokemonType>([LEADER_LADDER[0]!.type]);
     const ladder = buildLadder(badges);
-    expect(ladder[0].cleared).toBe(true);
-    expect(ladder[1].next).toBe(true);
+    expect(ladder[0]!.cleared).toBe(true);
+    expect(ladder[1]!.next).toBe(true);
   });
 });
 
 describe('champion gauntlet', () => {
   it('opens only after enough badges', () => {
     expect(gauntletUnlocked(new Set())).toBe(false);
-    const eight = new Set<PokemonType>(['fire', 'water', 'grass', 'electric', 'ice', 'rock', 'ground', 'bug']);
+    const eight = new Set<PokemonType>([
+      'fire',
+      'water',
+      'grass',
+      'electric',
+      'ice',
+      'rock',
+      'ground',
+      'bug',
+    ]);
     expect(eight.size).toBe(GAUNTLET_UNLOCK_BADGES);
     expect(gauntletUnlocked(eight)).toBe(true);
   });
@@ -56,8 +65,8 @@ describe('champion gauntlet', () => {
   it('has four Elites and one Champion at the end', () => {
     expect(GAUNTLET).toHaveLength(5);
     expect(GAUNTLET.filter((t) => t.champion)).toHaveLength(1);
-    expect(CHAMPION.champion).toBe(true);
-    expect(CHAMPION.team.length).toBeGreaterThanOrEqual(5);
+    expect(CHAMPION!.champion).toBe(true);
+    expect(CHAMPION!.team.length).toBeGreaterThanOrEqual(5);
   });
 
   it('reports progress toward the gauntlet', () => {

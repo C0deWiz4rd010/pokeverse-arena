@@ -34,8 +34,14 @@ const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 @Component({
   selector: 'pv-team-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, 
-    StateComponent,TypeBadgeComponent, SpinnerComponent, PageHeaderComponent, IconComponent],
+  imports: [
+    TranslatePipe,
+    StateComponent,
+    TypeBadgeComponent,
+    SpinnerComponent,
+    PageHeaderComponent,
+    IconComponent,
+  ],
   templateUrl: './team-builder.html',
   styleUrl: './team-builder.scss',
 })
@@ -70,15 +76,17 @@ export class TeamBuilderComponent {
   );
 
   /** Average computed stat across the roster, for the team profile bars. */
-  protected readonly teamAverages = computed<{ key: StatKey; label: string; value: number }[]>(() => {
-    const stats = this.store.memberStats();
-    const members = this.store.team();
-    if (!members.length) return STAT_ROWS.map((r) => ({ ...r, value: 0 }));
-    return STAT_ROWS.map((r) => {
-      const sum = members.reduce((acc, m) => acc + (stats.get(m.uid)?.[r.key] ?? 0), 0);
-      return { ...r, value: Math.round(sum / members.length) };
-    });
-  });
+  protected readonly teamAverages = computed<{ key: StatKey; label: string; value: number }[]>(
+    () => {
+      const stats = this.store.memberStats();
+      const members = this.store.team();
+      if (!members.length) return STAT_ROWS.map((r) => ({ ...r, value: 0 }));
+      return STAT_ROWS.map((r) => {
+        const sum = members.reduce((acc, m) => acc + (stats.get(m.uid)?.[r.key] ?? 0), 0);
+        return { ...r, value: Math.round(sum / members.length) };
+      });
+    },
+  );
 
   /** Members ordered fastest-first — a quick speed-tier read. */
   protected readonly speedTier = computed(() => {
@@ -194,7 +202,8 @@ export class TeamBuilderComponent {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => void this.store.importJson(String(reader.result));
+    reader.onload = () =>
+      void this.store.importJson(typeof reader.result === 'string' ? reader.result : '');
     reader.readAsText(file);
   }
 

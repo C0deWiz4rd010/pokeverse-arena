@@ -32,9 +32,9 @@ const GRADE: readonly (readonly [hour: number, color: number, alpha: number, fir
 ];
 export function dayGrade(hour: number): { color: number; alpha: number; fire: number } {
   let i = 1;
-  while (i < GRADE.length - 1 && GRADE[i][0] < hour) i++;
-  const [h0, c0, a0, f0] = GRADE[i - 1];
-  const [h1, c1, a1, f1] = GRADE[i];
+  while (i < GRADE.length - 1 && GRADE[i]![0] < hour) i++;
+  const [h0, c0, a0, f0] = GRADE[i - 1]!;
+  const [h1, c1, a1, f1] = GRADE[i]!;
   const k = Math.min(1, Math.max(0, (hour - h0) / (h1 - h0)));
   const ch = (shift: number): number => Math.round(((c0 >> shift) & 255) * (1 - k) + ((c1 >> shift) & 255) * k);
   return { color: (ch(16) << 16) | (ch(8) << 8) | ch(0), alpha: a0 + (a1 - a0) * k, fire: f0 + (f1 - f0) * k };

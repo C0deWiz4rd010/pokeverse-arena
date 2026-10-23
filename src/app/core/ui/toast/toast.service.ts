@@ -25,7 +25,10 @@ export class ToastService {
   readonly toasts = this._toasts.asReadonly();
 
   /** Auto-dismiss bookkeeping per toast, so hovering/focusing can pause the countdown. */
-  private readonly timers = new Map<number, { handle: ReturnType<typeof setTimeout>; endAt: number }>();
+  private readonly timers = new Map<
+    number,
+    { handle: ReturnType<typeof setTimeout>; endAt: number }
+  >();
   private readonly remaining = new Map<number, number>();
 
   show(toast: Omit<Toast, 'id'>, ms = DEFAULT_MS): void {

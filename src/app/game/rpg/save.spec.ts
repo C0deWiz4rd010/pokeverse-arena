@@ -33,8 +33,8 @@ describe('rpg save', () => {
     mon.currentHp = 1;
     mon.status = 'burn';
     const [healed] = healParty([mon]);
-    expect(healed.currentHp).toBe(19);
-    expect(healed.status).toBe('none');
+    expect(healed!.currentHp).toBe(19);
+    expect(healed!.status).toBe('none');
   });
 });
 

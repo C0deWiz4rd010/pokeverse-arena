@@ -17,7 +17,7 @@ export function pickEntry(table: readonly EncounterEntry[], rng: SeededRng): Enc
     r -= e.weight;
     if (r <= 0) return e;
   }
-  return table[table.length - 1];
+  return table[table.length - 1]!;
 }
 
 /** Entries available at `band` (time-restricted ones only when they match). */

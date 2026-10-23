@@ -32,7 +32,7 @@ export class SeededRng {
 
   /** Random element of a non-empty array. */
   pick<T>(items: readonly T[]): T {
-    return items[this.int(0, items.length - 1)];
+    return items[this.int(0, items.length - 1)]!;
   }
 
   /** A fresh in-place Fisher–Yates shuffle. */
@@ -40,7 +40,7 @@ export class SeededRng {
     const copy = [...items];
     for (let i = copy.length - 1; i > 0; i--) {
       const j = this.int(0, i);
-      [copy[i], copy[j]] = [copy[j], copy[i]];
+      [copy[i], copy[j]] = [copy[j]!, copy[i]!];
     }
     return copy;
   }

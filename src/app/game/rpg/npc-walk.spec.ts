@@ -18,7 +18,7 @@ const npc = (o: Partial<NpcDef>): NpcDef => ({
 const mk = (npcs: NpcDef[], rows = ['GGGGG', 'GGGGG', 'GGGGG', 'GGGGG', 'GGGGG']): MapDef => ({
   id: 'test',
   name: 'Test',
-  width: rows[0].length,
+  width: rows[0]!.length,
   height: rows.length,
   outdoor: true,
   tiles: parseTiles(rows),
@@ -31,7 +31,7 @@ const mk = (npcs: NpcDef[], rows = ['GGGGG', 'GGGGG', 'GGGGG', 'GGGGG', 'GGGGG']
 /** rand() replaying a fixed sequence (repeats the last value). */
 const seq = (...vals: number[]) => {
   let i = 0;
-  return () => vals[Math.min(i++, vals.length - 1)];
+  return () => vals[Math.min(i++, vals.length - 1)]!;
 };
 
 describe('wandering NPCs', () => {
@@ -61,11 +61,11 @@ describe('wandering NPCs', () => {
     const start = initNpcPositions(map);
     // down (0.3) is a tree; right (0.8) is the other NPC; player sits left.
     const afterDown = stepWanderers(map, start, { x: 0, y: 0 }, seq(0, 0.3));
-    expect(afterDown['walker'].y).toBe(1);
+    expect(afterDown['walker']!.y).toBe(1);
     const afterRight = stepWanderers(map, start, { x: 0, y: 0 }, seq(0, 0.8));
-    expect(afterRight['walker'].x).toBe(2);
+    expect(afterRight['walker']!.x).toBe(2);
     const afterLeft = stepWanderers(map, start, { x: 1, y: 1 }, seq(0, 0.6));
-    expect(afterLeft['walker'].x).toBe(2); // player blocked the tile
+    expect(afterLeft['walker']!.x).toBe(2); // player blocked the tile
   });
 
   it('statics never move, and runtime lookups follow the wanderer', () => {

@@ -44,7 +44,9 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
 
       <span class="mv-head">
         <span class="mv-name">{{ label() | t }}</span>
-        @if (hotkey() !== null) { <kbd class="mv-key" aria-hidden="true">{{ hotkey() }}</kbd> }
+        @if (hotkey() !== null) {
+          <kbd class="mv-key" aria-hidden="true">{{ hotkey() }}</kbd>
+        }
         <span class="mv-cat" [attr.data-cat]="move().damageClass" [title]="cat().label">
           <pv-icon [name]="cat().icon" />
         </span>
@@ -53,8 +55,12 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
       <span class="mv-foot">
         <pv-type-badge [type]="move().type" />
         <span class="mv-stats">
-          <span class="stat" [attr.title]="'Power' | t"><pv-icon name="sword" /> {{ move().power || '—' }}</span>
-          <span class="stat" [attr.title]="'Accuracy' | t"><pv-icon name="target" /> {{ accLabel() }}</span>
+          <span class="stat" [attr.title]="'Power' | t"
+            ><pv-icon name="sword" /> {{ move().power || '—' }}</span
+          >
+          <span class="stat" [attr.title]="'Accuracy' | t"
+            ><pv-icon name="target" /> {{ accLabel() }}</span
+          >
         </span>
       </span>
 
@@ -74,14 +80,32 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
         <span class="tip-desc">{{ blurb() }}</span>
 
         <span class="tip-grid">
-          <span class="cell"><i>{{ 'Power' | t }}</i><b>{{ move().power || '—' }}</b></span>
-          <span class="cell"><i>{{ 'Accuracy' | t }}</i><b>{{ accLabel() }}</b></span>
-          @if (ppLabel()) { <span class="cell"><i>{{ 'PP' | t }}</i><b>{{ ppLabel() }}</b></span> }
-          @if (priorityLabel()) { <span class="cell"><i>{{ 'Priority' | t }}</i><b>{{ priorityLabel() }}</b></span> }
+          <span class="cell"
+            ><i>{{ 'Power' | t }}</i
+            ><b>{{ move().power || '—' }}</b></span
+          >
+          <span class="cell"
+            ><i>{{ 'Accuracy' | t }}</i
+            ><b>{{ accLabel() }}</b></span
+          >
+          @if (ppLabel()) {
+            <span class="cell"
+              ><i>{{ 'PP' | t }}</i
+              ><b>{{ ppLabel() }}</b></span
+            >
+          }
+          @if (priorityLabel()) {
+            <span class="cell"
+              ><i>{{ 'Priority' | t }}</i
+              ><b>{{ priorityLabel() }}</b></span
+            >
+          }
         </span>
 
         @if (eff(); as e) {
-          <span class="tip-eff" [attr.data-tier]="e.tier">{{ effShort(e.mult) }} · {{ e.label | t }}</span>
+          <span class="tip-eff" [attr.data-tier]="e.tier"
+            >{{ effShort(e.mult) }} · {{ e.label | t }}</span
+          >
         }
       </span>
     </button>
@@ -130,11 +154,15 @@ export class MoveButtonComponent {
       return t('A {0}-type status move — sways the battle without dealing direct damage.', [type]);
     }
     const punch =
-      mv.power >= 120 ? 'a devastating hit'
-      : mv.power >= 90 ? 'a powerful hit'
-      : mv.power >= 60 ? 'a solid hit'
-      : 'a quick hit';
-    const acc = mv.accuracy === 0 ? t(' and never misses') : mv.accuracy < 85 ? t(' but risky to land') : '';
+      mv.power >= 120
+        ? 'a devastating hit'
+        : mv.power >= 90
+          ? 'a powerful hit'
+          : mv.power >= 60
+            ? 'a solid hit'
+            : 'a quick hit';
+    const acc =
+      mv.accuracy === 0 ? t(' and never misses') : mv.accuracy < 85 ? t(' but risky to land') : '';
     const first = (mv.priority ?? 0) > 0 ? t(' It strikes first in a pinch.') : '';
     const kind = t(this.cat().label).toLowerCase();
     return `${t('A {0}-type {1} move', [type, kind])} — ${t(punch)}${acc}.${first}`;

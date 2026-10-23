@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { endpoints, officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { PokemonDto } from '../../core/dto/pokeapi.dto';
@@ -41,18 +35,28 @@ type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over' | 'error';
   imports: [TranslatePipe, PageHeaderComponent, TypeBadgeComponent, StateComponent],
   host: { '(document:keydown)': 'onKey($event)' },
   template: `
-    <pv-page-header [title]="'Stat Showdown' | t" [subtitle]="'Higher or lower — guess the stronger stat' | t" icon="dices" />
+    <pv-page-header
+      [title]="'Stat Showdown' | t"
+      [subtitle]="'Higher or lower — guess the stronger stat' | t"
+      icon="dices"
+    />
 
     @if (phase() === 'intro') {
       <section class="intro glass">
-        <p class="lead">{{ 'Two Pokémon. One stat. Pick the winner and stack your streak.' | t }}</p>
+        <p class="lead">
+          {{ 'Two Pokémon. One stat. Pick the winner and stack your streak.' | t }}
+        </p>
         <ul class="rules">
           <li>{{ '🎯 Tap the Pokémon you think wins the highlighted stat.' | t }}</li>
           <li>{{ '🔥 Every correct pick grows your streak.' | t }}</li>
           <li>{{ '💥 One miss ends the run — ties always count for you.' | t }}</li>
         </ul>
-        <p class="best">{{ 'Best streak:' | t }} <strong>{{ best() }}</strong></p>
-        <button class="btn btn-primary big" type="button" (click)="start()">{{ 'Start Showdown' | t }}</button>
+        <p class="best">
+          {{ 'Best streak:' | t }} <strong>{{ best() }}</strong>
+        </p>
+        <button class="btn btn-primary big" type="button" (click)="start()">
+          {{ 'Start Showdown' | t }}
+        </button>
       </section>
     }
 
@@ -66,8 +70,12 @@ type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over' | 'error';
       />
     } @else if (phase() !== 'intro') {
       <div class="hud">
-        <span class="chip">{{ '🔥 Streak' | t }} <strong>{{ streak() }}</strong></span>
-        <span class="chip">{{ '🏅 Best' | t }} <strong>{{ best() }}</strong></span>
+        <span class="chip"
+          >{{ '🔥 Streak' | t }} <strong>{{ streak() }}</strong></span
+        >
+        <span class="chip"
+          >{{ '🏅 Best' | t }} <strong>{{ best() }}</strong></span
+        >
       </div>
 
       <div class="prompt">
@@ -90,7 +98,9 @@ type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over' | 'error';
               <img class="art" [src]="m.artwork" [alt]="m.name" loading="eager" decoding="async" />
               <span class="mon-name">{{ display(m.name) }}</span>
               <span class="types">
-                @for (t of m.types; track t) { <pv-type-badge [type]="t" /> }
+                @for (t of m.types; track t) {
+                  <pv-type-badge [type]="t" />
+                }
               </span>
               @if (revealed()) {
                 <span class="value" [class.hi]="sideWins(side)">{{ valueOf(m) }}</span>
@@ -108,10 +118,17 @@ type Phase = 'intro' | 'loading' | 'playing' | 'reveal' | 'over' | 'error';
       @if (phase() === 'over') {
         <section class="over glass">
           <h2>{{ streak() > 0 ? ('Run over!' | t) : ('So close!' | t) }}</h2>
-          <p class="final">{{ 'You reached a streak of' | t }} <strong>{{ streak() }}</strong>.</p>
-          @if (newBest()) { <p class="record">{{ '🏆 New personal best!' | t }}</p> }
+          <p class="final">
+            {{ 'You reached a streak of' | t }} <strong>{{ streak() }}</strong
+            >.
+          </p>
+          @if (newBest()) {
+            <p class="record">{{ '🏆 New personal best!' | t }}</p>
+          }
           <div class="over-actions">
-            <button class="btn btn-primary" type="button" (click)="start()">{{ 'Play again' | t }}</button>
+            <button class="btn btn-primary" type="button" (click)="start()">
+              {{ 'Play again' | t }}
+            </button>
             <button class="btn" type="button" (click)="share()">{{ 'Share' | t }}</button>
           </div>
         </section>
@@ -139,7 +156,7 @@ export class ShowdownComponent {
   protected readonly phase = signal<Phase>('intro');
   protected readonly left = signal<ShowdownMon | null>(null);
   protected readonly right = signal<ShowdownMon | null>(null);
-  protected readonly stat = signal<ShowdownStat>(SHOWDOWN_STATS[0]);
+  protected readonly stat = signal<ShowdownStat>(SHOWDOWN_STATS[0]!);
   protected readonly streak = signal(0);
   protected readonly best = signal(this.save.read('showdown-best', 0));
   protected readonly picked = signal<'left' | 'right' | null>(null);
@@ -186,8 +203,13 @@ export class ShowdownComponent {
 
   protected onKey(e: KeyboardEvent): void {
     if (this.phase() !== 'playing') return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); this.pick('left'); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); this.pick('right'); }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      this.pick('left');
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      this.pick('right');
+    }
   }
 
   protected pick(side: 'left' | 'right'): void {
@@ -236,7 +258,7 @@ export class ShowdownComponent {
     this.picked.set(null);
     this.left.set(null);
     this.right.set(null);
-    this.stat.set(SHOWDOWN_STATS[Math.floor(Math.random() * SHOWDOWN_STATS.length)]);
+    this.stat.set(SHOWDOWN_STATS[Math.floor(Math.random() * SHOWDOWN_STATS.length)]!);
 
     let a: ShowdownMon;
     let second: ShowdownMon;

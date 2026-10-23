@@ -13,9 +13,15 @@ describe('safe-storage', () => {
 
   it('never throws when storage is blocked', () => {
     const blocked = {
-      getItem: () => { throw new Error('SecurityError'); },
-      setItem: () => { throw new Error('QuotaExceededError'); },
-      removeItem: () => { throw new Error('SecurityError'); },
+      getItem: () => {
+        throw new Error('SecurityError');
+      },
+      setItem: () => {
+        throw new Error('QuotaExceededError');
+      },
+      removeItem: () => {
+        throw new Error('SecurityError');
+      },
     };
     vi.stubGlobal('localStorage', blocked);
     expect(safeGet('k')).toBeNull();

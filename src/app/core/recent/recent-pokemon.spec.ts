@@ -17,7 +17,7 @@ describe('pushRecent', () => {
     const list = [1, 2, 3, 4, 5, 6, 7, 8].map(mon);
     const next = pushRecent(list, mon(9));
     expect(next).toHaveLength(8);
-    expect(next[0].id).toBe(9);
+    expect(next[0]!.id).toBe(9);
     expect(next.some((r) => r.id === 8)).toBe(false);
   });
 

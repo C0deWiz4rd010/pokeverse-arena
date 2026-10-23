@@ -27,23 +27,31 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
         }
         @case ('rain') {
           <div class="rain">
-            @for (d of drops; track d) { <span class="drop" [style.--i]="d"></span> }
+            @for (d of drops; track d) {
+              <span class="drop" [style.--i]="d"></span>
+            }
           </div>
         }
         @case ('storm') {
           <div class="rain dense">
-            @for (d of drops; track d) { <span class="drop" [style.--i]="d"></span> }
+            @for (d of drops; track d) {
+              <span class="drop" [style.--i]="d"></span>
+            }
           </div>
           <div class="lightning"></div>
         }
         @case ('snow') {
           <div class="snow">
-            @for (f of flakes; track f) { <span class="flake" [style.--i]="f"></span> }
+            @for (f of flakes; track f) {
+              <span class="flake" [style.--i]="f"></span>
+            }
           </div>
         }
         @case ('sand') {
           <div class="sand">
-            @for (g of grains; track g) { <span class="grain" [style.--i]="g"></span> }
+            @for (g of grains; track g) {
+              <span class="grain" [style.--i]="g"></span>
+            }
             <div class="haze"></div>
           </div>
         }
@@ -56,13 +64,17 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
         }
         @case ('leaves') {
           <div class="leaves">
-            @for (l of leaves; track l) { <span class="leaf" [style.--i]="l"><pv-icon name="leaf" /></span> }
+            @for (l of leaves; track l) {
+              <span class="leaf" [style.--i]="l"><pv-icon name="leaf" /></span>
+            }
           </div>
         }
       }
     </div>
     @if (showBadge() && weather() !== 'clear') {
-      <span class="weather-badge" [title]="info().label"><pv-icon [name]="info().icon" /> {{ info().label | t }}</span>
+      <span class="weather-badge" [title]="info().label"
+        ><pv-icon [name]="info().icon" /> {{ info().label | t }}</span
+      >
     }
   `,
   styleUrl: './weather-overlay.scss',

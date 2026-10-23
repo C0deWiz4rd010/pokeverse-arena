@@ -18,10 +18,15 @@ import {
 
 function nextRoundOf(round: RoundId): RoundId | null {
   const idx = ROUND_ORDER.indexOf(round);
-  return idx >= 0 && idx < ROUND_ORDER.length - 1 ? ROUND_ORDER[idx + 1] : null;
+  return idx >= 0 && idx < ROUND_ORDER.length - 1 ? ROUND_ORDER[idx + 1]! : null;
 }
 
-function makeMatch(round: RoundId, slot: number, a: Trainer | null, b: Trainer | null): BracketMatch {
+function makeMatch(
+  round: RoundId,
+  slot: number,
+  a: Trainer | null,
+  b: Trainer | null,
+): BracketMatch {
   return { id: `${round}-${slot}`, round, slot, a, b, winner: null, played: false };
 }
 
@@ -35,7 +40,7 @@ export function buildBracket(trainers: readonly Trainer[]): Bracket {
     throw new Error(`A bracket needs exactly 16 trainers, got ${trainers.length}`);
   }
   const r16 = Array.from({ length: ROUND_SIZE.r16 }, (_, slot) =>
-    makeMatch('r16', slot, trainers[slot * 2], trainers[slot * 2 + 1]),
+    makeMatch('r16', slot, trainers[slot * 2]!, trainers[slot * 2 + 1]!),
   );
   return {
     rounds: { r16, qf: emptyRound('qf'), sf: emptyRound('sf'), final: emptyRound('final') },
@@ -90,7 +95,7 @@ export function reportResult(bracket: Bracket, matchId: string, winner: 0 | 1): 
     next.champion = advancer;
     return next;
   }
-  const target = next.rounds[upcoming][Math.floor(match.slot / 2)];
+  const target = next.rounds[upcoming][Math.floor(match.slot / 2)]!;
   if (match.slot % 2 === 0) target.a = advancer;
   else target.b = advancer;
   return next;
@@ -99,9 +104,7 @@ export function reportResult(bracket: Bracket, matchId: string, winner: 0 | 1): 
 /** Locate the player's pending match (if they are still in the running). */
 export function playerMatch(bracket: Bracket): BracketMatch | null {
   for (const r of ROUND_ORDER) {
-    const m = bracket.rounds[r].find(
-      (x) => isReady(x) && (x.a?.isPlayer || x.b?.isPlayer),
-    );
+    const m = bracket.rounds[r].find((x) => isReady(x) && (x.a?.isPlayer || x.b?.isPlayer));
     if (m) return m;
   }
   return null;

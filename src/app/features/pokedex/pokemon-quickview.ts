@@ -53,41 +53,76 @@ const REDUCED =
       role="dialog"
       [attr.aria-label]="'{0} quick view' | t: [name()]"
     >
-      <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t"><pv-icon name="x" /></button>
+      <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t">
+        <pv-icon name="x" />
+      </button>
 
       <div class="flip" [class.flipped]="flipped()">
         <div class="face front" [attr.aria-hidden]="flipped()">
           <header class="qv-head">
             <div class="qv-art">
-              @if (!loaded()) { <span class="skel" aria-hidden="true"></span> }
-              <img decoding="async" [src]="art()" [alt]="name()" (load)="loaded.set(true)" (error)="onArtError($event)" />
+              @if (!loaded()) {
+                <span class="skel" aria-hidden="true"></span>
+              }
+              <img
+                decoding="async"
+                [src]="art()"
+                [alt]="name()"
+                (load)="loaded.set(true)"
+                (error)="onArtError($event)"
+              />
             </div>
             <div class="qv-id">
               <span class="num">{{ num() }}</span>
               <strong class="qv-name">{{ name() }}</strong>
-              @if (detail(); as d) { <span class="genus">{{ i18n.isGerman() && d.genusDe ? d.genusDe : d.genus }}</span> }
+              @if (detail(); as d) {
+                <span class="genus">{{ i18n.isGerman() && d.genusDe ? d.genusDe : d.genus }}</span>
+              }
               <div class="qv-types">
-                @for (t of entry().types; track t) { <pv-type-badge [type]="t" /> }
+                @for (t of entry().types; track t) {
+                  <pv-type-badge [type]="t" />
+                }
               </div>
             </div>
           </header>
 
           <div class="qv-actions">
-            <button class="chip" type="button" (click)="playCry()" [class.on]="cry.playing() === entry().id">
+            <button
+              class="chip"
+              type="button"
+              (click)="playCry()"
+              [class.on]="cry.playing() === entry().id"
+            >
               <pv-icon name="volume-2" /> {{ 'Cry' | t }}
             </button>
-            <button class="chip" type="button" (click)="flipped.set(true)" [disabled]="!detail()" [attr.title]="'Stat radar' | t">
+            <button
+              class="chip"
+              type="button"
+              (click)="flipped.set(true)"
+              [disabled]="!detail()"
+              [attr.title]="'Stat radar' | t"
+            >
               <pv-icon name="star" /> {{ 'Radar' | t }}
             </button>
-            <a class="chip" [routerLink]="['/fusion']" [queryParams]="{ head: entry().id }" [attr.title]="'Splice in the Fusion Lab' | t"><pv-icon name="flask-conical" /> {{ 'Fuse' | t }}</a>
-            <a class="chip primary" [routerLink]="['/pokemon', entry().id]"><pv-icon name="arrow-right" /> {{ 'Full page' | t }}</a>
+            <a
+              class="chip"
+              [routerLink]="['/fusion']"
+              [queryParams]="{ head: entry().id }"
+              [attr.title]="'Splice in the Fusion Lab' | t"
+              ><pv-icon name="flask-conical" /> {{ 'Fuse' | t }}</a
+            >
+            <a class="chip primary" [routerLink]="['/pokemon', entry().id]"
+              ><pv-icon name="arrow-right" /> {{ 'Full page' | t }}</a
+            >
           </div>
 
           @if (error()) {
             <p class="qv-err">{{ 'Couldn’t load details.' | t }}</p>
           } @else if (!detail()) {
             <div class="qv-skel">
-              @for (r of statRows; track r.key) { <span class="bar-skel"></span> }
+              @for (r of statRows; track r.key) {
+                <span class="bar-skel"></span>
+              }
             </div>
           } @else if (detail(); as d) {
             <p class="flavor">{{ i18n.isGerman() && d.flavorDe ? d.flavorDe : d.flavor }}</p>
@@ -103,11 +138,18 @@ const REDUCED =
                           [routerLink]="['/pokemon', s.id]"
                           [title]="titleCase(s.name) + (s.trigger ? ' · ' + s.trigger : '')"
                         >
-                          <img decoding="async" [src]="evoSprite(s.id)" [alt]="s.name" loading="lazy" />
+                          <img
+                            decoding="async"
+                            [src]="evoSprite(s.id)"
+                            [alt]="s.name"
+                            loading="lazy"
+                          />
                         </a>
                       }
                     </div>
-                    @if (!last) { <span class="evo-arrow" aria-hidden="true">›</span> }
+                    @if (!last) {
+                      <span class="evo-arrow" aria-hidden="true">›</span>
+                    }
                   }
                 </div>
               }
@@ -117,13 +159,22 @@ const REDUCED =
                 <div class="stat">
                   <span class="s-label">{{ r.label | t }}</span>
                   <span class="s-val">{{ d.stats[r.key] }}</span>
-                  <span class="s-track"><span class="s-fill" [style.width.%]="pct(d.stats[r.key])" [style.background]="statColor(d.stats[r.key])"></span></span>
+                  <span class="s-track"
+                    ><span
+                      class="s-fill"
+                      [style.width.%]="pct(d.stats[r.key])"
+                      [style.background]="statColor(d.stats[r.key])"
+                    ></span
+                  ></span>
                 </div>
               }
-              <div class="bst"><span>{{ 'BST' | t }}</span><strong>{{ d.baseStatTotal }}</strong></div>
+              <div class="bst">
+                <span>{{ 'BST' | t }}</span
+                ><strong>{{ d.baseStatTotal }}</strong>
+              </div>
             </div>
             <div class="meta">
-              <span>{{ '{0} m · {1} kg' | t: [(d.heightM), (d.weightKg)] }}</span>
+              <span>{{ '{0} m · {1} kg' | t: [d.heightM, d.weightKg] }}</span>
               <span class="abilities">{{ abilities(d) }}</span>
             </div>
           }
@@ -132,17 +183,39 @@ const REDUCED =
         <div class="face back" [attr.aria-hidden]="!flipped()">
           @if (detail(); as d) {
             <header class="rd-head">
-              <button class="chip rd-back" type="button" (click)="flipped.set(false)" [attr.aria-label]="'Back to profile' | t">‹</button>
+              <button
+                class="chip rd-back"
+                type="button"
+                (click)="flipped.set(false)"
+                [attr.aria-label]="'Back to profile' | t"
+              >
+                ‹
+              </button>
               <strong class="qv-name">{{ name() }}</strong>
-              <span class="rd-bst">{{ 'BST' | t }} <strong>{{ d.baseStatTotal }}</strong></span>
+              <span class="rd-bst"
+                >{{ 'BST' | t }} <strong>{{ d.baseStatTotal }}</strong></span
+              >
             </header>
-            <svg class="radar" viewBox="0 0 180 176" role="img" [attr.aria-label]="'Stat radar for {0}' | t: [name()]">
+            <svg
+              class="radar"
+              viewBox="0 0 180 176"
+              role="img"
+              [attr.aria-label]="'Stat radar for {0}' | t: [name()]"
+            >
               @for (ring of rings; track $index) {
                 <polygon class="ring" [attr.points]="ring" />
               }
               @for (r of statRows; track r.key; let i = $index) {
-                <line class="axis" x1="90" y1="86" [attr.x2]="axisPt(i).x" [attr.y2]="axisPt(i).y" />
-                <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">{{ r.label | t }} {{ d.stats[r.key] }}</text>
+                <line
+                  class="axis"
+                  x1="90"
+                  y1="86"
+                  [attr.x2]="axisPt(i).x"
+                  [attr.y2]="axisPt(i).y"
+                />
+                <text class="lbl" [attr.x]="lblPt(i).x" [attr.y]="lblPt(i).y" text-anchor="middle">
+                  {{ r.label | t }} {{ d.stats[r.key] }}
+                </text>
               }
               <polygon class="shape" [attr.points]="radarShape()" />
               @for (r of statRows; track r.key; let i = $index) {
@@ -150,7 +223,7 @@ const REDUCED =
               }
             </svg>
             <div class="meta">
-              <span>{{ '{0} m · {1} kg' | t: [(d.heightM), (d.weightKg)] }}</span>
+              <span>{{ '{0} m · {1} kg' | t: [d.heightM, d.weightKg] }}</span>
               <span class="abilities">{{ abilities(d) }}</span>
             </div>
           }
@@ -217,7 +290,7 @@ export class PokemonQuickviewComponent {
   }
 
   protected statPt(i: number, d: QuickDetail): { x: number; y: number } {
-    const v = d.stats[STAT_ROWS[i].key];
+    const v = d.stats[STAT_ROWS[i]!.key];
     return radarPoint(i, Math.min(1, v / RADAR_MAX));
   }
 
@@ -229,12 +302,16 @@ export class PokemonQuickviewComponent {
   protected num = () => padId(this.entry().id);
   protected name = () => titleCase(this.entry().name);
   protected t1 = computed(() => typeColorVar(this.entry().types[0] ?? 'normal'));
-  protected t2 = computed(() => typeColorVar(this.entry().types[1] ?? this.entry().types[0] ?? 'normal'));
+  protected t2 = computed(() =>
+    typeColorVar(this.entry().types[1] ?? this.entry().types[0] ?? 'normal'),
+  );
 
   protected art = computed(() => {
     const d = this.detail();
     if (this.shiny()) return officialArtwork(this.entry().id, true);
-    return (REDUCED ? null : d?.sprites.animatedFront) ?? d?.sprites.default ?? this.entry().artwork;
+    return (
+      (REDUCED ? null : d?.sprites.animatedFront) ?? d?.sprites.default ?? this.entry().artwork
+    );
   });
 
   /** Anchored, viewport-clamped position relative to the source tile. */

@@ -121,7 +121,8 @@ export class TypeLabComponent {
     const uncovered = this.teamAnalysis().uncovered.length;
     const gaps = this.teamOffense().gaps.length;
     const score = Math.max(0, 100 - uncovered * 9 - gaps * 4);
-    const grade = score >= 85 ? 'S' : score >= 70 ? 'A' : score >= 55 ? 'B' : score >= 40 ? 'C' : 'D';
+    const grade =
+      score >= 85 ? 'S' : score >= 70 ? 'A' : score >= 55 ? 'B' : score >= 40 ? 'C' : 'D';
     return { score, grade, uncovered, gaps };
   });
 
@@ -193,7 +194,7 @@ export class TypeLabComponent {
     const cur = this.build();
     if (cur.includes(type)) this.build.set(cur.filter((t) => t !== type));
     else if (cur.length < 2) this.build.set([...cur, type]);
-    else this.build.set([cur[1], type]);
+    else this.build.set([cur[1]!, type]);
   }
   protected addMember(): void {
     const types = this.build();
@@ -263,7 +264,7 @@ export class TypeLabComponent {
       target.set([...current, type]);
     } else {
       // Replace the oldest selection so a tap always does something useful.
-      target.set([current[1], type]);
+      target.set([current[1]!, type]);
     }
   }
 }

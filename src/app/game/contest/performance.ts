@@ -39,16 +39,19 @@ const MOVE_NAMES: Record<ContestCategory, string> = {
   tough: 'Bold Stomp',
 };
 
-export const APPEAL_MOVES: Record<ContestCategory, AppealMove> = CHAIN.reduce((acc, cat, i) => {
-  acc[cat] = {
-    category: cat,
-    name: MOVE_NAMES[cat],
-    appeal: APPEAL_BASE,
-    comboAfter: CHAIN[(i + CHAIN.length - 1) % CHAIN.length],
-    jam: cat === 'tough',
-  };
-  return acc;
-}, {} as Record<ContestCategory, AppealMove>);
+export const APPEAL_MOVES: Record<ContestCategory, AppealMove> = CHAIN.reduce(
+  (acc, cat, i) => {
+    acc[cat] = {
+      category: cat,
+      name: MOVE_NAMES[cat],
+      appeal: APPEAL_BASE,
+      comboAfter: CHAIN[(i + CHAIN.length - 1) % CHAIN.length]!,
+      jam: cat === 'tough',
+    };
+    return acc;
+  },
+  {} as Record<ContestCategory, AppealMove>,
+);
 
 export interface RoundOutcome {
   readonly round: number;
@@ -77,7 +80,14 @@ export interface PerformanceState {
   finished: boolean;
 }
 
-const RIVAL_NAMES = ['Coordinator Lila', 'Maestro Bram', 'Starlet Posy', 'Dazzle Kit', 'Vivi the Vain', 'Sir Pomp'];
+const RIVAL_NAMES = [
+  'Coordinator Lila',
+  'Maestro Bram',
+  'Starlet Posy',
+  'Dazzle Kit',
+  'Vivi the Vain',
+  'Sir Pomp',
+];
 
 function zeroCounts(): Record<ContestCategory, number> {
   return { cool: 0, beauty: 0, cute: 0, smart: 0, tough: 0 };
@@ -86,7 +96,10 @@ function zeroCounts(): Record<ContestCategory, number> {
 /** Begin a performance: seed three rivals and reset counters. */
 export function startPerformance(_rank: ContestRank, seed: number | string): PerformanceState {
   const rng = new SeededRng(`perf-${seed}`);
-  const rivals = rng.shuffle(RIVAL_NAMES).slice(0, 3).map((name) => ({ name, total: 0 }));
+  const rivals = rng
+    .shuffle(RIVAL_NAMES)
+    .slice(0, 3)
+    .map((name) => ({ name, total: 0 }));
   return {
     rounds: PERFORMANCE_ROUNDS,
     round: 1,
@@ -129,7 +142,7 @@ export function appeal(
     return move.jam ? Math.max(1, a - rng.int(8, 16)) : a;
   });
 
-  const rivals = state.rivals.map((r, i) => ({ name: r.name, total: r.total + rivalAppeals[i] }));
+  const rivals = state.rivals.map((r, i) => ({ name: r.name, total: r.total + rivalAppeals[i]! }));
   const counts = { ...state.counts, [category]: state.counts[category] + 1 };
   const outcome: RoundOutcome = {
     round: state.round,
@@ -173,6 +186,9 @@ export function performanceRanking(
 }
 
 /** Whether a move would combo given the last category played (for UI hints). */
-export function wouldCombo(lastCategory: ContestCategory | null, category: ContestCategory): boolean {
+export function wouldCombo(
+  lastCategory: ContestCategory | null,
+  category: ContestCategory,
+): boolean {
   return lastCategory !== null && APPEAL_MOVES[category].comboAfter === lastCategory;
 }

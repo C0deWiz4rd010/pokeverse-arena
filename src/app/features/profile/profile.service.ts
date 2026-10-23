@@ -31,7 +31,9 @@ export class ProfileService {
   readonly unlocked = computed(() => this.achievements().filter((a) => a.unlocked).length);
   readonly totalAchievements = ACHIEVEMENTS.length;
   /** Achievement completion as a 0–100 percentage. */
-  readonly completion = computed(() => Math.round((this.unlocked() / this.totalAchievements) * 100));
+  readonly completion = computed(() =>
+    Math.round((this.unlocked() / this.totalAchievements) * 100),
+  );
   readonly rank = computed(() => rankFor(this.state()));
   /** Rank ladder progress toward the next tier. */
   readonly progress = computed(() => rankProgress(this.state()));

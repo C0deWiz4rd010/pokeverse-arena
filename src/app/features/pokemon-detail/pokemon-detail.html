@@ -52,7 +52,7 @@
         </div>
 
         <h1>{{ titleCase(s.pokemon.name) }}</h1>
-        <p class="genus">{{ i18n.isGerman() && s.species.de?.genus ? s.species.de?.genus : s.species.genus }}</p>
+        <p class="genus">{{ i18n.isGerman() && s.species.de?.genus ? s.species.de.genus : s.species.genus }}</p>
 
         <div class="types">
           @for (t of s.pokemon.types; track t) { <pv-type-badge [type]="t" /> }
@@ -64,7 +64,7 @@
           <div><span>{{ 'BST' | t }}</span><b class="bst">{{ bstShown() }}</b><small>{{ 'base total' | t }}</small></div>
         </div>
 
-        @if (s.species.flavorText) { <p class="flavor">“{{ i18n.isGerman() && s.species.de?.flavorText ? s.species.de?.flavorText : s.species.flavorText }}”</p> }
+        @if (s.species.flavorText) { <p class="flavor">“{{ i18n.isGerman() && s.species.de?.flavorText ? s.species.de.flavorText : s.species.flavorText }}”</p> }
 
         <div class="quick-actions">
           <button class="btn" type="button" [disabled]="teamFull() || addedToTeam()" (click)="addToTeam()">

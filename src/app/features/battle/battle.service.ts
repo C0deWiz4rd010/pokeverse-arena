@@ -4,12 +4,7 @@ import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { MoveDto, PokemonDto } from '../../core/dto/pokeapi.dto';
 import { isPokemonType } from '../../core/utils/type-chart';
 import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
-import {
-  isAbilityId,
-  type AbilityId,
-  type Battler,
-  type BattleMove,
-} from '../../game/engine';
+import { isAbilityId, type AbilityId, type Battler, type BattleMove } from '../../game/engine';
 import { convertMove, isUsefulStatusMove } from '../../game/engine/move-convert';
 
 /** Number of distinct level-up moves to consider before filtering to damaging ones. */
@@ -42,13 +37,21 @@ export class BattleService {
    * Pass `{ levelMoves: true }` (RPG mode) to use the moves the species would
    * actually know at that level instead of its strongest four.
    */
-  async buildBattler(idOrName: string | number, level = 50, opts?: { levelMoves?: boolean }): Promise<Battler> {
+  async buildBattler(
+    idOrName: string | number,
+    level = 50,
+    opts?: { levelMoves?: boolean },
+  ): Promise<Battler> {
     const dto = await this.api.pokemon(String(idOrName).toLowerCase());
     return this.buildBattlerFromDto(dto, level, opts);
   }
 
   /** Build an engine-ready Battler from an already-fetched DTO (saves a request). */
-  async buildBattlerFromDto(dto: PokemonDto, level = 50, opts?: { levelMoves?: boolean }): Promise<Battler> {
+  async buildBattlerFromDto(
+    dto: PokemonDto,
+    level = 50,
+    opts?: { levelMoves?: boolean },
+  ): Promise<Battler> {
     const baseStats = this.baseStats(dto);
     const stats = quickStats(baseStats, level);
     const types = dto.types
@@ -120,7 +123,8 @@ export class BattleService {
           if (d.move_learn_method.name !== 'level-up') continue;
           if (d.level_learned_at > atLevel) continue;
           const prev = byMove.get(m.move.name);
-          if (prev === undefined || d.level_learned_at < prev) byMove.set(m.move.name, d.level_learned_at);
+          if (prev === undefined || d.level_learned_at < prev)
+            byMove.set(m.move.name, d.level_learned_at);
         }
       }
       names = [...byMove.entries()]
@@ -131,13 +135,17 @@ export class BattleService {
       names = [
         ...new Set(
           dto.moves
-            .filter((m) => m.version_group_details.some((d) => d.move_learn_method.name === 'level-up'))
+            .filter((m) =>
+              m.version_group_details.some((d) => d.move_learn_method.name === 'level-up'),
+            )
             .map((m) => m.move.name),
         ),
       ].slice(0, MOVE_CANDIDATES);
     }
 
-    const details = await Promise.all(names.map((n) => this.api.move(n).catch(() => null as MoveDto | null)));
+    const details = await Promise.all(
+      names.map((n) => this.api.move(n).catch(() => null as MoveDto | null)),
+    );
 
     const all = details.filter((d): d is MoveDto => !!d).map((d) => convertMove(d));
     const damaging = all.filter((m) => m.damageClass !== 'status' && m.power > 0);
@@ -147,9 +155,10 @@ export class BattleService {
     const ranked = atLevel !== undefined ? damaging : damaging.sort((a, b) => b.power - a.power);
     // Every set keeps one utility move (setup, status, recovery, field) when the species has one,
     // so fights are more than a damage race; the rest of the slots stay damaging.
-    const chosen = utility.length && ranked.length > 1
-      ? [...ranked.slice(0, MOVE_SLOTS - 1), utility[0]]
-      : ranked.slice(0, MOVE_SLOTS);
+    const chosen =
+      utility.length && ranked.length > 1
+        ? [...ranked.slice(0, MOVE_SLOTS - 1), utility[0]!]
+        : ranked.slice(0, MOVE_SLOTS);
     if (!chosen.length && utility.length) chosen.push(...utility.slice(0, MOVE_SLOTS));
 
     return chosen.length ? chosen : [STRUGGLE];

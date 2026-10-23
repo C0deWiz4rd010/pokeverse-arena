@@ -4,7 +4,7 @@
  */
 import type { MoveDto } from '../../core/dto/pokeapi.dto';
 import { isPokemonType, type PokemonType } from '../../core/utils/type-chart';
-import type { BattleMove, DamageClass, MoveFlags, SecondaryEffect } from './battle-types';
+import type { BattleMove, DamageClass, MoveFlags } from './battle-types';
 import type { HazardKind } from './hazards';
 import type { BoostableStat } from './stat-stages';
 import type { StatusCondition } from './status';
@@ -20,40 +20,147 @@ const AILMENT: Record<string, StatusCondition> = {
   poison: 'poison',
 };
 
-const BOOSTABLE = new Set<string>(['attack', 'defense', 'special-attack', 'special-defense', 'speed', 'accuracy', 'evasion']);
+const BOOSTABLE = new Set<string>([
+  'attack',
+  'defense',
+  'special-attack',
+  'special-defense',
+  'speed',
+  'accuracy',
+  'evasion',
+]);
 
 /** Field-setting status moves, by name. */
-const WEATHER: Record<string, Weather> = { 'rain-dance': 'rain', 'sunny-day': 'sun', sandstorm: 'sand', hail: 'hail', snowscape: 'snow' };
-const TERRAIN: Record<string, Terrain> = { 'electric-terrain': 'electric', 'grassy-terrain': 'grassy', 'psychic-terrain': 'psychic', 'misty-terrain': 'misty' };
-const HAZARD: Record<string, HazardKind> = { 'stealth-rock': 'stealth-rock', spikes: 'spikes', 'toxic-spikes': 'toxic-spikes' };
+const WEATHER: Record<string, Weather> = {
+  'rain-dance': 'rain',
+  'sunny-day': 'sun',
+  sandstorm: 'sand',
+  hail: 'hail',
+  snowscape: 'snow',
+};
+const TERRAIN: Record<string, Terrain> = {
+  'electric-terrain': 'electric',
+  'grassy-terrain': 'grassy',
+  'psychic-terrain': 'psychic',
+  'misty-terrain': 'misty',
+};
+const HAZARD: Record<string, HazardKind> = {
+  'stealth-rock': 'stealth-rock',
+  spikes: 'spikes',
+  'toxic-spikes': 'toxic-spikes',
+};
 
 /** Damaging moves whose stat change hits the *user* (drops after the hit, or a self-boost). */
 const SELF_STAT_MOVES = new Set([
-  'close-combat', 'superpower', 'overheat', 'draco-meteor', 'leaf-storm', 'v-create', 'hammer-arm', 'psycho-boost',
-  'fleur-cannon', 'clanging-scales', 'dragon-ascent', 'armor-cannon', 'make-it-rain', 'headlong-rush', 'shell-smash',
-  'power-up-punch', 'flame-charge', 'ancient-power', 'silver-wind', 'ominous-wind', 'metal-claw', 'steel-wing',
-  'meteor-mash', 'diamond-storm', 'charge-beam', 'fiery-dance', 'trailblaze', 'rapid-spin', 'spin-out', 'scale-shot',
+  'close-combat',
+  'superpower',
+  'overheat',
+  'draco-meteor',
+  'leaf-storm',
+  'v-create',
+  'hammer-arm',
+  'psycho-boost',
+  'fleur-cannon',
+  'clanging-scales',
+  'dragon-ascent',
+  'armor-cannon',
+  'make-it-rain',
+  'headlong-rush',
+  'shell-smash',
+  'power-up-punch',
+  'flame-charge',
+  'ancient-power',
+  'silver-wind',
+  'ominous-wind',
+  'metal-claw',
+  'steel-wing',
+  'meteor-mash',
+  'diamond-storm',
+  'charge-beam',
+  'fiery-dance',
+  'trailblaze',
+  'rapid-spin',
+  'spin-out',
+  'scale-shot',
 ]);
 
 /** Physical moves that do NOT make contact (everything else physical does). */
 const NON_CONTACT = new Set([
-  'earthquake', 'rock-slide', 'rock-tomb', 'rock-blast', 'bullet-seed', 'pin-missile', 'icicle-spear', 'icicle-crash',
-  'razor-leaf', 'stone-edge', 'bonemerang', 'bone-rush', 'bone-club', 'fissure', 'explosion', 'self-destruct',
-  'poison-sting', 'twineedle', 'barrage', 'egg-bomb', 'spike-cannon', 'sacred-sword', 'smack-down', 'magnitude',
-  'earth-power', 'bulldoze', 'fling', 'gunk-shot', 'sludge-bomb', 'cross-poison', 'poison-jab', 'thousand-arrows',
-  'thousand-waves', 'present', 'dragon-darts', 'diamond-storm', 'steel-beam', 'sky-attack', 'sky-drop', 'head-charge',
+  'earthquake',
+  'rock-slide',
+  'rock-tomb',
+  'rock-blast',
+  'bullet-seed',
+  'pin-missile',
+  'icicle-spear',
+  'icicle-crash',
+  'razor-leaf',
+  'stone-edge',
+  'bonemerang',
+  'bone-rush',
+  'bone-club',
+  'fissure',
+  'explosion',
+  'self-destruct',
+  'poison-sting',
+  'twineedle',
+  'barrage',
+  'egg-bomb',
+  'spike-cannon',
+  'sacred-sword',
+  'smack-down',
+  'magnitude',
+  'earth-power',
+  'bulldoze',
+  'fling',
+  'gunk-shot',
+  'sludge-bomb',
+  'cross-poison',
+  'poison-jab',
+  'thousand-arrows',
+  'thousand-waves',
+  'present',
+  'dragon-darts',
+  'diamond-storm',
+  'steel-beam',
+  'sky-attack',
+  'sky-drop',
+  'head-charge',
 ]);
 
 const SOUND = new Set([
-  'growl', 'roar', 'sing', 'supersonic', 'screech', 'snore', 'hyper-voice', 'bug-buzz', 'boomburst', 'echoed-voice',
-  'uproar', 'metal-sound', 'perish-song', 'round', 'chatter', 'relic-song', 'sparkling-aria', 'disarming-voice',
+  'growl',
+  'roar',
+  'sing',
+  'supersonic',
+  'screech',
+  'snore',
+  'hyper-voice',
+  'bug-buzz',
+  'boomburst',
+  'echoed-voice',
+  'uproar',
+  'metal-sound',
+  'perish-song',
+  'round',
+  'chatter',
+  'relic-song',
+  'sparkling-aria',
+  'disarming-voice',
 ]);
 
 function flagsFor(name: string, damageClass: DamageClass): MoveFlags | undefined {
   const flags: { contact?: boolean; sound?: boolean; punch?: boolean; bite?: boolean } = {};
   if (damageClass === 'physical' && !NON_CONTACT.has(name)) flags.contact = true;
-  if (name.endsWith('-punch') || name === 'punch' || name === 'sucker-punch' || name === 'bullet-punch') flags.punch = true;
-  if (name.endsWith('-fang') || name === 'bite' || name === 'crunch' || name === 'super-fang') flags.bite = true;
+  if (
+    name.endsWith('-punch') ||
+    name === 'punch' ||
+    name === 'sucker-punch' ||
+    name === 'bullet-punch'
+  )
+    flags.punch = true;
+  if (name.endsWith('-fang') || name === 'bite' || name === 'crunch' || name === 'super-fang')
+    flags.bite = true;
   if (SOUND.has(name)) flags.sound = true;
   return Object.keys(flags).length ? flags : undefined;
 }
@@ -110,7 +217,13 @@ export function convertMove(dto: MoveDto): BattleMove {
   }
 
   // Damaging move: optional on-hit rider (ailment, stat change, flinch).
-  const secondary: { chance: number; status?: StatusCondition; boosts?: Partial<Record<BoostableStat, number>>; boostTarget?: 'self' | 'opponent'; flinch?: boolean } = { chance: 0 };
+  const secondary: {
+    chance: number;
+    status?: StatusCondition;
+    boosts?: Partial<Record<BoostableStat, number>>;
+    boostTarget?: 'self' | 'opponent';
+    flinch?: boolean;
+  } = { chance: 0 };
   if (status && meta && meta.ailment_chance > 0) {
     secondary.chance = meta.ailment_chance;
     secondary.status = status;
@@ -124,7 +237,7 @@ export function convertMove(dto: MoveDto): BattleMove {
     secondary.boosts = boosts;
     secondary.boostTarget = SELF_STAT_MOVES.has(name) ? 'self' : 'opponent';
   }
-  if (secondary.chance > 0) move.secondary = secondary as SecondaryEffect;
+  if (secondary.chance > 0) move.secondary = secondary;
 
   const drainPct = meta?.drain ?? 0;
   if (drainPct > 0) move.drain = drainPct / 100;

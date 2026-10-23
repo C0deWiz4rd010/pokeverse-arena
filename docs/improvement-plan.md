@@ -22,7 +22,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | Phase | Inhalt | Version | Status |
 | ----- | ------ | ------- | ------ |
 | 1 | Quick Wins & Bugfixes | v3.0.1 | ✅ |
-| 2 | Strengere Typen & Lint | v3.0.2 | ⬜ |
+| 2 | Strengere Typen & Lint | v3.0.2 | ✅ |
 | 3 | Architektur entkoppeln | v3.0.3 | ⬜ |
 | 4 | Große Services aufteilen | v3.0.4 | ⬜ |
 | 5 | Einheitliche Persistenz + Run-Resume | v3.0.5 | ⬜ |
@@ -59,7 +59,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 1. `tsconfig.json`: `strictTemplates: true` (+ `extendedDiagnostics` als Error) → Template-Fehler beheben.
 2. `noUncheckedIndexedAccess: true` – Fehler featureweise fixen (viele Record-Zugriffe: i18n, `TYPE_WEATHER`, Type-Chart).
    RPG-Dateien: falls betroffen, minimale `!`/Guard-Fixes ohne Verhaltensänderung oder Override per eigenem tsconfig-Include.
-3. `eslint.config.js`: `tseslint.configs.strictTypeChecked` + `stylisticTypeChecked`, `no-floating-promises`,
+3. `eslint.config.js`: umgesetzt als `recommendedTypeChecked` (strictTypeChecked wäre ~300 Befunde; `no-unnecessary-condition` bewusst aus), `no-floating-promises`,
    `no-explicit-any`/`no-unused-vars` als Error; `tools/**` mitlinten; `lint` mit `--max-warnings 0`.
 4. Prettier: `format:check`-Script, in `verify` und CI aufnehmen; einmalig formatieren (eigener Commit).
 

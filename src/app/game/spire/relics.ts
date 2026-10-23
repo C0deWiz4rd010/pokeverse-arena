@@ -37,16 +37,76 @@ export interface Relic {
 }
 
 const LIST: readonly Relic[] = [
-  { id: 'lucky-coin', name: 'Lucky Coin', icon: 'gem', blurb: '+50% coins from every source.', coinMult: 1.5 },
-  { id: 'type-lens', name: 'Type Lens', icon: 'search', blurb: 'Reward screens offer one extra choice.', rewardBonus: 1 },
-  { id: 'vitamin-boost', name: 'Vitamin Boost', icon: 'heart', blurb: 'Your team gains +10% to all stats.', statMult: allStats(1.1) },
-  { id: 'leftovers-aura', name: 'Leftovers Aura', icon: 'leaf', blurb: 'Itemless team members hold Leftovers.', grantItem: 'leftovers' },
-  { id: 'sand-charm', name: 'Sand Charm', icon: 'mountain', blurb: 'Your lead holds a Smooth Rock.', grantLeadItem: 'smooth-rock' },
-  { id: 'focus-charm', name: 'Focus Charm', icon: 'shield', blurb: 'Your lead holds a Focus Sash.', grantLeadItem: 'focus-sash' },
-  { id: 'swift-feather', name: 'Swift Feather', icon: 'feather', blurb: 'Your team gains +15% Speed.', statMult: { speed: 1.15 } },
-  { id: 'guardian-shell', name: 'Guardian Shell', icon: 'shield-half', blurb: '+15% Defense and Sp. Def.', statMult: { defense: 1.15, 'special-defense': 1.15 } },
-  { id: 'berserker-band', name: 'Berserker Band', icon: 'flame', blurb: '+20% offences, −10% defences.', statMult: { attack: 1.2, 'special-attack': 1.2, defense: 0.9, 'special-defense': 0.9 } },
-  { id: 'mega-battery', name: 'Mega Battery', icon: 'zap', blurb: 'Your lead holds Choice Specs.', grantLeadItem: 'choice-specs' },
+  {
+    id: 'lucky-coin',
+    name: 'Lucky Coin',
+    icon: 'gem',
+    blurb: '+50% coins from every source.',
+    coinMult: 1.5,
+  },
+  {
+    id: 'type-lens',
+    name: 'Type Lens',
+    icon: 'search',
+    blurb: 'Reward screens offer one extra choice.',
+    rewardBonus: 1,
+  },
+  {
+    id: 'vitamin-boost',
+    name: 'Vitamin Boost',
+    icon: 'heart',
+    blurb: 'Your team gains +10% to all stats.',
+    statMult: allStats(1.1),
+  },
+  {
+    id: 'leftovers-aura',
+    name: 'Leftovers Aura',
+    icon: 'leaf',
+    blurb: 'Itemless team members hold Leftovers.',
+    grantItem: 'leftovers',
+  },
+  {
+    id: 'sand-charm',
+    name: 'Sand Charm',
+    icon: 'mountain',
+    blurb: 'Your lead holds a Smooth Rock.',
+    grantLeadItem: 'smooth-rock',
+  },
+  {
+    id: 'focus-charm',
+    name: 'Focus Charm',
+    icon: 'shield',
+    blurb: 'Your lead holds a Focus Sash.',
+    grantLeadItem: 'focus-sash',
+  },
+  {
+    id: 'swift-feather',
+    name: 'Swift Feather',
+    icon: 'feather',
+    blurb: 'Your team gains +15% Speed.',
+    statMult: { speed: 1.15 },
+  },
+  {
+    id: 'guardian-shell',
+    name: 'Guardian Shell',
+    icon: 'shield-half',
+    blurb: '+15% Defense and Sp. Def.',
+    statMult: { defense: 1.15, 'special-defense': 1.15 },
+  },
+  {
+    id: 'berserker-band',
+    name: 'Berserker Band',
+    icon: 'flame',
+    blurb: '+20% offences, −10% defences.',
+    statMult: { attack: 1.2, 'special-attack': 1.2, defense: 0.9, 'special-defense': 0.9 },
+  },
+  {
+    id: 'mega-battery',
+    name: 'Mega Battery',
+    icon: 'zap',
+    blurb: 'Your lead holds Choice Specs.',
+    grantLeadItem: 'choice-specs',
+  },
 ];
 
 const BY_ID = new Map<RelicId, Relic>(LIST.map((r) => [r.id, r]));
@@ -80,9 +140,13 @@ export function applyRelicsToTeam(team: readonly Battler[], relics: readonly Rel
   });
 }
 
-function scaleStats(stats: Record<StatKey, number>, mult: Partial<Record<StatKey, number>>): Record<StatKey, number> {
+function scaleStats(
+  stats: Record<StatKey, number>,
+  mult: Partial<Record<StatKey, number>>,
+): Record<StatKey, number> {
   const out = { ...stats };
-  for (const key of Object.keys(mult) as StatKey[]) out[key] = Math.round(out[key] * (mult[key] ?? 1));
+  for (const key of Object.keys(mult) as StatKey[])
+    out[key] = Math.round(out[key] * (mult[key] ?? 1));
   return out;
 }
 

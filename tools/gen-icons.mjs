@@ -17,10 +17,19 @@ const JOBS = [
 const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined });
 const page = await browser.newPage();
 for (const { svg, out, size } of JOBS) {
-  const markup = (await readFile(pub(svg), 'utf8')).replace('<svg ', `<svg width="${size}" height="${size}" `);
+  const markup = (await readFile(pub(svg), 'utf8')).replace(
+    '<svg ',
+    `<svg width="${size}" height="${size}" `,
+  );
   await page.setViewportSize({ width: size, height: size });
   await page.setContent(`<body style="margin:0;background:transparent">${markup}</body>`);
-  await writeFile(pub(out), await page.screenshot({ omitBackground: true, clip: { x: 0, y: 0, width: size, height: size } }));
+  await writeFile(
+    pub(out),
+    await page.screenshot({
+      omitBackground: true,
+      clip: { x: 0, y: 0, width: size, height: size },
+    }),
+  );
   console.log('wrote', out);
 }
 await browser.close();

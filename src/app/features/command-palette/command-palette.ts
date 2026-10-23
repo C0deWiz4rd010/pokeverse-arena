@@ -48,21 +48,111 @@ interface PageCmd {
 }
 
 const PAGES: PageCmd[] = [
-  { path: '/', label: 'Home', icon: 'zap', hint: 'Landing & progress', keywords: 'start home landing' },
-  { path: '/pokedex', label: 'Pokédex', icon: 'book', hint: 'Browse & filter all Pokémon', keywords: 'dex search browse list' },
-  { path: '/type-lab', label: 'Type Lab', icon: 'flask-conical', hint: 'Type chart & matchup calculator', keywords: 'effectiveness weakness chart' },
-  { path: '/team-builder', label: 'Team Builder', icon: 'wrench', hint: 'Build & export teams', keywords: 'team moves nature build' },
-  { path: '/battle', label: 'Battle', icon: 'swords', hint: 'Seeded 1v1 battles', keywords: 'fight duel versus' },
-  { path: '/arena', label: 'Arena', icon: 'castle', hint: 'Gym leaders & badges', keywords: 'gym badge leader champion' },
-  { path: '/tournaments', label: 'Tournaments', icon: 'trophy', hint: 'Brackets & standings', keywords: 'bracket cup elimination' },
-  { path: '/spire', label: 'Ascension Spire', icon: 'mountain', hint: 'Roguelike climb', keywords: 'roguelike relic climb tower' },
-  { path: '/odyssey', label: 'Odyssey', icon: 'map-pin', hint: 'Endless biome roguelike', keywords: 'roguelike pokerogue waves catch endless biome' },
-  { path: '/world', label: 'World Explorer', icon: 'map', hint: 'Regions & expeditions', keywords: 'region kanto expedition catch' },
-  { path: '/fusion', label: 'Fusion Lab', icon: 'flask-conical', hint: 'Splice two Pokémon into one', keywords: 'fuse fusion splice dna hybrid chimera lab' },
-  { path: '/showcase', label: 'Pokédex Showcase', icon: 'star', hint: 'Immersive 3D dex, one Pokémon at a time', keywords: 'showcase 3d dex immersive stage radar carousel' },
-  { path: '/contest', label: 'Contest Hall', icon: 'sparkles', hint: 'Poffins & appeal rounds', keywords: 'berry poffin beauty' },
-  { path: '/adventure', label: 'Adventure', icon: 'scroll-text', hint: 'Top-down RPG story', keywords: 'rpg story overworld quest' },
-  { path: '/profile', label: 'Trainer Profile', icon: 'crown', hint: 'Stats, saves & identity', keywords: 'trainer save stats' },
+  {
+    path: '/',
+    label: 'Home',
+    icon: 'zap',
+    hint: 'Landing & progress',
+    keywords: 'start home landing',
+  },
+  {
+    path: '/pokedex',
+    label: 'Pokédex',
+    icon: 'book',
+    hint: 'Browse & filter all Pokémon',
+    keywords: 'dex search browse list',
+  },
+  {
+    path: '/type-lab',
+    label: 'Type Lab',
+    icon: 'flask-conical',
+    hint: 'Type chart & matchup calculator',
+    keywords: 'effectiveness weakness chart',
+  },
+  {
+    path: '/team-builder',
+    label: 'Team Builder',
+    icon: 'wrench',
+    hint: 'Build & export teams',
+    keywords: 'team moves nature build',
+  },
+  {
+    path: '/battle',
+    label: 'Battle',
+    icon: 'swords',
+    hint: 'Seeded 1v1 battles',
+    keywords: 'fight duel versus',
+  },
+  {
+    path: '/arena',
+    label: 'Arena',
+    icon: 'castle',
+    hint: 'Gym leaders & badges',
+    keywords: 'gym badge leader champion',
+  },
+  {
+    path: '/tournaments',
+    label: 'Tournaments',
+    icon: 'trophy',
+    hint: 'Brackets & standings',
+    keywords: 'bracket cup elimination',
+  },
+  {
+    path: '/spire',
+    label: 'Ascension Spire',
+    icon: 'mountain',
+    hint: 'Roguelike climb',
+    keywords: 'roguelike relic climb tower',
+  },
+  {
+    path: '/odyssey',
+    label: 'Odyssey',
+    icon: 'map-pin',
+    hint: 'Endless biome roguelike',
+    keywords: 'roguelike pokerogue waves catch endless biome',
+  },
+  {
+    path: '/world',
+    label: 'World Explorer',
+    icon: 'map',
+    hint: 'Regions & expeditions',
+    keywords: 'region kanto expedition catch',
+  },
+  {
+    path: '/fusion',
+    label: 'Fusion Lab',
+    icon: 'flask-conical',
+    hint: 'Splice two Pokémon into one',
+    keywords: 'fuse fusion splice dna hybrid chimera lab',
+  },
+  {
+    path: '/showcase',
+    label: 'Pokédex Showcase',
+    icon: 'star',
+    hint: 'Immersive 3D dex, one Pokémon at a time',
+    keywords: 'showcase 3d dex immersive stage radar carousel',
+  },
+  {
+    path: '/contest',
+    label: 'Contest Hall',
+    icon: 'sparkles',
+    hint: 'Poffins & appeal rounds',
+    keywords: 'berry poffin beauty',
+  },
+  {
+    path: '/adventure',
+    label: 'Adventure',
+    icon: 'scroll-text',
+    hint: 'Top-down RPG story',
+    keywords: 'rpg story overworld quest',
+  },
+  {
+    path: '/profile',
+    label: 'Trainer Profile',
+    icon: 'crown',
+    hint: 'Stats, saves & identity',
+    keywords: 'trainer save stats',
+  },
 ];
 
 const MAX_POKEMON_HITS = 8;
@@ -137,7 +227,8 @@ export class CommandPaletteComponent {
     if (pages.length) groups.push({ title: 'Go to', items: pages });
 
     const actions = this.actionItems().filter(
-      (a) => !q || a.label.toLowerCase().includes(q) || this.i18n.t(a.label).toLowerCase().includes(q),
+      (a) =>
+        !q || a.label.toLowerCase().includes(q) || this.i18n.t(a.label).toLowerCase().includes(q),
     );
     if (actions.length) groups.push({ title: 'Actions', items: actions });
 

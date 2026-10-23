@@ -21,7 +21,8 @@ await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
 const controlled = await page.evaluate(async () => {
   if (!('serviceWorker' in navigator)) return false;
   await navigator.serviceWorker.ready;
-  for (let i = 0; i < 40 && !navigator.serviceWorker.controller; i++) await new Promise((r) => setTimeout(r, 250));
+  for (let i = 0; i < 40 && !navigator.serviceWorker.controller; i++)
+    await new Promise((r) => setTimeout(r, 250));
   return !!navigator.serviceWorker.controller;
 });
 if (!controlled) {
@@ -31,14 +32,17 @@ if (!controlled) {
 await page.waitForTimeout(3500); // let the precache install finish
 
 await ctx.setOffline(true);
-await page.reload({ waitUntil: 'domcontentloaded' }).catch((e) => problems.push(`offline reload failed: ${e.message}`));
+await page
+  .reload({ waitUntil: 'domcontentloaded' })
+  .catch((e) => problems.push(`offline reload failed: ${e.message}`));
 await page.waitForTimeout(1500);
 const shell = await page.evaluate(() => ({
   nav: !!document.querySelector('nav'),
   chars: (document.body.innerText || '').trim().length,
   title: document.title,
 }));
-if (!shell.nav || shell.chars < 40) problems.push(`offline shell did not render: ${JSON.stringify(shell)}`);
+if (!shell.nav || shell.chars < 40)
+  problems.push(`offline shell did not render: ${JSON.stringify(shell)}`);
 
 for (const route of ['#/pokedex', '#/profile', '#/adventure']) {
   await page.goto(`${BASE}/${route}`, { waitUntil: 'domcontentloaded' }).catch(() => undefined);
@@ -49,5 +53,7 @@ for (const route of ['#/pokedex', '#/profile', '#/adventure']) {
 
 await browser.close();
 console.log('\n===== OFFLINE E2E =====');
-if (problems.length) { console.log(problems.map((p) => ' - ' + p).join('\n')); process.exitCode = 1; }
-else console.log('offline start works — shell and routes render without a network 🎉');
+if (problems.length) {
+  console.log(problems.map((p) => ' - ' + p).join('\n'));
+  process.exitCode = 1;
+} else console.log('offline start works — shell and routes render without a network 🎉');

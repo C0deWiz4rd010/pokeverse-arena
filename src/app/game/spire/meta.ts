@@ -31,7 +31,12 @@ export function saveMeta(meta: SpireMeta): void {
 }
 
 /** Fold a finished run into the meta record (returns a fresh object). */
-export function recordRun(meta: SpireMeta, depth: number, coins: number, cleared: boolean): SpireMeta {
+export function recordRun(
+  meta: SpireMeta,
+  depth: number,
+  coins: number,
+  cleared: boolean,
+): SpireMeta {
   const next: SpireMeta = {
     ...meta,
     bestDepth: Math.max(meta.bestDepth, depth),
@@ -39,7 +44,9 @@ export function recordRun(meta: SpireMeta, depth: number, coins: number, cleared
     clears: meta.clears + (cleared ? 1 : 0),
     bankedCoins: meta.bankedCoins + Math.max(0, coins),
     // Each clear unlocks the next ascension tier (capped).
-    ascension: cleared ? Math.min(10, Math.max(meta.ascension, meta.ascension + 1)) : meta.ascension,
+    ascension: cleared
+      ? Math.min(10, Math.max(meta.ascension, meta.ascension + 1))
+      : meta.ascension,
   };
   saveMeta(next);
   return next;

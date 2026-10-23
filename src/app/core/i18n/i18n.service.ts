@@ -2,7 +2,11 @@ import { Injectable, computed, effect, signal } from '@angular/core';
 import { safeGet, safeSet } from '../storage/safe-storage';
 
 export type Locale = 'en' | 'de';
-export const LOCALES: readonly { readonly code: Locale; readonly label: string; readonly short: string }[] = [
+export const LOCALES: readonly {
+  readonly code: Locale;
+  readonly label: string;
+  readonly short: string;
+}[] = [
   { code: 'en', label: 'English', short: 'EN' },
   { code: 'de', label: 'Deutsch', short: 'DE' },
 ];
@@ -21,11 +25,18 @@ export function detectLocale(languages: readonly string[] | undefined): Locale {
 }
 
 /** Replace `{0}`, `{1}` / `{name}` placeholders with the given values. */
-export function interpolate(template: string, params?: readonly unknown[] | Readonly<Record<string, unknown>>): string {
+export function interpolate(
+  template: string,
+  params?: readonly unknown[] | Readonly<Record<string, unknown>>,
+): string {
   if (!params) return template;
-  return template.replace(/\{(\w+)\}/g, (whole, key: string) => {
-    const v = Array.isArray(params) ? params[Number(key)] : (params as Record<string, unknown>)[key];
-    return v === undefined || v === null ? whole : String(v);
+  return template.replace(/\{(\w+)\}/g, (whole: string, key: string) => {
+    const v = Array.isArray(params)
+      ? (params as readonly unknown[])[Number(key)]
+      : (params as Record<string, unknown>)[key];
+    return typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+      ? String(v)
+      : whole;
   });
 }
 
@@ -137,7 +148,8 @@ export class I18nService {
           if (!m) continue;
           let next = 0;
           result = p.de.replace(SLOT, (_whole, name: string) => {
-            const idx = name === '' ? next++ : /^\d+$/.test(name) ? Number(name) - 1 : p.names.indexOf(name);
+            const idx =
+              name === '' ? next++ : /^\d+$/.test(name) ? Number(name) - 1 : p.names.indexOf(name);
             const cap = m[idx + 1];
             if (cap === undefined) return '';
             return NO_LETTERS.test(cap) ? cap : this.translate(cap, depth + 1, dict);
@@ -150,7 +162,8 @@ export class I18nService {
           if (sep > 0 && sep < 40) {
             const head = this.translate(text.slice(0, sep), depth + 1, dict);
             const tail = this.translate(text.slice(sep + 2), depth + 1, dict);
-            if (head !== text.slice(0, sep) || tail !== text.slice(sep + 2)) result = head + ': ' + tail;
+            if (head !== text.slice(0, sep) || tail !== text.slice(sep + 2))
+              result = head + ': ' + tail;
           }
         }
       }
@@ -161,12 +174,16 @@ export class I18nService {
   }
 
   private compiled(dict: GermanBundle): CompiledPattern[] {
-    return (this.patterns ??= dict.DE_PATTERNS.map(([en, de]) => compilePattern(en, de)).sort((a, b) => b.weight - a.weight));
+    return (this.patterns ??= dict.DE_PATTERNS.map(([en, de]) => compilePattern(en, de)).sort(
+      (a, b) => b.weight - a.weight,
+    ));
   }
 
   private initial(): Locale {
     const stored = safeGet(STORAGE_KEY);
     if (stored === 'de' || stored === 'en') return stored;
-    return detectLocale(typeof navigator === 'undefined' ? undefined : (navigator.languages ?? [navigator.language]));
+    return detectLocale(
+      typeof navigator === 'undefined' ? undefined : (navigator.languages ?? [navigator.language]),
+    );
   }
 }

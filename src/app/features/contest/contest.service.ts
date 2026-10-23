@@ -73,7 +73,9 @@ export class ContestService {
   readonly phase = signal<ContestPhase>('prep');
   readonly performance = signal<PerformanceState | null>(null);
   readonly lastOutcome = signal<RoundOutcome | null>(null);
-  readonly ribbons = signal<ReadonlySet<string>>(new Set(this.save.read<string[]>('contest:ribbons', [])));
+  readonly ribbons = signal<ReadonlySet<string>>(
+    new Set(this.save.read<string[]>('contest:ribbons', [])),
+  );
   readonly appealMoves = APPEAL_MOVES;
   readonly totalRounds = PERFORMANCE_ROUNDS;
 
@@ -164,7 +166,9 @@ export class ContestService {
     const performer = this.performer();
     if (!performer || !this.mix().length) return;
     this.attempt += 1;
-    this.seed = `${performer.name}-${this.category()}-${this.rank()}-${this.mix().map((b) => b.name).join(',')}-${this.attempt}`;
+    this.seed = `${performer.name}-${this.category()}-${this.rank()}-${this.mix()
+      .map((b) => b.name)
+      .join(',')}-${this.attempt}`;
     this.performance.set(startPerformance(this.rank(), this.seed));
     this.lastOutcome.set(null);
     this.result.set(null);
@@ -175,7 +179,14 @@ export class ContestService {
   appeal(category: ContestCategory): void {
     const state = this.performance();
     if (!state || state.finished) return;
-    const next = appealRound(state, category, this.conditions(), this.category(), this.rank(), this.seed);
+    const next = appealRound(
+      state,
+      category,
+      this.conditions(),
+      this.category(),
+      this.rank(),
+      this.seed,
+    );
     this.performance.set(next);
     this.lastOutcome.set(next.history[next.history.length - 1] ?? null);
     if (next.finished) this.finalise(next);
@@ -237,12 +248,11 @@ export class ContestService {
     const byName = new Map<string, Record<Flavor, number>>();
 
     flavorDtos.forEach((dto, i) => {
-      const flavor = FLAVORS[i];
+      const flavor = FLAVORS[i]!;
       for (const entry of dto.berries) {
         if (entry.potency <= 0) continue;
         const name = entry.berry.name;
-        const flavors =
-          byName.get(name) ?? { spicy: 0, dry: 0, sweet: 0, bitter: 0, sour: 0 };
+        const flavors = byName.get(name) ?? { spicy: 0, dry: 0, sweet: 0, bitter: 0, sour: 0 };
         flavors[flavor] = entry.potency;
         byName.set(name, flavors);
       }

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateAchievements, rankFor, rankProgress, unlockedCount, type ProfileState } from './profile';
+import {
+  evaluateAchievements,
+  rankFor,
+  rankProgress,
+  unlockedCount,
+  type ProfileState,
+} from './profile';
 
 const base: ProfileState = {
   badges: 0,
@@ -35,7 +41,9 @@ describe('profile achievements', () => {
 
   it('unlocks odyssey milestones from wave depth and roster size', () => {
     const ids = (s: Partial<typeof base>) =>
-      evaluateAchievements({ ...base, ...s }).filter((a) => a.unlocked).map((a) => a.achievement.id);
+      evaluateAchievements({ ...base, ...s })
+        .filter((a) => a.unlocked)
+        .map((a) => a.achievement.id);
     expect(ids({ odysseyBestWave: 10 })).toContain('odyssey-10');
     expect(ids({ odysseyBestWave: 10 })).not.toContain('odyssey-30');
     expect(ids({ odysseyBestWave: 30 })).toContain('odyssey-30');
@@ -44,7 +52,9 @@ describe('profile achievements', () => {
 
   it('unlocks Nuzlocke milestones from the best nuzlocke badge count', () => {
     const ids = (s: Partial<typeof base>) =>
-      evaluateAchievements({ ...base, ...s }).filter((a) => a.unlocked).map((a) => a.achievement.id);
+      evaluateAchievements({ ...base, ...s })
+        .filter((a) => a.unlocked)
+        .map((a) => a.achievement.id);
     expect(ids({ nuzlockeBadges: 1 })).toContain('nuz-survivor');
     expect(ids({ nuzlockeBadges: 1 })).not.toContain('nuz-iron');
     expect(ids({ nuzlockeBadges: 4 })).toContain('nuz-iron');
@@ -53,7 +63,9 @@ describe('profile achievements', () => {
 
   it('unlocks chimera milestones from spire chimera wins', () => {
     const ids = (s: Partial<typeof base>) =>
-      evaluateAchievements({ ...base, ...s }).filter((a) => a.unlocked).map((a) => a.achievement.id);
+      evaluateAchievements({ ...base, ...s })
+        .filter((a) => a.unlocked)
+        .map((a) => a.achievement.id);
     expect(ids({})).not.toContain('chimera-slayer');
     expect(ids({ chimeraWins: 1 })).toContain('chimera-slayer');
     expect(ids({ chimeraWins: 1 })).not.toContain('chimera-hunter');
@@ -61,21 +73,44 @@ describe('profile achievements', () => {
   });
 
   it('unlocks daily-streak milestones from the best streak', () => {
-    const ids = evaluateAchievements({ ...base, dailyBest: 3 }).filter((a) => a.unlocked).map((a) => a.achievement.id);
+    const ids = evaluateAchievements({ ...base, dailyBest: 3 })
+      .filter((a) => a.unlocked)
+      .map((a) => a.achievement.id);
     expect(ids).toContain('daily-3');
     expect(ids).not.toContain('daily-7');
-    expect(evaluateAchievements({ ...base, dailyBest: 7 }).find((a) => a.achievement.id === 'daily-7')!.unlocked).toBe(true);
+    expect(
+      evaluateAchievements({ ...base, dailyBest: 7 }).find((a) => a.achievement.id === 'daily-7')!
+        .unlocked,
+    ).toBe(true);
   });
 
   it('unlocks badge milestones progressively', () => {
-    expect(evaluateAchievements({ ...base, badges: 1 }).find((a) => a.achievement.id === 'first-badge')!.unlocked).toBe(true);
-    expect(evaluateAchievements({ ...base, badges: 18 }).find((a) => a.achievement.id === 'all-badges')!.unlocked).toBe(true);
-    expect(evaluateAchievements({ ...base, badges: 9 }).find((a) => a.achievement.id === 'all-badges')!.unlocked).toBe(false);
+    expect(
+      evaluateAchievements({ ...base, badges: 1 }).find((a) => a.achievement.id === 'first-badge')!
+        .unlocked,
+    ).toBe(true);
+    expect(
+      evaluateAchievements({ ...base, badges: 18 }).find((a) => a.achievement.id === 'all-badges')!
+        .unlocked,
+    ).toBe(true);
+    expect(
+      evaluateAchievements({ ...base, badges: 9 }).find((a) => a.achievement.id === 'all-badges')!
+        .unlocked,
+    ).toBe(false);
   });
 
   it('unlocks spire and champion achievements', () => {
-    const s = { ...base, arenaChampion: true, bestDepth: 15, spireClears: 1, ascension: 3, coins: 1200 };
-    const ids = evaluateAchievements(s).filter((a) => a.unlocked).map((a) => a.achievement.id);
+    const s = {
+      ...base,
+      arenaChampion: true,
+      bestDepth: 15,
+      spireClears: 1,
+      ascension: 3,
+      coins: 1200,
+    };
+    const ids = evaluateAchievements(s)
+      .filter((a) => a.unlocked)
+      .map((a) => a.achievement.id);
     expect(ids).toContain('champion');
     expect(ids).toContain('spire-clear');
     expect(ids).toContain('ascendant');
@@ -94,10 +129,21 @@ describe('profile achievements', () => {
       rivalLosses: 1,
       pickemHits: 1,
     };
-    const ids = evaluateAchievements(s).filter((a) => a.unlocked).map((a) => a.achievement.id);
-    expect(ids).toEqual(expect.arrayContaining([
-      'adv-badge', 'adv-catcher', 'world-50', 'shiny-one', 'ribbon-one', 'ribbon-all', 'rival-lead', 'oracle',
-    ]));
+    const ids = evaluateAchievements(s)
+      .filter((a) => a.unlocked)
+      .map((a) => a.achievement.id);
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        'adv-badge',
+        'adv-catcher',
+        'world-50',
+        'shiny-one',
+        'ribbon-one',
+        'ribbon-all',
+        'rival-lead',
+        'oracle',
+      ]),
+    );
     // A 4–2 record is not yet a 3-win lead.
     const close = evaluateAchievements({ ...base, rivalWins: 4, rivalLosses: 2 });
     expect(close.find((a) => a.achievement.id === 'rival-lead')!.unlocked).toBe(false);
@@ -108,7 +154,9 @@ describe('rankFor', () => {
   it('escalates with progression', () => {
     expect(rankFor(base)).toBe('Rookie');
     expect(rankFor({ ...base, badges: 4 })).toBe('Adept');
-    expect(rankFor({ ...base, badges: 18, arenaChampion: true, tournamentWins: 3, spireClears: 2 })).toBe('Legend');
+    expect(
+      rankFor({ ...base, badges: 18, arenaChampion: true, tournamentWins: 3, spireClears: 2 }),
+    ).toBe('Legend');
   });
 });
 
@@ -122,7 +170,13 @@ describe('rankProgress', () => {
   });
 
   it('caps at the top tier', () => {
-    const p = rankProgress({ ...base, badges: 18, arenaChampion: true, tournamentWins: 3, spireClears: 2 });
+    const p = rankProgress({
+      ...base,
+      badges: 18,
+      arenaChampion: true,
+      tournamentWins: 3,
+      spireClears: 2,
+    });
     expect(p.rank).toBe('Legend');
     expect(p.next).toBeNull();
     expect(p.toNext).toBe(0);

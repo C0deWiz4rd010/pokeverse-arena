@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { titleCase, typeColorVar } from '../format';
-import type { PokemonType } from '../../utils/type-chart';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 const LIGHT_TEXT = new Set(['fighting', 'ghost', 'dragon', 'dark']);
 
 /** Colored, labelled type pill. Conveys type by icon + text, not color alone. */
 @Component({
-    imports: [TranslatePipe],
-selector: 'pv-type-badge',
+  imports: [TranslatePipe],
+  selector: 'pv-type-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <span class="badge" [class.light]="lightText()" [style.--c]="color()" [style.background]="bg()">
@@ -46,7 +45,7 @@ selector: 'pv-type-badge',
   ],
 })
 export class TypeBadgeComponent {
-  readonly type = input.required<PokemonType | string>();
+  readonly type = input.required<string>();
 
   label = () => titleCase(this.type());
   color = () => typeColorVar(this.type());

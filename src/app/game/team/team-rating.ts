@@ -95,13 +95,20 @@ function buildSuggestions(
   const tips: string[] = [];
   const dangerous = stacked.filter((s) => !s.covered);
   if (dangerous.length) {
-    const list = dangerous.slice(0, 3).map((s) => `${titleCase(s.type)} (×${s.count})`).join(', ');
+    const list = dangerous
+      .slice(0, 3)
+      .map((s) => `${titleCase(s.type)} (×${s.count})`)
+      .join(', ');
     tips.push(`Shared weakness with no resist: ${list}. Add a Pokémon that resists it.`);
   } else if (stacked.length) {
-    tips.push(`Several members share a ${titleCase(stacked[0].type)} weakness — keep a resist in the back.`);
+    tips.push(
+      `Several members share a ${titleCase(stacked[0]!.type)} weakness — keep a resist in the back.`,
+    );
   }
   if (gaps.length >= 3) {
-    tips.push(`No super-effective answer to ${gaps.slice(0, 3).map(titleCase).join(', ')}. Broaden your attacking types.`);
+    tips.push(
+      `No super-effective answer to ${gaps.slice(0, 3).map(titleCase).join(', ')}. Broaden your attacking types.`,
+    );
   }
   if (offense < 9) tips.push('Offensive coverage is thin — add a different STAB type.');
   if (defense < 9) tips.push('Few resistances — add a bulky, resistant typing.');

@@ -120,23 +120,36 @@ export interface MoveInfo {
 /* ----------------------------------------------------------------- mappers */
 
 const STAT_KEYS: StatKey[] = [
-  'hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed',
+  'hp',
+  'attack',
+  'defense',
+  'special-attack',
+  'special-defense',
+  'speed',
 ];
 
-function flavorFor(entries: { flavor_text: string; language: { name: string } }[], lang: string): string {
+function flavorFor(
+  entries: { flavor_text: string; language: { name: string } }[],
+  lang: string,
+): string {
   // later games come last; prefer the newest entry in the language
   const hit = [...entries].reverse().find((e) => e.language.name === lang);
   return (hit?.flavor_text ?? '').replace(/[\n\f\r]/g, ' ').trim();
 }
 
-function localized(dto: PokemonSpeciesDto, lang: string): { name: string; genus: string; flavorText: string } | null {
+function localized(
+  dto: PokemonSpeciesDto,
+  lang: string,
+): { name: string; genus: string; flavorText: string } | null {
   const name = dto.names?.find((n) => n.language.name === lang)?.name ?? '';
   const genus = dto.genera.find((g) => g.language.name === lang)?.genus ?? '';
   const flavorText = flavorFor(dto.flavor_text_entries, lang);
   return name || genus || flavorText ? { name, genus, flavorText } : null;
 }
 
-function englishEffect(entries: { effect: string; short_effect: string; language: { name: string } }[]): {
+function englishEffect(
+  entries: { effect: string; short_effect: string; language: { name: string } }[],
+): {
   effect: string;
   shortEffect: string;
 } {
@@ -151,8 +164,7 @@ export function mapPokemon(dto: PokemonDto): Pokemon {
   }, {} as PokemonStats);
 
   const showdown = dto.sprites.other?.showdown;
-  const artwork =
-    dto.sprites.other?.['official-artwork']?.front_default ?? officialArtwork(dto.id);
+  const artwork = dto.sprites.other?.['official-artwork']?.front_default ?? officialArtwork(dto.id);
   const shinyArt =
     dto.sprites.other?.['official-artwork']?.front_shiny ?? officialArtwork(dto.id, true);
 
@@ -184,8 +196,7 @@ function mapMoves(dto: PokemonDto): LearnableMove[] {
   return dto.moves
     .map((m) => {
       const detail =
-        m.version_group_details[m.version_group_details.length - 1] ??
-        m.version_group_details[0];
+        m.version_group_details[m.version_group_details.length - 1] ?? m.version_group_details[0];
       return {
         name: m.move.name,
         levelLearnedAt: detail?.level_learned_at ?? 0,
@@ -261,7 +272,8 @@ export function mapMoveInfo(dto: MoveDto): MoveInfo {
     pp: dto.pp,
     priority: dto.priority,
     effect,
-    ailment: dto.meta?.ailment.name && dto.meta.ailment.name !== 'none' ? dto.meta.ailment.name : null,
+    ailment:
+      dto.meta?.ailment.name && dto.meta.ailment.name !== 'none' ? dto.meta.ailment.name : null,
     ailmentChance: dto.meta?.ailment_chance ?? 0,
     critRate: dto.meta?.crit_rate ?? 0,
     minHits: dto.meta?.min_hits ?? null,

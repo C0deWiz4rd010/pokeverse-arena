@@ -2,10 +2,24 @@ import { Injectable, signal } from '@angular/core';
 import { safeGet, safeSet } from '../storage/safe-storage';
 
 export type SfxName =
-  | 'tap' | 'select' | 'back' | 'error'
-  | 'step' | 'encounter' | 'item'
-  | 'whoosh' | 'hit' | 'crit' | 'super' | 'faint' | 'heal' | 'up' | 'down' | 'status'
-  | 'catch' | 'levelup';
+  | 'tap'
+  | 'select'
+  | 'back'
+  | 'error'
+  | 'step'
+  | 'encounter'
+  | 'item'
+  | 'whoosh'
+  | 'hit'
+  | 'crit'
+  | 'super'
+  | 'faint'
+  | 'heal'
+  | 'up'
+  | 'down'
+  | 'status'
+  | 'catch'
+  | 'levelup';
 
 type Wave = OscillatorType;
 type Note = readonly [freq: number, seconds: number];
@@ -42,7 +56,8 @@ export class SfxService {
   }
 
   play(name: SfxName): void {
-    if (this.muted() || this.volume() <= 0 || typeof document === 'undefined' || document.hidden) return;
+    if (this.muted() || this.volume() <= 0 || typeof document === 'undefined' || document.hidden)
+      return;
     const now = performance.now();
     if (now - (this.last.get(name) ?? -1e9) < MIN_GAP_MS) return;
     this.last.set(name, now);
@@ -51,24 +66,136 @@ export class SfxService {
     if (ctx.state === 'suspended') void ctx.resume().catch(() => undefined);
     const t = ctx.currentTime;
     switch (name) {
-      case 'tap': this.tone(t, 880, 0.05, 'sine', 0.16, 660); break;
-      case 'select': this.seq(t, [[660, 0.05], [990, 0.07]], 'sine', 0.16); break;
-      case 'back': this.tone(t, 520, 0.08, 'sine', 0.16, 380); break;
-      case 'error': this.seq(t, [[200, 0.1], [160, 0.14]], 'square', 0.1); break;
-      case 'step': this.step(); break;
-      case 'encounter': this.seq(t, [[880, 0.07], [660, 0.07], [880, 0.07], [1175, 0.14]], 'square', 0.1); break;
-      case 'item': this.seq(t, [[988, 0.07], [1319, 0.12]], 'sine', 0.18); break;
-      case 'whoosh': this.puff(t, 0.2, 500, 0.12, 1900); break;
-      case 'hit': this.hit(t, 1); break;
-      case 'crit': this.hit(t, 1.25); this.tone(t, 900, 0.16, 'square', 0.1, 300); break;
-      case 'super': this.hit(t, 1.1); this.tone(t + 0.02, 660, 0.14, 'triangle', 0.14, 1320); break;
-      case 'faint': this.tone(t, 440, 0.55, 'sawtooth', 0.14, 90); break;
-      case 'heal': this.seq(t, [[523, 0.09], [659, 0.09], [784, 0.14]], 'sine', 0.17); break;
-      case 'up': this.tone(t, 440, 0.16, 'triangle', 0.16, 880); break;
-      case 'down': this.tone(t, 440, 0.18, 'triangle', 0.16, 200); break;
-      case 'status': this.seq(t, [[330, 0.08], [277, 0.08], [330, 0.1]], 'square', 0.08); break;
-      case 'catch': this.tone(t, 1200, 0.04, 'square', 0.1); this.seq(t + 0.12, [[523, 0.1], [659, 0.1], [784, 0.1], [1046, 0.2]], 'triangle', 0.17); break;
-      case 'levelup': this.seq(t, [[523, 0.1], [659, 0.1], [784, 0.1], [1046, 0.1], [1318, 0.26]], 'triangle', 0.17); break;
+      case 'tap':
+        this.tone(t, 880, 0.05, 'sine', 0.16, 660);
+        break;
+      case 'select':
+        this.seq(
+          t,
+          [
+            [660, 0.05],
+            [990, 0.07],
+          ],
+          'sine',
+          0.16,
+        );
+        break;
+      case 'back':
+        this.tone(t, 520, 0.08, 'sine', 0.16, 380);
+        break;
+      case 'error':
+        this.seq(
+          t,
+          [
+            [200, 0.1],
+            [160, 0.14],
+          ],
+          'square',
+          0.1,
+        );
+        break;
+      case 'step':
+        this.step();
+        break;
+      case 'encounter':
+        this.seq(
+          t,
+          [
+            [880, 0.07],
+            [660, 0.07],
+            [880, 0.07],
+            [1175, 0.14],
+          ],
+          'square',
+          0.1,
+        );
+        break;
+      case 'item':
+        this.seq(
+          t,
+          [
+            [988, 0.07],
+            [1319, 0.12],
+          ],
+          'sine',
+          0.18,
+        );
+        break;
+      case 'whoosh':
+        this.puff(t, 0.2, 500, 0.12, 1900);
+        break;
+      case 'hit':
+        this.hit(t, 1);
+        break;
+      case 'crit':
+        this.hit(t, 1.25);
+        this.tone(t, 900, 0.16, 'square', 0.1, 300);
+        break;
+      case 'super':
+        this.hit(t, 1.1);
+        this.tone(t + 0.02, 660, 0.14, 'triangle', 0.14, 1320);
+        break;
+      case 'faint':
+        this.tone(t, 440, 0.55, 'sawtooth', 0.14, 90);
+        break;
+      case 'heal':
+        this.seq(
+          t,
+          [
+            [523, 0.09],
+            [659, 0.09],
+            [784, 0.14],
+          ],
+          'sine',
+          0.17,
+        );
+        break;
+      case 'up':
+        this.tone(t, 440, 0.16, 'triangle', 0.16, 880);
+        break;
+      case 'down':
+        this.tone(t, 440, 0.18, 'triangle', 0.16, 200);
+        break;
+      case 'status':
+        this.seq(
+          t,
+          [
+            [330, 0.08],
+            [277, 0.08],
+            [330, 0.1],
+          ],
+          'square',
+          0.08,
+        );
+        break;
+      case 'catch':
+        this.tone(t, 1200, 0.04, 'square', 0.1);
+        this.seq(
+          t + 0.12,
+          [
+            [523, 0.1],
+            [659, 0.1],
+            [784, 0.1],
+            [1046, 0.2],
+          ],
+          'triangle',
+          0.17,
+        );
+        break;
+      case 'levelup':
+        this.seq(
+          t,
+          [
+            [523, 0.1],
+            [659, 0.1],
+            [784, 0.1],
+            [1046, 0.1],
+            [1318, 0.26],
+          ],
+          'triangle',
+          0.17,
+        );
+        break;
     }
   }
 
@@ -76,8 +203,14 @@ export class SfxService {
 
   private ensure(): AudioContext | null {
     if (this.ctx) return this.ctx;
-    const Ctor = (globalThis as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }).AudioContext
-      ?? (globalThis as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const Ctor =
+      (
+        globalThis as {
+          AudioContext?: typeof AudioContext;
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).AudioContext ??
+      (globalThis as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return null;
     try {
       this.ctx = new Ctor();
@@ -90,7 +223,14 @@ export class SfxService {
     return this.ctx;
   }
 
-  private tone(t: number, freq: number, dur: number, wave: Wave, vol: number, slideTo?: number): void {
+  private tone(
+    t: number,
+    freq: number,
+    dur: number,
+    wave: Wave,
+    vol: number,
+    slideTo?: number,
+  ): void {
     const ctx = this.ctx!;
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
@@ -151,7 +291,7 @@ export class SfxService {
       const d = this.stepBuf.getChannelData(0);
       let lp = 0;
       for (let i = 0; i < n; i++) {
-        lp += ((Math.random() * 2 - 1) - lp) * 0.12; // one-pole low-pass
+        lp += (Math.random() * 2 - 1 - lp) * 0.12; // one-pole low-pass
         d[i] = lp * 0.9 * Math.pow(1 - i / n, 2.5);
       }
     }

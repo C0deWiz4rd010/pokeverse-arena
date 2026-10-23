@@ -9,7 +9,10 @@ import { I18nService } from './i18n.service';
 export class TranslatePipe implements PipeTransform {
   private readonly i18n = inject(I18nService);
 
-  transform(text: string | number | null | undefined, params?: readonly unknown[] | Readonly<Record<string, unknown>>): string {
+  transform(
+    text: string | number | null | undefined,
+    params?: readonly unknown[] | Readonly<Record<string, unknown>>,
+  ): string {
     if (text === null || text === undefined || text === '') return '';
     return typeof text === 'number' ? String(text) : this.i18n.t(text, params);
   }

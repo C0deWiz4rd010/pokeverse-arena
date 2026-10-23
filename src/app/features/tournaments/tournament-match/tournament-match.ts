@@ -31,7 +31,11 @@ import { FieldBannerComponent } from '../../../core/ui/field-banner/field-banner
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { BattleFxComponent } from '../../battle/pixi/battle-fx';
 import { BattlePresenterBase } from '../../battle/battle-presenter';
-import { pickWeather, weatherForType, type Weather } from '../../../core/ui/weather-overlay/weather';
+import {
+  pickWeather,
+  weatherForType,
+  type Weather,
+} from '../../../core/ui/weather-overlay/weather';
 import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';
 import type { PlayerMatchSetup } from '../tournaments.service';
@@ -62,14 +66,28 @@ export interface MatchOutcome {
 }
 
 const STAGE_SHORT: Record<BoostableStat, string> = {
-  attack: 'Atk', defense: 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', speed: 'Spe', accuracy: 'Acc', evasion: 'Eva',
+  attack: 'Atk',
+  defense: 'Def',
+  'special-attack': 'SpA',
+  'special-defense': 'SpD',
+  speed: 'Spe',
+  accuracy: 'Acc',
+  evasion: 'Eva',
 };
 const OVERLAY_WEATHER: Record<EngineWeather, Weather> = {
-  none: 'clear', sun: 'sun', rain: 'rain', sand: 'sand', hail: 'snow', snow: 'snow',
+  none: 'clear',
+  sun: 'sun',
+  rain: 'rain',
+  sand: 'sand',
+  hail: 'snow',
+  snow: 'snow',
 };
 
 function stageChips(stages: Stages): StageChip[] {
-  return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({ label: STAGE_SHORT[s], value: stages[s] }));
+  return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({
+    label: STAGE_SHORT[s],
+    value: stages[s],
+  }));
 }
 
 /**
@@ -81,7 +99,15 @@ function stageChips(stages: Stages): StageChip[] {
 @Component({
   selector: 'pv-tournament-match',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, TypeBadgeComponent, WeatherOverlayComponent, StatusBadgeComponent, FieldBannerComponent, MoveButtonComponent, BattleFxComponent],
+  imports: [
+    TranslatePipe,
+    TypeBadgeComponent,
+    WeatherOverlayComponent,
+    StatusBadgeComponent,
+    FieldBannerComponent,
+    MoveButtonComponent,
+    BattleFxComponent,
+  ],
   templateUrl: './tournament-match.html',
   styleUrl: './tournament-match.scss',
 })
@@ -124,7 +150,7 @@ export class TournamentMatchComponent extends BattlePresenterBase {
     if (!side) return [];
     return side.battler.moves.map((move, i) => ({
       move,
-      pp: Number.isFinite(side.pp[i]) ? side.pp[i] : Infinity,
+      pp: Number.isFinite(side.pp[i]) ? side.pp[i]! : Infinity,
       maxPp: move.pp ?? null,
     }));
   });
@@ -139,7 +165,8 @@ export class TournamentMatchComponent extends BattlePresenterBase {
   protected readonly ruleBanner = computed(() => {
     const rules = this.setup().rules;
     if (rules?.inverse) return 'Inverse battle — the type chart is flipped!';
-    if (rules?.weatherBoostType) return `${titleCase(rules.weatherBoostType)}-type moves are boosted 1.5×!`;
+    if (rules?.weatherBoostType)
+      return `${titleCase(rules.weatherBoostType)}-type moves are boosted 1.5×!`;
     return null;
   });
 
@@ -195,18 +222,24 @@ export class TournamentMatchComponent extends BattlePresenterBase {
       const bench = this.tb?.benchedSwitches(0) ?? [];
       if (Number.isInteger(n) && n >= 1 && n <= bench.length) {
         event.preventDefault();
-        void this.onTraySelect(0, bench[n - 1]);
+        void this.onTraySelect(0, bench[n - 1]!);
       }
       return;
     }
     if (key === 's') {
-      if (this.canSwitch()) { event.preventDefault(); this.toggleSwitch(); }
+      if (this.canSwitch()) {
+        event.preventDefault();
+        this.toggleSwitch();
+      }
       return;
     }
     const n = Number(event.key);
     if (Number.isInteger(n) && n >= 1 && n <= this.moveSlots().length) {
-      const slot = this.moveSlots()[n - 1];
-      if (slot.pp > 0) { event.preventDefault(); void this.useMove(n - 1); }
+      const slot = this.moveSlots()[n - 1]!;
+      if (slot.pp > 0) {
+        event.preventDefault();
+        void this.useMove(n - 1);
+      }
     }
   }
 
@@ -316,7 +349,10 @@ export class TournamentMatchComponent extends BattlePresenterBase {
     this.playerWon.set(tb.state.winner === 0);
     this.done.set(true);
     this.busy.set(false);
-    this.append(this.playerWon() ? 'Match won!' : 'You were knocked out…', this.playerWon() ? 'win' : 'faint');
+    this.append(
+      this.playerWon() ? 'Match won!' : 'You were knocked out…',
+      this.playerWon() ? 'win' : 'faint',
+    );
   }
 
   /* ----------------------------------------------------------- sync + fx */
@@ -391,5 +427,4 @@ export class TournamentMatchComponent extends BattlePresenterBase {
       switchable: side === 0 && benched.includes(i) && (this.switchOpen() || this.awaitingSwitch()),
     }));
   }
-
 }

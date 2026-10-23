@@ -20,7 +20,14 @@ function mon(name: string, item?: Battler['item']): Battler {
     name,
     level: 50,
     types: ['normal'],
-    stats: { hp: 100, attack: 100, defense: 100, 'special-attack': 100, 'special-defense': 100, speed: 100 },
+    stats: {
+      hp: 100,
+      attack: 100,
+      defense: 100,
+      'special-attack': 100,
+      'special-defense': 100,
+      speed: 100,
+    },
     moves: [],
     item,
   };
@@ -37,12 +44,12 @@ describe('spire generation', () => {
     for (const f of BOSS_FLOORS) {
       const choices = generateFloorChoices(f, 's');
       expect(choices).toHaveLength(1);
-      expect(choices[0].type).toBe('boss');
-      expect(choices[0].foe?.boss).toBe(true);
+      expect(choices[0]!.type).toBe('boss');
+      expect(choices[0]!.foe?.boss).toBe(true);
     }
     const normal = generateFloorChoices(2, 's');
     expect(normal.length).toBeGreaterThan(1);
-    expect(normal[0].type).toBe('battle');
+    expect(normal[0]!.type).toBe('battle');
   });
 
   it('scales foe level with depth and boss status', () => {
@@ -89,14 +96,14 @@ describe('spire generation', () => {
     expect(foe.fusion!.head).not.toBe(foe.fusion!.body);
     // The map node teases the splice without spoiling the boss.
     const [node] = generateFloorChoices(15, seed);
-    expect(node.blurb).toContain('stitched');
+    expect(node!.blurb).toContain('stitched');
     // Classic bosses keep the vanilla 4-mon team and blurb.
     let classicSeed = '';
     for (let i = 0; i < 200 && !classicSeed; i++) {
       if (!generateFoe(15, `c${i}`, true).fusion) classicSeed = `c${i}`;
     }
     expect(generateFoe(15, classicSeed, true).species).toHaveLength(4);
-    expect(generateFloorChoices(15, classicSeed)[0].blurb).not.toContain('stitched');
+    expect(generateFloorChoices(15, classicSeed)[0]!.blurb).not.toContain('stitched');
   });
 });
 
@@ -113,9 +120,9 @@ describe('relics', () => {
   it('applies stat multipliers and grants items to the team', () => {
     const team = [mon('Lead'), mon('Bench', 'leftovers')];
     const boosted = applyRelicsToTeam(team, ['vitamin-boost', 'mega-battery']);
-    expect(boosted[0].stats.attack).toBe(110); // +10%
-    expect(boosted[0].item).toBe('choice-specs'); // lead grant (was itemless)
-    expect(boosted[1].item).toBe('leftovers'); // unchanged (already held)
+    expect(boosted[0]!.stats.attack).toBe(110); // +10%
+    expect(boosted[0]!.item).toBe('choice-specs'); // lead grant (was itemless)
+    expect(boosted[1]!.item).toBe('leftovers'); // unchanged (already held)
   });
 
   it('resolves relic metadata', () => {

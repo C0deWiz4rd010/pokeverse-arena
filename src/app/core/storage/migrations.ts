@@ -11,13 +11,19 @@ export type Migration = (data: unknown) => unknown;
 export const MIGRATIONS: Readonly<Record<string, readonly Migration[]>> = {};
 
 /** Migrations registered for a key (`rpg:save:2` falls back to `rpg:save`). */
-export function migrationsFor(key: string, table: Readonly<Record<string, readonly Migration[]>>): readonly Migration[] {
+export function migrationsFor(
+  key: string,
+  table: Readonly<Record<string, readonly Migration[]>>,
+): readonly Migration[] {
   if (table[key]) return table[key];
   const base = Object.keys(table).find((k) => key.startsWith(k + ':'));
-  return base ? table[base] : [];
+  return base ? table[base]! : [];
 }
 
-export function currentVersion(key: string, table: Readonly<Record<string, readonly Migration[]>> = MIGRATIONS): number {
+export function currentVersion(
+  key: string,
+  table: Readonly<Record<string, readonly Migration[]>> = MIGRATIONS,
+): number {
   return 1 + migrationsFor(key, table).length;
 }
 
@@ -30,6 +36,6 @@ export function migrateData(
 ): unknown {
   const chain = migrationsFor(key, table);
   let out = data;
-  for (let v = Math.max(1, from); v <= chain.length; v++) out = chain[v - 1](out);
+  for (let v = Math.max(1, from); v <= chain.length; v++) out = chain[v - 1]!(out);
   return out;
 }

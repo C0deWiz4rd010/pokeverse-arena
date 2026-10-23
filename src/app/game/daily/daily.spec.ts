@@ -114,7 +114,15 @@ describe('daily sharing', () => {
   });
 
   it("ignores the foe's damage against the player", () => {
-    const foeHit: BattleEvent = { kind: 'damage', side: 0, amount: 9, effectiveness: 2, crit: false, remainingHp: 1, maxHp: 10 };
+    const foeHit: BattleEvent = {
+      kind: 'damage',
+      side: 0,
+      amount: 9,
+      effectiveness: 2,
+      crit: false,
+      remainingHp: 1,
+      maxHp: 10,
+    };
     expect(turnEmoji([foeHit, move, dmg(1)])).toBe('🟨');
   });
 
@@ -135,7 +143,13 @@ describe('daily sharing', () => {
   });
 
   it('omits the streak on a defeat', () => {
-    const text = buildShareText({ key: '2026-07-01', won: false, turns: 1, streak: 0, marks: ['🟥'] });
+    const text = buildShareText({
+      key: '2026-07-01',
+      won: false,
+      turns: 1,
+      streak: 0,
+      marks: ['🟥'],
+    });
     expect(text).toContain('💀 Defeated after 1 turn');
     expect(text).not.toContain('🔥');
   });

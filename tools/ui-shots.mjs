@@ -17,18 +17,43 @@ import { fileURLToPath } from 'node:url';
 const BASE = process.env.SHOTS_BASE ?? 'http://localhost:4200';
 const OUT = fileURLToPath(new URL('../.ui-shots', import.meta.url));
 
-const ALL = ['#/', '#/pokedex', '#/type-lab', '#/team-builder', '#/battle', '#/arena', '#/tournaments', '#/spire', '#/odyssey', '#/world', '#/fusion', '#/contest', '#/showdown', '#/adventure', '#/profile'];
+const ALL = [
+  '#/',
+  '#/pokedex',
+  '#/type-lab',
+  '#/team-builder',
+  '#/battle',
+  '#/arena',
+  '#/tournaments',
+  '#/spire',
+  '#/odyssey',
+  '#/world',
+  '#/fusion',
+  '#/contest',
+  '#/showdown',
+  '#/adventure',
+  '#/profile',
+];
 const routes = process.argv[2] ? process.argv[2].split(',') : ALL;
-const slug = (r) => (r === '#/' ? 'home' : r.replace('#/', '').replace(/[^a-z0-9-]+/gi, '_').replace(/^_+|_+$/g, ''));
+const slug = (r) =>
+  r === '#/'
+    ? 'home'
+    : r
+        .replace('#/', '')
+        .replace(/[^a-z0-9-]+/gi, '_')
+        .replace(/^_+|_+$/g, '');
 
 await mkdir(OUT, { recursive: true });
 
 const errors = [];
 const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-if (process.env.SHOTS_LOCALE) await ctx.addInitScript((l) => localStorage.setItem('pv:locale', l), process.env.SHOTS_LOCALE);
+if (process.env.SHOTS_LOCALE)
+  await ctx.addInitScript((l) => localStorage.setItem('pv:locale', l), process.env.SHOTS_LOCALE);
 const page = await ctx.newPage();
-page.on('console', (m) => { if (m.type() === 'error') errors.push(`${page.url()} :: ${m.text()}`); });
+page.on('console', (m) => {
+  if (m.type() === 'error') errors.push(`${page.url()} :: ${m.text()}`);
+});
 page.on('pageerror', (e) => errors.push(`${page.url()} :: PAGEERROR ${e.message}`));
 
 for (const r of routes) {
@@ -39,13 +64,20 @@ for (const r of routes) {
 }
 
 const m = await ctx.newPage();
-m.on('console', (mm) => { if (mm.type() === 'error') errors.push(`${m.url()} :: ${mm.text()}`); });
+m.on('console', (mm) => {
+  if (mm.type() === 'error') errors.push(`${m.url()} :: ${mm.text()}`);
+});
 m.on('pageerror', (e) => errors.push(`${m.url()} :: PAGEERROR ${e.message}`));
 const overflow = [];
 // viewport matrix: small phone, phone, phone landscape, tablet, laptop, desktop, ultrawide
 const MATRIX = [
-  { width: 320, height: 640 }, { width: 375, height: 780 }, { width: 844, height: 390 },
-  { width: 768, height: 1024 }, { width: 1280, height: 800 }, { width: 1920, height: 1080 }, { width: 2560, height: 1080 },
+  { width: 320, height: 640 },
+  { width: 375, height: 780 },
+  { width: 844, height: 390 },
+  { width: 768, height: 1024 },
+  { width: 1280, height: 800 },
+  { width: 1920, height: 1080 },
+  { width: 2560, height: 1080 },
 ];
 for (const { width, height } of MATRIX) {
   await m.setViewportSize({ width, height });
@@ -54,7 +86,8 @@ for (const { width, height } of MATRIX) {
     await m.waitForTimeout(1100);
     await m.screenshot({ path: `${OUT}/${slug(r)}_${width}x${height}.png`, fullPage: true });
     const scrollW = await m.evaluate(() => document.scrollingElement.scrollWidth);
-    if (scrollW > width + 1) overflow.push(`${slug(r)} @${width}px :: scrollWidth ${scrollW} > ${width}`);
+    if (scrollW > width + 1)
+      overflow.push(`${slug(r)} @${width}px :: scrollWidth ${scrollW} > ${width}`);
   }
 }
 

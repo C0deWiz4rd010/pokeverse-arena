@@ -107,7 +107,12 @@ export function resolveMoveGate(
     if (sleepTurns <= 1) {
       return { canMove: true, message: `${name} woke up!`, status: 'none', sleepTurns: 0 };
     }
-    return { canMove: false, message: `${name} is fast asleep.`, status: 'sleep', sleepTurns: sleepTurns - 1 };
+    return {
+      canMove: false,
+      message: `${name} is fast asleep.`,
+      status: 'sleep',
+      sleepTurns: sleepTurns - 1,
+    };
   }
   if (status === 'freeze') {
     if (roll < 0.2) {
@@ -116,7 +121,12 @@ export function resolveMoveGate(
     return { canMove: false, message: `${name} is frozen solid!`, status: 'freeze', sleepTurns };
   }
   if (status === 'paralysis' && roll < 0.25) {
-    return { canMove: false, message: `${name} is paralysed! It can't move!`, status: 'paralysis', sleepTurns };
+    return {
+      canMove: false,
+      message: `${name} is paralysed! It can't move!`,
+      status: 'paralysis',
+      sleepTurns,
+    };
   }
   return { canMove: true, status, sleepTurns };
 }
