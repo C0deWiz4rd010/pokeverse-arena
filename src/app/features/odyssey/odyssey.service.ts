@@ -86,8 +86,8 @@ export class OdysseyService {
   /** Species (dex ids) newly unlocked during this run, for the summary. */
   readonly runUnlocks = signal<number[]>([]);
 
-  private party: Battler[] = [];
-  private hpFraction: number[] = [];
+  private readonly party = signal<Battler[]>([]);
+  private readonly hpFraction = signal<number[]>([]);
   private seed = '';
   private catchAttempt = 0;
   /** The foe team of the wave just fought (for the daze panel). */
@@ -96,14 +96,11 @@ export class OdysseyService {
   private activeTeam: Battler[] = [];
 
   readonly partyView = computed(() => {
-    this.version();
-    return this.party.map((m, i) => ({
+    return this.party().map((m, i) => ({
       mon: m,
-      hpPct: Math.round((this.hpFraction[i] ?? 0) * 100),
+      hpPct: Math.round((this.hpFraction()[i] ?? 0) * 100),
     }));
   });
-  /** Bumped whenever the private party mutates so computeds refresh. */
-  private readonly version = signal(0);
 
   readonly starters = computed(() => starterRoster(this.meta()));
   readonly relicList = computed(() =>
@@ -129,13 +126,12 @@ export class OdysseyService {
     this.error.set(null);
     try {
       const mon = await this.battle.buildBattler(dexId, START_LEVEL);
-      this.party = [mon];
-      this.hpFraction = [1];
+      this.party.set([mon]);
+      this.hpFraction.set([1]);
       this.balls.set(START_BALLS);
       this.coins.set(0);
       this.relics.set([]);
       this.wave.set(0);
-      this.version.update((v) => v + 1);
       this.nextWave();
     } catch {
       this.error.set('Your starter overslept. Pick again.');
@@ -168,10 +164,10 @@ export class OdysseyService {
       if (!foeTeam.length) throw new Error('no foe');
       this.lastFoe = foeTeam;
       // Relics boost the live team for this fight; HP rides as fractions of the boosted max.
-      const playerTeam = applyRelicsToTeam(this.party, this.relics());
+      const playerTeam = applyRelicsToTeam(this.party(), this.relics());
       this.activeTeam = playerTeam;
       const startHp = playerTeam.map((m, i) =>
-        Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)),
+        Math.max(1, Math.round((this.hpFraction()[i] ?? 1) * m.stats.hp)),
       );
       const player: Trainer = {
         id: 'player',
@@ -232,11 +228,10 @@ export class OdysseyService {
 
   onBattleFinished(outcome: MatchOutcome): void {
     this.setup.set(null);
-    const ref = this.activeTeam.length === this.party.length ? this.activeTeam : this.party;
-    this.hpFraction = ref.map((m, i) =>
-      Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)),
+    const ref = this.activeTeam.length === this.party().length ? this.activeTeam : this.party();
+    this.hpFraction.set(
+      ref.map((m, i) => Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp))),
     );
-    this.version.update((v) => v + 1);
     if (!outcome.playerWon) {
       this.endRun();
       return;
@@ -289,7 +284,7 @@ export class OdysseyService {
     const wasNew = !this.meta().unlocked.includes(d.dexId);
     this.meta.set(unlockSpecies(this.meta(), d.dexId));
     if (wasNew) this.runUnlocks.update((u) => [...u, d.dexId]);
-    if (this.party.length >= PARTY_CAP) {
+    if (this.party().length >= PARTY_CAP) {
       this.toast.set(
         `Caught! The team is full — it joins your starter roster${wasNew ? ' (new!)' : ''}.`,
       );
@@ -300,9 +295,8 @@ export class OdysseyService {
     try {
       const spec = this.spec()!;
       const mon = await this.battle.buildBattler(d.dexId, Math.max(START_LEVEL, spec.level - 2));
-      this.party = [...this.party, mon];
-      this.hpFraction = [...this.hpFraction, 1];
-      this.version.update((v) => v + 1);
+      this.party.set([...this.party(), mon]);
+      this.hpFraction.set([...this.hpFraction(), 1]);
       this.toast.set(
         `Caught! ${mon.name} joins the march${wasNew ? ' — new starter unlocked!' : ''}.`,
       );
@@ -329,18 +323,23 @@ export class OdysseyService {
   async chooseReward(r: OdysseyReward): Promise<void> {
     switch (r.kind) {
       case 'heal':
-        this.hpFraction = this.hpFraction.map((f) => Math.min(1, f + Number(r.payload)));
-        this.version.update((v) => v + 1);
+        this.hpFraction.set(this.hpFraction().map((f) => Math.min(1, f + Number(r.payload))));
         break;
       case 'balls':
         this.balls.update((b) => b + Number(r.payload));
         break;
       case 'candy': {
         // The lowest-level member snacks first.
-        const idx = this.party.reduce((lo, m, i) => (m.level < this.party[lo]!.level ? i : lo), 0);
+        const idx = this.party().reduce(
+          (lo, m, i) => (m.level < this.party()[lo]!.level ? i : lo),
+          0,
+        );
         this.busy.set(true);
         try {
-          await this.rebuildMember(idx, Math.min(100, this.party[idx]!.level + Number(r.payload)));
+          await this.rebuildMember(
+            idx,
+            Math.min(100, this.party()[idx]!.level + Number(r.payload)),
+          );
         } finally {
           this.busy.set(false);
         }
@@ -374,8 +373,7 @@ export class OdysseyService {
         this.balls.update((b) => b + Number(entry.payload));
         break;
       case 'heal':
-        this.hpFraction = this.hpFraction.map((f) => Math.min(1, f + Number(entry.payload)));
-        this.version.update((v) => v + 1);
+        this.hpFraction.set(this.hpFraction().map((f) => Math.min(1, f + Number(entry.payload))));
         break;
       case 'relic':
         this.addRelic(entry.payload as RelicId);
@@ -404,8 +402,7 @@ export class OdysseyService {
   }
 
   private equipItem(item: ItemId): void {
-    this.party = equipFirstFree(this.party, item).party;
-    this.version.update((v) => v + 1);
+    this.party.set(equipFirstFree(this.party(), item).party);
   }
 
   private addCoins(n: number): void {
@@ -417,13 +414,13 @@ export class OdysseyService {
 
   /** Raise every member by `gain` levels, evolving those that qualify. */
   private async levelUpTeam(gain: number): Promise<void> {
-    for (let i = 0; i < this.party.length; i++) {
-      await this.rebuildMember(i, Math.min(100, this.party[i]!.level + gain));
+    for (let i = 0; i < this.party().length; i++) {
+      await this.rebuildMember(i, Math.min(100, this.party()[i]!.level + gain));
     }
   }
 
   private async rebuildMember(index: number, level: number): Promise<void> {
-    const mon = this.party[index]!;
+    const mon = this.party()[index]!;
     let species = mon.name;
     try {
       const evo = await this.evolutionFor(mon.name, level);
@@ -436,10 +433,11 @@ export class OdysseyService {
     }
     try {
       const rebuilt = await this.battle.buildBattler(species, level);
-      this.party = this.party.map((m, i) =>
-        i === index ? (mon.item ? { ...rebuilt, item: mon.item } : rebuilt) : m,
+      this.party.set(
+        this.party().map((m, i) =>
+          i === index ? (mon.item ? { ...rebuilt, item: mon.item } : rebuilt) : m,
+        ),
       );
-      this.version.update((v) => v + 1);
     } catch {
       /* keep the old build on network hiccups */
     }

@@ -24,7 +24,11 @@ it survives reloads.
 | File | Role |
 | ---- | ---- |
 | [game/arena/gym-leaders.ts](../../src/app/game/arena/gym-leaders.ts) | Pure data: one `GymLeader` per type (name, title, badge, icon, blurb). |
-| [features/arena/arena.service.ts](../../src/app/features/arena/arena.service.ts) | State machine (hub / loading / battle / error), team building, badge persistence. |
+| [features/arena/arena.service.ts](../../src/app/features/arena/arena.service.ts) | Facade / state machine (hub / loading / intro / battle / reward / gauntlet / error) for the single-gym flow. |
+| [features/arena/arena-progress.store.ts](../../src/app/features/arena/arena-progress.store.ts) | Persisted badges, champion flag, coins and best stars per gym. |
+| [features/arena/arena-teams.service.ts](../../src/app/features/arena/arena-teams.service.ts) | Builds leader / Elite / player teams and applies badge boosts. |
+| [features/arena/arena-gauntlet.service.ts](../../src/app/features/arena/arena-gauntlet.service.ts) | The Elite Four + Champion run with HP carried between fights. |
+| [game/arena/match-setup.ts](../../src/app/game/arena/match-setup.ts) | Pure `playerTrainer` / `dummyMatch` builders. |
 | [features/arena/arena.ts](../../src/app/features/arena/arena.ts) | Standalone `pv-arena` component. |
 | [features/arena/arena.html](../../src/app/features/arena/arena.html) | Hub grid, progress, and the embedded match. |
 | [features/arena/arena.scss](../../src/app/features/arena/arena.scss) | Type-tinted cards, badge medallions, mobile-first grid. |

@@ -24,7 +24,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | 1 | Quick Wins & Bugfixes | v3.0.1 | ✅ |
 | 2 | Strengere Typen & Lint | v3.0.2 | ✅ |
 | 3 | Architektur entkoppeln | v3.0.3 | ✅ |
-| 4 | Große Services aufteilen | v3.0.4 | ⬜ |
+| 4 | Große Services aufteilen | v3.0.4 | ✅ |
 | 5 | Einheitliche Persistenz + Run-Resume | v3.0.5 | ⬜ |
 | 6 | Battle-Engine vereinheitlichen & vertiefen | v3.0.6 | ⬜ |
 | 7 | Battle-UI entdoppeln | v3.0.7 | ⬜ |
@@ -81,7 +81,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
    (Bracket-Sim :571), `LeagueService` (:360-:525), `PickemStore` (:170-:352), `RivalHistoryStore`. Fassade bleibt für Komponenten.
 2. `arena.service.ts` (453) → Gym-Flow, `EliteFourGauntlet` (:243-:335), `ArenaProgressStore` (:337-:453).
 3. Spire/Odyssey: `party` als `signal` statt Feld + `version`-Zähler-Workaround (`odyssey.service.ts:343`).
-4. Ziel: keine Service-Datei > ~300 Zeilen; Komponenten-API unverändert.
+4. Ziel: keine Service-Datei > ~300 Zeilen; Komponenten-API unverändert. (Umgesetzt für Tournaments/Arena; Spire/Odyssey bleiben bei ~400 Zeilen, Aufteilung wäre rein kosmetisch.)
 
 ## Phase 5 – Einheitliche Persistenz + Run-Resume
 

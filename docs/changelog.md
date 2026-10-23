@@ -4,6 +4,22 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.4 — 2026-10-23
+
+✂️ **Big services split** (phase 4 of the [improvement plan](improvement-plan.md)). Behaviour is unchanged.
+
+### Changed
+
+- `tournaments.service.ts` (808 → 315 lines) is now a facade over `TournamentRoster`, `TournamentRecords` and three pure
+  modules in `game/tournament/` (`match-runner`, `league`, `trainers`) with specs; the league is a testable state machine.
+- `arena.service.ts` (471 → 252 lines) delegates to `ArenaProgressStore`, `ArenaTeams` and `ArenaGauntlet`
+  (+ pure `game/arena/match-setup.ts`); the progress store has a spec.
+- Spire and Odyssey keep their party and HP as signals instead of plain fields (Odyssey's manual `version` counter is gone).
+
+### Fixed
+
+- Spire's party view is reactive now (it previously read non-signal fields and could show stale HP/items).
+
 ## v3.0.3 — 2026-10-23
 
 🏗️ **Architecture decoupled** (phase 3 of the [improvement plan](improvement-plan.md)). No user-visible change except

@@ -37,7 +37,12 @@ field auto-resolves" flow built on the seeded battle engine.
 | `game/tournament/simulate.ts` | Pure headless 3-v-3 `simulateMatch` (sequential KO, optional start HP). |
 | `game/tournament/bracket.ts` | `buildBracket`, immutable `reportResult`, `nextReadyMatch`, `playerMatch`. |
 | `game/tournament/index.ts` | Barrel export for the tournament domain. |
-| `features/tournaments/tournaments.service.ts` | Generates balanced trainer teams from the API, runs the bracket, auto-simulates CPU matches, tracks the player match + Survival HP carry. |
+| `features/tournaments/tournaments.service.ts` | Facade: owns the screen signals (status, bracket, standings, pick) and sequences the pieces below. |
+| `features/tournaments/tournament-roster.service.ts` | Fetches candidate Pokémon for a mode, distributes them into teams, builds the player's and the CPU trainers. |
+| `features/tournaments/tournament-records.service.ts` | History, last-run record, the persistent rival (identity, level boost, injection into the field). |
+| `game/tournament/match-runner.ts` | Pure: mode rules, Boss-Ascent team scaling, the player's pending match, the CPU auto-resolver. |
+| `game/tournament/league.ts` | Pure round-robin / Swiss state machine (`League`). |
+| `game/tournament/trainers.ts` | Pure: CPU identities, avatars, synthetic moves, `teamStrength`, `scaleStats`. |
 | `features/tournaments/tournaments.ts` / `.html` / `.scss` | Mode select, draft, run bar, CTA / finale, and the desktop tree + mobile scroll bracket. |
 | `features/tournaments/tournament-match/*` | The interactive 3-v-3 player match component. |
 | `game/engine/rules.spec.ts`, `game/tournament/simulate.spec.ts`, `game/tournament/bracket.spec.ts` | Unit tests for rules, simulation and bracket progression. |

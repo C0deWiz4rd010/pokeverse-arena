@@ -67,8 +67,8 @@ export class SpireService {
   readonly toast = signal<string | null>(null);
 
   /** Party members + carried HP fraction (0..1). */
-  private party: Battler[] = [];
-  private hpFraction: number[] = [];
+  private readonly party = signal<Battler[]>([]);
+  private readonly hpFraction = signal<number[]>([]);
   private seed = '';
   private pendingNode: SpireNode | null = null;
   /** The relic-boosted team built for the active fight (for HP read-back). */
@@ -82,7 +82,7 @@ export class SpireService {
       .filter((r) => !!r),
   );
   readonly partyView = computed(() =>
-    this.party.map((m, i) => ({ mon: m, hpPct: Math.round((this.hpFraction[i] ?? 0) * 100) })),
+    this.party().map((m, i) => ({ mon: m, hpPct: Math.round((this.hpFraction()[i] ?? 0) * 100) })),
   );
   readonly totalFloors = TOTAL_FLOORS;
 
@@ -110,8 +110,8 @@ export class SpireService {
 
   confirmStarters(picks: Battler[]): void {
     if (picks.length === 0) return;
-    this.party = picks.slice(0, 3);
-    this.hpFraction = this.party.map(() => 1);
+    this.party.set(picks.slice(0, 3));
+    this.hpFraction.set(this.party().map(() => 1));
     this.coins.set(0);
     this.relics.set([]);
     this.floor.set(0);
@@ -171,10 +171,10 @@ export class SpireService {
     try {
       const foeTeam = await this.buildFoe(foeSpec);
       this.pendingChimera = foeSpec.fusion ? (foeTeam[foeTeam.length - 1] ?? null) : null;
-      const playerTeam = applyRelicsToTeam(this.party, this.relics());
+      const playerTeam = applyRelicsToTeam(this.party(), this.relics());
       this.activeTeam = playerTeam;
       const startHp = playerTeam.map((m, i) =>
-        Math.max(1, Math.round((this.hpFraction[i] ?? 1) * m.stats.hp)),
+        Math.max(1, Math.round((this.hpFraction()[i] ?? 1) * m.stats.hp)),
       );
       const player: Trainer = {
         id: 'player',
@@ -232,8 +232,10 @@ export class SpireService {
   onBattleFinished(outcome: MatchOutcome): void {
     this.setup.set(null);
     // Read carried HP back as fractions of the (relic-boosted) max HP.
-    this.hpFraction = this.activeTeam.map((m, i) =>
-      Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)),
+    this.hpFraction.set(
+      this.activeTeam.map((m, i) =>
+        Math.max(0, Math.min(1, (outcome.playerFinalHp[i] ?? 0) / m.stats.hp)),
+      ),
     );
     if (!outcome.playerWon) {
       this.endRun(false);
@@ -355,7 +357,7 @@ export class SpireService {
   }
 
   private healParty(fraction: number): void {
-    this.hpFraction = this.hpFraction.map((f) => Math.min(1, f + fraction));
+    this.hpFraction.set(this.hpFraction().map((f) => Math.min(1, f + fraction)));
   }
 
   private addCoins(n: number): void {
@@ -374,8 +376,8 @@ export class SpireService {
   }
 
   private equipItem(item: ItemId): void {
-    const { party, index } = equipFirstFree(this.party, item);
-    this.party = party;
+    const { party, index } = equipFirstFree(this.party(), item);
+    this.party.set(party);
     this.toast.set(`${party[index]!.name} is now holding an item.`);
   }
 
@@ -384,26 +386,26 @@ export class SpireService {
     const chimera = this.pendingChimera;
     this.pendingChimera = null;
     if (!chimera) return;
-    if (this.party.length >= PARTY_CAP) {
+    if (this.party().length >= PARTY_CAP) {
       this.addCoins(90);
       this.toast.set('Party full — the chimera dissolves into coins.');
       return;
     }
-    this.party = [...this.party, { ...chimera, item: undefined }];
-    this.hpFraction = [...this.hpFraction, 1];
+    this.party.set([...this.party(), { ...chimera, item: undefined }]);
+    this.hpFraction.set([...this.hpFraction(), 1]);
     this.toast.set(`${chimera.name} was tamed and joined your party!`);
   }
 
   private async recruit(dex: number): Promise<void> {
-    if (this.party.length >= PARTY_CAP) {
+    if (this.party().length >= PARTY_CAP) {
       this.addCoins(60);
       this.toast.set('Party full — recruit converted to coins.');
       return;
     }
     try {
       const mon = await this.battle.buildBattler(dex, PLAYER_LEVEL);
-      this.party = [...this.party, mon];
-      this.hpFraction = [...this.hpFraction, 1];
+      this.party.set([...this.party(), mon]);
+      this.hpFraction.set([...this.hpFraction(), 1]);
       this.toast.set(`${mon.name} joined your party!`);
     } catch {
       /* recruit failed silently */

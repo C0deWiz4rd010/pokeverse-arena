@@ -1,157 +1,49 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { PokeApiClient } from '../../core/api/pokeapi.client';
-import type { PokemonDto } from '../../core/dto/pokeapi.dto';
-import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
-import { isPokemonType, POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
-import { SeededRng } from '../../core/utils/rng';
-import type { Battler, BattleMove, BattleRules } from '../../game/engine';
+import { POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
+import type { Battler } from '../../game/engine';
 import {
+  League,
+  anyPlayerRemaining,
+  bracketMatchSetup,
   buildBracket,
-  levelForRound,
   modeById,
-  nextReadyMatch,
-  playerMatch,
-  reportResult,
-  simulateMatch,
-  seedTrainers,
-  initStandings,
-  applyMatch,
-  rankStandings,
-  roundRobinSchedule,
-  swissPairings,
-  swissRounds,
-  pairKey,
-  prizeFor,
-  pushHistory,
-  loadHistory,
-  formatById,
-  loadRival,
-  saveRival,
-  recordRivalMeeting,
-  rivalLevelBoost,
-  teamPower,
   pickemMultiplier,
   pickemPayout,
-  type RivalState,
+  playerMatch,
+  rankStandings,
+  reportResult,
+  runAiMatches,
+  seedTrainers,
+  teamPower,
+  teamStrength,
+  makeTrainer,
   type Bracket,
-  type BracketMatch,
-  type PlayerMatchSetup,
   type BracketFormat,
-  type Fixture,
+  type LeagueFinish,
   type ModeId,
-  type RoundId,
+  type PlayerMatchSetup,
   type Standing,
   type TournamentMode,
-  type TournamentRecord,
   type Trainer,
 } from '../../game/tournament';
-import { BattlerFactory, baseStatsOf } from '../../core/battle/battler-factory';
+import { TournamentRecords } from './tournament-records.service';
+import { TournamentRoster } from './tournament-roster.service';
 
 type Status = 'idle' | 'loading' | 'draft' | 'ready' | 'done';
 
-/** In-progress league (round-robin / swiss) run state. */
-interface LeagueRun {
-  readonly format: BracketFormat;
-  readonly byId: Map<string, Trainer>;
-  readonly teamSize: number;
-  fixtures: Fixture[];
-  cursor: number;
-  played: Set<string>;
-  swissRound: number;
-  swissTotal: number;
-  pending: { fixture: Fixture; playerIsA: boolean } | null;
-}
-
-const DEX_MAX = 1025;
 const FIELD = 16;
 /** Smaller field for round-robin so the league isn't dozens of matches. */
 const LEAGUE_FIELD = 8;
 
-const TITLES = [
-  'Ace Trainer',
-  'Veteran',
-  'Gym Hopeful',
-  'Elite Hopeful',
-  'Ranger',
-  'Hex Maniac',
-  'Black Belt',
-  'Cooltrainer',
-  'Dragon Tamer',
-  'Psychic',
-  'Bug Catcher',
-  'Champion-in-Training',
-  'Ruin Maniac',
-  'Beauty',
-  'Guitarist',
-];
-const NAMES = [
-  'Rowan',
-  'Sable',
-  'Iris',
-  'Cyrus',
-  'Lyra',
-  'Volk',
-  'Mira',
-  'Ezra',
-  'Nova',
-  'Kael',
-  'Wren',
-  'Drake',
-  'Suki',
-  'Bram',
-  'Faye',
-  'Onyx',
-  'Vesper',
-  'Cleo',
-  'Roan',
-  'Thea',
-];
-
 /**
- * Deterministic trainer portrait via the DiceBear avatar library (HTTP API, no
- * bundled assets). The same seed always yields the same character, so a trainer
- * looks identical across the bracket, the match and the champion screen.
+ * The tournament run: owns the signals the screens bind to and sequences the pure game
+ * logic (`game/tournament`), the roster building ({@link TournamentRoster}) and the
+ * persistent records ({@link TournamentRecords}).
  */
-function trainerAvatar(seed: string, accent = false): string {
-  const params = new URLSearchParams({
-    seed,
-    radius: '50',
-    backgroundType: 'gradientLinear',
-    backgroundColor: accent ? 'ffd166,ffb703,fb8500' : 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c8f7c5',
-  });
-  return `https://api.dicebear.com/9.x/adventurer/svg?${params.toString()}`;
-}
-
-function idFromUrl(url: string): number | null {
-  const m = url.match(/\/pokemon\/(\d+)\/?$/);
-  return m ? Number(m[1]) : null;
-}
-
-function titleCase(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-/**
- * Lightweight, type-accurate move set for CPU Pokémon. Avoids fetching real move
- * data for ~45 Pokémon per tournament — STAB + effectiveness already make these
- * battles meaningful, and it keeps generation to a single request per Pokémon.
- */
-function synthMoves(types: PokemonType[]): BattleMove[] {
-  const moves: BattleMove[] = types.map((ty, i) => ({
-    name: `${titleCase(ty)} ${i === 0 ? 'Blast' : 'Strike'}`,
-    type: ty,
-    power: 85,
-    accuracy: 100,
-    damageClass: i % 2 === 0 ? 'physical' : 'special',
-  }));
-  moves.push({ name: 'Tackle', type: 'normal', power: 50, accuracy: 100, damageClass: 'physical' });
-  return moves;
-}
-
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
-  private readonly api = inject(PokeApiClient);
-  private readonly battle = inject(BattlerFactory);
+  private readonly roster = inject(TournamentRoster);
+  private readonly records = inject(TournamentRecords);
 
   readonly status = signal<Status>('idle');
   readonly error = signal<string | null>(null);
@@ -166,11 +58,11 @@ export class TournamentService {
   /** League standings (round-robin / swiss only). */
   readonly standings = signal<Standing[] | null>(null);
   /** Persisted tournament history. */
-  readonly history = signal<TournamentRecord[]>(loadHistory());
+  readonly history = this.records.history;
   /** The record just logged for the current finished run (placement + prize). */
-  readonly lastRun = signal<TournamentRecord | null>(null);
+  readonly lastRun = this.records.lastRun;
   /** Your persistent rival (identity + head-to-head record; survives resets). */
-  readonly rival = signal<RivalState>(loadRival());
+  readonly rival = this.records.rival;
 
   /** Everyone in the current field (for the crystal-ball pick strip). */
   readonly fieldList = signal<Trainer[]>([]);
@@ -196,11 +88,10 @@ export class TournamentService {
   private readonly carry = new Map<string, number[]>();
   private chosenType: PokemonType | null = null;
 
-  /** League run state (round-robin / swiss). */
-  private league: LeagueRun | null = null;
-  private leagueMatch = signal<PlayerMatchSetup | null>(null);
-  private leagueWinner = signal<Trainer | null>(null);
-  private historyLogged = false;
+  /** League run (round-robin / swiss), its pending player match and winner. */
+  private league: League | null = null;
+  private readonly leagueMatch = signal<PlayerMatchSetup | null>(null);
+  private readonly leagueWinner = signal<Trainer | null>(null);
 
   readonly champion = computed<Trainer | null>(() =>
     this.format() === 'single-elim' ? (this.bracket()?.champion ?? null) : this.leagueWinner(),
@@ -215,35 +106,15 @@ export class TournamentService {
     const b = this.bracket();
     if (!b || b.champion) return !!b?.champion && b.champion.id !== 'player';
     // Eliminated if the player no longer appears in any unplayed match and isn't champion.
-    return !playerMatch(b) && !this.anyPlayerRemaining(b);
+    return !playerMatch(b) && !anyPlayerRemaining(b);
   });
 
   /** Everything the interactive player match needs (or null when none pending). */
   readonly currentMatchSetup = computed<PlayerMatchSetup | null>(() =>
-    this.format() === 'single-elim' ? this.bracketMatchSetup() : this.leagueMatch(),
+    this.format() === 'single-elim'
+      ? bracketMatchSetup(this.bracket(), this.mode(), this.carry)
+      : this.leagueMatch(),
   );
-
-  private readonly bracketMatchSetup = computed<PlayerMatchSetup | null>(() => {
-    const b = this.bracket();
-    const mode = this.mode();
-    if (!b || !mode) return null;
-    const pm = playerMatch(b);
-    if (!pm) return null;
-    const playerIsA = !!pm.a?.isPlayer;
-    const player = (playerIsA ? pm.a : pm.b) as Trainer;
-    const foe = (playerIsA ? pm.b : pm.a) as Trainer;
-    return {
-      match: pm,
-      round: pm.round,
-      player,
-      foe,
-      playerTeam: player.team,
-      foeTeam: this.teamForRound(foe, pm.round),
-      rules: this.rulesForMatch(pm),
-      playerStartHp: mode.hpCarry ? this.carry.get(player.id) : undefined,
-      foeStartHp: mode.hpCarry ? this.carry.get(foe.id) : undefined,
-    };
-  });
 
   /* --------------------------------------------------------------- public */
 
@@ -261,27 +132,23 @@ export class TournamentService {
       }
       // Draft picks only apply to the knockout bracket.
       if (mode.draft && format === 'single-elim') {
-        const dtos = await this.selectDtos(mode, 9);
-        const pool = await Promise.all(
-          dtos.map((d) => this.battle.buildBattlerFromDto(d, mode.baseLevel)),
-        );
-        this.draftPool.set(pool);
+        this.draftPool.set(await this.roster.draftPool(mode, 9, this.chosenType));
         this.status.set('draft');
         return;
       }
 
       const field = format === 'round-robin' ? LEAGUE_FIELD : FIELD;
-      const dtos = await this.selectDtos(mode, field * mode.teamSize);
-      const teams = this.distribute(dtos, field, mode.teamSize, mode.balanced);
-      const trainers = this.injectRival(await this.buildTrainers(teams, mode, 0));
+      const dtos = await this.roster.selectDtos(mode, field * mode.teamSize, this.chosenType);
+      const teams = this.roster.distribute(dtos, field, mode.teamSize, mode.balanced);
+      const trainers = this.records.injectRival(await this.roster.buildTrainers(teams, mode, 0));
       this.fieldList.set(trainers);
 
       if (format === 'single-elim') {
         this.bracket.set(buildBracket(this.seed(trainers)));
         this.status.set('ready');
-        this.runAiMatches();
+        this.resolveCpuMatches();
       } else {
-        this.setupLeague(format, trainers, mode.teamSize);
+        this.startLeague(format, trainers, mode);
       }
     } catch {
       this.error.set('Could not load the tournament. Please try again.');
@@ -289,57 +156,73 @@ export class TournamentService {
     }
   }
 
-  /** Power-seed a 16-strong field so the strongest teams are spread out. */
-  private seed(trainers: Trainer[]): Trainer[] {
-    const sorted = [...trainers].sort((a, b) => this.teamStrength(b) - this.teamStrength(a));
-    return seedTrainers(sorted);
+  /** Finish a draft: the player's picks become their team, then the field fills. */
+  async confirmDraft(picks: Battler[]): Promise<void> {
+    const mode = this.mode();
+    if (!mode) return;
+    this.status.set('loading');
+    try {
+      const dtos = await this.roster.selectDtos(mode, (FIELD - 1) * mode.teamSize, this.chosenType);
+      const cpuTeams = this.roster.distribute(dtos, FIELD - 1, mode.teamSize, mode.balanced);
+      const cpu = this.records.injectRival(this.roster.buildCpuTrainers(cpuTeams, mode));
+      const player = makeTrainer(0, true, picks);
+      this.fieldList.set([player, ...cpu]);
+      this.bracket.set(buildBracket([player, ...cpu]));
+      this.status.set('ready');
+      this.resolveCpuMatches();
+    } catch {
+      this.error.set('Could not start the tournament. Please try again.');
+      this.status.set('idle');
+    }
   }
 
   /**
-   * The rival takes over the strongest CPU entry every run, keeping that team
-   * (so mode rules still hold) but wearing their persistent identity — and a
-   * level edge that grows with your shared history.
+   * Record the human's match outcome, carry HP for Survival, then auto-resolve
+   * every remaining CPU match up to the player's next match (or the champion).
    */
-  private injectRival(trainers: Trainer[]): Trainer[] {
-    const state = this.rival();
-    let strongest = -1;
-    let best = -Infinity;
-    trainers.forEach((t, i) => {
-      if (t.isPlayer) return;
-      const s = this.teamStrength(t);
-      if (s > best) {
-        best = s;
-        strongest = i;
-      }
-    });
-    if (strongest < 0) return trainers;
-    const boost = rivalLevelBoost(state);
-    const host = trainers[strongest]!;
-    const team =
-      boost > 0
-        ? host.team.map((b) => ({
-            ...b,
-            level: b.level + boost,
-            stats: this.scaleStats(b.stats, (b.level + boost) / b.level),
-          }))
-        : host.team;
-    const rival: Trainer = {
-      ...host,
-      id: 'rival',
-      name: state.name,
-      title: state.title,
-      avatar: trainerAvatar(state.seed),
-      team,
-      isRival: true,
-    };
-    return trainers.map((t, i) => (i === strongest ? rival : t));
+  recordPlayerOutcome(playerWon: boolean, playerFinalHp?: number[]): void {
+    if (this.format() !== 'single-elim') {
+      this.recordLeagueOutcome(playerWon, playerFinalHp);
+      return;
+    }
+    const b0 = this.bracket();
+    const mode = this.mode();
+    if (!b0 || !mode) return;
+    const pm = playerMatch(b0);
+    if (!pm) return;
+    const playerIsA = !!pm.a?.isPlayer;
+    const winnerSide: 0 | 1 = playerWon === playerIsA ? 0 : 1;
+    const foe = (playerIsA ? pm.b : pm.a) as Trainer;
+    if (foe?.isRival) this.records.recordRival(playerWon);
+
+    if (mode.hpCarry && playerWon && playerFinalHp) {
+      const player = (playerIsA ? pm.a : pm.b) as Trainer;
+      this.carry.set(player.id, playerFinalHp);
+    }
+
+    this.bracket.set(reportResult(b0, pm.id, winnerSide));
+    this.resolveCpuMatches();
   }
 
-  /** Persist a head-to-head result against the rival. */
-  private recordRival(playerWon: boolean): void {
-    const next = recordRivalMeeting(this.rival(), playerWon);
-    saveRival(next);
-    this.rival.set(next);
+  /** Back to the mode-selection screen. */
+  reset(): void {
+    this.status.set('idle');
+    this.error.set(null);
+    this.mode.set(null);
+    this.bracket.set(null);
+    this.draftPool.set([]);
+    this.monoType.set(null);
+    this.carry.clear();
+    this.chosenType = null;
+    this.format.set('single-elim');
+    this.standings.set(null);
+    this.league = null;
+    this.leagueMatch.set(null);
+    this.leagueWinner.set(null);
+    this.records.resetRun();
+    this.fieldList.set([]);
+    this.pick.set(null);
+    this.pickLocked.set(false);
   }
 
   /* ------------------------------------------------------------- pick'em */
@@ -371,438 +254,62 @@ export class TournamentService {
     this.pickLocked.set(true);
   }
 
-  private teamStrength(t: Trainer): number {
-    return t.team.reduce((sum, m) => sum + Object.values(m.stats).reduce((a, b) => a + b, 0), 0);
+  /* -------------------------------------------------------------- internals */
+
+  /** Power-seed a 16-strong field so the strongest teams are spread out. */
+  private seed(trainers: Trainer[]): Trainer[] {
+    const sorted = [...trainers].sort((a, b) => teamStrength(b) - teamStrength(a));
+    return seedTrainers(sorted);
   }
 
-  /* ------------------------------------------------------ league formats */
-
-  private setupLeague(format: BracketFormat, trainers: Trainer[], teamSize: number): void {
-    const standings = initStandings(trainers);
-    this.standings.set(standings);
-    const ids = trainers.map((t) => t.id);
-    const swissTotal = format === 'swiss' ? swissRounds(ids.length) : 0;
-    const fixtures =
-      format === 'round-robin'
-        ? roundRobinSchedule(ids).flat()
-        : swissPairings(standings, new Set());
-    this.league = {
-      format,
-      byId: new Map(trainers.map((t) => [t.id, t])),
-      teamSize,
-      fixtures,
-      cursor: 0,
-      played: new Set(),
-      swissRound: 1,
-      swissTotal,
-      pending: null,
-    };
-    this.status.set('ready');
-    this.advanceLeague();
-  }
-
-  /** Resolve CPU fixtures until the player's next match, or finish the league. */
-  private advanceLeague(): void {
-    const lg = this.league;
-    if (!lg) return;
-    let guard = 0;
-    while (lg.cursor < lg.fixtures.length && guard++ < 256) {
-      const fx = lg.fixtures[lg.cursor]!;
-      const a = lg.byId.get(fx.aId)!;
-      const b = lg.byId.get(fx.bId)!;
-      if (a.isPlayer || b.isPlayer) {
-        this.exposeLeagueMatch(fx, a, b);
-        return;
-      }
-      const res = simulateMatch(a.team, b.team, `lg-${lg.format}-${fx.aId}-${fx.bId}`, {
-        rules: this.leagueRules(fx),
-      });
-      this.recordFixture(fx, res.winner, res.survivorsA, res.survivorsB);
-      lg.cursor++;
-    }
-    // Round exhausted: Swiss may have more rounds.
-    if (lg.format === 'swiss' && lg.swissRound < lg.swissTotal) {
-      lg.swissRound++;
-      lg.fixtures = swissPairings(this.standings()!, lg.played);
-      lg.cursor = 0;
-      this.advanceLeague();
-      return;
-    }
-    this.finishLeague();
-  }
-
-  private exposeLeagueMatch(fx: Fixture, a: Trainer, b: Trainer): void {
-    const playerIsA = !!a.isPlayer;
-    const player = playerIsA ? a : b;
-    const foe = playerIsA ? b : a;
-    this.league!.pending = { fixture: fx, playerIsA };
-    this.leagueMatch.set({
-      match: {
-        id: `lg-${fx.aId}-${fx.bId}`,
-        round: 'final',
-        slot: 0,
-        a: player,
-        b: foe,
-        winner: null,
-        played: false,
-      },
-      round: 'final',
-      player,
-      foe,
-      playerTeam: player.team,
-      foeTeam: foe.team,
-      aiTier: 'strong',
-    });
-  }
-
-  private recordFixture(fx: Fixture, winner: 0 | 1, survivorsA: number, survivorsB: number): void {
-    const lg = this.league!;
-    this.standings.update((s) =>
-      applyMatch(s!, fx.aId, fx.bId, { winner, survivorsA, survivorsB }, lg.teamSize),
-    );
-    lg.played.add(pairKey(fx.aId, fx.bId));
-  }
-
-  private finishLeague(): void {
-    const lg = this.league;
-    if (!lg) return;
-    const ranked = rankStandings(this.standings()!);
-    const championId = ranked[0]?.trainerId;
-    const champ = championId ? (lg.byId.get(championId) ?? null) : null;
-    this.leagueWinner.set(champ);
-    this.leagueMatch.set(null);
-    this.status.set('done');
-    const placement = ranked.findIndex((s) => s.isPlayer) + 1;
-    this.logHistory(placement, ranked.length, champ);
-  }
-
-  private leagueRules(fx: Fixture): BattleRules | undefined {
-    const mode = this.mode();
-    if (!mode) return undefined;
-    if (mode.inverse) return { inverse: true };
-    if (mode.weather) {
-      const rng = new SeededRng(`weather-${fx.aId}-${fx.bId}`);
-      return { weatherBoostType: rng.pick([...POKEMON_TYPES]) };
-    }
-    return undefined;
-  }
-
-  /** Finish a draft: the player's picks become their team, then the field fills. */
-  async confirmDraft(picks: Battler[]): Promise<void> {
-    const mode = this.mode();
-    if (!mode) return;
-    this.status.set('loading');
-    try {
-      const dtos = await this.selectDtos(mode, (FIELD - 1) * mode.teamSize);
-      const cpuTeams = this.distribute(dtos, FIELD - 1, mode.teamSize, mode.balanced);
-      const cpu = this.injectRival(
-        cpuTeams.map((team, i) =>
-          this.makeTrainer(
-            i + 1,
-            false,
-            team.map((d) => this.buildLight(d, mode.baseLevel)),
-          ),
-        ),
-      );
-      const player = this.makeTrainer(0, true, picks);
-      this.fieldList.set([player, ...cpu]);
-      this.bracket.set(buildBracket([player, ...cpu]));
-      this.status.set('ready');
-      this.runAiMatches();
-    } catch {
-      this.error.set('Could not start the tournament. Please try again.');
-      this.status.set('idle');
-    }
-  }
-
-  /**
-   * Record the human's match outcome, carry HP for Survival, then auto-resolve
-   * every remaining CPU match up to the player's next match (or the champion).
-   */
-  recordPlayerOutcome(playerWon: boolean, playerFinalHp?: number[]): void {
-    if (this.format() !== 'single-elim') {
-      this.recordLeagueOutcome(playerWon, playerFinalHp);
-      return;
-    }
-    const b0 = this.bracket();
-    const mode = this.mode();
-    if (!b0 || !mode) return;
-    const pm = playerMatch(b0);
-    if (!pm) return;
-    const playerIsA = !!pm.a?.isPlayer;
-    const winnerSide: 0 | 1 = playerWon === playerIsA ? 0 : 1;
-    const foe = (playerIsA ? pm.b : pm.a) as Trainer;
-    if (foe?.isRival) this.recordRival(playerWon);
-
-    if (mode.hpCarry && playerWon && playerFinalHp) {
-      const player = (playerIsA ? pm.a : pm.b) as Trainer;
-      this.carry.set(player.id, playerFinalHp);
-    }
-
-    this.bracket.set(reportResult(b0, pm.id, winnerSide));
-    this.runAiMatches();
-  }
-
-  /** Record the player's league-fixture result, then resolve onward. */
-  private recordLeagueOutcome(playerWon: boolean, playerFinalHp?: number[]): void {
-    const lg = this.league;
-    if (!lg?.pending) return;
-    const { fixture, playerIsA } = lg.pending;
-    const foe = lg.byId.get(playerIsA ? fixture.bId : fixture.aId);
-    if (foe?.isRival) this.recordRival(playerWon);
-    const playerSurv = (playerFinalHp ?? []).filter((h) => h > 0).length;
-    const aSurv = playerIsA ? playerSurv : playerWon ? 0 : 1;
-    const bSurv = playerIsA ? (playerWon ? 0 : 1) : playerSurv;
-    const winner: 0 | 1 = playerIsA === playerWon ? 0 : 1;
-    this.recordFixture(fixture, winner, aSurv, bSurv);
-    lg.pending = null;
-    lg.cursor++;
-    this.leagueMatch.set(null);
-    this.advanceLeague();
-  }
-
-  private logHistory(placement: number, field: number, champ: Trainer | null): void {
-    if (this.historyLogged) return;
-    this.historyLogged = true;
-    const playerWon = !!champ?.isPlayer;
-    const place = playerWon ? 1 : placement > 0 ? placement : Math.ceil(field / 2) + 1;
-    const p = this.pick();
-    const pickBonus = p && champ && p.trainerId === champ.id ? p.payout : 0;
-    const rec: TournamentRecord = {
-      date: new Date().toISOString(),
-      modeName: this.mode()?.name ?? 'Tournament',
-      formatName: formatById(this.format()).name,
-      field,
-      placement: place,
-      champion: champ?.name ?? '—',
-      playerWon,
-      prize: prizeFor(place, field) + pickBonus,
-      ...(pickBonus > 0 ? { pickBonus } : {}),
-    };
-    this.lastRun.set(rec);
-    this.history.set(pushHistory(rec));
-  }
-
-  /** Back to the mode-selection screen. */
-  reset(): void {
-    this.status.set('idle');
-    this.error.set(null);
-    this.mode.set(null);
-    this.bracket.set(null);
-    this.draftPool.set([]);
-    this.monoType.set(null);
-    this.carry.clear();
-    this.chosenType = null;
-    this.format.set('single-elim');
-    this.standings.set(null);
-    this.league = null;
-    this.leagueMatch.set(null);
-    this.leagueWinner.set(null);
-    this.historyLogged = false;
-    this.lastRun.set(null);
-    this.fieldList.set([]);
-    this.pick.set(null);
-    this.pickLocked.set(false);
-  }
-
-  /* -------------------------------------------------------- bracket runner */
-
-  private runAiMatches(): void {
-    let b = this.bracket();
+  /** Auto-resolve CPU matches in the bracket and log the run once a champion stands. */
+  private resolveCpuMatches(): void {
+    const b = this.bracket();
     const mode = this.mode();
     if (!b || !mode) return;
-    let m = nextReadyMatch(b);
-    let guard = 0;
-    while (m && !(m.a?.isPlayer || m.b?.isPlayer) && guard++ < 32) {
-      const res = simulateMatch(
-        this.teamForRound(m.a as Trainer, m.round),
-        this.teamForRound(m.b as Trainer, m.round),
-        `sim-${m.id}`,
-        {
-          rules: this.rulesForMatch(m),
-          startHpA: mode.hpCarry ? this.carry.get((m.a as Trainer).id) : undefined,
-          startHpB: mode.hpCarry ? this.carry.get((m.b as Trainer).id) : undefined,
-        },
-      );
-      if (mode.hpCarry) {
-        const winner = res.winner === 0 ? (m.a as Trainer) : (m.b as Trainer);
-        this.carry.set(winner.id, res.winner === 0 ? res.hpA : res.hpB);
-      }
-      b = reportResult(b, m.id, res.winner);
-      m = nextReadyMatch(b);
-    }
-    this.bracket.set(b);
-    if (b.champion) {
+    const next = runAiMatches(b, mode, this.carry);
+    this.bracket.set(next);
+    if (next.champion) {
       this.status.set('done');
-      this.logHistory(b.champion.isPlayer ? 1 : 0, FIELD, b.champion);
+      this.logRun(next.champion.isPlayer ? 1 : 0, FIELD, next.champion);
     }
   }
 
-  /** Opponent teams scale up each round in Boss Ascent; the player stays fixed. */
-  private teamForRound(t: Trainer, round: RoundId): Battler[] {
-    const mode = this.mode();
-    if (!mode?.ascend || t.isPlayer) return t.team;
-    const level = levelForRound(mode, round);
-    const factor = level / mode.baseLevel;
-    return t.team.map((b) => ({
-      ...b,
-      level,
-      stats: this.scaleStats(b.stats, factor),
-    }));
+  private startLeague(format: BracketFormat, trainers: Trainer[], mode: TournamentMode): void {
+    if (format === 'single-elim') return;
+    this.league = new League(format, trainers, mode.teamSize, mode);
+    this.status.set('ready');
+    this.syncLeague(this.league.advance());
   }
 
-  private scaleStats(stats: Record<StatKey, number>, factor: number): Record<StatKey, number> {
-    const out = {} as Record<StatKey, number>;
-    for (const key of Object.keys(stats) as StatKey[]) out[key] = Math.round(stats[key] * factor);
-    return out;
+  private recordLeagueOutcome(playerWon: boolean, playerFinalHp?: number[]): void {
+    const result = this.league?.recordPlayerOutcome(playerWon, playerFinalHp);
+    if (!result) return;
+    if (result.foeIsRival) this.records.recordRival(playerWon);
+    this.syncLeague(result.finish);
   }
 
-  private rulesForMatch(match: BracketMatch): BattleRules | undefined {
-    const mode = this.mode();
-    if (!mode) return undefined;
-    if (mode.inverse) return { inverse: true };
-    if (mode.weather) {
-      const rng = new SeededRng(`weather-${match.id}`);
-      return { weatherBoostType: rng.pick([...POKEMON_TYPES]) };
-    }
-    return undefined;
+  /** Mirror the league state machine into the signals; wrap up when it finished. */
+  private syncLeague(finish: LeagueFinish | null): void {
+    const lg = this.league;
+    if (!lg) return;
+    this.standings.set(lg.standings);
+    this.leagueMatch.set(lg.match);
+    if (!finish) return;
+    this.leagueWinner.set(finish.champion);
+    this.status.set('done');
+    this.logRun(finish.placement, finish.field, finish.champion);
   }
 
-  private anyPlayerRemaining(b: Bracket): boolean {
-    return Object.values(b.rounds)
-      .flat()
-      .some((m) => (m.a?.isPlayer || m.b?.isPlayer) && !m.played);
-  }
-
-  /* --------------------------------------------------------- team building */
-
-  private async buildTrainers(
-    teams: PokemonDto[][],
-    mode: TournamentMode,
-    playerIndex: number,
-  ): Promise<Trainer[]> {
-    const out: Trainer[] = [];
-    for (let i = 0; i < teams.length; i++) {
-      const isPlayer = i === playerIndex;
-      const team = isPlayer
-        ? await Promise.all(
-            teams[i]!.map((d) => this.battle.buildBattlerFromDto(d, mode.baseLevel)),
-          )
-        : teams[i]!.map((d) => this.buildLight(d, mode.baseLevel));
-      out.push(this.makeTrainer(i, isPlayer, team));
-    }
-    return out;
-  }
-
-  private buildLight(dto: PokemonDto, level: number): Battler {
-    const types = dto.types
-      .slice()
-      .sort((a, b) => a.slot - b.slot)
-      .map((t) => t.type.name)
-      .filter(isPokemonType);
-    const t = types.length ? types : (['normal'] as PokemonType[]);
-    return {
-      id: dto.id,
-      name: dto.name,
-      level,
-      types: t,
-      stats: quickStats(baseStatsOf(dto), level),
-      moves: synthMoves(t),
-      sprite: this.battle.battleSprite(dto, 'front'),
-    };
-  }
-
-  private makeTrainer(index: number, isPlayer: boolean, team: Battler[]): Trainer {
-    if (isPlayer) {
-      return {
-        id: 'player',
-        name: 'You',
-        title: 'Challenger',
-        avatar: trainerAvatar('Champion-Ace', true),
-        team,
-        isPlayer: true,
-      };
-    }
-    const name = NAMES[(index * 7) % NAMES.length]!;
-    return {
-      id: `cpu-${index}`,
-      name,
-      title: TITLES[index % TITLES.length]!,
-      avatar: trainerAvatar(`${name}-${index}`),
-      team,
-    };
-  }
-
-  /* ----------------------------------------------------- candidate selection */
-
-  /** Fetch a pool of DTOs sized for the mode, honouring type/BST restrictions. */
-  private async selectDtos(mode: TournamentMode, count: number): Promise<PokemonDto[]> {
-    const over = Math.ceil(count * (mode.pool === 'all' ? 1.4 : 2.4));
-    const ids =
-      mode.monotype && this.chosenType
-        ? await this.sampleTypeIds(this.chosenType, over)
-        : this.randomIds(over);
-    let dtos = await this.fetchDtos(ids);
-
-    while (dtos.length < count) {
-      dtos = dtos.concat(await this.fetchDtos(this.randomIds(count)));
-    }
-    if (mode.pool === 'little')
-      dtos.sort((a, b) => this.battle.totalBaseStats(a) - this.battle.totalBaseStats(b));
-    else if (mode.pool === 'legendary')
-      dtos.sort((a, b) => this.battle.totalBaseStats(b) - this.battle.totalBaseStats(a));
-    return dtos.slice(0, count);
-  }
-
-  private async sampleTypeIds(type: PokemonType, n: number): Promise<number[]> {
-    const dto = await this.api.type(type);
-    const pool = dto.pokemon
-      .map((p) => idFromUrl(p.pokemon.url))
-      .filter((id): id is number => id !== null && id <= DEX_MAX);
-    if (!pool.length) return this.randomIds(n);
-    return Array.from({ length: n }, () => pool[Math.floor(Math.random() * pool.length)]!);
-  }
-
-  private randomIds(n: number): number[] {
-    return Array.from({ length: n }, () => 1 + Math.floor(Math.random() * DEX_MAX));
-  }
-
-  private async fetchDtos(ids: number[]): Promise<PokemonDto[]> {
-    const res = await Promise.all(ids.map((id) => this.api.pokemon(id).catch(() => null)));
-    return res.filter((d): d is PokemonDto => !!d);
-  }
-
-  /** Snake-distribute DTOs into teams; balanced mode sorts by BST first to even out totals. */
-  private distribute(
-    dtos: PokemonDto[],
-    teams: number,
-    size: number,
-    balanced: boolean,
-  ): PokemonDto[][] {
-    const ordered = balanced
-      ? [...dtos].sort((a, b) => this.battle.totalBaseStats(b) - this.battle.totalBaseStats(a))
-      : this.shuffle(dtos);
-    const out: PokemonDto[][] = Array.from({ length: teams }, () => []);
-    let idx = 0;
-    for (let r = 0; r < size; r++) {
-      const order = r % 2 === 0 ? this.range(teams) : this.range(teams).reverse();
-      for (const t of order) {
-        if (idx < ordered.length) out[t]!.push(ordered[idx++]!);
-      }
-    }
-    return out;
-  }
-
-  private range(n: number): number[] {
-    return Array.from({ length: n }, (_, i) => i);
-  }
-
-  private shuffle<T>(items: T[]): T[] {
-    const copy = [...items];
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j]!, copy[i]!];
-    }
-    return copy;
+  private logRun(placement: number, field: number, champion: Trainer | null): void {
+    const p = this.pick();
+    this.records.log({
+      placement,
+      field,
+      champion,
+      mode: this.mode(),
+      format: this.format(),
+      pick: p ? { trainerId: p.trainerId, payout: p.payout } : null,
+    });
   }
 }
