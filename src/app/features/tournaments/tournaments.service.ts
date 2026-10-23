@@ -4,7 +4,7 @@ import type { PokemonDto } from '../../core/dto/pokeapi.dto';
 import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
 import { isPokemonType, POKEMON_TYPES, type PokemonType } from '../../core/utils/type-chart';
 import { SeededRng } from '../../core/utils/rng';
-import type { AiTier, Battler, BattleMove, BattleRules, Terrain, Weather } from '../../game/engine';
+import type { Battler, BattleMove, BattleRules } from '../../game/engine';
 import {
   buildBracket,
   levelForRound,
@@ -35,6 +35,7 @@ import {
   type RivalState,
   type Bracket,
   type BracketMatch,
+  type PlayerMatchSetup,
   type BracketFormat,
   type Fixture,
   type ModeId,
@@ -44,30 +45,9 @@ import {
   type TournamentRecord,
   type Trainer,
 } from '../../game/tournament';
-import { BattleService } from '../battle/battle.service';
+import { BattlerFactory, baseStatsOf } from '../../core/battle/battler-factory';
 
 type Status = 'idle' | 'loading' | 'draft' | 'ready' | 'done';
-
-/** Context the interactive 3-v-3 player match needs to run. */
-export interface PlayerMatchSetup {
-  readonly match: BracketMatch;
-  readonly round: RoundId;
-  readonly player: Trainer;
-  readonly foe: Trainer;
-  readonly playerTeam: Battler[];
-  readonly foeTeam: Battler[];
-  readonly rules?: BattleRules;
-  readonly playerStartHp?: number[];
-  readonly foeStartHp?: number[];
-  /** AI difficulty the foe plays at (defaults to 'strong'). */
-  readonly aiTier?: AiTier;
-  /** A persistent battlefield condition imposed from the first turn (gym fields). */
-  readonly field?: { readonly weather?: Weather; readonly terrain?: Terrain };
-  /** Accent colour for a themed match frame (any CSS colour, incl. var(--…)). */
-  readonly accent?: string;
-  /** A taunt shown as a banner when the foe sends out its final (ace) Pokémon. */
-  readonly foeAce?: string;
-}
 
 /** In-progress league (round-robin / swiss) run state. */
 interface LeagueRun {
@@ -171,7 +151,7 @@ function synthMoves(types: PokemonType[]): BattleMove[] {
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
   private readonly api = inject(PokeApiClient);
-  private readonly battle = inject(BattleService);
+  private readonly battle = inject(BattlerFactory);
 
   readonly status = signal<Status>('idle');
   readonly error = signal<string | null>(null);
@@ -726,16 +706,10 @@ export class TournamentService {
       name: dto.name,
       level,
       types: t,
-      stats: quickStats(this.baseStats(dto), level),
+      stats: quickStats(baseStatsOf(dto), level),
       moves: synthMoves(t),
       sprite: this.battle.battleSprite(dto, 'front'),
     };
-  }
-
-  private baseStats(dto: PokemonDto): Record<StatKey, number> {
-    const stats = {} as Record<StatKey, number>;
-    for (const s of dto.stats) stats[s.stat.name as StatKey] = s.base_stat;
-    return stats;
   }
 
   private makeTrainer(index: number, isPlayer: boolean, team: Battler[]): Trainer {

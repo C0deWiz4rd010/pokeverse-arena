@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { TournamentService } from './tournaments.service';
-import { TournamentMatchComponent, type MatchOutcome } from './tournament-match/tournament-match';
+import { TournamentMatchComponent } from './tournament-match/tournament-match';
+import type { MatchOutcome } from '../../game/tournament';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';

@@ -4,10 +4,8 @@ import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { IconComponent } from '../../core/ui/icon/icon';
-import {
-  TournamentMatchComponent,
-  type MatchOutcome,
-} from '../tournaments/tournament-match/tournament-match';
+import { TournamentMatchComponent } from '../tournaments/tournament-match/tournament-match';
+import type { MatchOutcome } from '../../game/tournament';
 import { titleCase } from '../../core/ui/format';
 import type { Battler } from '../../game/engine';
 import { isBossFloor, type RewardOption, type ShopEntry, type SpireNode } from '../../game/spire';

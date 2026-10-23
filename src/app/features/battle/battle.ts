@@ -10,7 +10,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { BattleService } from './battle.service';
+import { BattlerFactory } from '../../core/battle/battler-factory';
 import { DailyService } from './daily.service';
 import { buildShareText, turnEmoji } from '../../game/daily/daily';
 import { ToastService } from '../../core/ui/toast/toast.service';
@@ -40,7 +40,12 @@ import { BattlePresenterBase } from './battle-presenter';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { titleCase } from '../../core/ui/format';
 import { SeededRng } from '../../core/utils/rng';
-import { pickWeather, WEATHER_INFO, type Weather } from './battle-weather';
+import {
+  pickWeather,
+  AMBIENCE_FOR_ENGINE,
+  AMBIENCE_INFO,
+  type Ambience,
+} from '../../core/ui/weather-overlay/weather';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 type Phase = 'setup' | 'loading' | 'fighting' | 'done';
@@ -49,16 +54,6 @@ interface StageChip {
   readonly label: string;
   readonly value: number;
 }
-
-/** Engine weather → cosmetic overlay weather. */
-const OVERLAY_WEATHER: Record<EngineWeather, Weather> = {
-  none: 'clear',
-  sun: 'sun',
-  rain: 'rain',
-  sand: 'sand',
-  hail: 'snow',
-  snow: 'snow',
-};
 
 const STAGE_SHORT: Record<BoostableStat, string> = {
   attack: 'Atk',
@@ -89,7 +84,7 @@ const STAGE_SHORT: Record<BoostableStat, string> = {
   styleUrl: './battle.scss',
 })
 export class BattleComponent extends BattlePresenterBase {
-  private readonly svc = inject(BattleService);
+  private readonly svc = inject(BattlerFactory);
   private readonly pokedex = inject(PokedexService);
   protected readonly daily = inject(DailyService);
   private readonly toasts = inject(ToastService);
@@ -132,13 +127,13 @@ export class BattleComponent extends BattlePresenterBase {
   protected override clearFaintAfterBeat = false;
 
   /** Cosmetic backdrop: engine weather if set, else a type-evoked ambiance. */
-  protected readonly weather = computed<Weather>(() => {
+  protected readonly weather = computed<Ambience>(() => {
     const w = this.engineWeather();
-    if (w !== 'none') return OVERLAY_WEATHER[w];
+    if (w !== 'none') return AMBIENCE_FOR_ENGINE[w];
     return this.ambientWeather();
   });
-  protected readonly weatherInfo = computed(() => WEATHER_INFO[this.weather()]);
-  private readonly ambientWeather = signal<Weather>('clear');
+  protected readonly weatherInfo = computed(() => AMBIENCE_INFO[this.weather()]);
+  private readonly ambientWeather = signal<Ambience>('clear');
 
   protected readonly playerHpPct = this.pHpPct;
   protected readonly oppHpPct = this.fHpPct;
@@ -242,7 +237,7 @@ export class BattleComponent extends BattlePresenterBase {
 
     const rng = new SeededRng(`${player.id}-${opponent.id}`);
     this.ambientWeather.set(pickWeather(player.types, opponent.types, (items) => rng.pick(items)));
-    const info = WEATHER_INFO[this.weather()];
+    const info = AMBIENCE_INFO[this.weather()];
     this.log.set([
       { text: `A wild ${titleCase(opponent.name)} appeared!` },
       { text: `Go, ${titleCase(player.name)}!` },

@@ -24,7 +24,7 @@ import {
   labelPoint,
   radarPoint,
   shapePoints,
-} from './stat-radar';
+} from '../../core/ui/stat-radar/radar-geometry';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 /** Distinct polygon colors for up to four compared Pokémon. */

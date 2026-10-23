@@ -3,7 +3,7 @@
  * structure (round of 16 → final) and match results. Kept framework-free so the
  * logic stays pure and unit-testable.
  */
-import type { Battler } from '../engine';
+import type { AiTier, Battler, BattleRules, Terrain, Weather } from '../engine';
 
 /** A CPU or player competitor with a small team of engine-ready Pokémon. */
 export interface Trainer {
@@ -64,4 +64,31 @@ export interface MatchResult {
   readonly hpA: number[];
   /** Final HP of every team-B Pokémon (for cross-round carry). */
   readonly hpB: number[];
+}
+
+/** Context the interactive 3-v-3 player match needs to run (shared by tournaments, arena, spire and odyssey). */
+export interface PlayerMatchSetup {
+  readonly match: BracketMatch;
+  readonly round: RoundId;
+  readonly player: Trainer;
+  readonly foe: Trainer;
+  readonly playerTeam: Battler[];
+  readonly foeTeam: Battler[];
+  readonly rules?: BattleRules;
+  readonly playerStartHp?: number[];
+  readonly foeStartHp?: number[];
+  /** AI difficulty the foe plays at (defaults to 'strong'). */
+  readonly aiTier?: AiTier;
+  /** A persistent battlefield condition imposed from the first turn (gym fields). */
+  readonly field?: { readonly weather?: Weather; readonly terrain?: Terrain };
+  /** Accent colour for a themed match frame (any CSS colour, incl. var(--…)). */
+  readonly accent?: string;
+  /** A taunt shown as a banner when the foe sends out its final (ace) Pokémon. */
+  readonly foeAce?: string;
+}
+
+/** What an interactive match reports back to its host (HP carries over for gauntlets and runs). */
+export interface MatchOutcome {
+  readonly playerWon: boolean;
+  readonly playerFinalHp: number[];
 }

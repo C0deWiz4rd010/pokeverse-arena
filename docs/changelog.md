@@ -4,6 +4,24 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.3 — 2026-10-23
+
+🏗️ **Architecture decoupled** (phase 3 of the [improvement plan](improvement-plan.md)). No user-visible change except
+that the detail-page radar now shares its geometry (and look) with the other radars.
+
+### Changed
+
+- `PlayerMatchSetup` / `MatchOutcome` live in `game/tournament/types.ts`; Arena, Spire and Odyssey no longer import
+  from the Tournaments feature.
+- `BattlerFactory` (`core/battle/battler-factory.ts`) replaces `features/battle/battle.service.ts` as the single place that
+  builds battlers (the old name stays as an alias for the Adventure). The duplicated `baseStats` is gone.
+- New pure `game/run/run-economy.ts` (coin income, duplicate-relic refunds, held-item assignment) shared by Spire and
+  Odyssey, with a spec.
+- Level-up evolution helpers moved to `game/evolution/`; Odyssey no longer depends on `game/rpg`.
+- UI weather type renamed `Ambience` (no clash with the engine's `Weather`); the `battle-weather` shim and the duplicated
+  engine→backdrop map are gone.
+- One stat radar: geometry + component in `core/ui/stat-radar/`, used by detail, quick view, compare and showcase.
+
 ## v3.0.2 — 2026-10-23
 
 🧹 **Stricter types, lint & formatting** (phase 2 of the [improvement plan](improvement-plan.md)).

@@ -6,7 +6,6 @@ import { fuseBattlers } from '../../game/fusion/fusion';
 import {
   TOTAL_FLOORS,
   applyRelicsToTeam,
-  coinMultiplier,
   generateFloorChoices,
   generateRewards,
   generateShop,
@@ -22,9 +21,9 @@ import {
   type SpireMeta,
   type SpireNode,
 } from '../../game/spire';
-import { BattleService } from '../battle/battle.service';
-import type { PlayerMatchSetup } from '../tournaments/tournaments.service';
-import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
+import { coinsEarned, equipFirstFree, grantRelic } from '../../game/run/run-economy';
+import { BattlerFactory } from '../../core/battle/battler-factory';
+import type { MatchOutcome, PlayerMatchSetup } from '../../game/tournament';
 
 const PLAYER_LEVEL = 65;
 const PARTY_CAP = 6;
@@ -49,7 +48,7 @@ function avatar(seed: string, accent = false): string {
  */
 @Injectable({ providedIn: 'root' })
 export class SpireService {
-  private readonly battle = inject(BattleService);
+  private readonly battle = inject(BattlerFactory);
 
   readonly phase = signal<RunPhase>('setup');
   readonly busy = signal(false);
@@ -360,24 +359,24 @@ export class SpireService {
   }
 
   private addCoins(n: number): void {
-    if (n <= 0) return;
-    this.coins.update((c) => c + Math.round(n * coinMultiplier(this.relics())));
+    const gain = coinsEarned(n, this.relics());
+    if (gain > 0) this.coins.update((c) => c + gain);
   }
 
   private addRelic(id: RelicId): void {
-    if (this.relics().includes(id)) {
-      this.addCoins(40); // duplicate relic refunds a little
+    const grant = grantRelic(this.relics(), id);
+    if (grant.duplicate) {
+      this.addCoins(grant.refund); // duplicate relic refunds a little
       return;
     }
-    this.relics.update((r) => [...r, id]);
+    this.relics.set([...grant.relics]);
     this.toast.set(`Relic gained: ${relicById(id)?.name}`);
   }
 
   private equipItem(item: ItemId): void {
-    const idx = this.party.findIndex((m) => !m.item);
-    const target = idx >= 0 ? idx : 0;
-    this.party = this.party.map((m, i) => (i === target ? { ...m, item } : m));
-    this.toast.set(`${this.party[target]!.name} is now holding an item.`);
+    const { party, index } = equipFirstFree(this.party, item);
+    this.party = party;
+    this.toast.set(`${party[index]!.name} is now holding an item.`);
   }
 
   /** Add the beaten chimera boss ace to the party, fully healed and itemless. */

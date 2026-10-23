@@ -38,8 +38,8 @@ Seeded, type-accurate 1-v-1 battles with an animated arena and weather backdrops
 | `game/engine/damage.ts` | Pure `computeDamage()` (Gen V+ formula) + `resolveDamage`, `stabFor`, `moveEffectiveness` helpers. |
 | `game/engine/battle.ts` | `Battle` class: turn resolution, action ordering, seeded tie-breaks, simple expected-damage AI. |
 | `game/engine/index.ts` | Barrel export for the engine. |
-| `features/battle/battle.service.ts` | Builds `Battler`s from the API (stats, types, move pool), picks battle sprites. |
-| `features/battle/battle-weather.ts` | Re-exports the shared weather model (now in `core/ui/weather-overlay/weather.ts`). |
+| `core/battle/battler-factory.ts` | `BattlerFactory` — builds `Battler`s from the API (stats, types, move pool), picks battle sprites. Shared by Battle, Arena, Tournaments, Spire, Odyssey (`features/battle/battle.service.ts` is an alias kept for the Adventure code). |
+| `core/ui/weather-overlay/weather.ts` | Cosmetic backdrop model (`Ambience`, `AMBIENCE_INFO`, `AMBIENCE_FOR_ENGINE`, `pickWeather`). |
 | `core/ui/weather-overlay/` | Shared `pv-weather-overlay` particle backdrop (used by battle, tournaments, arena). |
 | `core/ui/move-button/` | Shared `pv-move-button` (type-tinted, effectiveness badge, hover tooltip). |
 | `features/battle/pixi/battle-fx.ts` | Lazy `pv-battle-fx` PixiJS overlay: impact bursts, crit flashes, charge swirls. |

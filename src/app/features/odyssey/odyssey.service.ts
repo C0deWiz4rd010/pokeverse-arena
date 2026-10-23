@@ -2,12 +2,12 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { SeededRng, dailySeed } from '../../core/utils/rng';
 import type { AiTier, Battler, ItemId } from '../../game/engine';
 import type { BracketMatch, Trainer } from '../../game/tournament';
-import { BattleService } from '../battle/battle.service';
+import { coinsEarned, equipFirstFree, grantRelic } from '../../game/run/run-economy';
+import { BattlerFactory } from '../../core/battle/battler-factory';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { idFromUrl, officialArtwork } from '../../core/api/pokeapi-endpoints';
-import { evolutionAt, levelUpEvolutions } from '../../game/rpg/evolution';
-import type { PlayerMatchSetup } from '../tournaments/tournaments.service';
-import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
+import { evolutionAt, levelUpEvolutions } from '../../game/evolution/evolution';
+import type { MatchOutcome, PlayerMatchSetup } from '../../game/tournament';
 import {
   coinsForWave,
   generateOdysseyRewards,
@@ -23,12 +23,7 @@ import {
   type OdysseyShopEntry,
   type WaveSpec,
 } from '../../game/odyssey/odyssey';
-import {
-  applyRelicsToTeam,
-  coinMultiplier,
-  relicById,
-  type RelicId,
-} from '../../game/spire/relics';
+import { applyRelicsToTeam, relicById, type RelicId } from '../../game/spire/relics';
 
 export type OdysseyPhase =
   | 'hub'
@@ -69,7 +64,7 @@ function avatar(seed: string, accent = false): string {
  */
 @Injectable({ providedIn: 'root' })
 export class OdysseyService {
-  private readonly battle = inject(BattleService);
+  private readonly battle = inject(BattlerFactory);
   private readonly api = inject(PokeApiClient);
 
   readonly phase = signal<OdysseyPhase>('hub');
@@ -398,25 +393,24 @@ export class OdysseyService {
   }
 
   private addRelic(id: RelicId): void {
-    if (this.relics().includes(id)) {
-      this.addCoins(40);
-      this.toast.set('Duplicate relic — the trader refunds 40 coins.');
+    const grant = grantRelic(this.relics(), id);
+    if (grant.duplicate) {
+      this.addCoins(grant.refund);
+      this.toast.set(`Duplicate relic — the trader refunds ${grant.refund} coins.`);
       return;
     }
-    this.relics.update((r) => [...r, id]);
+    this.relics.set([...grant.relics]);
     this.toast.set(`Relic gained: ${relicById(id)?.name}`);
   }
 
   private equipItem(item: ItemId): void {
-    const idx = this.party.findIndex((m) => !m.item);
-    const target = idx >= 0 ? idx : 0;
-    this.party = this.party.map((m, i) => (i === target ? { ...m, item } : m));
+    this.party = equipFirstFree(this.party, item).party;
     this.version.update((v) => v + 1);
   }
 
   private addCoins(n: number): void {
-    if (n <= 0) return;
-    this.coins.update((c) => c + Math.round(n * coinMultiplier(this.relics())));
+    const gain = coinsEarned(n, this.relics());
+    if (gain > 0) this.coins.update((c) => c + gain);
   }
 
   /* --------------------------------------------------------------- growth */

@@ -1,17 +1,18 @@
 import type { PokemonType } from '../../utils/type-chart';
 import type { IconName } from '../icon/icons.data';
+import type { Weather as EngineWeather } from '../../../game/engine';
 
 /** The set of atmospheric backdrops a battle can take place in. */
-export type Weather = 'clear' | 'sun' | 'rain' | 'storm' | 'sand' | 'snow' | 'fog' | 'leaves';
+export type Ambience = 'clear' | 'sun' | 'rain' | 'storm' | 'sand' | 'snow' | 'fog' | 'leaves';
 
-export interface WeatherInfo {
-  readonly id: Weather;
+export interface AmbienceInfo {
+  readonly id: Ambience;
   readonly label: string;
   readonly icon: IconName;
 }
 
 /** Which atmosphere a given type evokes (drives the auto-picked weather). */
-const TYPE_WEATHER: Partial<Record<PokemonType, Weather>> = {
+const TYPE_WEATHER: Partial<Record<PokemonType, Ambience>> = {
   fire: 'sun',
   water: 'rain',
   electric: 'storm',
@@ -28,7 +29,7 @@ const TYPE_WEATHER: Partial<Record<PokemonType, Weather>> = {
   fairy: 'fog',
 };
 
-export const WEATHER_INFO: Record<Weather, WeatherInfo> = {
+export const AMBIENCE_INFO: Record<Ambience, AmbienceInfo> = {
   clear: { id: 'clear', label: 'Clear skies', icon: 'cloud-sun' },
   sun: { id: 'sun', label: 'Harsh sunlight', icon: 'sun' },
   rain: { id: 'rain', label: 'Rain', icon: 'cloud-rain' },
@@ -40,7 +41,7 @@ export const WEATHER_INFO: Record<Weather, WeatherInfo> = {
 };
 
 /** The weather a single type evokes, if any (used to honor a forced boost type). */
-export function weatherForType(type: PokemonType): Weather {
+export function weatherForType(type: PokemonType): Ambience {
   return TYPE_WEATHER[type] ?? 'clear';
 }
 
@@ -55,12 +56,22 @@ export function pickWeather(
   playerTypes: readonly PokemonType[],
   foeTypes: readonly PokemonType[],
   pick?: <T>(items: readonly T[]) => T,
-): Weather {
+): Ambience {
   const candidates = [
     ...new Set(
-      [...foeTypes, ...playerTypes].map((t) => TYPE_WEATHER[t]).filter((w): w is Weather => !!w),
+      [...foeTypes, ...playerTypes].map((t) => TYPE_WEATHER[t]).filter((w): w is Ambience => !!w),
     ),
   ];
   if (!candidates.length) return 'clear';
   return pick ? pick(candidates) : candidates[0]!;
 }
+
+/** The battle engine's weather condition → the cosmetic backdrop that depicts it. */
+export const AMBIENCE_FOR_ENGINE: Record<EngineWeather, Ambience> = {
+  none: 'clear',
+  sun: 'sun',
+  rain: 'rain',
+  sand: 'sand',
+  hail: 'snow',
+  snow: 'snow',
+};

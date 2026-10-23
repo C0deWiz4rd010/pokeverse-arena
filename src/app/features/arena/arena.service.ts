@@ -19,10 +19,9 @@ import {
   starsFor,
 } from '../../game/arena/gym-progression';
 import { GAUNTLET, gauntletUnlocked, type EliteTrainer } from '../../game/arena/elite-four';
-import { BattleService } from '../battle/battle.service';
+import { BattlerFactory } from '../../core/battle/battler-factory';
 import { TeamBuilderService } from '../team-builder/team-builder.service';
-import type { PlayerMatchSetup } from '../tournaments/tournaments.service';
-import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
+import type { MatchOutcome, PlayerMatchSetup } from '../../game/tournament';
 import { safeGet, safeSet, safeRemove } from '../../core/storage/safe-storage';
 
 type Status = 'hub' | 'loading' | 'intro' | 'battle' | 'reward' | 'gauntlet' | 'error';
@@ -88,7 +87,7 @@ export interface ArenaReward {
  */
 @Injectable({ providedIn: 'root' })
 export class ArenaService {
-  private readonly battle = inject(BattleService);
+  private readonly battle = inject(BattlerFactory);
   private readonly roster = inject(TeamBuilderService);
 
   readonly leaders = LEADER_LADDER;

@@ -10,7 +10,7 @@ import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import { titleCase } from '../../core/ui/format';
 import { bestLead, scoutMatchup, winOdds } from '../../game/tournament';
 import type { GymLeader } from '../../game/arena/gym-leaders';
-import type { MatchOutcome } from '../tournaments/tournament-match/tournament-match';
+import type { MatchOutcome } from '../../game/tournament';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 interface ScoutMon {

@@ -2,10 +2,10 @@
  * Shared stat-radar geometry: a hexagon with HP at 12 o'clock, walked
  * clockwise through Atk/Def/SpA/SpD/Spe. One pure point function feeds the
  * grid rings, the axes, the labels and every stat polygon, so shapes can
- * never drift from their axes. Used by the quickview back face and the
- * compare overlay.
+ * never drift from their axes. Used by the detail page, the quickview back
+ * face, the compare overlay and the showcase.
  */
-import type { StatKey } from '../../core/utils/stat-calculator';
+import type { StatKey } from '../../utils/stat-calculator';
 
 export const RADAR_STATS: readonly { key: StatKey; label: string }[] = [
   { key: 'hp', label: 'HP' },

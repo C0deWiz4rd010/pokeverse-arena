@@ -13,12 +13,32 @@ const chain: EvolutionChainDto = {
       {
         is_baby: false,
         species: { name: 'charmeleon', url: 'https://pokeapi.co/api/v2/pokemon-species/5/' },
-        evolution_details: [{ min_level: 16, trigger: { name: 'level-up', url: '' }, item: null, min_happiness: null, time_of_day: '', known_move: null, location: null }],
+        evolution_details: [
+          {
+            min_level: 16,
+            trigger: { name: 'level-up', url: '' },
+            item: null,
+            min_happiness: null,
+            time_of_day: '',
+            known_move: null,
+            location: null,
+          },
+        ],
         evolves_to: [
           {
             is_baby: false,
             species: { name: 'charizard', url: 'https://pokeapi.co/api/v2/pokemon-species/6/' },
-            evolution_details: [{ min_level: 36, trigger: { name: 'level-up', url: '' }, item: null, min_happiness: null, time_of_day: '', known_move: null, location: null }],
+            evolution_details: [
+              {
+                min_level: 36,
+                trigger: { name: 'level-up', url: '' },
+                item: null,
+                min_happiness: null,
+                time_of_day: '',
+                known_move: null,
+                location: null,
+              },
+            ],
             evolves_to: [],
           },
         ],
@@ -54,7 +74,17 @@ describe('evolution', () => {
           {
             is_baby: false,
             species: { name: 'vaporeon', url: 'https://pokeapi.co/api/v2/pokemon-species/134/' },
-            evolution_details: [{ min_level: null, trigger: { name: 'use-item', url: '' }, item: { name: 'water-stone', url: '' }, min_happiness: null, time_of_day: '', known_move: null, location: null }],
+            evolution_details: [
+              {
+                min_level: null,
+                trigger: { name: 'use-item', url: '' },
+                item: { name: 'water-stone', url: '' },
+                min_happiness: null,
+                time_of_day: '',
+                known_move: null,
+                location: null,
+              },
+            ],
             evolves_to: [],
           },
         ],

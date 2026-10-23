@@ -20,7 +20,7 @@ Aggregates Pokémon + species + evolution data into one view:
 | ---- | -------------- |
 | `features/pokemon-detail/pokemon-detail.service.ts` | Aggregates pokemon + species + evolution; lazy ability/move loaders. |
 | `features/pokemon-detail/pokemon-detail.ts` / `.html` / `.scss` | Page layout, shiny toggle, cry playback, move tabs. |
-| `features/pokemon-detail/stat-radar.ts` | Hexagonal SVG radar from precomputed coordinates. |
+| `core/ui/stat-radar/stat-radar.ts` | Hexagonal SVG radar; geometry shared with quick view, compare and showcase in `core/ui/stat-radar/radar-geometry.ts`. |
 | `features/pokemon-detail/evolution-tree.ts` | Recursive evolution-chain renderer. |
 
 ## How it works

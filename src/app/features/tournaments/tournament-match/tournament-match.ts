@@ -34,11 +34,12 @@ import { BattlePresenterBase } from '../../battle/battle-presenter';
 import {
   pickWeather,
   weatherForType,
-  type Weather,
+  AMBIENCE_FOR_ENGINE,
+  type Ambience,
 } from '../../../core/ui/weather-overlay/weather';
 import { SeededRng } from '../../../core/utils/rng';
 import { titleCase } from '../../../core/ui/format';
-import type { PlayerMatchSetup } from '../tournaments.service';
+import type { MatchOutcome, PlayerMatchSetup } from '../../../game/tournament';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
 interface StageChip {
@@ -60,11 +61,6 @@ interface MoveSlot {
   readonly maxPp: number | null;
 }
 
-export interface MatchOutcome {
-  readonly playerWon: boolean;
-  readonly playerFinalHp: number[];
-}
-
 const STAGE_SHORT: Record<BoostableStat, string> = {
   attack: 'Atk',
   defense: 'Def',
@@ -74,15 +70,6 @@ const STAGE_SHORT: Record<BoostableStat, string> = {
   accuracy: 'Acc',
   evasion: 'Eva',
 };
-const OVERLAY_WEATHER: Record<EngineWeather, Weather> = {
-  none: 'clear',
-  sun: 'sun',
-  rain: 'rain',
-  sand: 'sand',
-  hail: 'snow',
-  snow: 'snow',
-};
-
 function stageChips(stages: Stages): StageChip[] {
   return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({
     label: STAGE_SHORT[s],
@@ -171,9 +158,9 @@ export class TournamentMatchComponent extends BattlePresenterBase {
   });
 
   /** Cosmetic backdrop: engine weather if set, else a type-evoked ambiance. */
-  protected readonly weather = computed<Weather>(() => {
+  protected readonly weather = computed<Ambience>(() => {
     const w = this.engWeather();
-    if (w !== 'none') return OVERLAY_WEATHER[w];
+    if (w !== 'none') return AMBIENCE_FOR_ENGINE[w];
     const boost = this.setup().rules?.weatherBoostType;
     if (boost) {
       const wf = weatherForType(boost);

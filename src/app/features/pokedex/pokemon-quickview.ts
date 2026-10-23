@@ -19,7 +19,13 @@ import { padId, titleCase, typeColorVar } from '../../core/ui/format';
 import { officialArtwork } from '../../core/api/pokeapi-endpoints';
 import type { PokedexEntry } from '../../core/models/pokemon.model';
 import type { StatKey } from '../../core/utils/stat-calculator';
-import { RADAR_MAX, RADAR_RINGS, labelPoint, radarPoint, shapePoints } from './stat-radar';
+import {
+  RADAR_MAX,
+  RADAR_RINGS,
+  labelPoint,
+  radarPoint,
+  shapePoints,
+} from '../../core/ui/stat-radar/radar-geometry';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 const STAT_ROWS: { key: StatKey; label: string }[] = [

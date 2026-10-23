@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { WEATHER_INFO, type Weather } from './weather';
+import { AMBIENCE_INFO, type Ambience } from './weather';
 import { IconComponent } from '../icon/icon';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
@@ -80,10 +80,10 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
   styleUrl: './weather-overlay.scss',
 })
 export class WeatherOverlayComponent {
-  readonly weather = input.required<Weather>();
+  readonly weather = input.required<Ambience>();
   readonly showBadge = input(true);
 
-  protected readonly info = computed(() => WEATHER_INFO[this.weather()]);
+  protected readonly info = computed(() => AMBIENCE_INFO[this.weather()]);
 
   protected readonly drops = Array.from({ length: 28 }, (_, i) => i);
   protected readonly flakes = Array.from({ length: 24 }, (_, i) => i);
