@@ -158,12 +158,14 @@ export class CacheService {
 
   /* ----------------------------------------------------------- savegame */
 
-  async saveState<T>(key: string, value: T): Promise<void> {
+  /** Returns false when the value could not be stored (IndexedDB unavailable or full). */
+  async saveState<T>(key: string, value: T): Promise<boolean> {
     try {
       const db = await this.db();
       await db.put('savegame', value, key);
+      return true;
     } catch {
-      /* ignore */
+      return false;
     }
   }
 

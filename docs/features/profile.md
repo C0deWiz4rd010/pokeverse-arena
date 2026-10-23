@@ -24,7 +24,7 @@ The connective layer that unifies progress from every system into one identity.
 
 | File | Responsibility |
 | ---- | -------------- |
-| `core/storage/save.service.ts` | Typed, namespaced, versioned localStorage wrapper — the single persistence seam (with a legacy reader for older keys). |
+| `core/storage/save.service.ts` + `envelope-store.ts` | Typed, namespaced, versioned localStorage wrapper (Angular service over the plain `EnvelopeStore`; old raw keys are imported once via `LEGACY_SOURCES`) — the single persistence seam (with a legacy reader for older keys). |
 | `core/models/profile.ts` | `ProfileState`, the achievements catalogue + evaluator, rank thresholds. |
 | `features/profile/profile.service.ts` | Aggregates arena/spire/tournament state into one snapshot; persists identity. |
 | `features/profile/profile.ts/.html/.scss` | Identity card, rank, appearance picker, records grid, achievements wall. |

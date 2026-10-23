@@ -22,13 +22,16 @@ import {
   type SpireNode,
 } from '../../game/spire';
 import { coinsEarned, equipFirstFree, grantRelic } from '../../game/run/run-economy';
+import { parseSpireRun, type SpireRunSnapshot } from '../../game/run/run-snapshot';
 import { BattlerFactory } from '../../core/battle/battler-factory';
+import { SaveService } from '../../core/storage/save.service';
 import type { MatchOutcome, PlayerMatchSetup } from '../../game/tournament';
 
 const PLAYER_LEVEL = 65;
 const PARTY_CAP = 6;
 const DRAFT_POOL = 6;
 const DEX_MAX = 1025;
+const RUN_KEY = 'spire:run';
 
 function avatar(seed: string, accent = false): string {
   const params = new URLSearchParams({
@@ -49,6 +52,7 @@ function avatar(seed: string, accent = false): string {
 @Injectable({ providedIn: 'root' })
 export class SpireService {
   private readonly battle = inject(BattlerFactory);
+  private readonly save = inject(SaveService);
 
   readonly phase = signal<RunPhase>('setup');
   readonly busy = signal(false);
@@ -58,6 +62,8 @@ export class SpireService {
   readonly coins = signal(0);
   readonly relics = signal<RelicId[]>([]);
   readonly meta = signal<SpireMeta>(loadMeta());
+  /** A run saved at the start of its latest floor — offered as "Continue run". */
+  readonly savedRun = signal<SpireRunSnapshot | null>(parseSpireRun(this.save.read(RUN_KEY, null)));
 
   readonly draftPool = signal<Battler[]>([]);
   readonly choices = signal<SpireNode[]>([]);
@@ -132,6 +138,45 @@ export class SpireService {
     this.floor.set(next);
     this.choices.set(generateFloorChoices(next, this.seed, this.meta().ascension));
     this.phase.set('map');
+    this.persistRun();
+  }
+
+  /** Pick up the saved run at the start of the floor it was saved on. */
+  resumeRun(): void {
+    const run = this.savedRun();
+    if (!run) return;
+    this.seed = run.seed;
+    this.party.set(run.party);
+    this.hpFraction.set(run.hpFraction);
+    this.coins.set(run.coins);
+    this.relics.set(run.relics);
+    this.floor.set(run.floor);
+    this.choices.set(run.choices);
+    this.pendingChimera = null;
+    this.pendingNode = null;
+    this.setup.set(null);
+    this.toast.set(null);
+    this.error.set(null);
+    this.phase.set('map');
+  }
+
+  private persistRun(): void {
+    const snapshot: SpireRunSnapshot = {
+      seed: this.seed,
+      floor: this.floor(),
+      coins: this.coins(),
+      relics: this.relics(),
+      party: this.party(),
+      hpFraction: this.hpFraction(),
+      choices: this.choices(),
+    };
+    this.save.write(RUN_KEY, snapshot);
+    this.savedRun.set(snapshot);
+  }
+
+  private clearSavedRun(): void {
+    this.save.remove(RUN_KEY);
+    this.savedRun.set(null);
   }
 
   async chooseNode(node: SpireNode): Promise<void> {
@@ -352,6 +397,7 @@ export class SpireService {
   /* --------------------------------------------------------------- helpers */
 
   private endRun(cleared: boolean): void {
+    this.clearSavedRun();
     this.meta.set(recordRun(this.meta(), this.floor(), this.coins(), cleared));
     this.phase.set(cleared ? 'won' : 'lost');
   }

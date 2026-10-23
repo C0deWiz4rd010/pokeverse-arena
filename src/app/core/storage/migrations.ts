@@ -10,6 +10,37 @@ export type Migration = (data: unknown) => unknown;
 
 export const MIGRATIONS: Readonly<Record<string, readonly Migration[]>> = {};
 
+/** Where an older version kept a value that now lives under `pv:<key>`. */
+export interface LegacySource {
+  /** The un-namespaced localStorage key. */
+  readonly key: string;
+  /** Turn the raw legacy string into the new value, or `undefined` when unusable. */
+  readonly parse: (raw: string) => unknown;
+}
+
+function parseJson(raw: string): unknown {
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Keys that moved from raw localStorage into the versioned save format. */
+export const LEGACY_SOURCES: Readonly<Record<string, LegacySource>> = {
+  'arena:badges': { key: 'arena:badges', parse: parseJson },
+  'arena:champion': { key: 'arena:champion', parse: (raw) => raw === '1' },
+  'arena:coins': {
+    key: 'arena:coins',
+    parse: (raw) => (Number.isFinite(Number(raw)) ? Number(raw) : undefined),
+  },
+  'arena:stars': { key: 'arena:stars', parse: parseJson },
+  'spire:meta': { key: 'spire:meta', parse: parseJson },
+  'tournaments:history': { key: 'tournaments:history', parse: parseJson },
+  'tournaments:rival': { key: 'tournaments:rival', parse: parseJson },
+  'odyssey:meta': { key: 'odyssey:meta', parse: parseJson },
+};
+
 /** Migrations registered for a key (`rpg:save:2` falls back to `rpg:save`). */
 export function migrationsFor(
   key: string,

@@ -10,7 +10,7 @@ src/app/
   core/
     api/        PokeApiClient (throttled, retrying, deduplicated), endpoint builders
     cache/      CacheService — IndexedDB response cache (TTL sweep, LRU memory mirror)
-    storage/    SaveService, safe-storage helpers, save migrations, backup/export-import
+    storage/    EnvelopeStore + SaveService (versioned `pv:` saves, legacy-key import), safe-storage helpers (plain prefs), migrations, backup
     dto/        raw PokéAPI response shapes
     models/     app view-models (mapped from DTOs at the API boundary)
     i18n/       English/German: I18nService, `t` pipe, lazy dictionary (see i18n.md)
@@ -41,8 +41,9 @@ tools/          postbuild, i18n check/scan, ui-shots, e2e, acceptance, perf, ser
 - **Signals for state.** Feature services expose `signal`/`computed`; components stay thin.
 - **Cache-first networking.** `PokeApiClient` asks the cache first, caps concurrency (6), retries 429/5xx with jitter and
   dedupes in-flight requests. Everything cached survives offline.
-- **Defensive storage.** All `localStorage` access goes through `safe-storage`; saves are versioned and migrated, imported
-  or loaded RPG saves are sanitised, quota errors surface as a toast.
+- **Defensive storage.** Game progress goes through the versioned `EnvelopeStore` (`SaveService` in Angular code, the shared
+  `appStore` in pure `game/**` modules): `{ v, data }` envelopes under `pv:`, a migration ladder, one-time import of old raw keys,
+  a `…:corrupt` copy of unreadable blobs and a toast when a write fails. Plain preferences (volume, locale) use `safe-storage`.
 - **Lazy everything heavy.** Pixi, Three.js and the German dictionary load on demand; routes are lazy with idle preloading.
 - **One input layer.** Keyboard, on-screen pad, swipe, tap and gamepad share `rpg/overworld/input.ts` for both renderers.
 - **Responsive by tokens.** Fluid tokens and shared mixins instead of per-component media queries (see mobile-first.md).

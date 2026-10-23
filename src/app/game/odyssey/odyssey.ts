@@ -9,7 +9,7 @@
 import { SeededRng } from '../../core/utils/rng';
 import type { ItemId, Terrain, Weather } from '../engine';
 import type { RelicId } from '../spire/relics';
-import { safeGet, safeSet } from '../../core/storage/safe-storage';
+import { appStore } from '../../core/storage/envelope-store';
 
 export type WaveKind = 'wild' | 'elite' | 'boss';
 
@@ -303,21 +303,12 @@ export function defaultOdysseyMeta(): OdysseyMeta {
 }
 
 export function loadOdysseyMeta(): OdysseyMeta {
-  try {
-    const raw = safeGet(KEY);
-    if (!raw) return defaultOdysseyMeta();
-    return { ...defaultOdysseyMeta(), ...(JSON.parse(raw) as Partial<OdysseyMeta>) };
-  } catch {
-    return defaultOdysseyMeta();
-  }
+  const stored = appStore.read<Partial<OdysseyMeta> | null>(KEY, null);
+  return { ...defaultOdysseyMeta(), ...(stored && typeof stored === 'object' ? stored : {}) };
 }
 
 export function saveOdysseyMeta(meta: OdysseyMeta): void {
-  try {
-    safeSet(KEY, JSON.stringify(meta));
-  } catch {
-    /* storage unavailable */
-  }
+  appStore.write(KEY, meta);
 }
 
 /** All starter choices: the base roster plus every species ever caught. */

@@ -5,26 +5,56 @@
     [subtitle]="'An endless seeded march through eight biomes — catch, level, evolve, survive.' | t"
   />
 
-  @if (svc.toast(); as t) { <p class="toast" role="status">{{ t }}</p> }
-  @if (svc.error(); as e) { <p class="err" role="alert">{{ e }}</p> }
+  @if (svc.toast(); as t) {
+    <p class="toast" role="status">{{ t }}</p>
+  }
+  @if (svc.error(); as e) {
+    <p class="err" role="alert">{{ e }}</p>
+  }
 
   @switch (svc.phase()) {
     @case ('hub') {
       <div class="hub glass">
         <div class="hub-stats">
-          <div class="stat"><strong>{{ svc.meta().bestWave }}</strong><span>{{ 'Best wave' | t }}</span></div>
-          <div class="stat"><strong>{{ svc.meta().runs }}</strong><span>{{ 'Runs' | t }}</span></div>
-          <div class="stat"><strong>{{ svc.starters().length }}</strong><span>{{ 'Starters unlocked' | t }}</span></div>
-          <div class="stat"><strong>{{ svc.meta().totalCaught }}</strong><span>{{ 'Total catches' | t }}</span></div>
+          <div class="stat">
+            <strong>{{ svc.meta().bestWave }}</strong
+            ><span>{{ 'Best wave' | t }}</span>
+          </div>
+          <div class="stat">
+            <strong>{{ svc.meta().runs }}</strong
+            ><span>{{ 'Runs' | t }}</span>
+          </div>
+          <div class="stat">
+            <strong>{{ svc.starters().length }}</strong
+            ><span>{{ 'Starters unlocked' | t }}</span>
+          </div>
+          <div class="stat">
+            <strong>{{ svc.meta().totalCaught }}</strong
+            ><span>{{ 'Total catches' | t }}</span>
+          </div>
         </div>
         <p class="hub-lore">
-          {{ 'Waves never end — they only get taller. Every defeated foe is' | t }} <em>{{ 'dazed' | t }}</em> {{ 'for one catch window, and everything you catch is unlocked as a starter, forever.' | t }}
+          {{ 'Waves never end — they only get taller. Every defeated foe is' | t }}
+          <em>{{ 'dazed' | t }}</em>
+          {{
+            'for one catch window, and everything you catch is unlocked as a starter, forever.' | t
+          }}
         </p>
         <div class="hub-actions">
+          @if (svc.savedRun(); as run) {
+            <button class="btn btn-primary" type="button" (click)="svc.resumeRun()">
+              <pv-icon name="map-pin" /> {{ 'Continue run (wave {0})' | t: [run.wave] }}
+            </button>
+          }
           <button class="btn btn-primary" type="button" (click)="svc.startNewRun(false)">
             <pv-icon name="map-pin" /> {{ 'Begin an Odyssey' | t }}
           </button>
-          <button class="btn" type="button" (click)="svc.startNewRun(true)" [attr.title]="'Same seed for everyone today' | t">
+          <button
+            class="btn"
+            type="button"
+            (click)="svc.startNewRun(true)"
+            [attr.title]="'Same seed for everyone today' | t"
+          >
             <pv-icon name="sun" /> {{ 'Daily march' | t }}
           </button>
         </div>
@@ -34,16 +64,30 @@
     @case ('starter') {
       <div class="starter glass">
         <h3>{{ 'Choose your companion' | t }}</h3>
-        <p class="hint">{{ 'Level {0}, five Poké Balls, no way back.' | t: [(15)] }}</p>
+        <p class="hint">{{ 'Level {0}, five Poké Balls, no way back.' | t: [15] }}</p>
         <div class="roster">
           @for (id of svc.starters(); track id) {
-            <button class="roster-mon" type="button" [disabled]="svc.busy()" (click)="svc.pickStarter(id)">
-              <img decoding="async" [src]="sprite(id)" [alt]="'#' + id" loading="lazy" width="68" height="68" />
+            <button
+              class="roster-mon"
+              type="button"
+              [disabled]="svc.busy()"
+              (click)="svc.pickStarter(id)"
+            >
+              <img
+                decoding="async"
+                [src]="sprite(id)"
+                [alt]="'#' + id"
+                loading="lazy"
+                width="68"
+                height="68"
+              />
               <span>#{{ id }}</span>
             </button>
           }
         </div>
-        @if (svc.busy()) { <pv-spinner [label]="'Waking your companion…' | t" /> }
+        @if (svc.busy()) {
+          <pv-spinner [label]="'Waking your companion…' | t" />
+        }
         <button class="btn ghost" type="button" (click)="svc.backToHub()">{{ 'Back' | t }}</button>
       </div>
     }
@@ -52,25 +96,47 @@
       @if (svc.spec(); as s) {
         <div class="wave glass" [style.--tint]="s.biome.tint">
           <header class="wave-head">
-            <span class="wave-no">{{ 'Wave {0}' | t: [(s.wave)] }}</span>
+            <span class="wave-no">{{ 'Wave {0}' | t: [s.wave] }}</span>
             <h3>{{ s.biome.name | t }}</h3>
-            <span class="wave-kind" [class.boss]="s.kind === 'boss'" [class.elite]="s.kind === 'elite'">{{ kindLabel(s.kind) | t }}</span>
+            <span
+              class="wave-kind"
+              [class.boss]="s.kind === 'boss'"
+              [class.elite]="s.kind === 'elite'"
+              >{{ kindLabel(s.kind) | t }}</span
+            >
           </header>
           <div class="foes">
             @for (id of s.species; track $index) {
               <div class="foe">
-                <img decoding="async" [src]="sprite(id)" [alt]="'#' + id" loading="lazy" width="72" height="72" />
-                <span>{{ 'Lv {0}' | t: [(s.level)] }}</span>
+                <img
+                  decoding="async"
+                  [src]="sprite(id)"
+                  [alt]="'#' + id"
+                  loading="lazy"
+                  width="72"
+                  height="72"
+                />
+                <span>{{ 'Lv {0}' | t: [s.level] }}</span>
               </div>
             }
           </div>
           @if (s.kind === 'boss') {
-            <p class="wave-field"><pv-icon name="sparkles" /> {{ 'The guardian commands:' | t }} <strong>{{ s.biome.field.label | t }}</strong></p>
+            <p class="wave-field">
+              <pv-icon name="sparkles" /> {{ 'The guardian commands:' | t }}
+              <strong>{{ s.biome.field.label | t }}</strong>
+            </p>
           }
-          <button class="btn btn-primary fight" type="button" [disabled]="svc.busy()" (click)="svc.fight()">
+          <button
+            class="btn btn-primary fight"
+            type="button"
+            [disabled]="svc.busy()"
+            (click)="svc.fight()"
+          >
             <pv-icon name="swords" /> {{ svc.busy() ? ('Scouting…' | t) : ('Engage!' | t) }}
           </button>
-          <button class="btn ghost" type="button" (click)="svc.abandon()">{{ 'Abandon run' | t }}</button>
+          <button class="btn ghost" type="button" (click)="svc.abandon()">
+            {{ 'Abandon run' | t }}
+          </button>
         </div>
         <ng-container *ngTemplateOutlet="party" />
       }
@@ -85,14 +151,38 @@
     @case ('catch') {
       @if (svc.daze(); as d) {
         <div class="catch glass">
-          <h3>{{ '{0} is dazed!' | t: [(titleCase(d.name))] }}</h3>
-          <img decoding="async" class="dazed" [src]="d.sprite" [alt]="d.name" width="140" height="140" />
-          <p class="hint">{{ 'Catch chance {0}% · {1} ball{2} left' | t: [(pct(d.chance)), (svc.balls()), (svc.balls() === 1 ? '' : 's')] }}</p>
+          <h3>{{ '{0} is dazed!' | t: [titleCase(d.name)] }}</h3>
+          <img
+            decoding="async"
+            class="dazed"
+            [src]="d.sprite"
+            [alt]="d.name"
+            width="140"
+            height="140"
+          />
+          <p class="hint">
+            {{
+              'Catch chance {0}% · {1} ball{2} left'
+                | t: [pct(d.chance), svc.balls(), svc.balls() === 1 ? '' : 's']
+            }}
+          </p>
           <div class="catch-actions">
-            <button class="btn btn-primary" type="button" [disabled]="svc.balls() <= 0 || svc.busy()" (click)="svc.throwBall()">
+            <button
+              class="btn btn-primary"
+              type="button"
+              [disabled]="svc.balls() <= 0 || svc.busy()"
+              (click)="svc.throwBall()"
+            >
               <pv-icon name="target" /> {{ 'Throw a ball' | t }}
             </button>
-            <button class="btn ghost" type="button" [disabled]="svc.busy()" (click)="svc.skipCatch()">{{ 'Let it flee' | t }}</button>
+            <button
+              class="btn ghost"
+              type="button"
+              [disabled]="svc.busy()"
+              (click)="svc.skipCatch()"
+            >
+              {{ 'Let it flee' | t }}
+            </button>
           </div>
         </div>
         <ng-container *ngTemplateOutlet="party" />
@@ -104,7 +194,12 @@
         <h3>{{ 'The road provides' | t }}</h3>
         <div class="reward-cards">
           @for (r of svc.rewards(); track r.label) {
-            <button class="reward-card" type="button" [disabled]="svc.busy()" (click)="svc.chooseReward(r)">
+            <button
+              class="reward-card"
+              type="button"
+              [disabled]="svc.busy()"
+              (click)="svc.chooseReward(r)"
+            >
               <strong>{{ r.label | t }}</strong>
               <span>{{ r.desc | t }}</span>
             </button>
@@ -120,24 +215,38 @@
           <h3>{{ 'Wandering Trader' | t }}</h3>
           <span class="shop-coins"><pv-icon name="gem" /> {{ svc.coins() }}</span>
         </header>
-        <p class="hint">{{ 'The guardian has fallen — spend your coins before pressing on.' | t }}</p>
+        <p class="hint">
+          {{ 'The guardian has fallen — spend your coins before pressing on.' | t }}
+        </p>
         <div class="shop-stock">
           @for (e of svc.shop(); track $index) {
-            <button class="shop-item" type="button" [disabled]="svc.coins() < e.cost" (click)="svc.buy(e)">
-              <span class="si-body"><strong>{{ e.label | t }}</strong><span>{{ e.desc | t }}</span></span>
+            <button
+              class="shop-item"
+              type="button"
+              [disabled]="svc.coins() < e.cost"
+              (click)="svc.buy(e)"
+            >
+              <span class="si-body"
+                ><strong>{{ e.label | t }}</strong
+                ><span>{{ e.desc | t }}</span></span
+              >
               <span class="si-cost"><pv-icon name="gem" /> {{ e.cost }}</span>
             </button>
           }
         </div>
-        <button class="btn btn-primary" type="button" (click)="svc.leaveShop()">{{ 'Leave & continue' | t }}</button>
+        <button class="btn btn-primary" type="button" (click)="svc.leaveShop()">
+          {{ 'Leave & continue' | t }}
+        </button>
       </div>
       <ng-container *ngTemplateOutlet="party" />
     }
 
     @case ('lost') {
       <div class="lost glass">
-        <h3>{{ 'The march ends at wave {0}' | t: [(svc.wave())] }}</h3>
-        @if (svc.wave() >= svc.meta().bestWave && svc.wave() > 0) { <p class="pb">{{ '🏅 New personal best!' | t }}</p> }
+        <h3>{{ 'The march ends at wave {0}' | t: [svc.wave()] }}</h3>
+        @if (svc.wave() >= svc.meta().bestWave && svc.wave() > 0) {
+          <p class="pb">{{ '🏅 New personal best!' | t }}</p>
+        }
         @if (svc.runUnlocks().length) {
           <p>{{ 'New starters unlocked this run:' | t }}</p>
           <div class="unlocks">
@@ -146,9 +255,13 @@
             }
           </div>
         } @else {
-          <p class="hint">{{ 'No new species this time — the roster awaits your next march.' | t }}</p>
+          <p class="hint">
+            {{ 'No new species this time — the roster awaits your next march.' | t }}
+          </p>
         }
-        <button class="btn btn-primary" type="button" (click)="svc.backToHub()">{{ 'Back to camp' | t }}</button>
+        <button class="btn btn-primary" type="button" (click)="svc.backToHub()">
+          {{ 'Back to camp' | t }}
+        </button>
       </div>
     }
   }
@@ -157,20 +270,32 @@
 <ng-template #party>
   @if (svc.partyView().length) {
     <div class="party glass">
-      <span class="party-balls" [attr.title]="'Poké Balls' | t"><pv-icon name="target" /> {{ svc.balls() }}</span>
-      <span class="party-coins" [attr.title]="'Coins' | t"><pv-icon name="gem" /> {{ svc.coins() }}</span>
+      <span class="party-balls" [attr.title]="'Poké Balls' | t"
+        ><pv-icon name="target" /> {{ svc.balls() }}</span
+      >
+      <span class="party-coins" [attr.title]="'Coins' | t"
+        ><pv-icon name="gem" /> {{ svc.coins() }}</span
+      >
       @for (p of svc.partyView(); track p.mon.id + '-' + $index) {
-        <div class="pm" [class.down]="p.hpPct <= 0" [title]="'{0} · Lv {1}' | t: [titleCase(p.mon.name), p.mon.level]">
+        <div
+          class="pm"
+          [class.down]="p.hpPct <= 0"
+          [title]="'{0} · Lv {1}' | t: [titleCase(p.mon.name), p.mon.level]"
+        >
           <img decoding="async" [src]="p.mon.sprite" [alt]="p.mon.name" loading="lazy" />
           <span class="pm-lv">L{{ p.mon.level }}</span>
-          <span class="pm-bar"><span class="pm-fill" [class.low]="p.hpPct <= 25" [style.width.%]="p.hpPct"></span></span>
+          <span class="pm-bar"
+            ><span class="pm-fill" [class.low]="p.hpPct <= 25" [style.width.%]="p.hpPct"></span
+          ></span>
         </div>
       }
     </div>
     @if (svc.relicList().length) {
       <div class="relics glass" [attr.aria-label]="'Relics held' | t">
         @for (r of svc.relicList(); track r.id) {
-          <span class="relic-chip" [title]="r.name + ' — ' + r.blurb"><pv-icon [name]="r.icon" /> {{ r.name | t }}</span>
+          <span class="relic-chip" [title]="r.name + ' — ' + r.blurb"
+            ><pv-icon [name]="r.icon" /> {{ r.name | t }}</span
+          >
         }
       </div>
     }

@@ -56,12 +56,26 @@ describe('ArenaProgressStore', () => {
   });
 
   it('survives corrupt stored data', () => {
-    localStorage.setItem('arena:badges', '{not json');
-    localStorage.setItem('arena:stars', '[[');
-    localStorage.setItem('arena:coins', 'abc');
+    localStorage.setItem('pv:arena:badges', '{not json');
+    localStorage.setItem('pv:arena:stars', '[[');
+    localStorage.setItem('pv:arena:coins', 'abc');
     const store = create();
     expect(store.badges().size).toBe(0);
     expect(store.stars()).toEqual({});
     expect(store.coins()).toBe(0);
+  });
+
+  it('imports progress an older version stored under the raw arena:* keys', () => {
+    localStorage.setItem('arena:badges', '["fire","bogus"]');
+    localStorage.setItem('arena:champion', '1');
+    localStorage.setItem('arena:coins', '75');
+    localStorage.setItem('arena:stars', '{"fire":2}');
+    const store = create();
+    expect([...store.badges()]).toEqual(['fire']);
+    expect(store.isChampion()).toBe(true);
+    expect(store.coins()).toBe(75);
+    expect(store.starsFor('fire')).toBe(2);
+    expect(localStorage.getItem('arena:badges')).toBeNull();
+    expect(localStorage.getItem('pv:arena:badges')).not.toBeNull();
   });
 });

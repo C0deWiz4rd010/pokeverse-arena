@@ -1,8 +1,8 @@
 /**
- * Persisted tournament history & prize helpers. Stored in localStorage for now;
- * the progression backbone (profile/save service) folds these in later.
+ * Persisted tournament history & prize helpers, stored through the versioned app
+ * store (`pv:tournaments:history`; the old raw key is imported once).
  */
-import { safeGet, safeSet } from '../../core/storage/safe-storage';
+import { appStore } from '../../core/storage/envelope-store';
 
 export interface TournamentRecord {
   /** ISO date the run finished. */
@@ -25,23 +25,13 @@ const KEY = 'tournaments:history';
 const CAP = 30;
 
 export function loadHistory(): TournamentRecord[] {
-  try {
-    const raw = safeGet(KEY);
-    if (!raw) return [];
-    const list = JSON.parse(raw) as unknown;
-    return Array.isArray(list) ? (list as TournamentRecord[]) : [];
-  } catch {
-    return [];
-  }
+  const list = appStore.read<unknown>(KEY, []);
+  return Array.isArray(list) ? (list as TournamentRecord[]) : [];
 }
 
 export function pushHistory(record: TournamentRecord): TournamentRecord[] {
   const list = [record, ...loadHistory()].slice(0, CAP);
-  try {
-    safeSet(KEY, JSON.stringify(list));
-  } catch {
-    /* storage unavailable */
-  }
+  appStore.write(KEY, list);
   return list;
 }
 

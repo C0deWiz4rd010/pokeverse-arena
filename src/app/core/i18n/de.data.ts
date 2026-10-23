@@ -662,6 +662,8 @@ export const DE_DATA: Readonly<Record<string, string>> = {
   'Prof. Oak: Take one of these three partners — choose well!': 'Prof. Eich: Nimm eines dieser drei Partner-Pokémon – wähle weise!',
   'Profile': 'Profil',
   'Progress could not be saved': 'Fortschritt konnte nicht gespeichert werden',
+  'Team could not be saved': 'Team konnte nicht gespeichert werden',
+  'Browser storage is unavailable, so your team will not survive a reload. Use Export to keep it.': 'Der Browser-Speicher ist nicht verfügbar, dein Team übersteht daher keinen Reload. Nutze den Export, um es zu behalten.',
   'Projected: {0}% / {1}%': 'Prognose: {0} % / {1} %',
   'Psyche Badge': 'Psychoorden',
   'Psychic': 'Psycho',

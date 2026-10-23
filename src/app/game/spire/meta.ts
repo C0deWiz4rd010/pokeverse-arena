@@ -1,10 +1,10 @@
 /**
  * Persisted Ascension Spire meta-progression: best depth, lifetime coins, clears
- * and the highest ascension tier unlocked. Stored in localStorage for now; the
- * progression backbone folds it into the profile later.
+ * and the highest ascension tier unlocked. Stored through the versioned app store
+ * (`pv:spire:meta`; the old raw `spire:meta` key is imported once).
  */
 import type { SpireMeta } from './spire-types';
-import { safeGet, safeSet } from '../../core/storage/safe-storage';
+import { appStore } from '../../core/storage/envelope-store';
 
 const KEY = 'spire:meta';
 
@@ -13,21 +13,12 @@ export function defaultMeta(): SpireMeta {
 }
 
 export function loadMeta(): SpireMeta {
-  try {
-    const raw = safeGet(KEY);
-    if (!raw) return defaultMeta();
-    return { ...defaultMeta(), ...(JSON.parse(raw) as Partial<SpireMeta>) };
-  } catch {
-    return defaultMeta();
-  }
+  const stored = appStore.read<Partial<SpireMeta> | null>(KEY, null);
+  return { ...defaultMeta(), ...(stored && typeof stored === 'object' ? stored : {}) };
 }
 
 export function saveMeta(meta: SpireMeta): void {
-  try {
-    safeSet(KEY, JSON.stringify(meta));
-  } catch {
-    /* storage unavailable */
-  }
+  appStore.write(KEY, meta);
 }
 
 /** Fold a finished run into the meta record (returns a fresh object). */

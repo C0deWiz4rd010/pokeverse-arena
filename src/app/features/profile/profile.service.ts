@@ -53,10 +53,10 @@ export class ProfileService {
   }
 
   private readState(): ProfileState {
-    const badgeList = this.save.readLegacy<string[]>('arena:badges', []);
+    const badgeList = this.save.read<string[]>('arena:badges', []);
     const badges = Array.isArray(badgeList) ? badgeList.length : 0;
-    const arenaChampion = this.save.readLegacy<string>('arena:champion', '') === '1';
-    const arenaCoins = Number(this.save.readLegacy<string>('arena:coins', '0')) || 0;
+    const arenaChampion = this.save.read<boolean>('arena:champion', false) === true;
+    const arenaCoins = this.save.read<number>('arena:coins', 0) || 0;
 
     const meta = loadMeta();
     const history = loadHistory();

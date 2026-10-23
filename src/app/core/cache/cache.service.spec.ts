@@ -64,7 +64,7 @@ describe('CacheService', () => {
   });
 
   it('keeps savegame state separate from the api cache', async () => {
-    await cache.saveState('slot', { hp: 5 });
+    expect(await cache.saveState('slot', { hp: 5 })).toBe(true);
     await cache.clearApiCache();
     expect(await cache.loadState('slot')).toEqual({ hp: 5 });
     expect(await cache.loadState('missing')).toBeUndefined();

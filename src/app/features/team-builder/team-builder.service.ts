@@ -6,6 +6,7 @@ import type { PokemonDto, TypeDto, GenerationDto } from '../../core/dto/pokeapi.
 import { isPokemonType, type PokemonType, analyzeTeamTypes } from '../../core/utils/type-chart';
 import { quickStats, type StatKey } from '../../core/utils/stat-calculator';
 import { natureByName } from '../../core/utils/natures';
+import { ToastService } from '../../core/ui/toast/toast.service';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { rateTeam } from '../../game/team/team-rating';
 
@@ -47,6 +48,8 @@ const nextUid = () => `m${Date.now().toString(36)}-${uidCounter++}`;
 export class TeamBuilderService {
   private readonly api = inject(PokeApiClient);
   private readonly cache = inject(CacheService);
+  private readonly toast = inject(ToastService);
+  private warnedSaveFailure = false;
   private readonly pokedex = inject(PokedexService);
 
   readonly team = signal<TeamMember[]>([]);
@@ -268,7 +271,16 @@ export class TeamBuilderService {
   }
 
   private async persist(team: TeamMember[]): Promise<void> {
-    await this.cache.saveState(SAVE_KEY, team.map(toStored));
+    const saved = await this.cache.saveState(SAVE_KEY, team.map(toStored));
+    if (!saved && !this.warnedSaveFailure) {
+      this.warnedSaveFailure = true;
+      this.toast.show({
+        title: 'Team could not be saved',
+        text: 'Browser storage is unavailable, so your team will not survive a reload. Use Export to keep it.',
+        icon: 'download',
+        kind: 'info',
+      });
+    }
   }
 
   private async hydrate(stored: StoredMember): Promise<TeamMember | null> {

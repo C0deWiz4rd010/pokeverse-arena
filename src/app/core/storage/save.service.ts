@@ -1,67 +1,30 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../ui/toast/toast.service';
-import { MIGRATIONS, currentVersion, migrateData } from './migrations';
-
-interface Envelope {
-  v: number;
-  data: unknown;
-}
-
-function isEnvelope(x: unknown): x is Envelope {
-  return !!x && typeof x === 'object' && 'data' in x;
-}
+import { EnvelopeStore, type KeyValueStore } from './envelope-store';
 
 /**
- * Tiny typed, namespaced, versioned wrapper over localStorage — the single place
- * app state is persisted. Values are stored as `{ v, data }`; on read, older
- * versions run through the migration ladder in `migrations.ts`. Every access is
- * defensive (storage may be disabled), unreadable blobs are kept as a
- * `…:corrupt` backup instead of being silently lost, and a failed write
- * (quota, blocked storage) is reported once instead of vanishing.
+ * The app-wide persistence service: a thin Angular wrapper over {@link EnvelopeStore}
+ * (versioned `{ v, data }` envelopes, migrations, legacy-key import, corrupt-blob backup)
+ * that adds a one-time toast when a write fails (quota, blocked storage) so progress
+ * never vanishes silently.
  */
 @Injectable({ providedIn: 'root' })
-export class SaveService {
+export class SaveService implements KeyValueStore {
   private readonly toast = inject(ToastService);
-  private readonly prefix = 'pv:';
   private warnedWriteFailure = false;
+  private readonly store = new EnvelopeStore(() => this.warnWriteFailed());
 
   read<T>(key: string, fallback: T): T {
-    let raw: string | null;
-    try {
-      raw = localStorage.getItem(this.prefix + key);
-    } catch {
-      return fallback;
-    }
-    if (!raw) return fallback;
-    try {
-      const parsed: unknown = JSON.parse(raw);
-      if (!isEnvelope(parsed)) throw new Error('not an envelope');
-      const from = typeof parsed.v === 'number' ? parsed.v : 1;
-      return migrateData(key, parsed.data, from, MIGRATIONS) as T;
-    } catch {
-      this.backupCorrupt(key, raw);
-      return fallback;
-    }
+    return this.store.read(key, fallback);
   }
 
   /** Returns false when the write failed (and tells the player once per session). */
   write<T>(key: string, value: T): boolean {
-    try {
-      const env: Envelope = { v: currentVersion(key), data: value };
-      localStorage.setItem(this.prefix + key, JSON.stringify(env));
-      return true;
-    } catch {
-      this.warnWriteFailed();
-      return false;
-    }
+    return this.store.write(key, value);
   }
 
   remove(key: string): void {
-    try {
-      localStorage.removeItem(this.prefix + key);
-    } catch {
-      /* ignore */
-    }
+    this.store.remove(key);
   }
 
   /** Raw read of a legacy (un-namespaced) key, for migrating older saves. */
@@ -84,16 +47,6 @@ export class SaveService {
       return (await navigator.storage.persisted()) || (await navigator.storage.persist());
     } catch {
       return false;
-    }
-  }
-
-  private backupCorrupt(key: string, raw: string): void {
-    try {
-      // Keep the first corrupt copy only, so repeated reads don't overwrite evidence.
-      const slot = `${this.prefix}${key}:corrupt`;
-      if (localStorage.getItem(slot) === null) localStorage.setItem(slot, raw);
-    } catch {
-      /* ignore */
     }
   }
 

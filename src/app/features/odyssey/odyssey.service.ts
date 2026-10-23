@@ -3,6 +3,8 @@ import { SeededRng, dailySeed } from '../../core/utils/rng';
 import type { AiTier, Battler, ItemId } from '../../game/engine';
 import type { BracketMatch, Trainer } from '../../game/tournament';
 import { coinsEarned, equipFirstFree, grantRelic } from '../../game/run/run-economy';
+import { parseOdysseyRun, type OdysseyRunSnapshot } from '../../game/run/run-snapshot';
+import { SaveService } from '../../core/storage/save.service';
 import { BattlerFactory } from '../../core/battle/battler-factory';
 import { PokeApiClient } from '../../core/api/pokeapi.client';
 import { idFromUrl, officialArtwork } from '../../core/api/pokeapi-endpoints';
@@ -38,6 +40,7 @@ export type OdysseyPhase =
 const PARTY_CAP = 6;
 const START_LEVEL = 15;
 const START_BALLS = 5;
+const RUN_KEY = 'odyssey:run';
 
 export interface DazeState {
   readonly dexId: number;
@@ -66,6 +69,7 @@ function avatar(seed: string, accent = false): string {
 export class OdysseyService {
   private readonly battle = inject(BattlerFactory);
   private readonly api = inject(PokeApiClient);
+  private readonly save = inject(SaveService);
 
   readonly phase = signal<OdysseyPhase>('hub');
   readonly busy = signal(false);
@@ -73,6 +77,10 @@ export class OdysseyService {
   readonly toast = signal<string | null>(null);
 
   readonly meta = signal<OdysseyMeta>(loadOdysseyMeta());
+  /** A run saved at the start of its latest wave — offered as "Continue run". */
+  readonly savedRun = signal<OdysseyRunSnapshot | null>(
+    parseOdysseyRun(this.save.read(RUN_KEY, null)),
+  );
   readonly wave = signal(0);
   readonly balls = signal(0);
   readonly coins = signal(0);
@@ -148,6 +156,44 @@ export class OdysseyService {
     this.wave.set(wave);
     this.spec.set(waveSpec(wave, this.seed));
     this.phase.set('wave');
+    this.persistRun();
+  }
+
+  /** Pick up the saved run at the start of the wave it was saved on. */
+  resumeRun(): void {
+    const run = this.savedRun();
+    if (!run) return;
+    this.seed = run.seed;
+    this.isDaily.set(run.isDaily);
+    this.party.set(run.party);
+    this.hpFraction.set(run.hpFraction);
+    this.coins.set(run.coins);
+    this.relics.set(run.relics);
+    this.balls.set(run.balls);
+    this.wave.set(run.wave);
+    this.runUnlocks.set(run.runUnlocks);
+    this.spec.set(waveSpec(run.wave, run.seed));
+    this.setup.set(null);
+    this.daze.set(null);
+    this.error.set(null);
+    this.toast.set(null);
+    this.phase.set('wave');
+  }
+
+  private persistRun(): void {
+    const snapshot: OdysseyRunSnapshot = {
+      seed: this.seed,
+      wave: this.wave(),
+      balls: this.balls(),
+      isDaily: this.isDaily(),
+      runUnlocks: this.runUnlocks(),
+      coins: this.coins(),
+      relics: this.relics(),
+      party: this.party(),
+      hpFraction: this.hpFraction(),
+    };
+    this.save.write(RUN_KEY, snapshot);
+    this.savedRun.set(snapshot);
   }
 
   async fight(): Promise<void> {
@@ -455,6 +501,8 @@ export class OdysseyService {
   /* ------------------------------------------------------------------ end */
 
   private endRun(): void {
+    this.save.remove(RUN_KEY);
+    this.savedRun.set(null);
     this.meta.set(recordOdysseyRun(this.meta(), this.wave()));
     this.phase.set('lost');
   }

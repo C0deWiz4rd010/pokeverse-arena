@@ -462,6 +462,8 @@ export const DE_UI: Readonly<Record<string, string>> = {
   'Trainer look': 'Trainer-Look',
   'Try a different search or loosen a filter.': 'Versuch eine andere Suche oder lockere einen Filter.',
   'Try again': 'Erneut versuchen',
+  'Continue run (floor {0})': 'Run fortsetzen (Etage {0})',
+  'Continue run (wave {0})': 'Run fortsetzen (Welle {0})',
   'Could not load the next round': 'Die nächste Runde konnte nicht geladen werden',
   'Check your connection and try again.': 'Prüfe deine Verbindung und versuche es erneut.',
   'Two Pokémon. One stat. Pick the winner and stack your streak.': 'Zwei Pokémon. Ein Wert. Wähle den Sieger und baue deine Serie aus.',

@@ -4,6 +4,28 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.5 — 2026-10-23
+
+💾 **One persistence layer + resumable runs** (phase 5 of the [improvement plan](improvement-plan.md)).
+
+### Added
+
+- **Continue run:** Ascension Spire and Odyssey save at the start of every floor / wave; after a reload (or closing the tab)
+  the start screen offers *Continue run*. Damaged saves are ignored, finishing or abandoning a run discards it.
+
+### Changed
+
+- Arena (badges, champion, coins, stars), Spire meta, tournament history, the rival and Odyssey meta now use the versioned
+  `pv:` save format (`EnvelopeStore`) instead of raw `localStorage` keys. Existing progress is imported automatically on first read,
+  and old backups still restore. The pure game modules use the shared `appStore` — no Angular dependency.
+- Failed saves are no longer silent: the Team Builder warns once when IndexedDB is unavailable (`CacheService.saveState`
+  reports success).
+
+### Tests
+
+- New specs for the store (legacy import, corrupt blobs, failed writes), run snapshots, resume/abandon flows and the Spire and
+  Odyssey services. Coverage is measured on more of the code now (the services were not loaded by any test before).
+
 ## v3.0.4 — 2026-10-23
 
 ✂️ **Big services split** (phase 4 of the [improvement plan](improvement-plan.md)). Behaviour is unchanged.

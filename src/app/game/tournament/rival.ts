@@ -3,9 +3,9 @@
  * rival identity is generated per browser profile and stored alongside the
  * run history; they take over the strongest CPU seed each run, grow a little
  * stronger every time you meet, and taunt you based on the head-to-head score.
- * Pure helpers + a thin localStorage layer (same pattern as history.ts).
+ * Pure helpers + a thin layer over the versioned app store (same pattern as history.ts).
  */
-import { safeGet, safeSet } from '../../core/storage/safe-storage';
+import { appStore } from '../../core/storage/envelope-store';
 
 export interface RivalState {
   readonly v: 1;
@@ -41,26 +41,15 @@ export function createRival(rand: () => number = Math.random): RivalState {
 
 /** Load the persisted rival, creating (and persisting) one on first use. */
 export function loadRival(): RivalState {
-  try {
-    const raw = safeGet(KEY);
-    if (raw) {
-      const s = JSON.parse(raw) as Partial<RivalState>;
-      if (s && s.v === 1 && typeof s.name === 'string') return s as RivalState;
-    }
-  } catch {
-    /* storage unavailable */
-  }
+  const s = appStore.read<Partial<RivalState> | null>(KEY, null);
+  if (s && s.v === 1 && typeof s.name === 'string') return s as RivalState;
   const fresh = createRival();
   saveRival(fresh);
   return fresh;
 }
 
 export function saveRival(state: RivalState): void {
-  try {
-    safeSet(KEY, JSON.stringify(state));
-  } catch {
-    /* storage unavailable */
-  }
+  appStore.write(KEY, state);
 }
 
 /** Record a head-to-head meeting's outcome. */

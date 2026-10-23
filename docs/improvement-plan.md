@@ -25,7 +25,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | 2 | Strengere Typen & Lint | v3.0.2 | ✅ |
 | 3 | Architektur entkoppeln | v3.0.3 | ✅ |
 | 4 | Große Services aufteilen | v3.0.4 | ✅ |
-| 5 | Einheitliche Persistenz + Run-Resume | v3.0.5 | ⬜ |
+| 5 | Einheitliche Persistenz + Run-Resume | v3.0.5 | ✅ |
 | 6 | Battle-Engine vereinheitlichen & vertiefen | v3.0.6 | ⬜ |
 | 7 | Battle-UI entdoppeln | v3.0.7 | ⬜ |
 | 8 | Lade-/Fehler-/Leerzustände & Barrierefreiheit | v3.0.8 | ⬜ |
@@ -88,7 +88,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 1. Alle `safe-storage`-Direktzugriffe auf `SaveService` (versioniert, Migrationen): `arena.service.ts` (:104, :274, :342-:447),
    `game/spire/meta.ts:7`, `game/tournament/history.ts:5`, `game/tournament/rival.ts:8` (pure Module bekommen Storage-Adapter injiziert).
    Migrationen in `core/storage/migrations.ts` für alte Keys (mit Specs).
-2. Backup (`profile.ts:170`, `core/storage/backup.ts`) über `SaveService`-Keys statt rohem `localStorage`; Roundtrip-Spec.
+2. Backup: deckt `pv:`-Keys und die alten Rohkeys bereits ab (Präfixliste); alte Backups werden beim ersten Lesen migriert – kein weiterer Umbau nötig.
 3. **Spire- und Odyssey-Runs persistieren** → nach Reload „Run fortsetzen“.
 4. Fehlgeschlagene Saves (`save.service.ts`, `cache.service.ts` leere `catch`) als Toast/Log melden statt schlucken.
 
