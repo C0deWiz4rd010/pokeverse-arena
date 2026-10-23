@@ -20,7 +20,7 @@ src/app/
     ui/         shared components: modal directive, pv-state, toasts, type/status badges, move button …
     utils/      type chart, stat calculator, seeded RNG
   game/         pure, deterministic, unit-tested game logic — no Angular imports
-    engine/     battle, damage, AI, status/weather/terrain/hazards, move-convert (PokéAPI → engine)
+    engine/     BattleCore (shared turn mechanics) + Battle / TeamBattle hosts, damage, AI, status/weather/terrain/hazards/field-effects, move-convert (PokéAPI → engine)
     rpg/        maps, movement, encounters, catch, xp, evolution, time of day, save sanitising
     arena/ tournament/ spire/ odyssey/ contest/ fusion/ team/ world/ daily/ showdown/
   features/     routed screens + their feature services (signals)

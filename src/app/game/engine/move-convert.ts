@@ -4,7 +4,8 @@
  */
 import type { MoveDto } from '../../core/dto/pokeapi.dto';
 import { isPokemonType, type PokemonType } from '../../core/utils/type-chart';
-import type { BattleMove, DamageClass, MoveFlags } from './battle-types';
+import type { BattleMove, DamageClass, MoveFlags, SecondaryEffect } from './battle-types';
+import type { ScreenKind } from './field-effects';
 import type { HazardKind } from './hazards';
 import type { BoostableStat } from './stat-stages';
 import type { StatusCondition } from './status';
@@ -35,7 +36,7 @@ const WEATHER: Record<string, Weather> = {
   'rain-dance': 'rain',
   'sunny-day': 'sun',
   sandstorm: 'sand',
-  hail: 'hail',
+  hail: 'snow', // Gen 9 folded Hail into Snow
   snowscape: 'snow',
 };
 const TERRAIN: Record<string, Terrain> = {
@@ -44,6 +45,44 @@ const TERRAIN: Record<string, Terrain> = {
   'psychic-terrain': 'psychic',
   'misty-terrain': 'misty',
 };
+const SCREEN: Record<string, ScreenKind> = {
+  reflect: 'reflect',
+  'light-screen': 'light-screen',
+  'aurora-veil': 'aurora-veil',
+};
+/** Fixed-damage moves: the user's level, or a flat amount. */
+const FIXED_DAMAGE: Record<string, 'level' | number> = {
+  'seismic-toss': 'level',
+  'night-shade': 'level',
+  'dragon-rage': 40,
+  'sonic-boom': 20,
+};
+/** Moves that take a fraction of the target's current HP. */
+const FRACTION_DAMAGE: Record<string, number> = { 'super-fang': 0.5, 'natures-madness': 0.5 };
+const RECHARGE = new Set([
+  'hyper-beam',
+  'giga-impact',
+  'blast-burn',
+  'frenzy-plant',
+  'hydro-cannon',
+  'roar-of-time',
+  'rock-wrecker',
+  'prismatic-laser',
+  'meteor-assault',
+  'eternabeam',
+]);
+/** Two-turn moves without a semi-invulnerable turn (Fly/Dig stay out of scope). */
+const CHARGE: Record<string, { skipWeather?: Weather }> = {
+  'solar-beam': { skipWeather: 'sun' },
+  'solar-blade': { skipWeather: 'sun' },
+  'razor-wind': {},
+  'sky-attack': {},
+  'skull-bash': {},
+  'freeze-shock': {},
+  'ice-burn': {},
+};
+const PIVOT = new Set(['u-turn', 'volt-switch', 'flip-turn']);
+const PROTECT = new Set(['protect', 'detect']);
 const HAZARD: Record<string, HazardKind> = {
   'stealth-rock': 'stealth-rock',
   spikes: 'spikes',
@@ -186,14 +225,19 @@ export function convertMove(dto: MoveDto): BattleMove {
   const meta = dto.meta;
   const name = dto.name;
   const power = dto.power ?? 0;
-  const isStatusMove = damageClass === 'status' || power <= 0;
+  const fixed = FIXED_DAMAGE[name];
+  const fraction = FRACTION_DAMAGE[name];
+  const isFlat = fixed !== undefined || fraction !== undefined;
+  // Seismic Toss & co. have no listed power; give them a placeholder so they count as attacks.
+  const isStatusMove = !isFlat && (damageClass === 'status' || power <= 0);
   const status = meta ? AILMENT[meta.ailment?.name ?? ''] : undefined;
+  const confuses = meta?.ailment?.name === 'confusion';
   const boosts = boostsOf(dto);
 
   const move: BattleMove = {
     name,
     type,
-    power,
+    power: isFlat ? 1 : power,
     // API `accuracy: null` means the move never misses → 0 in the engine.
     accuracy: dto.accuracy ?? 0,
     damageClass: isStatusMove ? 'status' : damageClass,
@@ -213,20 +257,38 @@ export function convertMove(dto: MoveDto): BattleMove {
     if (WEATHER[name]) move.setsWeather = WEATHER[name];
     if (TERRAIN[name]) move.setsTerrain = TERRAIN[name];
     if (HAZARD[name]) move.setsHazard = HAZARD[name];
+    if (confuses) move.inflictConfusion = true;
+    if (SCREEN[name]) move.setsScreen = SCREEN[name];
+    if (name === 'tailwind') move.setsTailwind = true;
+    if (name === 'trick-room') move.setsTrickRoom = true;
+    if (name === 'substitute') move.substitute = true;
+    if (name === 'taunt') move.taunt = true;
+    if (name === 'encore') move.encore = true;
+    if (name === 'leech-seed') move.leechSeed = true;
+    if (PROTECT.has(name)) move.protect = true;
+    if (
+      move.setsScreen ||
+      move.setsTailwind ||
+      move.setsTrickRoom ||
+      move.substitute ||
+      move.protect
+    ) {
+      move.target = 'self';
+    }
     return move;
   }
 
   // Damaging move: optional on-hit rider (ailment, stat change, flinch).
   const secondary: {
-    chance: number;
-    status?: StatusCondition;
-    boosts?: Partial<Record<BoostableStat, number>>;
-    boostTarget?: 'self' | 'opponent';
-    flinch?: boolean;
+    -readonly [K in keyof SecondaryEffect]: SecondaryEffect[K];
   } = { chance: 0 };
   if (status && meta && meta.ailment_chance > 0) {
     secondary.chance = meta.ailment_chance;
     secondary.status = status;
+  }
+  if (confuses && meta && meta.ailment_chance > 0) {
+    secondary.chance = secondary.chance || meta.ailment_chance;
+    secondary.confusion = true;
   }
   if (meta && meta.flinch_chance > 0) {
     secondary.chance = secondary.chance || meta.flinch_chance;
@@ -244,6 +306,12 @@ export function convertMove(dto: MoveDto): BattleMove {
   if (drainPct < 0) move.recoil = -drainPct / 100;
   if (meta?.min_hits && meta.max_hits) move.multiHit = [meta.min_hits, meta.max_hits];
   if (meta?.crit_rate) move.critStage = meta.crit_rate;
+  if (fixed !== undefined) move.fixedDamage = fixed;
+  if (fraction !== undefined) move.fractionDamage = fraction;
+  if (name === 'knock-off') move.knockOff = true;
+  if (RECHARGE.has(name)) move.recharge = true;
+  if (CHARGE[name]) move.charge = CHARGE[name];
+  if (PIVOT.has(name)) move.pivot = true;
   return move;
 }
 
@@ -251,6 +319,22 @@ export function convertMove(dto: MoveDto): BattleMove {
 export function isUsefulStatusMove(m: BattleMove): boolean {
   return (
     m.damageClass === 'status' &&
-    !!(m.boosts || m.inflictStatus || m.healing || m.setsWeather || m.setsTerrain || m.setsHazard)
+    !!(
+      m.boosts ||
+      m.inflictStatus ||
+      m.inflictConfusion ||
+      m.healing ||
+      m.setsWeather ||
+      m.setsTerrain ||
+      m.setsHazard ||
+      m.setsScreen ||
+      m.setsTailwind ||
+      m.setsTrickRoom ||
+      m.substitute ||
+      m.taunt ||
+      m.encore ||
+      m.leechSeed ||
+      m.protect
+    )
   );
 }

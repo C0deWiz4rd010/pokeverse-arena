@@ -41,9 +41,9 @@ describe('weather chip', () => {
     expect(takesWeatherChip('sand', ['steel'])).toBe(false);
   });
 
-  it('chips everyone but Ice in hail', () => {
-    expect(takesWeatherChip('hail', ['fire'])).toBe(true);
-    expect(takesWeatherChip('hail', ['ice'])).toBe(false);
+  it('does not chip anyone in snow (Gen 9)', () => {
+    expect(takesWeatherChip('snow', ['fire'])).toBe(false);
+    expect(takesWeatherChip('snow', ['ice'])).toBe(false);
   });
 
   it('deals 1/16 max HP', () => {

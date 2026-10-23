@@ -72,6 +72,5 @@ export const AMBIENCE_FOR_ENGINE: Record<EngineWeather, Ambience> = {
   sun: 'sun',
   rain: 'rain',
   sand: 'sand',
-  hail: 'snow',
   snow: 'snow',
 };

@@ -46,7 +46,11 @@ Seeded, type-accurate 1-v-1 battles with an animated arena and weather backdrops
 | `features/battle/battle.ts` / `.html` / `.scss` | The component: setup form, daily-challenge card, animated arena, weather overlays, log, move buttons, result. |
 | `game/daily/daily.ts` (+ spec) | Pure daily logic: UTC day key, deterministic matchup, streak record fold. |
 | `features/battle/daily.service.ts` | Daily state: persisted streak record, result reporting, win toast. |
-| `game/engine/damage.spec.ts` / `battle.spec.ts` | Engine unit tests. |
+| `game/engine/battle-core.ts` | `BattleCore` — the shared turn mechanics (move execution, residuals, state atoms) used by both engines. |
+| `game/engine/battle.ts` / `team-battle.ts` | The 1-v-1 duel and the party engine (switching, hazards, Tera, pivots) — thin hosts over the core. |
+| `game/engine/field-effects.ts` | Screens, Tailwind and Trick Room descriptors and maths. |
+| `game/engine/damage.spec.ts` / `battle.spec.ts` / `battle-mechanics.spec.ts` | Engine unit tests. |
+| `game/engine/golden-master.spec.ts` | Replays 80 seeded random battles and compares event-log hashes — guards refactors. |
 
 ## How it works
 
@@ -130,3 +134,24 @@ Below 768 px a fight fits one screen with the moves in thumb reach: the page
 header hides once the battle starts (`.battle.in-fight`), sprites and info
 cards shrink, badge/HP-bar sizes tighten and the log caps at ~110 px. The RPG
 battle got the same treatment (field 225 px min, log 74 px, denser commands).
+
+## Engine v3 — one core, deeper mechanics (v3.0.6)
+
+- **One turn core.** `Battle` and `TeamBattle` no longer duplicate the mechanics: both host `BattleCore`, which owns move
+  execution, residuals and the atoms. Fixing it once fixes both (Leech Seed, Magic Guard and the log texts used to differ).
+  `golden-master.spec.ts` hashes the event logs of 40 duels and 40 team battles; a refactor must leave them untouched, a
+  deliberate mechanics change regenerates them.
+- **Side & field conditions.** Reflect, Light Screen, Aurora Veil (snow only), Tailwind and Trick Room, with turn counters,
+  banner events (`field`) and AI scoring.
+- **Volatiles.** Confusion (2–5 turns, 1/3 self-hit), Substitute, Taunt, Encore, Protect (spam-proof), Leech Seed (also in party
+  battles), recharge and two-turn moves (Solar Beam skips the charge in sun), Struggle when out of PP, Choice locks.
+- **Special damage.** Fixed (Seismic Toss, Night Shade, Dragon Rage), fractional (Super Fang) and Knock Off (removes the item on
+  a copy, ×1.5 vs holders).
+- **Abilities** (+7): Mold Breaker, Sheer Force, Prankster, Moxie, Clear Body, Download, Tough Claws. **Items** (+21): Weakness
+  Policy, Air Balloon, Heavy-Duty Boots and the 18 type-boosting items.
+- **Party battles.** Terastallization (once per team, a `tera` flag on the move action: single defensive type, STAB rules),
+  pivot moves (U-turn, Volt Switch: the user owes a switch via `mustSwitch`/`forceSwitch`, resolved at the end of the turn),
+  Heavy-Duty Boots / Magic Guard vs hazards.
+- **Gen 9 weather.** Hail is gone: the Hail move sets Snow, which no longer chips.
+- `move-convert.ts` maps the new moves by name and by the PokéAPI `confusion` ailment; the German log lines and item/ability
+  names are in `de.data.ts`.

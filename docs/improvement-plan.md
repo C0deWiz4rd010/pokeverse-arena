@@ -26,7 +26,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | 3 | Architektur entkoppeln | v3.0.3 | ✅ |
 | 4 | Große Services aufteilen | v3.0.4 | ✅ |
 | 5 | Einheitliche Persistenz + Run-Resume | v3.0.5 | ✅ |
-| 6 | Battle-Engine vereinheitlichen & vertiefen | v3.0.6 | ⬜ |
+| 6 | Battle-Engine vereinheitlichen & vertiefen | v3.0.6 | ✅ |
 | 7 | Battle-UI entdoppeln | v3.0.7 | ⬜ |
 | 8 | Lade-/Fehler-/Leerzustände & Barrierefreiheit | v3.0.8 | ⬜ |
 | 9 | Testabdeckung Features + Core | v3.0.9 | ⬜ |
@@ -95,10 +95,10 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 ## Phase 6 – Battle-Engine vereinheitlichen & vertiefen
 
 1. **Gemeinsamer Turn-Kern:** End-of-Turn/Residuals/Move-Ausführung aus `game/engine/battle.ts` und `team-battle.ts` in
-   gemeinsame Funktionen (`game/engine/turn.ts`). Bekannte Divergenz beheben: Leech Seed fehlt in `team-battle.ts:505-531`.
+   einen gemeinsamen `BattleCore` (`game/engine/battle-core.ts`), den beide Engines hosten. Bekannte Divergenz beheben: Leech Seed fehlt in `team-battle.ts:505-531`.
 2. **Confusion** verdrahten (`confusionTurns` in `battle-types.ts:102` wird nie gelesen).
 3. Neue Mechaniken in Paketen, je mit Specs: (a) Reflect/Light Screen/Aurora Veil, Tailwind, Trick Room;
-   (b) Substitute, Taunt, Encore; (c) U-turn/Volt Switch, Recharge- & Zwei-Runden-Moves, Fixschaden (Seismic Toss), Knock Off,
+   (b) Substitute, Taunt, Encore; (c) U-turn/Volt Switch (Pivot erst am Rundenende), Recharge- & Zwei-Runden-Moves (ohne Fly/Dig), Fixschaden (Seismic Toss), Knock Off,
    Struggle/PP-Erschöpfung; (d) Terastallisieren als echter Turn-Schritt (bisher nur in `rules.ts`).
 4. `abilities.ts` (34) und `items.ts` (21) erweitern: Intimidate, Mold Breaker, Sheer Force, Prankster, Moxie, Clear Body,
    Download, Tough Claws; Weakness Policy, Air Balloon, Heavy-Duty Boots, Typ-Platten, Choice-Lock-Randfälle. Direkte Specs.

@@ -44,7 +44,14 @@ export type AbilityId =
   | 'unaware'
   | 'immunity'
   | 'limber'
-  | 'water-veil';
+  | 'water-veil'
+  | 'mold-breaker'
+  | 'sheer-force'
+  | 'prankster'
+  | 'moxie'
+  | 'clear-body'
+  | 'download'
+  | 'tough-claws';
 
 export interface Ability {
   readonly id: AbilityId;
@@ -91,6 +98,20 @@ export interface Ability {
   readonly unaware?: boolean;
   /** Immunity to one (or all) non-volatile statuses. */
   readonly statusImmunity?: StatusCondition | 'all';
+  /** The holder's moves ignore the target's ability (Mold Breaker). */
+  readonly moldBreaker?: boolean;
+  /** Moves with a secondary effect lose it but gain ×1.3 power (Sheer Force). */
+  readonly sheerForce?: boolean;
+  /** Status moves get +1 priority (Prankster). */
+  readonly prankster?: boolean;
+  /** +1 Attack after knocking a Pokémon out (Moxie). */
+  readonly moxie?: boolean;
+  /** Foes cannot lower the holder's stats (Clear Body). */
+  readonly clearBody?: boolean;
+  /** On entry, raises Attack or Sp. Atk depending on the foe's weaker defence (Download). */
+  readonly download?: boolean;
+  /** Contact moves deal ×1.3 damage (Tough Claws). */
+  readonly toughClaws?: boolean;
 }
 
 const LIST: readonly Ability[] = [
@@ -239,6 +260,38 @@ const LIST: readonly Ability[] = [
   { id: 'immunity', name: 'Immunity', blurb: 'Cannot be poisoned.', statusImmunity: 'poison' },
   { id: 'limber', name: 'Limber', blurb: 'Cannot be paralysed.', statusImmunity: 'paralysis' },
   { id: 'water-veil', name: 'Water Veil', blurb: 'Cannot be burned.', statusImmunity: 'burn' },
+  {
+    id: 'mold-breaker',
+    name: 'Mold Breaker',
+    blurb: 'Moves ignore the target’s ability.',
+    moldBreaker: true,
+  },
+  {
+    id: 'sheer-force',
+    name: 'Sheer Force',
+    blurb: 'Trades side effects for extra power.',
+    sheerForce: true,
+  },
+  { id: 'prankster', name: 'Prankster', blurb: 'Status moves go first.', prankster: true },
+  { id: 'moxie', name: 'Moxie', blurb: 'Attack rises after a KO.', moxie: true },
+  {
+    id: 'clear-body',
+    name: 'Clear Body',
+    blurb: 'Foes cannot lower its stats.',
+    clearBody: true,
+  },
+  {
+    id: 'download',
+    name: 'Download',
+    blurb: 'Boosts the stat the foe defends worse.',
+    download: true,
+  },
+  {
+    id: 'tough-claws',
+    name: 'Tough Claws',
+    blurb: 'Boosts contact moves.',
+    toughClaws: true,
+  },
 ];
 
 const BY_ID = new Map<AbilityId, Ability>(LIST.map((a) => [a.id, a]));

@@ -5,7 +5,7 @@
  */
 import type { PokemonType } from '../../core/utils/type-chart';
 
-export type Weather = 'none' | 'sun' | 'rain' | 'sand' | 'hail' | 'snow';
+export type Weather = 'none' | 'sun' | 'rain' | 'sand' | 'snow';
 
 export interface WeatherInfo {
   readonly key: Weather;
@@ -19,7 +19,6 @@ export const WEATHER_INFO: Record<Weather, WeatherInfo> = {
   sun: { key: 'sun', label: 'Harsh sunlight', chips: false },
   rain: { key: 'rain', label: 'Rain', chips: false },
   sand: { key: 'sand', label: 'Sandstorm', chips: true },
-  hail: { key: 'hail', label: 'Hail', chips: true },
   snow: { key: 'snow', label: 'Snow', chips: false },
 };
 
@@ -28,7 +27,6 @@ export const WEATHER_CHIP_FRACTION = 1 / 16;
 
 /** Types immune to the sandstorm/hail residual. */
 const SAND_IMMUNE: readonly PokemonType[] = ['rock', 'ground', 'steel'];
-const HAIL_IMMUNE: readonly PokemonType[] = ['ice'];
 
 /**
  * Damage multiplier this weather applies to a move of the given type.
@@ -64,7 +62,6 @@ export function weatherDefenseFactor(
 /** Whether this Pokémon takes end-of-turn weather chip. */
 export function takesWeatherChip(weather: Weather, types: readonly PokemonType[]): boolean {
   if (weather === 'sand') return !types.some((t) => SAND_IMMUNE.includes(t));
-  if (weather === 'hail') return !types.some((t) => HAIL_IMMUNE.includes(t));
   return false;
 }
 
@@ -86,8 +83,6 @@ export function weatherSetMessage(weather: Weather): string {
       return 'It started to rain!';
     case 'sand':
       return 'A sandstorm kicked up!';
-    case 'hail':
-      return 'It started to hail!';
     case 'snow':
       return 'It started to snow!';
     default:
@@ -97,6 +92,5 @@ export function weatherSetMessage(weather: Weather): string {
 
 export function weatherChipMessage(name: string, weather: Weather): string {
   if (weather === 'sand') return `${name} is buffeted by the sandstorm!`;
-  if (weather === 'hail') return `${name} is pelted by hail!`;
   return '';
 }

@@ -7,7 +7,7 @@
  */
 import { SeededRng } from '../../core/utils/rng';
 import { computeMoveDamage, moveEffectiveness, stabFor } from './damage';
-import type { BattleMove, BattleSide, Field } from './battle-types';
+import type { BattleMove, BattleSide, Field, SideIndex } from './battle-types';
 import type { BattleRules } from './rules';
 
 export type AiTier = 'random' | 'basic' | 'strong' | 'elite';
@@ -18,6 +18,8 @@ export interface AiContext {
   readonly field: Field;
   readonly rng: SeededRng;
   readonly rules?: BattleRules;
+  /** Which side the attacker is (lets the AI read side conditions like screens). */
+  readonly attackerIndex?: SideIndex;
 }
 
 /** A representative roll for damage estimation (slightly below max). */
@@ -46,6 +48,12 @@ export function chooseAiMove(ctx: AiContext, tier: AiTier): number {
 /** Estimated damage a move would deal right now (no crit, representative roll). */
 export function estimateDamage(move: BattleMove, ctx: AiContext): number {
   if (move.power <= 0 || move.damageClass === 'status') return 0;
+  if (move.fixedDamage !== undefined) {
+    return move.fixedDamage === 'level' ? ctx.attacker.battler.level : move.fixedDamage;
+  }
+  if (move.fractionDamage !== undefined) {
+    return Math.max(1, Math.floor(ctx.defender.currentHp * move.fractionDamage));
+  }
   return computeMoveDamage({
     attacker: ctx.attacker,
     defender: ctx.defender,
@@ -102,6 +110,34 @@ function scoreStatus(move: BattleMove, ctx: AiContext, tier: AiTier): number {
   if (inflicts && inflicts !== 'none' && defender.status === 'none') score += 34;
 
   if (move.setsWeather || move.setsTerrain || move.setsHazard) score += 24;
+
+  const me = ctx.attackerIndex;
+  const foeHasStatusPlan = defender.battler.moves.some(
+    (m) => m.power <= 0 && (m.healing || m.boosts || m.setsHazard),
+  );
+  if (move.setsScreen && me !== undefined && ctx.field.screens[me][move.setsScreen] === 0) {
+    score += hpFrac > 0.5 ? 30 : 12;
+  }
+  if (move.setsTailwind && me !== undefined && ctx.field.tailwind[me] === 0) score += 26;
+  if (move.setsTrickRoom) {
+    const slower = attacker.battler.stats.speed < defender.battler.stats.speed;
+    score += (ctx.field.trickRoom > 0 ? !slower : slower) ? 30 : -20;
+  }
+  if (move.substitute && attacker.volatiles.substitute === 0 && hpFrac > 0.6) score += 22;
+  if (move.taunt && defender.volatiles.taunt === 0 && foeHasStatusPlan) score += 28;
+  if (move.encore && defender.volatiles.lastMove !== null && !defender.volatiles.encore) {
+    const last = defender.battler.moves[defender.volatiles.lastMove];
+    if (last && (last.power <= 0 || last.damageClass === 'status')) score += 30;
+  }
+  if (
+    move.leechSeed &&
+    !defender.volatiles.leechSeed &&
+    !defender.battler.types.includes('grass')
+  ) {
+    score += 28;
+  }
+  if (move.inflictConfusion && defender.volatiles.confusionTurns === 0) score += 22;
+  if (move.protect && hpFrac < 0.4) score += 10;
 
   return tier === 'elite' ? score * 1.1 : score;
 }

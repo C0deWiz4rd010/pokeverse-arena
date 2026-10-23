@@ -4,6 +4,33 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.6 — 2026-10-23
+
+⚔️ **One battle core, deeper mechanics** (phase 6 of the [improvement plan](improvement-plan.md)). The interface for these
+mechanics lands in v3.0.7.
+
+### Changed
+
+- `Battle` (1-v-1) and `TeamBattle` (parties) share one `BattleCore`. Behaviour that had drifted apart is unified: Leech Seed
+  now works in party battles, **Magic Guard** blocks recoil, Rough Skin and hazards there too, and the Flash Fire log line is the same.
+- **Choice items now lock** the holder into its first move (until it switches out).
+- Hail was folded into Snow (Gen 9): the Hail move sets Snow, nobody takes weather chip from snow.
+
+### Added
+
+- **Moves & field:** Reflect, Light Screen, Aurora Veil, Tailwind, Trick Room, Substitute, Taunt, Encore, Protect/Detect, Leech Seed,
+  confusion (moves and secondary effects), Seismic Toss / Night Shade / Dragon Rage / Super Fang, Knock Off, recharge moves,
+  two-turn moves, Struggle, and pivot moves (U-turn, Volt Switch) in party battles.
+- **Terastallization** in party battles (once per team).
+- **Abilities:** Mold Breaker, Sheer Force, Prankster, Moxie, Clear Body, Download, Tough Claws.
+- **Items:** Weakness Policy, Air Balloon, Heavy-Duty Boots and 18 type-boosting items.
+- The AI values the new moves; German translations for every new log line, ability and item.
+
+### Tests
+
+- 40 new mechanics specs, move-conversion specs, an Elite Four spec, a relics spec, and a golden-master replay guard that hashes
+  80 seeded battles (this found and documents the intentional Magic Guard / choice-lock behaviour changes).
+
 ## v3.0.5 — 2026-10-23
 
 💾 **One persistence layer + resumable runs** (phase 5 of the [improvement plan](improvement-plan.md)).

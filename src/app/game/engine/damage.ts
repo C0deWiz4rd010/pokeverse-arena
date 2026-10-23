@@ -14,6 +14,7 @@ import { abilityById } from './abilities';
 import { itemById } from './items';
 import { weatherDamageFactor, weatherDefenseFactor } from './weather';
 import { isGrounded, terrainDamageFactor } from './terrain';
+import { screenDamageFactor, type Screens } from './field-effects';
 
 export const CRIT_MULTIPLIER = 1.5;
 export const STAB_MULTIPLIER = 1.5;
@@ -66,6 +67,22 @@ export function computeDamage(input: DamageInput): DamageResult {
 /** 1.5 if the move's type is one of the attacker's types, else 1. */
 export function stabFor(attacker: Battler, move: BattleMove): number {
   return attacker.types.includes(move.type) ? STAB_MULTIPLIER : 1;
+}
+
+/** A side's current defensive typing: a single Tera type once Terastallized. */
+export function sideTypes(side: BattleSide): readonly PokemonType[] {
+  return side.terastallized ? [side.terastallized] : side.battler.types;
+}
+
+/**
+ * STAB for a live side. Terastallizing keeps the original-type STAB, adds STAB for the Tera type
+ * and doubles it where the Tera type matches an original type.
+ */
+export function stabForSide(side: BattleSide, move: BattleMove): number {
+  const original = side.battler.types.includes(move.type);
+  const tera = side.terastallized;
+  if (tera && move.type === tera) return original ? 2 : STAB_MULTIPLIER;
+  return original ? STAB_MULTIPLIER : 1;
 }
 
 /** Type multiplier of a move against a defender's typing (rule-aware). */
@@ -121,7 +138,8 @@ export function resolveDamage(
 /** Whether a battler is grounded (Flying / Levitate float). */
 export function battlerGrounded(side: BattleSide): boolean {
   const ability = abilityById(side.battler.ability);
-  return isGrounded(side.battler.types) && ability?.levitate !== true;
+  const balloon = itemById(side.battler.item)?.airBalloon === true && !side.itemUsed;
+  return isGrounded(sideTypes(side)) && ability?.levitate !== true && !balloon;
 }
 
 /** Full damage context: two live sides + the field. */
@@ -135,6 +153,8 @@ export interface MoveDamageContext {
   readonly rules?: BattleRules;
   /** Flash Fire is active on the attacker (boosts its Fire moves). */
   readonly flashFire?: boolean;
+  /** Screens up on the defender's side. */
+  readonly defenderScreens?: Screens;
 }
 
 /**
@@ -149,19 +169,22 @@ export function computeMoveDamage(ctx: MoveDamageContext): DamageResult {
   const def = defender.battler;
   const special = move.damageClass === 'special';
 
-  const typeEff = moveEffectiveness(move, def.types, rules);
-  let stab = stabFor(atk, move);
+  const typeEff = moveEffectiveness(move, sideTypes(defender), rules);
+  let stab = stabForSide(attacker, move);
   if (move.power <= 0 || typeEff === 0) {
     return { damage: 0, effectiveness: typeEff, crit, stab };
   }
 
   const atkAbility = abilityById(atk.ability);
-  const defAbility = abilityById(def.ability);
+  // Mold Breaker ignores the target's ability.
+  const defAbility = atkAbility?.moldBreaker ? undefined : abilityById(def.ability);
   const atkItem = itemById(atk.item);
   const defItem = itemById(def.item);
 
   // ---- Power modifiers ----
   let power = move.power;
+  if (atkAbility?.sheerForce && move.secondary) power *= 1.3;
+  if (move.knockOff && def.item && !defender.itemUsed) power *= 1.5;
   if (atkAbility?.technician && power <= 60) power *= 1.5;
   if (
     atkAbility?.pinch &&
@@ -193,7 +216,7 @@ export function computeMoveDamage(ctx: MoveDamageContext): DamageResult {
   if (defItem?.eviolite) D *= 1.5;
   if (special && defItem?.statMultiplier?.stat === 'special-defense')
     D *= defItem.statMultiplier.factor;
-  D *= weatherDefenseFactor(field.weather, def.types, special);
+  D *= weatherDefenseFactor(field.weather, sideTypes(defender), special);
   D = Math.max(1, Math.floor(D));
 
   // ---- Final multiplier chain ----
@@ -215,6 +238,8 @@ export function computeMoveDamage(ctx: MoveDamageContext): DamageResult {
   if (atkItem?.typeBoost && atkItem.typeBoost.type === move.type) mod *= atkItem.typeBoost.factor;
   if (defAbility?.thickFat && (move.type === 'fire' || move.type === 'ice')) mod *= 0.5;
   if (defAbility?.multiscale && defender.currentHp >= defender.maxHp) mod *= 0.5;
+  if (atkAbility?.toughClaws && move.flags?.contact) mod *= 1.3;
+  if (ctx.defenderScreens) mod *= screenDamageFactor(ctx.defenderScreens, special, crit);
 
   const result = computeDamage({
     level: atk.level,

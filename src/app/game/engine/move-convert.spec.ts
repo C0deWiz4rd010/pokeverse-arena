@@ -259,3 +259,72 @@ describe('converted moves inside a battle', () => {
     expect(battle.player.currentHp).toBe(before); // …and cost the user nothing
   });
 });
+
+describe('convertMove — field, volatile and special-damage moves', () => {
+  it('maps screens, Tailwind, Trick Room and Substitute onto the user', () => {
+    expect(convertMove(move({ name: 'reflect', target: named('users-field') })).setsScreen).toBe(
+      'reflect',
+    );
+    expect(
+      convertMove(move({ name: 'aurora-veil', target: named('users-field') })).setsScreen,
+    ).toBe('aurora-veil');
+    expect(convertMove(move({ name: 'tailwind' })).setsTailwind).toBe(true);
+    expect(convertMove(move({ name: 'trick-room' })).setsTrickRoom).toBe(true);
+    const sub = convertMove(move({ name: 'substitute' }));
+    expect(sub.substitute).toBe(true);
+    expect(sub.target).toBe('self');
+  });
+
+  it('maps Taunt, Encore, Leech Seed and Protect', () => {
+    expect(convertMove(move({ name: 'taunt' })).taunt).toBe(true);
+    expect(convertMove(move({ name: 'encore' })).encore).toBe(true);
+    expect(convertMove(move({ name: 'leech-seed' })).leechSeed).toBe(true);
+    const protect = convertMove(move({ name: 'protect', priority: 4 }));
+    expect(protect.protect).toBe(true);
+    expect(protect.priority).toBe(4);
+    expect(isUsefulStatusMove(protect)).toBe(true);
+  });
+
+  it('turns a confusion ailment into a status move and a secondary effect', () => {
+    const ray = convertMove(move({ name: 'confuse-ray', meta: { ailment: named('confusion') } }));
+    expect(ray.inflictConfusion).toBe(true);
+    expect(isUsefulStatusMove(ray)).toBe(true);
+    const psybeam = convertMove(
+      move({
+        name: 'psybeam',
+        cls: 'special',
+        power: 65,
+        type: 'psychic',
+        meta: { ailment: named('confusion'), ailment_chance: 10 },
+      }),
+    );
+    expect(psybeam.secondary).toMatchObject({ chance: 10, confusion: true });
+  });
+
+  it('gives fixed- and fraction-damage moves a placeholder power so they count as attacks', () => {
+    const toss = convertMove(move({ name: 'seismic-toss', cls: 'physical', type: 'fighting' }));
+    expect(toss.fixedDamage).toBe('level');
+    expect(toss.damageClass).toBe('physical');
+    expect(toss.power).toBeGreaterThan(0);
+    expect(convertMove(move({ name: 'super-fang', cls: 'physical' })).fractionDamage).toBe(0.5);
+    expect(convertMove(move({ name: 'dragon-rage', cls: 'special' })).fixedDamage).toBe(40);
+  });
+
+  it('flags Knock Off, recharge, two-turn and pivot moves', () => {
+    expect(convertMove(move({ name: 'knock-off', cls: 'physical', power: 65 })).knockOff).toBe(
+      true,
+    );
+    expect(convertMove(move({ name: 'hyper-beam', cls: 'special', power: 150 })).recharge).toBe(
+      true,
+    );
+    expect(
+      convertMove(move({ name: 'solar-beam', cls: 'special', power: 120 })).charge?.skipWeather,
+    ).toBe('sun');
+    expect(convertMove(move({ name: 'u-turn', cls: 'physical', power: 70 })).pivot).toBe(true);
+  });
+
+  it('treats Hail as Snow (Gen 9)', () => {
+    expect(convertMove(move({ name: 'hail' })).setsWeather).toBe('snow');
+    expect(convertMove(move({ name: 'snowscape' })).setsWeather).toBe('snow');
+  });
+});

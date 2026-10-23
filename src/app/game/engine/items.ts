@@ -28,7 +28,28 @@ export type ItemId =
   | 'heat-rock'
   | 'damp-rock'
   | 'smooth-rock'
-  | 'icy-rock';
+  | 'icy-rock'
+  | 'weakness-policy'
+  | 'air-balloon'
+  | 'heavy-duty-boots'
+  | 'silk-scarf'
+  | 'charcoal'
+  | 'mystic-water'
+  | 'magnet'
+  | 'miracle-seed'
+  | 'never-melt-ice'
+  | 'black-belt'
+  | 'poison-barb'
+  | 'soft-sand'
+  | 'sharp-beak'
+  | 'twisted-spoon'
+  | 'silver-powder'
+  | 'hard-stone'
+  | 'spell-tag'
+  | 'dragon-fang'
+  | 'black-glasses'
+  | 'metal-coat'
+  | 'fairy-feather';
 
 export type ItemStat = 'attack' | 'special-attack' | 'special-defense' | 'speed' | 'defense';
 
@@ -65,8 +86,36 @@ export interface HeldItem {
   /** Damage the attacker for this fraction of their max HP on contact. */
   readonly rockyHelmet?: number;
   /** Extends matching weather to 8 turns when this Pokémon sets it (rocks). */
-  readonly weatherRock?: 'sun' | 'rain' | 'sand' | 'hail' | 'snow';
+  readonly weatherRock?: 'sun' | 'rain' | 'sand' | 'snow';
+  /** Raises Attack and Sp. Atk by two stages when hit super-effectively, then is used up. */
+  readonly weaknessPolicy?: boolean;
+  /** Floats the holder (immune to Ground and ground hazards) until it is hit. */
+  readonly airBalloon?: boolean;
+  /** The holder ignores entry hazards. */
+  readonly ignoresHazards?: boolean;
 }
+
+/** The classic 20 % type-boosting held items. */
+const TYPE_ITEMS: readonly (readonly [ItemId, string, PokemonType])[] = [
+  ['silk-scarf', 'Silk Scarf', 'normal'],
+  ['charcoal', 'Charcoal', 'fire'],
+  ['mystic-water', 'Mystic Water', 'water'],
+  ['magnet', 'Magnet', 'electric'],
+  ['miracle-seed', 'Miracle Seed', 'grass'],
+  ['never-melt-ice', 'Never-Melt Ice', 'ice'],
+  ['black-belt', 'Black Belt', 'fighting'],
+  ['poison-barb', 'Poison Barb', 'poison'],
+  ['soft-sand', 'Soft Sand', 'ground'],
+  ['sharp-beak', 'Sharp Beak', 'flying'],
+  ['twisted-spoon', 'Twisted Spoon', 'psychic'],
+  ['silver-powder', 'Silver Powder', 'bug'],
+  ['hard-stone', 'Hard Stone', 'rock'],
+  ['spell-tag', 'Spell Tag', 'ghost'],
+  ['dragon-fang', 'Dragon Fang', 'dragon'],
+  ['black-glasses', 'Black Glasses', 'dark'],
+  ['metal-coat', 'Metal Coat', 'steel'],
+  ['fairy-feather', 'Fairy Feather', 'fairy'],
+];
 
 const LIST: readonly HeldItem[] = [
   {
@@ -168,7 +217,33 @@ const LIST: readonly HeldItem[] = [
   { id: 'heat-rock', name: 'Heat Rock', blurb: 'Extends sun.', weatherRock: 'sun' },
   { id: 'damp-rock', name: 'Damp Rock', blurb: 'Extends rain.', weatherRock: 'rain' },
   { id: 'smooth-rock', name: 'Smooth Rock', blurb: 'Extends sandstorm.', weatherRock: 'sand' },
-  { id: 'icy-rock', name: 'Icy Rock', blurb: 'Extends hail/snow.', weatherRock: 'snow' },
+  { id: 'icy-rock', name: 'Icy Rock', blurb: 'Extends snow.', weatherRock: 'snow' },
+  {
+    id: 'weakness-policy',
+    name: 'Weakness Policy',
+    blurb: 'A super-effective hit sharply raises Attack and Sp. Atk.',
+    weaknessPolicy: true,
+  },
+  {
+    id: 'air-balloon',
+    name: 'Air Balloon',
+    blurb: 'Floats the holder until it is hit.',
+    airBalloon: true,
+  },
+  {
+    id: 'heavy-duty-boots',
+    name: 'Heavy-Duty Boots',
+    blurb: 'Ignores entry hazards.',
+    ignoresHazards: true,
+  },
+  ...TYPE_ITEMS.map(
+    ([id, name, type]): HeldItem => ({
+      id,
+      name,
+      blurb: `Boosts ${type.charAt(0).toUpperCase()}${type.slice(1)}-type moves.`,
+      typeBoost: { type, factor: 1.2 },
+    }),
+  ),
 ];
 
 const BY_ID = new Map<ItemId, HeldItem>(LIST.map((i) => [i.id, i]));
