@@ -84,6 +84,16 @@ export class Battle {
     return this.state.sides[1];
   }
 
+  /** The move a side is locked into this turn (charging, Encore, Choice lock), or null. */
+  forcedMove(side: SideIndex): number | null {
+    return this.core.forcedMoveIndex(side);
+  }
+
+  /** True when the side has no PP left anywhere and can only Struggle. */
+  mustStruggle(side: SideIndex): boolean {
+    return this.core.mustStruggle(side);
+  }
+
   /** Choose the opponent's move automatically (used by the UI / auto-battle). */
   chooseAiMove(tier: AiTier = this.aiTier): number {
     return this.aiMoveFor(1, 0, tier);

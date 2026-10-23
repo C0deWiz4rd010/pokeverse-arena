@@ -179,6 +179,16 @@ export class TeamBattle {
     return owes && this.benchedSwitches(side).length > 0;
   }
 
+  /** The move a side is locked into this turn (charging, Encore, Choice lock), or null. */
+  forcedMove(side: SideIndex): number | null {
+    return this.core.forcedMoveIndex(side);
+  }
+
+  /** True when the side's active Pokémon has no PP left and can only Struggle. */
+  mustStruggle(side: SideIndex): boolean {
+    return this.core.mustStruggle(side);
+  }
+
   /** Whether the side may still Terastallize this battle. */
   canTerastallize(side: SideIndex): boolean {
     return !this.state.teraUsed[side] && this.active(side).currentHp > 0;

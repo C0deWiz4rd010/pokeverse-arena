@@ -652,7 +652,8 @@
   left: 0;
   right: 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   pointer-events: none;
   z-index: 3;
 }
@@ -900,4 +901,9 @@
       transform: translateX(-50%);
     }
   }
+}
+
+.struggle {
+  grid-column: 1 / -1;
+  min-height: var(--tap, 44px);
 }

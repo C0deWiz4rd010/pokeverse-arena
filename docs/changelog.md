@@ -4,6 +4,28 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.7 — 2026-10-23
+
+🖥️ **Battle UI deduplicated + interface for the new mechanics** (phase 7 of the [improvement plan](improvement-plan.md)).
+
+### Added
+
+- **Terastallize** button in party matches (Arena, Tournaments, Spire, Odyssey) with the Tera type, hotkey `T`, and a *Tera <type>* chip.
+- **State chips** under each fighter (Substitute, Confused, Seeded, Taunted, Encore, Charging, Recharging, Move locked) and **field chips**
+  for screens, Tailwind and Trick Room with owner and remaining turns.
+- Moves are greyed out when a Choice lock, Encore or a charging move forces another one; a **Struggle** button appears when all PP is gone.
+- After a pivot move the switch tray asks *Choose who takes over!*.
+
+### Changed
+
+- `BattlePresenterBase` owns the shared battle state (stages, weather/terrain, volatiles, field) and `applyBattleState`; the duel and
+  party screens no longer duplicate it, the stage-chip helper or the number-key handling.
+
+### Tests
+
+- View-helper specs for the stage, state and field chips. Checked in the real app: Terastallizing in an Arena match changes the log, the
+  chip and the typing.
+
 ## v3.0.6 — 2026-10-23
 
 ⚔️ **One battle core, deeper mechanics** (phase 6 of the [improvement plan](improvement-plan.md)). The interface for these

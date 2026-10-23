@@ -155,3 +155,18 @@ battle got the same treatment (field 225 px min, log 74 px, denser commands).
 - **Gen 9 weather.** Hail is gone: the Hail move sets Snow, which no longer chips.
 - `move-convert.ts` maps the new moves by name and by the PokéAPI `confusion` ailment; the German log lines and item/ability
   names are in `de.data.ts`.
+
+## Battle UI v3 — shared presenter state & the new mechanics (v3.0.7)
+
+- **One presenter base.** `BattlePresenterBase` now owns the state every battle screen mirrors from its engine — stat stages,
+  weather/terrain and their turns, volatile chips and field chips — through a single `applyBattleState(me, foe, field)`; Battle and
+  the party match (`tournament-match`) lost their duplicated signals, stage-chip helpers and number-key parsing.
+- **Pure view helpers.** `features/battle/battle-view.ts` builds the stage chips, the per-side volatile chips (Tera, Substitute,
+  Confused, Seeded, Taunted, Encore, Charging, Recharging, Move locked) and the field chips (screens, Tailwind, Trick Room with owner
+  and turns); `pv-state-chips` / `pv-field-chips` render them.
+- **Tera button.** Party matches show *Terastallize · <type>* while the team's Tera is unused (hotkey `T`); the next move carries
+  `tera: true`.
+- **Locks & Struggle.** Moves are disabled when a Choice lock, Encore or a charging move forces another one; when every move is out
+  of PP a single *Struggle* button replaces them (both screens).
+- **Pivots.** After U-turn / Volt Switch the tray opens with "Choose who takes over!" (the CPU switches automatically).
+- New `field`, `substitute` and `tera` events are narrated in the log (translated).

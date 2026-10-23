@@ -45,6 +45,7 @@
         [weatherTurns]="wTurns()"
         [terrainTurns]="tTurns()"
       />
+      <pv-field-chips [chips]="fieldChips()" />
     </div>
 
     @if (foeQuip(); as quip) {
@@ -105,6 +106,7 @@
               }
             </div>
           }
+          <pv-state-chips [chips]="fStateChips()" />
         </div>
         <img
           decoding="async"
@@ -199,6 +201,7 @@
               }
             </div>
           }
+          <pv-state-chips [chips]="pStateChips()" />
         </div>
       }
     </div>
@@ -255,29 +258,52 @@
     @if (awaitingSwitch()) {
       <p class="switch-prompt">
         <strong>{{ titleCase(playerActive()?.name ?? '') }}</strong>
-        {{ 'fainted — pick a replacement from your team above.' | t }}
+        @if (pivoting()) {
+          {{ 'pivoted out — pick who takes over from your team above.' | t }}
+        } @else {
+          {{ 'fainted — pick a replacement from your team above.' | t }}
+        }
       </p>
     } @else {
       <div class="controls" [class.dim]="switchOpen() || busy()">
-        @for (slot of moveSlots(); track slot.move.name; let i = $index) {
-          <div class="move-slot">
-            <pv-move-button
-              [move]="slot.move"
-              [defenderTypes]="foeTypes()"
-              [rules]="rules()"
-              [disabled]="busy() || slot.pp <= 0"
-              [hotkey]="i + 1"
-              (picked)="useMove(i)"
-            />
-            @if (slot.maxPp !== null) {
-              <span class="pp" [class.empty]="slot.pp <= 0">{{
-                'PP {0}/{1}' | t: [slot.pp, slot.maxPp]
-              }}</span>
-            }
-          </div>
+        @if (struggling()) {
+          <button class="btn struggle" type="button" [disabled]="busy()" (click)="useMove(0)">
+            {{ 'Struggle' | t }}
+          </button>
+        } @else {
+          @for (slot of moveSlots(); track slot.move.name; let i = $index) {
+            <div class="move-slot">
+              <pv-move-button
+                [move]="slot.move"
+                [defenderTypes]="foeTypes()"
+                [rules]="rules()"
+                [disabled]="busy() || slot.pp <= 0 || slot.locked"
+                [hotkey]="i + 1"
+                (picked)="useMove(i)"
+              />
+              @if (slot.maxPp !== null) {
+                <span class="pp" [class.empty]="slot.pp <= 0">{{
+                  'PP {0}/{1}' | t: [slot.pp, slot.maxPp]
+                }}</span>
+              }
+            </div>
+          }
         }
       </div>
       <div class="action-bar">
+        @if (canTera() && teraType(); as tera) {
+          <button
+            class="tera-btn"
+            type="button"
+            [class.on]="teraArmed()"
+            [disabled]="busy()"
+            [attr.aria-pressed]="teraArmed()"
+            (click)="toggleTera()"
+          >
+            <span aria-hidden="true">✦</span>
+            {{ 'Terastallize' | t }} · {{ titleCase(tera) | t }}
+          </button>
+        }
         <button
           class="switch-btn"
           type="button"

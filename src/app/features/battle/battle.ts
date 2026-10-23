@@ -14,19 +14,7 @@ import { BattlerFactory } from '../../core/battle/battler-factory';
 import { DailyService } from './daily.service';
 import { buildShareText, turnEmoji } from '../../game/daily/daily';
 import { ToastService } from '../../core/ui/toast/toast.service';
-import {
-  Battle,
-  abilityName,
-  itemName,
-  freshStages,
-  BOOSTABLE_STATS,
-  type Battler,
-  type BoostableStat,
-  type SideIndex,
-  type Stages,
-  type Terrain,
-  type Weather as EngineWeather,
-} from '../../game/engine';
+import { Battle, abilityName, itemName, type Battler, type SideIndex } from '../../game/engine';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
 import { SpinnerComponent } from '../../core/ui/spinner/spinner';
 import { PageHeaderComponent } from '../../core/ui/page-header/page-header';
@@ -36,6 +24,7 @@ import { FieldBannerComponent } from '../../core/ui/field-banner/field-banner';
 import { MoveButtonComponent } from '../../core/ui/move-button/move-button';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { BattleFxComponent } from './pixi/battle-fx';
+import { FieldChipsComponent, StateChipsComponent } from './state-chips';
 import { BattlePresenterBase } from './battle-presenter';
 import { PokedexService } from '../pokedex/pokedex.service';
 import { titleCase } from '../../core/ui/format';
@@ -49,21 +38,6 @@ import {
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 
 type Phase = 'setup' | 'loading' | 'fighting' | 'done';
-
-interface StageChip {
-  readonly label: string;
-  readonly value: number;
-}
-
-const STAGE_SHORT: Record<BoostableStat, string> = {
-  attack: 'Atk',
-  defense: 'Def',
-  'special-attack': 'SpA',
-  'special-defense': 'SpD',
-  speed: 'Spe',
-  accuracy: 'Acc',
-  evasion: 'Eva',
-};
 
 @Component({
   selector: 'pv-battle',
@@ -79,6 +53,8 @@ const STAGE_SHORT: Record<BoostableStat, string> = {
     MoveButtonComponent,
     IconComponent,
     BattleFxComponent,
+    StateChipsComponent,
+    FieldChipsComponent,
   ],
   templateUrl: './battle.html',
   styleUrl: './battle.scss',
@@ -114,13 +90,13 @@ export class BattleComponent extends BattlePresenterBase {
   protected readonly oppMaxHp = this.fMax;
   protected readonly playerStatus = this.pStatus;
   protected readonly oppStatus = this.fStatus;
-  protected readonly playerStages = signal<Stages>(freshStages());
-  protected readonly oppStages = signal<Stages>(freshStages());
+  protected readonly playerStages = this.pStages;
+  protected readonly oppStages = this.fStages;
 
-  protected readonly engineWeather = signal<EngineWeather>('none');
-  protected readonly engineTerrain = signal<Terrain>('none');
-  protected readonly weatherTurns = signal(0);
-  protected readonly terrainTurns = signal(0);
+  protected readonly engineWeather = this.engWeather;
+  protected readonly engineTerrain = this.engTerrain;
+  protected readonly weatherTurns = this.wTurns;
+  protected readonly terrainTurns = this.tTurns;
 
   protected readonly winner = signal<SideIndex | null>(null);
   /** The 1-v-1 loser stays down — no bench sends in a replacement. */
@@ -138,10 +114,30 @@ export class BattleComponent extends BattlePresenterBase {
   protected readonly playerHpPct = this.pHpPct;
   protected readonly oppHpPct = this.fHpPct;
   protected readonly playerMoves = computed(() => this.player()?.moves ?? []);
+  /** Bumped after every engine mutation so the move lock state refreshes. */
+  private readonly version = signal(0);
+  /** Moves the player cannot pick right now: out of PP, or locked by Choice / Encore / a charge. */
+  protected readonly blockedMoves = computed<boolean[]>(() => {
+    this.version();
+    const battle = this.battle;
+    const moves = this.playerMoves();
+    if (!battle) return moves.map(() => false);
+    const forced = battle.forcedMove(0);
+    return moves.map((_, i) => {
+      const pp = battle.player.pp[i];
+      const empty = pp !== undefined && Number.isFinite(pp) && pp <= 0;
+      return empty || (forced !== null && forced !== i);
+    });
+  });
+  /** Every move is out of PP: only Struggle is left. */
+  protected readonly struggling = computed(() => {
+    this.version();
+    return this.battle?.mustStruggle(0) ?? false;
+  });
   protected readonly outcomeWon = computed(() => this.winner() === 0);
 
-  protected readonly playerStageChips = computed(() => chips(this.playerStages()));
-  protected readonly oppStageChips = computed(() => chips(this.oppStages()));
+  protected readonly playerStageChips = this.pStageChips;
+  protected readonly oppStageChips = this.fStageChips;
   protected readonly playerAbility = computed(() => abilityName(this.player()?.ability));
   protected readonly oppAbility = computed(() => abilityName(this.opponent()?.ability));
 
@@ -227,12 +223,8 @@ export class BattleComponent extends BattlePresenterBase {
     this.oppMaxHp.set(this.battle.opponent.maxHp);
     this.playerHp.set(this.battle.player.maxHp);
     this.oppHp.set(this.battle.opponent.maxHp);
-    this.playerStatus.set('none');
-    this.oppStatus.set('none');
-    this.playerStages.set(freshStages());
-    this.oppStages.set(freshStages());
-    this.engineWeather.set('none');
-    this.engineTerrain.set('none');
+    this.applyBattleState(this.battle.player, this.battle.opponent, this.battle.state.field);
+    this.version.update((v) => v + 1);
     this.winner.set(null);
 
     const rng = new SeededRng(`${player.id}-${opponent.id}`);
@@ -255,8 +247,8 @@ export class BattleComponent extends BattlePresenterBase {
   protected onKeydown(event: KeyboardEvent): void {
     if (this.phase() !== 'fighting' || this.busy()) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
-    const n = Number(event.key);
-    if (Number.isInteger(n) && n >= 1 && n <= this.playerMoves().length) {
+    const n = this.digitKey(event, this.playerMoves().length);
+    if (n !== null && !this.blockedMoves()[n - 1]) {
       event.preventDefault();
       void this.useMove(n - 1);
     }
@@ -351,23 +343,7 @@ export class BattleComponent extends BattlePresenterBase {
     if (!this.battle) return;
     const p = this.battle.player;
     const o = this.battle.opponent;
-    this.playerHp.set(p.currentHp);
-    this.oppHp.set(o.currentHp);
-    this.playerStatus.set(p.status);
-    this.oppStatus.set(o.status);
-    this.playerStages.set({ ...p.stages });
-    this.oppStages.set({ ...o.stages });
-    const f = this.battle.state.field;
-    this.engineWeather.set(f.weather);
-    this.engineTerrain.set(f.terrain);
-    this.weatherTurns.set(f.weatherTurns);
-    this.terrainTurns.set(f.terrainTurns);
+    this.applyBattleState(p, o, this.battle.state.field);
+    this.version.update((v) => v + 1);
   }
-}
-
-function chips(stages: Stages): StageChip[] {
-  return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({
-    label: STAGE_SHORT[s],
-    value: stages[s],
-  }));
 }

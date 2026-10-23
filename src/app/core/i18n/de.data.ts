@@ -1173,6 +1173,18 @@ export const DE_DATA: Readonly<Record<string, string>> = {
   'Halves special damage.': 'Halbiert speziellen Schaden.',
   'Halves all damage (needs snow).': 'Halbiert jeden Schaden (braucht Schnee).',
   'But it failed!': 'Aber es schlug fehl!',
+  'Substitute': 'Delegator',
+  'Protected': 'Geschützt',
+  'Confused': 'Verwirrt',
+  'Seeded': 'Bepflanzt',
+  'Taunted': 'Verspottet',
+  'Encore': 'Zugabe',
+  'Charging': 'Lädt auf',
+  'Recharging': 'Erholt sich',
+  'Move locked': 'Attacke gesperrt',
+  'Tailwind': 'Rückenwind',
+  'Trick Room': 'Trickraum',
+  'Choose who takes over!': 'Wähle, wer übernimmt!',
 };
 
 export const DE_PATTERNS: readonly (readonly [string, string])[] = [
@@ -1348,4 +1360,5 @@ export const DE_PATTERNS: readonly (readonly [string, string])[] = [
   ['{}\'s Clear Body prevents stat loss!', '{}s Neutraler Körper verhindert Statusverluste!'],
   ['{}\'s Download analysed the foe!', '{}s Download hat den Gegner analysiert!'],
   ['Boosts {}-type moves.', 'Verstärkt Attacken vom Typ {}.'],
+  ['Tera {}', 'Tera-{}'],
 ];

@@ -9,10 +9,23 @@
 import { computed, inject, signal, type Signal } from '@angular/core';
 import { SfxService } from '../../core/audio/sfx.service';
 import { HapticsService } from '../../core/haptics/haptics.service';
-import type { Battler, BattleEvent, SideIndex, StatusCondition } from '../../game/engine';
+import {
+  freshField,
+  freshStages,
+  type Battler,
+  type BattleEvent,
+  type BattleSide,
+  type Field,
+  type SideIndex,
+  type Stages,
+  type StatusCondition,
+  type Terrain,
+  type Weather as EngineWeather,
+} from '../../game/engine';
 import type { PokemonType } from '../../core/utils/type-chart';
 import { titleCase } from '../../core/ui/format';
 import type { BattleFxComponent } from './pixi/battle-fx';
+import { fieldChips, stageChips, volatileChips } from './battle-view';
 import { safeGet, safeSet } from '../../core/storage/safe-storage';
 
 export type LogTone = 'crit' | 'super' | 'resist' | 'faint' | 'win' | 'switch';
@@ -84,6 +97,25 @@ export abstract class BattlePresenterBase {
   protected readonly floats = signal<FloatNum[]>([]);
   private floatId = 0;
 
+  /* Battle-state mirrors (stages, field, volatiles) filled by {@link applyBattleState}. */
+  protected readonly pStages = signal<Stages>(freshStages());
+  protected readonly fStages = signal<Stages>(freshStages());
+  protected readonly engWeather = signal<EngineWeather>('none');
+  protected readonly engTerrain = signal<Terrain>('none');
+  protected readonly wTurns = signal(0);
+  protected readonly tTurns = signal(0);
+  private readonly pSide = signal<BattleSide | null>(null);
+  private readonly fSide = signal<BattleSide | null>(null);
+  private readonly fieldState = signal<Field>(freshField());
+
+  protected readonly pStageChips = computed(() => stageChips(this.pStages()));
+  protected readonly fStageChips = computed(() => stageChips(this.fStages()));
+  /** Confusion, Substitute, Tera … of each side's active Pokémon. */
+  protected readonly pStateChips = computed(() => volatileChips(this.pSide() ?? undefined));
+  protected readonly fStateChips = computed(() => volatileChips(this.fSide() ?? undefined));
+  /** Screens, Tailwind and Trick Room currently up. */
+  protected readonly fieldChips = computed(() => fieldChips(this.fieldState()));
+
   protected readonly pHpPct = computed(() => (this.pHp() / this.pMax()) * 100);
   protected readonly fHpPct = computed(() => (this.fHp() / this.fMax()) * 100);
 
@@ -124,6 +156,40 @@ export abstract class BattlePresenterBase {
   /** Speed-aware pause — use instead of `sleep` for anything the player waits on. */
   protected wait(ms: number): Promise<void> {
     return sleep(ms / this.speed());
+  }
+
+  /**
+   * Pull the authoritative state of both active sides and the field from an engine into the
+   * view signals (HP, status, stages, weather/terrain, volatiles, screens). Hosts call this
+   * after every turn; the engine objects are mutable, so the chip computeds re-read a fresh
+   * reference each time.
+   */
+  protected applyBattleState(me: BattleSide, foe: BattleSide, field: Field): void {
+    this.pMax.set(me.maxHp);
+    this.fMax.set(foe.maxHp);
+    this.pHp.set(me.currentHp);
+    this.fHp.set(foe.currentHp);
+    this.pStatus.set(me.status);
+    this.fStatus.set(foe.status);
+    this.pStages.set({ ...me.stages });
+    this.fStages.set({ ...foe.stages });
+    this.engWeather.set(field.weather);
+    this.engTerrain.set(field.terrain);
+    this.wTurns.set(field.weatherTurns);
+    this.tTurns.set(field.terrainTurns);
+    this.pSide.set({ ...me, volatiles: { ...me.volatiles } });
+    this.fSide.set({ ...foe, volatiles: { ...foe.volatiles } });
+    this.fieldState.set({
+      ...field,
+      screens: [{ ...field.screens[0] }, { ...field.screens[1] }],
+      tailwind: [field.tailwind[0], field.tailwind[1]],
+    });
+  }
+
+  /** The 1–N number a key press selects (null for anything else or out of range). */
+  protected digitKey(event: KeyboardEvent, count: number): number | null {
+    const n = Number(event.key);
+    return Number.isInteger(n) && n >= 1 && n <= count ? n : null;
   }
 
   /* ------------------------------------------------------------- hooks */
@@ -205,6 +271,11 @@ export abstract class BattlePresenterBase {
           if (ev.text) this.append(ev.text);
           await this.wait(t.note);
           break;
+        case 'tera':
+          this.sfx.play('up');
+          this.append(ev.text);
+          await this.wait(t.move);
+          break;
         case 'cure':
         case 'weather':
         case 'terrain':
@@ -212,6 +283,8 @@ export abstract class BattlePresenterBase {
         case 'ability':
         case 'item':
         case 'flinch':
+        case 'field':
+        case 'substitute':
         case 'status':
           if (ev.text) this.append(ev.text);
           await this.wait(t.note);

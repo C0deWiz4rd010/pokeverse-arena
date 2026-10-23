@@ -13,16 +13,10 @@ import {
 import {
   TeamBattle,
   abilityName,
-  freshStages,
-  BOOSTABLE_STATS,
   type Battler,
   type BattleMove,
-  type BoostableStat,
   type SideIndex,
-  type Stages,
   type TeamAction,
-  type Terrain,
-  type Weather as EngineWeather,
 } from '../../../game/engine';
 import { TypeBadgeComponent } from '../../../core/ui/type-badge/type-badge';
 import { WeatherOverlayComponent } from '../../../core/ui/weather-overlay/weather-overlay';
@@ -30,6 +24,7 @@ import { StatusBadgeComponent } from '../../../core/ui/status-badge/status-badge
 import { FieldBannerComponent } from '../../../core/ui/field-banner/field-banner';
 import { MoveButtonComponent } from '../../../core/ui/move-button/move-button';
 import { BattleFxComponent } from '../../battle/pixi/battle-fx';
+import { FieldChipsComponent, StateChipsComponent } from '../../battle/state-chips';
 import { BattlePresenterBase } from '../../battle/battle-presenter';
 import {
   pickWeather,
@@ -42,10 +37,6 @@ import { titleCase } from '../../../core/ui/format';
 import type { MatchOutcome, PlayerMatchSetup } from '../../../game/tournament';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 
-interface StageChip {
-  readonly label: string;
-  readonly value: number;
-}
 interface TrayMon {
   readonly mon: Battler;
   readonly hp: number;
@@ -59,22 +50,8 @@ interface MoveSlot {
   readonly move: BattleMove;
   readonly pp: number;
   readonly maxPp: number | null;
-}
-
-const STAGE_SHORT: Record<BoostableStat, string> = {
-  attack: 'Atk',
-  defense: 'Def',
-  'special-attack': 'SpA',
-  'special-defense': 'SpD',
-  speed: 'Spe',
-  accuracy: 'Acc',
-  evasion: 'Eva',
-};
-function stageChips(stages: Stages): StageChip[] {
-  return BOOSTABLE_STATS.filter((s) => stages[s] !== 0).map((s) => ({
-    label: STAGE_SHORT[s],
-    value: stages[s],
-  }));
+  /** Locked out this turn (Choice lock, Encore or a charging move forces another move). */
+  readonly locked: boolean;
 }
 
 /**
@@ -94,6 +71,8 @@ function stageChips(stages: Stages): StageChip[] {
     FieldBannerComponent,
     MoveButtonComponent,
     BattleFxComponent,
+    StateChipsComponent,
+    FieldChipsComponent,
   ],
   templateUrl: './tournament-match.html',
   styleUrl: './tournament-match.scss',
@@ -109,15 +88,10 @@ export class TournamentMatchComponent extends BattlePresenterBase {
   protected readonly playerWon = signal(false);
   /** True while the player must pick a replacement after a faint. */
   protected readonly awaitingSwitch = signal(false);
+  /** The forced switch comes from a pivot move (U-turn…), not from a faint. */
+  protected readonly pivoting = signal(false);
   /** Whether the switch tray is open (manual switch chooser). */
   protected readonly switchOpen = signal(false);
-
-  protected readonly pStages = signal<Stages>(freshStages());
-  protected readonly fStages = signal<Stages>(freshStages());
-  protected readonly engWeather = signal<EngineWeather>('none');
-  protected readonly engTerrain = signal<Terrain>('none');
-  protected readonly wTurns = signal(0);
-  protected readonly tTurns = signal(0);
 
   protected readonly foeQuip = signal<string | null>(null);
   private foeAceShown = false;
@@ -125,8 +99,6 @@ export class TournamentMatchComponent extends BattlePresenterBase {
   /** Bumped after every engine mutation so tray/move computeds refresh. */
   private readonly version = signal(0);
 
-  protected readonly pStageChips = computed(() => stageChips(this.pStages()));
-  protected readonly fStageChips = computed(() => stageChips(this.fStages()));
   protected readonly playerAbility = computed(() => abilityName(this.playerActive()?.ability));
   protected readonly foeAbility = computed(() => abilityName(this.foeActive()?.ability));
 
@@ -135,11 +107,28 @@ export class TournamentMatchComponent extends BattlePresenterBase {
     this.version();
     const side = this.tb?.active(0);
     if (!side) return [];
+    const forced = this.tb?.forcedMove(0) ?? null;
     return side.battler.moves.map((move, i) => ({
       move,
       pp: Number.isFinite(side.pp[i]) ? side.pp[i]! : Infinity,
       maxPp: move.pp ?? null,
+      locked: forced !== null && forced !== i,
     }));
+  });
+  /** Every move is out of PP: the only option left is Struggle. */
+  protected readonly struggling = computed(() => {
+    this.version();
+    return this.tb?.mustStruggle(0) ?? false;
+  });
+  /** Terastallization: armed for the next move. */
+  protected readonly teraArmed = signal(false);
+  protected readonly canTera = computed(() => {
+    this.version();
+    return !!this.tb && this.tb.canTerastallize(0) && !this.awaitingSwitch();
+  });
+  protected readonly teraType = computed(() => {
+    const mon = this.playerActive();
+    return mon ? (mon.teraType ?? mon.types[0] ?? null) : null;
   });
   protected readonly canSwitch = computed(() => {
     this.version();
@@ -205,11 +194,18 @@ export class TournamentMatchComponent extends BattlePresenterBase {
     if (this.done() || this.busy() || event.ctrlKey || event.metaKey || event.altKey) return;
     const key = event.key.toLowerCase();
     if (this.awaitingSwitch()) {
-      const n = Number(event.key);
       const bench = this.tb?.benchedSwitches(0) ?? [];
-      if (Number.isInteger(n) && n >= 1 && n <= bench.length) {
+      const n = this.digitKey(event, bench.length);
+      if (n !== null) {
         event.preventDefault();
         void this.onTraySelect(0, bench[n - 1]!);
+      }
+      return;
+    }
+    if (key === 't') {
+      if (this.canTera()) {
+        event.preventDefault();
+        this.toggleTera();
       }
       return;
     }
@@ -220,10 +216,10 @@ export class TournamentMatchComponent extends BattlePresenterBase {
       }
       return;
     }
-    const n = Number(event.key);
-    if (Number.isInteger(n) && n >= 1 && n <= this.moveSlots().length) {
+    const n = this.digitKey(event, this.moveSlots().length);
+    if (n !== null) {
       const slot = this.moveSlots()[n - 1]!;
-      if (slot.pp > 0) {
+      if (slot.pp > 0 && !slot.locked) {
         event.preventDefault();
         void this.useMove(n - 1);
       }
@@ -233,7 +229,14 @@ export class TournamentMatchComponent extends BattlePresenterBase {
   protected async useMove(index: number): Promise<void> {
     if (!this.ready()) return;
     this.switchOpen.set(false);
-    await this.resolveTurn({ type: 'move', index });
+    const tera = this.teraArmed() && this.canTera();
+    this.teraArmed.set(false);
+    await this.resolveTurn({ type: 'move', index, tera });
+  }
+
+  protected toggleTera(): void {
+    if (this.busy() || this.done() || !this.canTera()) return;
+    this.teraArmed.update((v) => !v);
   }
 
   protected toggleSwitch(): void {
@@ -303,13 +306,20 @@ export class TournamentMatchComponent extends BattlePresenterBase {
     }
 
     if (tb.mustSwitch(0)) {
-      this.awaitingSwitch.set(true);
-      this.switchOpen.set(true);
-      this.append('Choose your next Pokémon!');
+      this.askForSwitch();
       this.busy.set(false); // tray is interactive, moves stay locked
       return;
     }
     this.busy.set(false);
+  }
+
+  /** The tray opens for a replacement (after a faint) or for a pivot move's switch. */
+  private askForSwitch(): void {
+    const pivoting = (this.tb?.active(0).currentHp ?? 0) > 0;
+    this.pivoting.set(pivoting);
+    this.awaitingSwitch.set(true);
+    this.switchOpen.set(true);
+    this.append(pivoting ? 'Choose who takes over!' : 'Choose your next Pokémon!');
   }
 
   private async doForcedSwitch(index: number): Promise<void> {
@@ -322,9 +332,7 @@ export class TournamentMatchComponent extends BattlePresenterBase {
     // A hazard could KO the incoming Pokémon → ask again, or end the match.
     if (tb.state.finished) return this.end();
     if (tb.mustSwitch(0)) {
-      this.awaitingSwitch.set(true);
-      this.switchOpen.set(true);
-      this.append('Choose your next Pokémon!');
+      this.askForSwitch();
       this.busy.set(false);
       return;
     }
@@ -351,19 +359,7 @@ export class TournamentMatchComponent extends BattlePresenterBase {
     const foe = tb.active(1);
     this.playerActive.set(me.battler);
     this.foeActive.set(foe.battler);
-    this.pMax.set(me.maxHp);
-    this.fMax.set(foe.maxHp);
-    this.pHp.set(me.currentHp);
-    this.fHp.set(foe.currentHp);
-    this.pStatus.set(me.status);
-    this.fStatus.set(foe.status);
-    this.pStages.set({ ...me.stages });
-    this.fStages.set({ ...foe.stages });
-    const f = tb.state.field;
-    this.engWeather.set(f.weather);
-    this.engTerrain.set(f.terrain);
-    this.wTurns.set(f.weatherTurns);
-    this.tTurns.set(f.terrainTurns);
+    this.applyBattleState(me, foe, tb.state.field);
     this.version.update((v) => v + 1);
   }
 

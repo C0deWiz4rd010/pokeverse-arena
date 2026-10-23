@@ -602,4 +602,9 @@ export const DE_UI: Readonly<Record<string, string>> = {
   '🔮 Crystal ball — call the champion': '🔮 Kristallkugel – sag den Champion voraus',
   '🔮 Your call:': '🔮 Dein Tipp:',
   '🪨 Haggler −10 %': '🪨 Feilscher −10 %',
+  'Struggle': 'Verzweifler',
+  'Field conditions': 'Feldzustände',
+  'Terastallize': 'Terakristallisieren',
+  'pivoted out — pick who takes over from your team above.': 'hat sich zurückgezogen – wähle oben, wer übernimmt.',
+  'Foe': 'Gegner',
 };

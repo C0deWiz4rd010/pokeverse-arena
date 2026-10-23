@@ -27,7 +27,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | 4 | Große Services aufteilen | v3.0.4 | ✅ |
 | 5 | Einheitliche Persistenz + Run-Resume | v3.0.5 | ✅ |
 | 6 | Battle-Engine vereinheitlichen & vertiefen | v3.0.6 | ✅ |
-| 7 | Battle-UI entdoppeln | v3.0.7 | ⬜ |
+| 7 | Battle-UI entdoppeln | v3.0.7 | ✅ |
 | 8 | Lade-/Fehler-/Leerzustände & Barrierefreiheit | v3.0.8 | ⬜ |
 | 9 | Testabdeckung Features + Core | v3.0.9 | ⬜ |
 | 10 | Performance, Bundle, i18n-Struktur | v3.0.10 | ⬜ |

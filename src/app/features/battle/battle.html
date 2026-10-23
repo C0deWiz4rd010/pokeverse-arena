@@ -122,6 +122,7 @@
                 [weatherTurns]="weatherTurns()"
                 [terrainTurns]="terrainTurns()"
               />
+              <pv-field-chips [chips]="fieldChips()" />
             </div>
 
             <!-- Opponent -->
@@ -161,6 +162,7 @@
                       }
                     </div>
                   }
+                  <pv-state-chips [chips]="fStateChips()" />
                   <div
                     class="hpbar"
                     role="progressbar"
@@ -246,6 +248,7 @@
                       }
                     </div>
                   }
+                  <pv-state-chips [chips]="pStateChips()" />
                   <div
                     class="hpbar"
                     role="progressbar"
@@ -271,14 +274,20 @@
 
           @if (phase() === 'fighting') {
             <div class="moves" [class.disabled]="busy()">
-              @for (move of playerMoves(); track move.name; let i = $index) {
-                <pv-move-button
-                  [move]="move"
-                  [defenderTypes]="opponent()?.types"
-                  [disabled]="busy()"
-                  [hotkey]="i + 1"
-                  (picked)="useMove(i)"
-                />
+              @if (struggling()) {
+                <button class="btn struggle" type="button" [disabled]="busy()" (click)="useMove(0)">
+                  {{ 'Struggle' | t }}
+                </button>
+              } @else {
+                @for (move of playerMoves(); track move.name; let i = $index) {
+                  <pv-move-button
+                    [move]="move"
+                    [defenderTypes]="opponent()?.types"
+                    [disabled]="busy() || blockedMoves()[i]!"
+                    [hotkey]="i + 1"
+                    (picked)="useMove(i)"
+                  />
+                }
               }
             </div>
             @if (busy()) {

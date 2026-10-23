@@ -190,14 +190,28 @@ export class BattleCore {
 
   /* ----------------------------------------------------------- move choice */
 
-  /** The move a side must actually use: charging, Encore and Choice locks override the request. */
-  resolveMoveIndex(side: SideIndex, requested: number): number {
+  /** The move a side is locked into (charging, Encore, Choice lock), or null when it is free to choose. */
+  forcedMoveIndex(side: SideIndex): number | null {
     const s = this.active(side);
     const v = s.volatiles;
     if (v.charging !== null) return v.charging;
     if (v.encore && hasPp(s, v.encore.index)) return v.encore.index;
     const locked = v.lockedMove;
     if (locked !== null && itemById(s.battler.item)?.choiceLock && hasPp(s, locked)) return locked;
+    return null;
+  }
+
+  /** True when no move has PP left, so the side can only Struggle. */
+  mustStruggle(side: SideIndex): boolean {
+    const s = this.active(side);
+    return !s.battler.moves.some((_, i) => hasPp(s, i));
+  }
+
+  /** The move a side must actually use: charging, Encore and Choice locks override the request. */
+  resolveMoveIndex(side: SideIndex, requested: number): number {
+    const s = this.active(side);
+    const forced = this.forcedMoveIndex(side);
+    if (forced !== null) return forced;
     if (hasPp(s, requested)) return requested;
     const fallback = s.battler.moves.findIndex((_, i) => hasPp(s, i));
     return fallback; // -1 → Struggle
