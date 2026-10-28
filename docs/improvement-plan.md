@@ -31,7 +31,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | 8 | Lade-/Fehler-/Leerzustände & Barrierefreiheit | v3.0.8 | ✅ |
 | 9 | Testabdeckung Features + Core | v3.0.9 | ✅ |
 | 10 | Performance, Bundle, i18n-Struktur | v3.0.10 | ✅ |
-| 11 | CI/CD härten | v3.0.11 | ⬜ |
+| 11 | CI/CD härten | v3.0.11 | ✅ |
 | 12 | Dokumentation neu aufsetzen | v3.0.12 | ⬜ |
 
 ---
@@ -144,8 +144,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 1. Build einmal, als Artefakt an lighthouse/e2e/deploy weitergeben (statt 3× `npm ci && build`).
 2. `e2e` zur Pflicht machen (`continue-on-error` raus), `deploy` hängt an `e2e`; Lighthouse-Accessibility als `error`.
 3. Format-Check + strenger Lint in `verify`; Dependabot/Renovate für npm + Actions; `npm audit` für high blockierend.
-4. **Entscheidung:** Doku sagt „`main` = Produktion“, Workflow deployt aber auch von `develop` → angleichen (Deploy nur von `main`,
-   `develop` nur verify/e2e) und `docs/deployment.md` + `roadmap.md` entsprechend.
+4. **Entscheidung (getroffen):** Deploy bleibt bei `develop` + `main`; die Doku wird angeglichen statt des Workflows.
 
 ## Phase 12 – Dokumentation neu aufsetzen
 

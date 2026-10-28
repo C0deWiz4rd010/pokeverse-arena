@@ -7,7 +7,7 @@ PokéVerse Arena ships to GitHub Pages from a GitHub Actions workflow.
 [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) runs on every
 push to `develop` or `main` (and on manual dispatch):
 
-1. **Build** — `npm ci` then
+1. **Build** (`pages-build`) — `npm ci` then
    `npm run build -- --base-href=/pokeverse-arena/`, so every asset resolves under
    the repository sub-path.
 2. **SPA + Pages housekeeping** — copies `index.html` to `404.html` (so any
@@ -37,6 +37,19 @@ https://<owner>.github.io/pokeverse-arena/
 
 ## CI jobs
 
-`verify` (typecheck, lint, translations, tests with coverage thresholds) gates `build` and `deploy`. `lighthouse` (mobile
-audit) and `e2e` (browser acceptance against the production build) run alongside and are informational until they have
-been green for a while — see [acceptance.md](acceptance.md).
+```
+verify ─┬─ build-app ─┬─ e2e ──────────┐
+        │             └─ lighthouse    ├─ deploy   (push to develop / main only)
+        └─ pages-build ────────────────┘
+```
+
+| Job | What it enforces |
+| --- | ---------------- |
+| `verify` | Typecheck (app + specs), ESLint (`--max-warnings 0`), Prettier, translations + duplicate-key check, unit tests with the coverage thresholds, `npm audit` (critical findings block; high ones are reported) |
+| `build-app` | One production build (root base href) shared with `e2e` and `lighthouse` as an artifact |
+| `e2e` | The browser acceptance suite ([acceptance.md](acceptance.md)) — **required**; one automatic retry absorbs a PokéAPI blip |
+| `lighthouse` | Mobile audit, median of 3 runs; accessibility ≥ 0.95 is an error, performance / best practices / SEO are warnings. The report is kept as a workflow artifact (not published anywhere) |
+| `pages-build` | The `/pokeverse-arena/` build that GitHub Pages serves |
+| `deploy` | Needs `pages-build` **and** `e2e`; pushes to `develop` and `main` both publish the site |
+
+Dependabot (`.github/dependabot.yml`) proposes npm and Actions updates weekly; Angular and TypeScript majors are left to a deliberate upgrade.

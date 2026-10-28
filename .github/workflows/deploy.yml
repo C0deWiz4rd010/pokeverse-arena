@@ -1,8 +1,15 @@
 name: Deploy to GitHub Pages
 
-# Build the production bundle and publish it to GitHub Pages.
+# Verify every push and pull request; publish to GitHub Pages from develop and main.
 # Hash routing (withHashLocation) means deep links work without server rewrites;
 # the 404.html fallback covers any non-hash path that is requested directly.
+#
+#   verify ─┬─ build-app ─┬─ e2e ──────────┐
+#           │             └─ lighthouse    ├─ deploy   (push only)
+#           └─ pages-build ────────────────┘
+#
+# `build-app` compiles the production bundle once (root base href) and hands it to e2e and
+# lighthouse as an artifact; `pages-build` compiles the sub-path build that GitHub Pages serves.
 
 on:
   push:
@@ -24,7 +31,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Typecheck, lint, test
+    name: Typecheck, lint, format, test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,20 +46,20 @@ jobs:
         run: npm run lint
       - name: Formatting (Prettier)
         run: npm run format:check
-      - name: Translations complete
+      - name: Translations complete, no duplicate keys
         run: npm run i18n:check
-      - name: Unit tests
+      - name: Unit tests + coverage thresholds
         run: npm run test:ci
-      - name: Dependency audit (production, non-blocking)
+      - name: Dependency audit (production) — critical findings block
+        run: npm audit --omit=dev --audit-level=critical
+      - name: Dependency audit report (high, informational)
         run: npm audit --omit=dev --audit-level=high
         continue-on-error: true
 
-  lighthouse:
-    name: Lighthouse (mobile, informational)
+  build-app:
+    name: Production build (shared by e2e and Lighthouse)
     needs: verify
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -61,15 +68,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Lighthouse CI
-        run: npx --yes @lhci/cli@0.14.x autorun
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-dist
+          path: dist/pokeverse-arena/browser
+          retention-days: 1
 
   e2e:
-    name: Browser acceptance (routes x viewports, adventure, offline)
-    needs: verify
+    name: Browser acceptance (routes x viewports, adventure, app flows, offline)
+    needs: build-app
     runs-on: ubuntu-latest
-    # Informational until it has been green on a few runs; flip to required by removing this line.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -77,37 +85,58 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-dist
+          path: dist/pokeverse-arena/browser
       - run: npx playwright install --with-deps chromium
       - name: Run the acceptance suite against the production build
-        run: node tools/accept.mjs
+        # The flows talk to the public PokéAPI; one retry absorbs a transient network blip.
+        run: node tools/accept.mjs || node tools/accept.mjs
         env:
           ACCEPT_PORT: 4300
 
-  build:
-    needs: verify
+  lighthouse:
+    name: Lighthouse (mobile; accessibility must stay ≥ 0.95)
+    needs: build-app
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-dist
+          path: dist/pokeverse-arena/browser
+      - name: Lighthouse CI (median of 3 runs)
+        run: npx --yes @lhci/cli@0.14.x autorun
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci
+          retention-days: 7
 
-      - name: Install dependencies
-        run: npm ci
-
+  pages-build:
+    name: Build for GitHub Pages (scoped base href)
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
       - name: Build (production, scoped base href)
         run: npm run build -- --base-href=/pokeverse-arena/
-
       - name: SPA + Pages housekeeping
         run: |
           cp dist/pokeverse-arena/browser/index.html dist/pokeverse-arena/browser/404.html
           touch dist/pokeverse-arena/browser/.nojekyll
-
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
@@ -115,7 +144,7 @@ jobs:
           path: dist/pokeverse-arena/browser
 
   deploy:
-    needs: build
+    needs: [pages-build, e2e]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:

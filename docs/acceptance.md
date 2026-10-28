@@ -9,7 +9,7 @@
 | Adventure happy path (new game → starter → wild battle → save) | `npm run e2e` | `npm run accept` |
 | Offline start through the service worker | `npm run e2e:offline` | `npm run accept` |
 | App flows: Pokédex search → detail (stat meters), a battle to its result, team export, command palette (inert background) | `npm run e2e:flows` | `npm run accept` |
-| Lighthouse (mobile): performance ≥ 90, accessibility/best-practices ≥ 95, SEO ≥ 90 | `npx @lhci/cli autorun` | CI `lighthouse` job (informational) |
+| Lighthouse (mobile): accessibility ≥ 95 (error); performance ≥ 90, best-practices ≥ 95, SEO ≥ 90 (warnings) | `npx @lhci/cli autorun` | CI `lighthouse` job |
 | Adventure frame time under CPU throttling | `npm run perf:overworld` | manual |
 
 ## Running the browser acceptance suite
@@ -23,8 +23,7 @@ PW_CHANNEL=chrome npm run accept     # omit PW_CHANNEL on CI (uses Playwright's 
 Pages) and runs the three browser checks. The offline check uses `pv.localhost` because the service worker
 deliberately skips plain `localhost` during development.
 
-CI runs the same suite in the `e2e` job. It is informational (`continue-on-error`) until it has been green
-on a few runs; remove that line to make it a required gate.
+CI runs the same suite in the `e2e` job; it is a required gate for the deploy (with one automatic retry for network blips).
 
 ## Reference numbers (production build, local Chrome, mobile Lighthouse preset)
 

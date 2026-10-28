@@ -4,6 +4,28 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.11 — 2026-10-28
+
+🚦 **Stricter, cheaper CI** (phase 11 of the [improvement plan](improvement-plan.md)).
+
+### Changed
+
+- The production bundle is built **once** and shared with the e2e and Lighthouse jobs as an artifact (it was built three times);
+  the GitHub Pages build stays separate because of its sub-path base href.
+- **e2e is required**: `deploy` now waits for it (with one automatic retry for PokéAPI hiccups). Lint with `--max-warnings 0`,
+  the Prettier check and the duplicate-key i18n check run in `verify`.
+- **Lighthouse**: median of three runs, accessibility ≥ 0.95 is an error; the report is kept as a workflow artifact instead of being
+  uploaded to a public service.
+- `npm audit`: critical findings block, high findings are reported.
+- **Dependabot** for npm (Angular/tooling groups, no automatic majors) and GitHub Actions.
+- `@xmldom/xmldom` updated past its high-severity advisories; `.lighthouseci/` is ignored.
+
+### Notes
+
+- Deployment still happens from both `develop` and `main` (the docs now say so instead of calling `main` the production branch).
+- Two high advisories remain in the Angular CLI tooling chain (`zod`) and moderate ones in Angular 22.1 patch versions; `npm audit fix`
+  crashes in this npm version, Dependabot will propose the bumps.
+
 ## v3.0.10 — 2026-10-28
 
 📦 **Bundle budgets & dictionary structure** (phase 10 of the [improvement plan](improvement-plan.md)).

@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      angular:
+        patterns: ['@angular/*', '@angular-eslint/*', 'angular-eslint']
+      tooling:
+        patterns: ['eslint*', '@eslint/*', 'typescript*', 'prettier', 'vitest', '@vitest/*', 'playwright', 'jsdom']
+    ignore:
+      # Angular and TypeScript majors are upgraded deliberately, together.
+      - dependency-name: '@angular/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

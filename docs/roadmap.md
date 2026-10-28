@@ -32,7 +32,7 @@ See [plan.md](plan.md) for the phase-by-phase breakdown of milestone 18.
 - Default integration branch: **`develop`**.
 - Every feature/point is committed and pushed to `develop` with a descriptive,
   multi-line commit message (what + why).
-- `main` receives the production build for GitHub Pages.
+- Both `develop` and `main` publish the production build to GitHub Pages (after verify and e2e pass).
 
 ## Definition of done (per feature)
 - Compiles with `strict` TypeScript, no lint errors.
