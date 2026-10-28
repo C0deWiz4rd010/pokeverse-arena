@@ -13,6 +13,7 @@ import { RouterLink } from '@angular/router';
 import { PokedexDetailService, type EvoStage, type QuickDetail } from './pokedex-detail.service';
 import { SPRITE_BASE } from '../../core/api/pokeapi-endpoints';
 import { TypeBadgeComponent } from '../../core/ui/type-badge/type-badge';
+import { ModalDirective } from '../../core/ui/modal/modal';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { CryService } from '../../core/audio/cry.service';
 import { padId, titleCase, typeColorVar } from '../../core/ui/format';
@@ -44,9 +45,9 @@ const REDUCED =
 @Component({
   selector: 'pv-pokemon-quickview',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, RouterLink, TypeBadgeComponent, IconComponent],
+  imports: [TranslatePipe, RouterLink, TypeBadgeComponent, IconComponent, ModalDirective],
   template: `
-    <div class="backdrop" role="presentation" (click)="close.emit()"></div>
+    <div class="backdrop" role="presentation" data-keep-live (click)="close.emit()"></div>
     <div
       class="panel"
       [style.--t1]="t1()"
@@ -57,6 +58,8 @@ const REDUCED =
       (pointermove)="onTilt($event)"
       (pointerleave)="resetTilt()"
       role="dialog"
+      pvModal
+      (pvModalClose)="close.emit()"
       [attr.aria-label]="'{0} quick view' | t: [name()]"
     >
       <button class="x" type="button" (click)="close.emit()" [attr.aria-label]="'Close' | t">

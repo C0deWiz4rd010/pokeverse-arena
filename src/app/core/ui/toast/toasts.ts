@@ -9,7 +9,17 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslatePipe, IconComponent],
   template: `
-    <div class="stack" role="status" aria-live="polite">
+    <div class="sr-only" role="status" aria-live="polite" aria-atomic="false">
+      @for (t of svc.toasts(); track t.id) {
+        <p>
+          {{ t.title | t }}
+          @if (t.text) {
+            . {{ t.text | t }}
+          }
+        </p>
+      }
+    </div>
+    <div class="stack">
       @for (t of svc.toasts(); track t.id) {
         <button
           type="button"
@@ -21,9 +31,10 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
           (focus)="svc.pause(t.id)"
           (blur)="svc.resume(t.id)"
           [attr.title]="'Dismiss' | t"
+          [attr.aria-label]="'Dismiss' | t"
         >
           <span class="t-icon" aria-hidden="true"><pv-icon [name]="t.icon" /></span>
-          <span class="t-body">
+          <span class="t-body" aria-hidden="true">
             <strong>{{ t.title | t }}</strong>
             @if (t.text) {
               <span class="t-text">{{ t.text | t }}</span>

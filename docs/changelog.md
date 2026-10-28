@@ -4,6 +4,24 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.8 — 2026-10-28
+
+♿ **Accessibility pass** (phase 8 of the [improvement plan](improvement-plan.md)).
+
+### Changed
+
+- **Dialogs:** while one is open the page behind is `inert` (keyboard, pointer and screen readers) and scrolling is locked; both are
+  restored on close (nested dialogs are reference-counted). The opener is remembered before the dialog can move focus, so closing
+  always returns to it. The Pokédex quick view is now a proper modal (Escape, focus trap).
+- **Stat bars** are `role="meter"` with value and range; **toasts** announce via a text-only live region (no buttons inside it);
+  move tooltips are tied to their button (`aria-describedby`); the *More* sheet button has `aria-controls`; Pokédex prev/next
+  buttons carry labels.
+
+### Notes
+
+- The audit's other findings (error and empty states for Spire, World, Contest and the command palette) were already in place;
+  Type Lab, Profile and the party match have no asynchronous failure source to report.
+
 ## v3.0.7 — 2026-10-23
 
 🖥️ **Battle UI deduplicated + interface for the new mechanics** (phase 7 of the [improvement plan](improvement-plan.md)).

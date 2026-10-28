@@ -54,7 +54,9 @@ export interface BottomNavItem {
         class="bslot"
         type="button"
         (click)="openSheet()"
+        aria-haspopup="dialog"
         [attr.aria-expanded]="sheet()"
+        [attr.aria-controls]="sheet() ? 'pv-more-sheet' : null"
         [attr.aria-label]="'More' | t"
       >
         <pv-icon name="grid" [size]="22" />
@@ -63,8 +65,9 @@ export interface BottomNavItem {
     </nav>
 
     @if (sheet()) {
-      <div class="sheet-scrim" role="presentation" (click)="closeSheet()"></div>
+      <div class="sheet-scrim" role="presentation" data-keep-live (click)="closeSheet()"></div>
       <div
+        id="pv-more-sheet"
         class="sheet glass"
         role="dialog"
         [attr.aria-label]="'All sections' | t"

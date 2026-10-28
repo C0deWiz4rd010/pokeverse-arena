@@ -28,7 +28,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | 5 | Einheitliche Persistenz + Run-Resume | v3.0.5 | ✅ |
 | 6 | Battle-Engine vereinheitlichen & vertiefen | v3.0.6 | ✅ |
 | 7 | Battle-UI entdoppeln | v3.0.7 | ✅ |
-| 8 | Lade-/Fehler-/Leerzustände & Barrierefreiheit | v3.0.8 | ⬜ |
+| 8 | Lade-/Fehler-/Leerzustände & Barrierefreiheit | v3.0.8 | ✅ |
 | 9 | Testabdeckung Features + Core | v3.0.9 | ⬜ |
 | 10 | Performance, Bundle, i18n-Struktur | v3.0.10 | ⬜ |
 | 11 | CI/CD härten | v3.0.11 | ⬜ |
@@ -113,7 +113,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 
 ## Phase 8 – Lade-/Fehler-/Leerzustände & Barrierefreiheit
 
-1. Fehler-/Leerzustände über `core/ui/state` nachrüsten: `profile.html`, `type-lab.html`, `spire.html`, `tournament-match.html`,
+1. (Audit-Befund war größtenteils veraltet: Spire/World/Contest/Palette haben Fehler- und Leerzustände schon; Type-Lab/Profil/Match haben keine asynchrone Fehlerquelle.) Ursprünglich geplant: `profile.html`, `type-lab.html`, `spire.html`, `tournament-match.html`,
    `command-palette.html` (`@empty`); `error`-Signal in `spire.service`, `world.service`, `contest.service` (wie `odyssey.service.ts:64`).
 2. `core/ui/modal/modal.ts`: Hintergrund `inert` + Scroll-Lock, Opener früher erfassen.
 3. `stat-bar` → `role="meter"` + aria-Werte; `toasts.ts` Live-Region nur um Text; `move-button` `aria-describedby` für Tooltip;

@@ -38,6 +38,7 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
       [style.--c]="color()"
       [disabled]="disabled()"
       [attr.aria-label]="ariaLabel()"
+      [attr.aria-describedby]="tipId"
       (click)="picked.emit()"
     >
       <span class="mv-glow" aria-hidden="true"></span>
@@ -68,7 +69,7 @@ const CAT_META: Record<DamageClass, { icon: IconName; label: string }> = {
         <span class="mv-eff" [attr.data-tier]="e.tier">{{ effShort(e.mult) }}</span>
       }
 
-      <span class="tip" role="tooltip">
+      <span class="tip" role="tooltip" [id]="tipId">
         <span class="tip-head">
           <span class="tip-icon" aria-hidden="true"><pv-icon [name]="cat().icon" /></span>
           <span class="tip-titles">
@@ -121,6 +122,10 @@ export class MoveButtonComponent {
   readonly hotkey = input<number | null>(null);
 
   readonly picked = output<void>();
+
+  private static nextId = 0;
+  /** Unique id linking the button to its tooltip (`aria-describedby`). */
+  protected readonly tipId = `pv-move-tip-${MoveButtonComponent.nextId++}`;
 
   private readonly i18n = inject(I18nService);
   protected readonly titleCase = titleCase;

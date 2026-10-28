@@ -10,7 +10,14 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
     <div class="row">
       <span class="label">{{ label() | t }}</span>
       <span class="value">{{ value() }}</span>
-      <div class="track">
+      <div
+        class="track"
+        role="meter"
+        aria-valuemin="0"
+        [attr.aria-valuemax]="max()"
+        [attr.aria-valuenow]="value()"
+        [attr.aria-label]="label() | t"
+      >
         <div class="fill" [style.width.%]="pct()" [style.background]="color()"></div>
       </div>
     </div>

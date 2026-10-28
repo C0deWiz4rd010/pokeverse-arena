@@ -12,10 +12,17 @@
           type="button"
           (click)="go(prevId())"
           [attr.title]="'Previous (←)' | t"
+          [attr.aria-label]="'Previous Pokémon' | t"
         >
           ‹ #{{ prevId() }}
         </button>
-        <button class="nav-btn" type="button" (click)="go(nextId())" [attr.title]="'Next (→)' | t">
+        <button
+          class="nav-btn"
+          type="button"
+          (click)="go(nextId())"
+          [attr.title]="'Next (→)' | t"
+          [attr.aria-label]="'Next Pokémon' | t"
+        >
           #{{ nextId() }} ›
         </button>
       </div>

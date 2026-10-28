@@ -69,4 +69,30 @@ describe('ModalDirective', () => {
     vi.runAllTimers();
     expect(document.activeElement?.id).toBe('opener');
   });
+
+  it('makes the page behind inert and locks scrolling while open, then restores both', () => {
+    const { fixture, el } = setup();
+    expect(el.querySelector('#opener')?.hasAttribute('inert')).toBe(true);
+    expect(el.querySelector('#panel')?.hasAttribute('inert')).toBe(false);
+    expect(document.body.style.overflow).toBe('hidden');
+
+    fixture.componentInstance.open.set(false);
+    fixture.detectChanges();
+    expect(el.querySelector('#opener')?.hasAttribute('inert')).toBe(false);
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('keeps elements marked data-keep-live (scrims) interactive', () => {
+    const { fixture, el } = setup();
+    // The scrim lives next to the panel in real templates; emulate it here.
+    fixture.componentInstance.open.set(false);
+    fixture.detectChanges();
+    const scrim = document.createElement('div');
+    scrim.setAttribute('data-keep-live', '');
+    el.appendChild(scrim);
+    fixture.componentInstance.open.set(true);
+    fixture.detectChanges();
+    expect(scrim.hasAttribute('inert')).toBe(false);
+    expect(el.querySelector('#opener')?.hasAttribute('inert')).toBe(true);
+  });
 });

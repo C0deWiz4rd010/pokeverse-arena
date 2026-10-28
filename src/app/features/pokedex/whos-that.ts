@@ -13,7 +13,7 @@ import { TranslatePipe } from '../../core/i18n/translate.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslatePipe, IconComponent, ModalDirective],
   template: `
-    <div class="backdrop" role="presentation" (click)="close.emit()"></div>
+    <div class="backdrop" role="presentation" data-keep-live (click)="close.emit()"></div>
     <div
       class="panel"
       role="dialog"

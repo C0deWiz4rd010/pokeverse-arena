@@ -41,8 +41,12 @@ instead of showing a "failed to fetch module" error. `npm run e2e:offline` prove
 - Every animation is gated behind `prefers-reduced-motion`, including the PixiJS
   battle effects and the Three.js hero (which never initialise when reduced
   motion is requested); animated GIFs start as still images.
-- Dialogs use the `pvModal` directive: focus trap, Escape, focus returned to the opener.
-- HP bars are `progressbar`s, type badges meet WCAG AA contrast, toasts are `role=status` and pause on hover/focus.
+- Dialogs use the `pvModal` directive: focus trap, Escape, focus returned to the opener (captured before anything can steal it),
+  the page behind becomes `inert` (no focus, no screen-reader access) and body scroll is locked. Scrims opt out with `data-keep-live`.
+  The Pokédex quick view is a real modal dialog too.
+- HP bars are `progressbar`s, stat bars are `meter`s, type badges meet WCAG AA contrast. Toasts announce through a separate text-only
+  live region (the dismiss buttons are not inside it) and pause on hover/focus. Move tooltips are linked with `aria-describedby`,
+  the "More" sheet button exposes `aria-controls`/`aria-haspopup`, and the Pokédex prev/next buttons have real labels.
 - Hover effects only apply on devices that can hover (`@include hover-capable`).
 - The whole UI is available in English and German (see [i18n.md](i18n.md)).
 

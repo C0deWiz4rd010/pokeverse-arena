@@ -45,7 +45,7 @@ const STAT_ROWS: { key: StatKey; label: string }[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslatePipe, RouterLink, TypeBadgeComponent, IconComponent, ModalDirective],
   template: `
-    <div class="backdrop" role="presentation" (click)="close.emit()"></div>
+    <div class="backdrop" role="presentation" data-keep-live (click)="close.emit()"></div>
     <div
       class="panel"
       role="dialog"
