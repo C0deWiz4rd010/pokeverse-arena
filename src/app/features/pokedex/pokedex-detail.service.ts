@@ -43,7 +43,8 @@ export class PokedexDetailService {
 
     const job = this.fetch(id);
     this.inflight.set(id, job);
-    void job.finally(() => this.inflight.delete(id));
+    // The caller sees a rejection through `job`; this side branch only cleans up.
+    job.finally(() => this.inflight.delete(id)).catch(() => undefined);
     return job;
   }
 

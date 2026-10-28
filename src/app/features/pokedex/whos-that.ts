@@ -1,5 +1,14 @@
 import { ModalDirective } from '../../core/ui/modal/modal';
-import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { IconComponent } from '../../core/ui/icon/icon';
 import { CryService } from '../../core/audio/cry.service';
 import { titleCase } from '../../core/ui/format';
@@ -82,7 +91,11 @@ export class WhosThatComponent {
   protected readonly best = signal(0);
 
   constructor() {
-    this.newRound();
+    // The pool is a required input: it can only be read once Angular has bound it.
+    effect(() => {
+      this.pool();
+      untracked(() => this.newRound());
+    });
   }
 
   protected art(a: PokedexEntry): string {

@@ -4,6 +4,28 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.9 — 2026-10-28
+
+🧪 **Honest test coverage** (phase 9 of the [improvement plan](improvement-plan.md)).
+
+### Changed
+
+- **Coverage is now measured over all of `src/app`** (previously only files a test happened to import, which hid ~55 % of the code).
+  Excluded on purpose: the Adventure UI (covered by the browser flow), PixiJS/Three.js/canvas rendering and the generated data files.
+  Honest baseline was 45 %; it is now **97.7 % lines / 96 % statements / 88.5 % branches / 96.8 % functions** with thresholds raised to
+  94 / 92 / 82 / 92.
+- 1,378 tests (was 610): services and components of Pokédex, detail, Team Builder, Type Lab, Battle, Tournaments, Arena, Spire, Odyssey, World,
+  Contest, Fusion, Showdown, Profile, Home, the command palette, the app shell and routes, and all shared UI and core services.
+- **New browser flows** in `npm run accept`: Pokédex search → detail with stat meters, a full battle to its result, team export, and the
+  command palette (inert background, Escape).
+
+### Fixed (found by the new specs)
+
+- **Who's That?** read a required input in its constructor (a runtime error as soon as it opened); it now starts its first round once the pool is bound.
+- **Pokédex infinite scroll** never observed the sentinel on a first visit (it only exists after the list loads); it is observed whenever it appears.
+- A failed quick-detail load no longer leaves an unhandled promise rejection behind.
+- **Ascension Spire** counted every run twice in its lifetime stats (once at the start, once when it ended); it is counted once, at the end.
+
 ## v3.0.8 — 2026-10-28
 
 ♿ **Accessibility pass** (phase 8 of the [improvement plan](improvement-plan.md)).

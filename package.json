@@ -1,6 +1,6 @@
 {
   "name": "pokeverse-arena",
-  "version": "3.0.8",
+  "version": "3.0.9",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -19,6 +19,7 @@
     "i18n:check": "node tools/i18n-check.mjs",
     "i18n:scan": "node tools/i18n-scan.mjs",
     "serve:dist": "node tools/serve-dist.mjs",
+    "e2e:flows": "node tools/e2e-flows.mjs",
     "e2e:offline": "node tools/e2e-offline.mjs",
     "perf:overworld": "node tools/perf-overworld.mjs",
     "accept": "node tools/accept.mjs"

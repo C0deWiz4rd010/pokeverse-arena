@@ -3,11 +3,12 @@
 | Gate | Command | Where it runs |
 | ---- | ------- | ------------- |
 | Typecheck, lint, translations | `npm run verify` (first three steps) | CI `verify` job |
-| Unit tests + coverage thresholds (statements 78, branches 68, functions 82, lines 80) | `npm run test:ci` | CI `verify` job |
+| Unit tests + coverage thresholds (statements 92, branches 82, functions 92, lines 94 — measured over every file in `src/app` except the Adventure UI, GPU/canvas rendering and the data files, see `coverageExclude` in `angular.json`) | `npm run test:ci` | CI `verify` job |
 | Production bundle budgets | `npm run build` | CI `verify`/`build` |
 | Routes × 7 viewports: no console/page errors, no horizontal overflow | `node tools/ui-shots.mjs` | `npm run accept` |
 | Adventure happy path (new game → starter → wild battle → save) | `npm run e2e` | `npm run accept` |
 | Offline start through the service worker | `npm run e2e:offline` | `npm run accept` |
+| App flows: Pokédex search → detail (stat meters), a battle to its result, team export, command palette (inert background) | `npm run e2e:flows` | `npm run accept` |
 | Lighthouse (mobile): performance ≥ 90, accessibility/best-practices ≥ 95, SEO ≥ 90 | `npx @lhci/cli autorun` | CI `lighthouse` job (informational) |
 | Adventure frame time under CPU throttling | `npm run perf:overworld` | manual |
 

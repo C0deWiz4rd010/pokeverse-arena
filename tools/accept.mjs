@@ -4,6 +4,7 @@
  *   2. every route x 7 viewports: no console/page errors, no horizontal overflow  (ui-shots)
  *   3. new game -> starter -> wild battle -> menu save                              (e2e-adventure)
  *   4. offline start through the service worker                                    (e2e-offline)
+ *   5. Pokédex → detail, a full battle, team export, command palette               (e2e-flows)
  *
  *   npm run build && npm run accept        # set PW_CHANNEL=chrome to use installed Chrome
  */
@@ -30,6 +31,7 @@ const results = [
     await run('routes x viewports', 'tools/ui-shots.mjs', { SHOTS_BASE: base, SHOTS_LOCALE: 'en' }),
   ],
   ['adventure flow', await run('adventure flow', 'tools/e2e-adventure.mjs', { SHOTS_BASE: base })],
+  ['app flows', await run('app flows', 'tools/e2e-flows.mjs', { SHOTS_BASE: base })],
   [
     'offline start',
     await run('offline start', 'tools/e2e-offline.mjs', {

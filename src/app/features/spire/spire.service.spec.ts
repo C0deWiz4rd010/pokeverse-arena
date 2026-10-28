@@ -62,7 +62,7 @@ describe('SpireService', () => {
     expect(svc.floor()).toBe(1);
     expect(svc.partyView()).toHaveLength(2);
     expect(svc.partyView().every((p) => p.hpPct === 100)).toBe(true);
-    expect(svc.meta().runs).toBe(1);
+    expect(svc.meta().runs).toBe(0); // a run is counted once, when it ends
   });
 
   it('a rest node advances the floor and heals', async () => {
@@ -150,6 +150,7 @@ describe('SpireService', () => {
     const run = await startedRun();
     run.abandon();
     expect(run.phase()).toBe('lost');
+    expect(run.meta().runs).toBe(1);
   });
 
   it('survives a failed draft with an error message', async () => {

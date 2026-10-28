@@ -122,7 +122,6 @@ export class SpireService {
     this.relics.set([]);
     this.floor.set(0);
     this.toast.set(null);
-    this.meta.update((m) => ({ ...m, runs: m.runs + 1 }));
     this.advanceFloor();
   }
 

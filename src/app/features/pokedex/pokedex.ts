@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  afterNextRender,
   effect,
   inject,
   signal,
@@ -107,7 +106,16 @@ export class PokedexComponent {
   constructor() {
     void this.store.ensureLoaded();
     this.restoreFromUrl();
-    afterNextRender(() => this.observeSentinel());
+    // The sentinel only exists once the list has rendered, so observe it whenever it appears.
+    effect((onCleanup) => {
+      const el = this.sentinel()?.nativeElement;
+      if (!el || !('IntersectionObserver' in window)) return;
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting) && this.store.hasMore()) this.store.loadMore();
+      });
+      io.observe(el);
+      onCleanup(() => io.disconnect());
+    });
     // Keep the URL in sync with the live filter/sort/view state (shareable).
     effect(() => this.writeUrl());
   }
@@ -278,16 +286,5 @@ export class PokedexComponent {
       fav: fav ? '1' : null,
     };
     void this.router.navigate([], { relativeTo: this.route, queryParams, replaceUrl: true });
-  }
-
-  private observeSentinel(): void {
-    const el = this.sentinel()?.nativeElement;
-    if (!el || !('IntersectionObserver' in window)) return;
-    const io = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting) && this.store.hasMore()) {
-        this.store.loadMore();
-      }
-    });
-    io.observe(el);
   }
 }
