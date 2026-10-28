@@ -10,7 +10,13 @@ import {
   generateShop,
   isBossFloor,
 } from './spire';
-import { applyRelicsToTeam, coinMultiplier, relicById, rewardChoiceBonus } from './relics';
+import {
+  applyRelicsToTeam,
+  coinMultiplier,
+  relicById,
+  rewardChoiceBonus,
+  type RelicId,
+} from './relics';
 import { defaultMeta, recordChimeraWin, recordRun } from './meta';
 import type { Battler } from '../engine';
 
@@ -150,5 +156,12 @@ describe('spire meta', () => {
     expect(meta.chimeraWins).toBe(1);
     meta = recordChimeraWin(meta);
     expect(meta.chimeraWins).toBe(2);
+  });
+
+  it('the shop relic is labelled with the relic it actually sells', () => {
+    for (let floor = 1; floor <= 15; floor++) {
+      const entry = generateShop(floor, `label-${floor}`).find((e) => e.kind === 'relic')!;
+      expect(entry.label).toBe(relicById(entry.payload as RelicId)?.name);
+    }
   });
 });

@@ -378,7 +378,7 @@ describe('PokedexComponent', () => {
     });
 
     it('marks caught species and shows the caught total', async () => {
-      localStorage.setItem('world:caught', JSON.stringify([1, 4]));
+      localStorage.setItem('pv:world:caught', JSON.stringify({ v: 1, data: [1, 4] }));
       const { q, qa, settle } = await setup();
       await settle();
       expect(qa('.card .dot.caught')).toHaveLength(2);
@@ -386,7 +386,7 @@ describe('PokedexComponent', () => {
     });
 
     it('fills the generation pip bars from caught progress', async () => {
-      localStorage.setItem('world:caught', JSON.stringify([1]));
+      localStorage.setItem('pv:world:caught', JSON.stringify({ v: 1, data: [1] }));
       const { qa, settle, enriched } = await setup();
       await settle();
       await enriched();

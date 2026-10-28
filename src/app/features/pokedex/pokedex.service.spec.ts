@@ -228,7 +228,7 @@ describe('PokedexService', () => {
     });
 
     it('reads caught species from the legacy world key', async () => {
-      localStorage.setItem('world:caught', JSON.stringify([1, 25, 999]));
+      localStorage.setItem('pv:world:caught', JSON.stringify({ v: 1, data: [1, 25, 999] }));
       const { svc } = setup();
       await svc.ensureLoaded();
       expect(svc.isCaught(1)).toBe(true);

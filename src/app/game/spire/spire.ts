@@ -190,12 +190,13 @@ export function generateShop(floor: number, seed: string | number): ShopEntry[] 
     cost: 40 + floor * 4,
     payload: it.id,
   }));
+  const relic = rng.pick(RELICS); // one pick: the label must name the relic that is actually sold
   out.push({
     kind: 'relic',
-    label: rng.pick(RELICS).name,
+    label: relic.name,
     icon: 'crown',
     cost: 80 + floor * 6,
-    payload: rng.pick(RELICS).id,
+    payload: relic.id,
   });
   out.push({ kind: 'heal', label: 'Full Restore', icon: 'heart', cost: 50, payload: 1 });
   return out;

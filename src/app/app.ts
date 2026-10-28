@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from './core/version';
 import { ThemeService } from './core/theme/theme.service';
@@ -76,7 +76,8 @@ export class App {
   constructor() {
     this.achievements.start();
     void this.saves.requestPersistence();
-    installImageFallback();
+    const removeImageFallback = installImageFallback();
+    inject(DestroyRef).onDestroy(removeImageFallback);
   }
 
   /** ⌘K / Ctrl+K opens the command palette from anywhere. */

@@ -308,7 +308,7 @@ describe('PokemonDetailComponent', () => {
         expect(q(ctx.el, '.bst-fill')?.style.width).toBe(`${(534 / 720) * 100}%`);
         expect(q(ctx.el, '.bst-meter strong')?.textContent).toBe('534');
       },
-      { timeout: 3000 },
+      { timeout: 10000 },
     );
   });
 

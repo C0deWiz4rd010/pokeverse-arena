@@ -4,6 +4,31 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.12 — 2026-10-28
+
+📚 **Documentation rebuilt** (phase 12 — the last phase of the [improvement plan](improvement-plan.md)).
+
+### Changed
+
+- All 17 feature docs rewritten against the code as it is now, in one schema (*What it does · Files · How it works · Key decisions ·
+  Accessibility & mobile · Tests*) with no version history (that lives here). New: `docs/features/showdown.md`. The old docs had many stale
+  claims (arena leaders were described as "top-3 BST", tournaments as "ten formats", the Type Lab as three tabs, 10 achievements instead of 29 …).
+- `README.md`, `docs/architecture.md`, `docs/roadmap.md` and the feature index describe the current structure (BattleCore, BattlerFactory,
+  EnvelopeStore, `game/run`, `game/evolution`, split dictionary, CI pipeline, test and coverage numbers); the Berry Garden mention (an
+  Adventure-only feature) is gone.
+- Finished plans moved to `docs/archive/`.
+
+### Fixed (found while checking the docs against the code)
+
+- **Pokédex "caught" markers** read the raw `world:caught` key while World Explorer saves it as `pv:world:caught`, so the Pokédex never saw caught species
+  in a real browser.
+- **Ascension Spire shop:** the relic's label and the relic actually sold came from two separate random picks and could differ.
+- The app shell now removes its global image-fallback listener when it is destroyed (it leaked between specs and made one image spec flaky).
+
+### Known gaps (documented, not changed)
+
+- Fusion Lab's suggestion list is pointer-only (no arrow-key navigation); `core/ui/coming-soon` and a few Spire/Cache helpers are unused.
+
 ## v3.0.11 — 2026-10-28
 
 🚦 **Stricter, cheaper CI** (phase 11 of the [improvement plan](improvement-plan.md)).

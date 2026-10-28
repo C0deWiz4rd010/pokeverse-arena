@@ -1,156 +1,77 @@
 # Tournaments
 
-A 16-trainer, single-elimination tournament with **ten formats**, a visual
-bracket that converges to a centered final, and a "you play your matches, the
-field auto-resolves" flow built on the seeded battle engine.
+Ten themed modes on three formats (single elimination, round robin, Swiss): you play your own matches as interactive 3-v-3 party battles, and the rest of the field auto-resolves on the seeded engine.
 
 ## What it does
 
-- **Pick one of ten modes** from a card grid, each with its own rules:
+- **Pick a format and a mode.** Formats: **Single Elimination** (16 trainers, seeded bracket), **Round Robin** (8 trainers, everyone plays everyone) and **Swiss** (16 trainers, `ceil(log2 n)` rounds paired by record). Modes:
   - **Classic Cup** — 16 power-balanced random teams.
-  - **Mono-Type Cup** — a single type is drawn for the whole bracket (you included).
-  - **Random Cup** — zero balancing, pure variance.
-  - **Little Cup** — only low base-stat / unevolved Pokémon.
-  - **Legendary Cup** — only high base-stat / legendary Pokémon.
-  - **Draft Mode** — draft your three Pokémon from a shared pool first.
-  - **Survival Gauntlet** — surviving Pokémon keep their HP between rounds.
-  - **Inverse Cup** — the type chart is flipped for every match.
-  - **Weather Wars** — each match rolls weather that boosts one move type ×1.5.
-  - **Boss Ascent** — opponents' levels climb each round to a Final boss.
-- **A visual bracket** seeds 16 trainers into the Round of 16 → Quarterfinals →
-  Semifinals → Final. On desktop it renders as a **tree converging from both
-  edges into a centered final and champion crown**; on phones it becomes a
-  horizontally-scrollable round-by-round bracket. Winners highlight, losers dim,
-  and the player's live match pulses.
-- **You compete.** Your matches are played interactively as **3-v-3
-  sequential-KO battles** (real moves, animated arena, HP bars, team trays). When
-  you win, the bracket advances you and **every remaining CPU match auto-resolves**
-  headlessly up to your next match — or to the champion.
+  - **Mono-Type Cup** — one type drawn for the whole field, you included.
+  - **Random Cup** — no balancing.
+  - **Little Cup** — lowest base-stat Pokémon, level 30.
+  - **Legendary Cup** — highest base-stat Pokémon, level 70.
+  - **Draft Mode** — draft three from a pool of nine (knockout format only).
+  - **Survival Gauntlet** — your surviving Pokémon keep their HP between rounds (level 55).
+  - **Inverse Cup** — the type chart is flipped.
+  - **Weather Wars** — every match rolls a type that is boosted 1.5×.
+  - **Boss Ascent** — opponents gain +6 levels per round from level 45.
+- **Interactive matches.** Your match is a 3-v-3 on the party engine: choose a move or a switch each turn, Terastallize once per team, answer forced switches and pivots. Every CPU match up to your next one (or to the champion) is resolved instantly.
+- **Visual bracket.** Round of 16 → Quarterfinals → Semifinals → Final. A converging two-sided tree with a centred final and crown on large screens, a horizontally scrolling round-by-round bracket on phones. Cards show power seeds and a projected odds bar; your live match pulses, losers dim.
+- **League standings.** Round-robin and Swiss show a table ranked by 3 points per win, then KO differential, then KOs dealt, then name.
+- **Pre-match intel.** Win-chance estimate (5–95 %) with a verdict, type-matchup scout chips and a suggested lead.
+- **Persistent rival.** One generated nemesis per profile takes over the strongest CPU entry of every run, keeps a head-to-head record, taunts you before the match and gains +1 level per past meeting (max +6).
+- **Crystal-ball pick'em.** Before your first match, call the champion from an avatar strip. A correct call adds 20 ₽ × a ×2–×25 multiplier (from the pick's implied win probability) to the prize; you may back yourself.
+- **Prizes, history and career.** Each finished run is logged (mode, format, placement, champion, prize, pick bonus); the lobby shows a career strip and the last 30 runs. The finale has confetti and a champion crown.
 
 ## Files
 
-| File | Responsibility |
+| Path | Responsibility |
 | ---- | -------------- |
-| `game/engine/rules.ts` | `BattleRules` + rule-aware effectiveness (`inverse` chart) and `weatherBoost`. |
-| `game/tournament/types.ts` | `Trainer`, `Bracket` / `BracketMatch`, `RoundId`, `MatchResult` (carries final HP). |
-| `game/tournament/modes.ts` | The ten `TournamentMode` configs, `modeById`, `levelForRound` (Boss Ascent ramp). |
-| `game/tournament/simulate.ts` | Pure headless 3-v-3 `simulateMatch` (sequential KO, optional start HP). |
-| `game/tournament/bracket.ts` | `buildBracket`, immutable `reportResult`, `nextReadyMatch`, `playerMatch`. |
-| `game/tournament/index.ts` | Barrel export for the tournament domain. |
-| `features/tournaments/tournaments.service.ts` | Facade: owns the screen signals (status, bracket, standings, pick) and sequences the pieces below. |
-| `features/tournaments/tournament-roster.service.ts` | Fetches candidate Pokémon for a mode, distributes them into teams, builds the player's and the CPU trainers. |
-| `features/tournaments/tournament-records.service.ts` | History, last-run record, the persistent rival (identity, level boost, injection into the field). |
-| `game/tournament/match-runner.ts` | Pure: mode rules, Boss-Ascent team scaling, the player's pending match, the CPU auto-resolver. |
-| `game/tournament/league.ts` | Pure round-robin / Swiss state machine (`League`). |
-| `game/tournament/trainers.ts` | Pure: CPU identities, avatars, synthetic moves, `teamStrength`, `scaleStats`. |
-| `features/tournaments/tournaments.ts` / `.html` / `.scss` | Mode select, draft, run bar, CTA / finale, and the desktop tree + mobile scroll bracket. |
-| `features/tournaments/tournament-match/*` | The interactive 3-v-3 player match component. |
-| `game/engine/rules.spec.ts`, `game/tournament/simulate.spec.ts`, `game/tournament/bracket.spec.ts` | Unit tests for rules, simulation and bracket progression. |
+| [game/tournament/types.ts](../../src/app/game/tournament/types.ts) | `Trainer`, `Bracket` / `BracketMatch`, `RoundId`, `MatchResult`, `PlayerMatchSetup`, `MatchOutcome`. |
+| [game/tournament/modes.ts](../../src/app/game/tournament/modes.ts) | The ten `TournamentMode` configs, `modeById`, `levelForRound`. |
+| [game/tournament/format.ts](../../src/app/game/tournament/format.ts) | `BracketFormat` infos and power-seeding (`seedSlots`, `seedTrainers`). |
+| [game/tournament/bracket.ts](../../src/app/game/tournament/bracket.ts) | `buildBracket`, immutable `reportResult`, `nextReadyMatch`, `playerMatch`. |
+| [game/tournament/match-runner.ts](../../src/app/game/tournament/match-runner.ts) | `rulesForMode`, `teamForRound`, `bracketMatchSetup`, `runAiMatches`. |
+| [game/tournament/simulate.ts](../../src/app/game/tournament/simulate.ts) | Headless 3-v-3 `simulateMatch` on `TeamBattle`. |
+| [game/tournament/league.ts](../../src/app/game/tournament/league.ts), `round-robin.ts`, `standings.ts` | `League` state machine, schedules / Swiss pairings, standings and ranking. |
+| [game/tournament/trainers.ts](../../src/app/game/tournament/trainers.ts) | CPU identities, DiceBear avatars, `synthMoves`, `scaleStats`, `teamStrength`, `makeTrainer`. |
+| `game/tournament/odds.ts`, `scouting.ts`, `pickem.ts`, `rival.ts`, `history.ts` | Win odds, scout chips and lead, pick'em maths, rival state and taunts, history and `prizeFor`. |
+| [game/engine/rules.ts](../../src/app/game/engine/rules.ts) | `BattleRules` (inverse chart, weather-boosted type). |
+| [features/tournaments/tournaments.service.ts](../../src/app/features/tournaments/tournaments.service.ts) | `TournamentService` facade: screen signals, sequencing of run, league, draft, pick'em. |
+| [features/tournaments/tournament-roster.service.ts](../../src/app/features/tournaments/tournament-roster.service.ts) | `TournamentRoster`: candidate selection, snake distribution, player and CPU trainer building. |
+| [features/tournaments/tournament-records.service.ts](../../src/app/features/tournaments/tournament-records.service.ts) | `TournamentRecords`: history, last run, rival injection and head-to-head. |
+| [features/tournaments/tournaments.ts](../../src/app/features/tournaments/tournaments.ts) (+ `.html`, `.scss`) | Lobby, draft, run bar, CTA / intel / pick'em, finale, bracket tree and scroll view, standings. |
+| [features/tournaments/tournament-match/](../../src/app/features/tournaments/tournament-match/tournament-match.ts) | `pv-tournament-match`: the interactive party match, also used by Arena, Spire and Odyssey. |
 
 ## How it works
 
-- **Rule-aware engine.** `rules.ts` adds an optional `BattleRules` threaded
-  through `resolveDamage` and the `Battle` class. `inverse` flips the type chart
-  (resists/immunities become weaknesses); `weatherBoostType` multiplies a single
-  move type by 1.5. Everything stays backward-compatible — the normal battle
-  passes no rules.
-- **Headless simulation.** `simulateMatch` reuses the deterministic `Battle`
-  engine for each duel of a 3-v-3. The losing side sends in its next Pokémon while
-  the winner **keeps the damage it took within the match**. Callers may seed
-  starting HP (Survival carries HP across rounds) and read every Pokémon's final
-  HP back from the result. A turn cap guarantees termination.
-- **Bracket.** `buildBracket` pairs 16 seeded trainers into 8 opening matches;
-  `reportResult` returns a **new** bracket with the winner advanced into the next
-  round's correct slot (or crowns the champion at the final). `nextReadyMatch` and
-  `playerMatch` drive the runner.
-- **Team generation.** The service samples Pokémon from the API (cache-first),
-  gates the candidate pool by **base-stat total** (Little = lowest, Legendary =
-  highest) or by **type** (Mono-Type), then **snake-distributes** them across the
-  16 teams sorted by BST so balanced modes stay fair. The **player's** Pokémon get
-  real level-up moves; the ~45 CPU Pokémon get lightweight, type-accurate
-  synthesized moves to keep generation to a single request each.
-- **Mode rules at match time.** Inverse and Weather Wars produce `BattleRules`
-  per match (Weather Wars seeds a random boost type from the match id). Boss
-  Ascent scales every non-player team's stats by `levelForRound / baseLevel` so
-  the field grows tougher each round while your team stays fixed.
-- **Flow.** Winning a player match calls `recordPlayerOutcome`, which advances the
-  bracket and then loops `simulateMatch` over every CPU match until the next
-  player match (or the champion) — Survival HP carry is tracked per trainer.
+- **Start.** `TournamentService.startMode(mode, format)` selects candidate Pokémon (`TournamentRoster.selectDtos`), snake-distributes them into teams, builds trainers, injects the rival and either builds a power-seeded bracket (`buildBracket(seed(...))`) or starts a `League`. Draft mode pauses in the `draft` status until `confirmDraft(picks)`.
+- **Teams.** Candidates are over-fetched (×1.4, or ×2.4 for the restricted pools), sorted by base-stat total for Little / Legendary, or sampled from the type endpoint for Mono-Type. Balanced modes sort by BST and snake-distribute for even strength. The player gets fully built battlers (real moves, ability); CPU trainers get `synthMoves` (one STAB move per type at power 85 plus Tackle), keeping generation to one request per Pokémon.
+- **Match rules.** `rulesForMode` returns `{ inverse: true }` or a seeded `weatherBoostType` per match; `teamForRound` scales opponent stats by `levelForRound / baseLevel` in Boss Ascent. Rules are passed through `PlayerMatchSetup` and `simulateMatch` so interactive and simulated matches agree.
+- **Simulation.** `simulateMatch` runs a `TeamBattle` (AI tier `strong`, AI may switch), handles forced switches, caps at 600 turns and falls back to survivors, then HP fraction. It returns winner, survivors and final HP of both teams.
+- **Progression.** `recordPlayerOutcome` reports the player match (carrying HP in Survival), then `runAiMatches` resolves every CPU match up to the next player match or the champion. Leagues use `League.advance` / `recordPlayerOutcome`; a finished run is logged once with `prizeFor(placement, field)` — 200 + 10 × field for the title, 100 + 4 × field for second, 40 for the top half, 15 otherwise — plus any pick bonus.
+- **Intel.** `winOdds` is a logistic over the team-power ratio (BST × average level / 50), clamped to 5–95; `scoutMatchup` and `bestLead` supply chips and the lead suggestion.
+- **Persistence.** Through `EnvelopeStore` (`pv:` keys): `tournaments:history` (30 records) and `tournaments:rival`. Both survive `reset()`.
 
 ## Key decisions
 
-- **Reuse the pure engine.** Both the interactive match and the headless
-  simulator run the exact same `Battle`/`computeDamage` code, so balance and rules
-  behave identically whether you play or the CPU auto-resolves.
-- **Player competes; CPU auto-resolves.** You only play your own matches; the rest
-  of the field is simulated instantly, keeping a 16-trainer run fast.
-- **Light CPU move sets.** Fetching real moves for ~45 Pokémon per tournament was
-  far too many requests; synthesized STAB-accurate moves keep generation to one
-  request per Pokémon while preserving meaningful type matchups. The human always
-  gets real moves.
-- **Snake draft for balance.** Sorting candidates by BST and snake-distributing
-  them evens out total team strength across the bracket without a reject loop.
-- **Two bracket layouts.** A converging two-sided tree is the desktop hero look;
-  a horizontal-scroll bracket is the robust mobile equivalent — same card,
-  different container.
+- **One engine for play and simulation.** The interactive match and the headless simulator both run `TeamBattle`, so rules and balance are identical whether you play or the CPU auto-resolves.
+- **You play, the CPU resolves.** Only your matches are interactive; a 16-trainer run stays fast.
+- **Pure game modules, thin services.** Bracket, league, match running, odds, pick'em, rival and trainers are framework-free modules; `TournamentService` only holds signals and sequences them, with roster building and record keeping in their own injectables.
+- **Light CPU move sets.** Fetching real moves for dozens of Pokémon per run was too many requests; synthesised STAB moves keep matchups meaningful.
+- **Snake distribution for balance.** Sorting by BST and snake-dealing evens out team strength without a reject loop.
+- **Two bracket layouts.** A converging tree for desktop and a scroll-snap bracket for phones render the same card in different containers.
+- **Rival keeps the host's team.** The rival replaces the strongest CPU trainer's identity and gets a level edge, so mode rules still apply.
 
-## Mobile-first
+## Accessibility & mobile
 
-The mode grid is one column on phones and scales to five across on `xl`. The
-bracket is a horizontally-scrollable, snap-aligned set of round columns below
-`lg` and a converging tree at `lg`+. The match arena stacks the fighters, uses a
-2-column move grid on phones (4 from `md`), and all hit/pulse animations honor
-`prefers-reduced-motion`.
+- The mode grid is one column on phones and widens up to `xl`; the bracket scrolls horizontally with snap on small screens and becomes a tree at `lg`.
+- The format picker is a `role="radiogroup"` of `role="radio"` items; errors use `role="alert"`; the bracket, standings, career strip, scout chips and pick'em carry `aria-label`s; the win-chance bar is `role="img"` with text.
+- The match screen follows the battle screen: `role="progressbar"` HP bars, hotkeys 1–4 for moves, **S** for the switch tray, **T** for Terastallize, `role="status"` for the ace quip, a 2-column move grid on phones.
+- Confetti, pulses and standings animations respect `prefers-reduced-motion`.
 
 ## Tests
 
-`rules.spec.ts` covers the inverse chart and weather boost; `simulate.spec.ts`
-covers sweeps, determinism, intra-match HP persistence and seeded HP carry;
-`bracket.spec.ts` covers seeding, immutable advancement, round-by-round
-readiness, the player match and crowning a champion — 15 tests, part of the green
-suite (59 total).
-
-## Deep overhaul (v2)
-
-Beyond the seeded knockout bracket, tournaments now run **league formats** —
-**Round-Robin** and **Swiss** — decided on a live **standings table** (wins, KO
-differential). Fields are **power-seeded**, runs award **prizes**, and a persisted
-**history** records each result. The shared match component shows the full deep
-HUD. See [../plan.md](../plan.md) phase 5.
-
-## Tournaments v2 — polish
-
-A visual/animation pass over the existing format engine.
-
-- **Champion finale**: a confetti burst, a bobbing crown and a glowing champion
-  portrait when you win the cup.
-- **Bracket** matches pop in; the player's live match pulses; eliminated slots dim
-  and the champion spot animates in.
-- **Standings** rows stagger in with 🥇🥈🥉 podium highlighting and a player-row
-  outline.
-- Animated lobby cards and a pulsing "Battle ›" call-to-action.
-
-All motion respects `prefers-reduced-motion`.
-
-## Tournaments v3 — rival, pre-match intel & the crystal ball
-
-- **Pre-match intel** (`game/tournament/odds.ts`, `scouting.ts`): the CTA panel
-  shows an estimated **win chance** (logistic over team-power ratio, capped
-  5–95%), a verdict label, **type-matchup scout chips** (foes you threaten vs
-  members threatened back) and a **suggested lead**. Bracket cards carry power
-  **seeds** and a projected head-to-head odds bar; a **career strip** (runs,
-  titles, best finish, career prize) sits above the run history.
-- **Persistent rival** (`game/tournament/rival.ts`): one generated nemesis per
-  profile (localStorage) takes over the strongest CPU entry in every format,
-  keeps a **head-to-head record**, taunts you before the match based on who
-  leads, and gains +1 level per past meeting (cap +6). Crimson ⚡ styling in the
-  bracket, a taunt line on the CTA, a `vs {name}` career stat and a finale line
-  when the rival lifts the trophy.
-- **Crystal-ball pick'em** (`game/tournament/pickem.ts`): before your first
-  match, call the champion from an avatar strip (favourites → longshots).
-  Payout = 20 ₽ × a multiplier (×2–×25) from the pick's implied win
-  probability; a correct call pays into the run's prize (`pickBonus` on the
-  history record) and the finale shows hit or miss. Eliminated trainers drop
-  out of the strip live; you may back yourself.
-
-All three are pure, spec-covered modules re-exported from `game/tournament`.
+- Pure modules: `game/tournament/bracket.spec.ts`, `simulate.spec.ts`, `formats.spec.ts`, `league.spec.ts`, `odds.spec.ts`, `scouting.spec.ts`, `pickem.spec.ts`, `rival.spec.ts`; rules in `game/engine/rules.spec.ts`.
+- Services: `features/tournaments/tournaments.service.spec.ts` (including the crystal-ball pick), `tournament-roster.service.spec.ts`, `tournament-records.service.spec.ts`.
+- Components: `features/tournaments/tournaments.spec.ts`, `tournament-match/tournament-match.spec.ts`.

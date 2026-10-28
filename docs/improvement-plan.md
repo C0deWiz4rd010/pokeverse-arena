@@ -1,5 +1,7 @@
 # PokéVerse Arena – Verbesserungsplan (v3.0.1 → v3.0.12) (ohne RPG/Adventure)
 
+> **Abgeschlossen** — alle zwölf Phasen sind umgesetzt; Details und Abweichungen stehen im [Changelog](changelog.md).
+
 ## Context
 
 Das Repo (Angular 22, zoneless, Signals, Vitest, Pixi/Three, PWA, v3.0.0) ist funktional weit, aber die Analyse aller
@@ -32,7 +34,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | 9 | Testabdeckung Features + Core | v3.0.9 | ✅ |
 | 10 | Performance, Bundle, i18n-Struktur | v3.0.10 | ✅ |
 | 11 | CI/CD härten | v3.0.11 | ✅ |
-| 12 | Dokumentation neu aufsetzen | v3.0.12 | ⬜ |
+| 12 | Dokumentation neu aufsetzen | v3.0.12 | ✅ |
 
 ---
 

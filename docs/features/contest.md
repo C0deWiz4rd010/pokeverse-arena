@@ -1,84 +1,48 @@
 # Contest Hall — Berry Poffins & Contest Mode
 
-Blend berries into a Poffin mix to raise a Pokémon's contest conditions, then
-enter one of the five contests and dazzle the judges against a field of seeded
-rivals.
+Blend berries into a Poffin mix to raise a Pokémon's contest conditions, then take the stage in a live four-round appeal performance against three seeded rivals.
 
 ## What it does
 
-- **Berry pantry** — every flavoured berry is pulled from the PokéAPI and listed
-  with its potency for the chosen contest. Selecting a contest category
-  highlights the berries that feed it.
-- **Poffin mix** — pick up to four berries. Their five flavours (spicy, dry,
-  sweet, bitter, sour) accumulate into the five contest conditions (Cool, Beauty,
-  Cute, Smart, Tough), shown as live bars.
-- **Performer on stage** — defaults to Eevee; swap to any Pokémon by name or dex
-  number to show off its official artwork.
-- **Contest run** — entering a contest scores the performer's appeal in the chosen
-  category, generates three seeded rivals, and ranks the whole field with a
-  win/place banner. "Perform again" re-rolls with a fresh seed.
+- **Two acts.** *Backstage* is the prep bench (performer, contest category, berry mix, condition bars); **Take the stage** starts the live performance; a result screen follows.
+- **Berry pantry.** Every flavoured berry from the PokéAPI, ordered by total potency. Choosing a contest category highlights the berries that feed it.
+- **Poffin mix.** Pick up to four berries (`MAX_MIX`); the other berries disable once the mix is full. Their flavours add up into five conditions — spicy → Cool, dry → Beauty, sweet → Cute, bitter → Smart, sour → Tough — shown as live bars.
+- **Performer.** Defaults to Eevee; swap to any Pokémon by name or dex number (official artwork). A failed search shows a message and keeps the current performer.
+- **Live appeals.** Four rounds; each round you play one of five appeal moves (one per category). Chaining the next link of the cycle cool → beauty → cute → smart → tough → cool **doubles the move's base** (combo, hinted live); repeating a category **bores the crowd** (−8 per previous use); the *tough* move **startles** the rivals (−8 to −16 on each rival's appeal that round); appealing in the contest's own category earns a +10 theme bonus.
+- **Animated stage.** Swaying performer, floating hearts, per-round outcome with combo / jam / bored tags and a judge meter of your hearts against the best rival.
+- **Ranks and ribbons.** Winning earns the category ribbon (ribbon case) and promotes you Normal → Super → Hyper → Master; rivals get stronger with rank. Both persist.
 
 ## Files
 
-| File | Responsibility |
+| Path | Responsibility |
 | ---- | -------------- |
-| [game/contest/contest.ts](../../src/app/game/contest/contest.ts) | Pure logic: categories, flavour↔category mapping, `mixConditions`, `appealScore`, `runContest`. |
-| [game/contest/contest.spec.ts](../../src/app/game/contest/contest.spec.ts) | Unit tests: mapping, mix totals, scoring monotonicity, deterministic contest. |
-| [features/contest/contest.service.ts](../../src/app/features/contest/contest.service.ts) | State (loading / ready / error), pantry loading, mix selection, performer swap, contest run. |
-| [features/contest/contest.ts](../../src/app/features/contest/contest.ts) / [.html](../../src/app/features/contest/contest.html) / [.scss](../../src/app/features/contest/contest.scss) | The component: performer, category picker, condition bars, berry pantry, result. |
+| [game/contest/contest.ts](../../src/app/game/contest/contest.ts) | Pure model: categories and flavours, `mixConditions`, `MAX_MIX`, ranks (`CONTEST_RANKS`, `rankInfo`, `nextRank`) with rival appeal bands, plus the headless `runContest` / `runAppealContest`. |
+| [game/contest/performance.ts](../../src/app/game/contest/performance.ts) | Pure live performance: `APPEAL_MOVES`, `startPerformance`, `appeal`, `performanceRanking`, `wouldCombo`. |
+| [features/contest/contest.service.ts](../../src/app/features/contest/contest.service.ts) | `ContestService`: pantry loading, mix, performer, phase (`prep / stage / result`), rank and ribbons, finalisation. |
+| [features/contest/contest.ts](../../src/app/features/contest/contest.ts) (+ `.html`, `.scss`) | `pv-contest`: performer, category picker, condition bars, pantry, stage, result. |
 
 ## How it works
 
-- **Five requests, full pantry.** Rather than fetching each berry individually,
-  the service hits the five `berry-flavor/{flavor}` endpoints. Each returns every
-  berry that carries that flavour with its potency, so merging the five lists
-  reconstructs each berry's complete flavour profile cheaply (cache-first via the
-  shared `PokeApiClient`).
-- **Flavours feed conditions.** `mixConditions` maps spicy→Cool, dry→Beauty,
-  sweet→Cute, bitter→Smart, sour→Tough and sums the selected berries.
-- **Appeal & rivals are pure and seeded.** `appealScore` combines the chosen
-  condition, a stage-presence base, a small smoothness bonus for a tidy mix and a
-  seeded sparkle of showmanship. `runContest` adds three seeded rivals and ranks
-  the field — fully deterministic for a given seed, so the same inputs reproduce
-  the same result.
+- **Five requests, full pantry.** `loadPantry` calls the five `berry-flavor/{flavor}` endpoints and merges them into one profile per berry, so no per-berry fetch is needed (cache-first via `PokeApiClient`).
+- **Round scoring.** `appeal()` computes `base 24 + round(0.6 × condition) + theme (10) + combo (24) − boredom (8 × earlier uses) + showmanship (0–10, seeded)`, floored at 1. Rivals each roll an appeal in the rank's band (Normal 30–66, Super 42–80, Hyper 56–92, Master 70–104), reduced when the player plays the jam move. State is returned immutably, so the service just sets a signal.
+- **Determinism.** Each performance seed combines performer, category, rank, mix and an attempt counter; each round derives its RNG from `seed-r<round>`, so a given seed always replays identically while "Perform again" re-rolls.
+- **Finish.** After round four `performanceRanking` ranks the four entrants by total hearts. A win records the ribbon (`contest:ribbons`) and, below Master, the next rank (`contest:rank`), both through `SaveService` (`pv:` envelope keys).
+- **Headless runs.** `runContest` (single appeal) and `runAppealContest` (four rounds with combo carry and leader jamming) are pure helpers exercised by the specs; the UI uses `performance.ts`.
 
-## Design notes
+## Key decisions
 
-- Mobile-first: the two panels stack below `lg` and sit side-by-side above it;
-  the berry grid uses `auto-fill`.
-- The mix is capped at four berries; unpicked berries disable once the mix is
-  full.
-- All transitions are disabled under `prefers-reduced-motion`.
+- **Pure, seeded rules; thin service.** All scoring lives in `game/contest`, framework-free and unit-tested; the service handles loading, selection and persistence.
+- **Risk and reward per turn.** The combo cycle and boredom penalty make the move choice matter, while conditions from the Poffin mix scale appeal so prep has a visible payoff.
+- **Rank as difficulty.** Rivals scale through a per-rank appeal band instead of separate content; promotion on win gives a clear progression loop.
+- **Cheap pantry.** Five flavour endpoints instead of one request per berry.
 
-## Deep overhaul (v2)
+## Accessibility & mobile
 
-Contests are now a **multi-round performance**: four appeal turns with a **combo**
-carry (the previous round's top performer) and **jamming** (the leader takes a
-comeback penalty), plus a **rank ladder** (Normal → Super → Hyper → Master) where
-rivals scale and a win promotes you. Rank persists. See [../plan.md](../plan.md)
-phase 8.
+- The prep panels stack below `lg` and sit side by side above it; the berry grid uses `auto-fill`.
+- Berry buttons are real buttons that disable when the mix is full; the Take-the-stage button is disabled until a berry and a performer exist; the ribbon case has an `aria-label`; decorative icons and hearts are `aria-hidden`.
+- Stage animations and transitions are disabled under `prefers-reduced-motion`.
 
-## Live performance (v2.1)
+## Tests
 
-The contest is now an interactive, animated mini-game instead of an auto-run.
-
-- **Two acts.** *Backstage* keeps the berry/Poffin prep (condition bars, theme);
-  then **Take the stage** starts a live performance.
-- **Turn-by-turn appeals.** Each of four rounds you pick one of five appeal moves
-  (one per category). Scoring blends the move's base, your Poffin **conditions**,
-  an on-theme bonus and a little seeded flair.
-- **Combos & boredom.** Appeals form a cyclic chain (cool→beauty→cute→smart→
-  tough→cool); playing the next link **doubles** the appeal (×2 combo, highlighted
-  live), while repeating a category **bores the crowd** for a penalty — a real
-  risk/reward each turn. The "tough" move **startles rivals**, cutting their
-  appeal that round.
-- **Animated stage.** A swaying performer, floating hearts, a pop-in heart gain
-  with combo/jam/bored tags, and a live **judge meter** of your hearts vs the
-  rivals'.
-- **Ribbons & ranks.** Winning earns the category's **ribbon** (persisted, shown
-  in a ribbon case) and promotes you up the rank ladder
-  (Normal → Super → Hyper → Master); rivals scale with rank.
-
-Pure, seeded, unit-tested logic in `game/contest/performance.ts` (appeal moves,
-round resolution, combos/boredom/jam, ranking); the auto-run `runAppealContest`
-remains for tests/headless use. All animations honour `prefers-reduced-motion`.
+- `game/contest/contest.spec.ts` (flavour mapping, mix totals, seeded contest, multi-round appeals and ranks) and `game/contest/performance.spec.ts` (appeal moves, combos, boredom, jam, ranking).
+- `features/contest/contest.service.spec.ts` (pantry, mix cap, performer, performance flow, ribbons and rank persistence) and `contest.spec.ts` (component).

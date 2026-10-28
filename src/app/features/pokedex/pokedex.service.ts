@@ -51,7 +51,7 @@ export class PokedexService {
   );
   /** Caught species mirrored (read-only) from the World expedition system. */
   readonly caught = signal<ReadonlySet<number>>(
-    new Set(this.save.readLegacy<number[]>('world:caught', [])),
+    new Set(this.save.read<number[]>('world:caught', [])),
   );
   private readonly shuffleSeed = signal(0);
   private readonly visibleCount = signal(PAGE_SIZE);

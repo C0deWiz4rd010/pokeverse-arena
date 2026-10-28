@@ -1,59 +1,54 @@
 # Feature Documentation — PokéVerse Arena
 
-This folder documents every shipped feature in detail: what it does, the files
-involved, key design decisions and how the pieces fit together. Each feature was
-shipped to `develop` as a focused, multi-line commit.
+One document per feature, each describing the **current** code: what it does, the files involved, how it works, the
+decisions behind it, accessibility/mobile notes and which specs cover it. Release history lives in the
+[changelog](../changelog.md); finished plans are in [../archive/](../archive/).
 
-For the high-level plan and milestone status, see
-[../roadmap.md](../roadmap.md). For the architecture and folder conventions, see
+For the milestones see [../roadmap.md](../roadmap.md), for the folder structure and principles
 [../architecture.md](../architecture.md).
 
 ## Index
 
-| # | Feature | Doc | Status |
-| - | ------- | --- | ------ |
-| 1 | Core foundation (API client, cache, models, utils) | [core-foundation.md](core-foundation.md) | ✅ |
-| 2 | App shell (theme, routing, navigation) | [app-shell.md](app-shell.md) | ✅ |
-| 3 | Home & 3D hero (Three.js) | [home.md](home.md) | ✅ |
-| 4 | Pokédex (list, search, filters, infinite scroll) | [pokedex.md](pokedex.md) | ✅ |
-| 5 | Pokémon detail (stats, radar, evolution, moves) | [pokemon-detail.md](pokemon-detail.md) | ✅ |
-| 6 | Type Lab (chart, calculator, coverage) | [type-lab.md](type-lab.md) | ✅ |
-| 7 | Team Builder (build, tune, analyze, persist) | [team-builder.md](team-builder.md) | ✅ |
-| 8 | Battle engine + UI (seeded combat, animated arena, weather, daily challenge) | [battle.md](battle.md) | ✅ |
-| 9 | Tournaments (10 modes, visual bracket, 3-v-3 matches) | [tournaments.md](tournaments.md) | ✅ |
-| 10 | Arena (type-themed gym leaders, badges) | [arena.md](arena.md) | ✅ |
-| 11 | World Explorer (regions, native dex, home finder, **expeditions**) | [world.md](world.md) | ✅ |
-| 12 | Contest Hall (berry Poffins, **multi-round appeals + ranks**) | [contest.md](contest.md) | ✅ |
-| 13 | Ascension Spire (seeded roguelike climb) | [spire.md](spire.md) | ✅ |
-| 14 | Trainer Profile (progression backbone, achievements, accent themes) | [profile.md](profile.md) | ✅ |
-| 15 | ⌘K Command Palette (global search, actions, recents) | [command-palette.md](command-palette.md) | ✅ |
-| 16 | Odyssey (endless biome roguelike, daze-catch, starter unlocks) | [odyssey.md](odyssey.md) | ✅ |
-| 17 | ⚗️ Fusion Lab (deterministic splicing, Fusion Dex, share links) | [fusion-lab.md](fusion-lab.md) | ✅ |
+| Feature | Doc | Route |
+| ------- | --- | ----- |
+| Core foundation (API client, cache, storage, models, utils) | [core-foundation.md](core-foundation.md) | — |
+| App shell (theme, routing, navigation, install prompt, toasts) | [app-shell.md](app-shell.md) | — |
+| Home & 3D hero (Three.js, daily cards) | [home.md](home.md) | `/` |
+| Pokédex (list, search, filters, compare, quick view, Who's That?) | [pokedex.md](pokedex.md) | `/pokedex` |
+| Pokémon detail (stats, radar, evolution, moves) | [pokemon-detail.md](pokemon-detail.md) | `/pokemon/:id` |
+| Type Lab (chart, calculator, coverage) | [type-lab.md](type-lab.md) | `/type-lab` |
+| Team Builder (build, tune, analyze, export/import) | [team-builder.md](team-builder.md) | `/team-builder` |
+| Battle (engine, arena UI, daily challenge) | [battle.md](battle.md) | `/battle` |
+| Arena (gym ladder, Elite Four, Champion gauntlet) | [arena.md](arena.md) | `/arena` |
+| Tournaments (ten modes, three formats, rival, pick'em) | [tournaments.md](tournaments.md) | `/tournaments` |
+| Ascension Spire (seeded roguelike climb, resumable) | [spire.md](spire.md) | `/spire` |
+| Odyssey (endless biome march, daze-catch, starter unlocks) | [odyssey.md](odyssey.md) | `/odyssey` |
+| World Explorer (regions, native dex, expeditions) | [world.md](world.md) | `/world` |
+| Fusion Lab (deterministic splicing, Fusion Dex, share links) | [fusion-lab.md](fusion-lab.md) | `/fusion` |
+| Contest Hall (Poffins, multi-round appeals, ranks) | [contest.md](contest.md) | `/contest` |
+| Stat Showdown (higher-or-lower duel) | [showdown.md](showdown.md) | `/showdown` |
+| Trainer Profile (progress, achievements, themes, backup) | [profile.md](profile.md) | `/profile` |
+| ⌘K Command Palette (search, actions, recents) | [command-palette.md](command-palette.md) | global |
 
-## Deep Systems Overhaul (v2)
-
-A ground-up deepening of the shared battle engine and every system that runs on
-it. The engine now models **status conditions, stat stages, abilities, held
-items, in-battle weather & terrain, entry hazards, secondary move effects,
-multi-hit/drain/recoil and real switching** — all pure, seeded and unit-tested.
-Battle, Arena, Tournaments and the new Spire inherit that depth; Arena gained a
-designed gym ladder + Champion Gauntlet, Tournaments gained formats (round-robin
-/ Swiss) + standings + prizes, and a Trainer Profile ties all progress together.
-See [../plan.md](../plan.md).
+The Adventure (RPG) is documented separately: [rpg.md](rpg.md) and the `rpg-*.md` plans in [../](../).
 
 ## Cross-cutting docs
 
 - [PWA, accessibility & mobile](../pwa.md) — installable PWA, service worker, a11y.
 - [Mobile-first guidelines](../mobile-first.md) — breakpoints, rules, checklist.
+- [Internationalisation](../i18n.md) — the English/German layer and how to add text.
 - [Technical decisions](../tech-decisions.md) — why PixiJS, Three.js, idb.
-- [Architecture](../architecture.md) — folder structure & principles.
+- [Acceptance & quality gates](../acceptance.md) — tests, coverage, browser suite, Lighthouse.
+- [Deployment & CI](../deployment.md).
 
 ## Conventions every feature follows
 
-- **Standalone components**, `ChangeDetectionStrategy.OnPush`, signals everywhere.
+- **Standalone components**, `ChangeDetectionStrategy.OnPush`, zoneless, signals everywhere.
 - **DTOs** live in `core/dto`; **view-models + mappers** in `core/models`.
 - **Cache-first** data access through `PokeApiClient` (memory + IndexedDB).
-- **Pure, testable logic** (type chart, stat math, RNG, natures) in `core/utils`.
+- **Pure, testable logic** in `game/**` and `core/utils` — no Angular imports, seeded RNG.
+- **Persistence** through `SaveService` / `EnvelopeStore` (versioned `pv:` keys), never raw `localStorage`.
 - **Mobile-first SCSS** via `@use '../../../styles/responsive' as *;` + `@include up(...)`.
-- **Loading / error / empty** states handled in every data-driven view.
-- **Reduced motion** respected wherever something animates.
+- **Loading / error / empty** states in every data-driven view (`pv-state`).
+- **Reduced motion** respected wherever something animates; dialogs use `pvModal`.
+- **Every non-RPG file is covered by unit specs** (thresholds in `angular.json`); GPU rendering and the Adventure are covered by the browser flows.

@@ -1,71 +1,51 @@
 # Home & 3D Hero
 
-The landing page — the first impression and the only place Three.js is used.
+The landing page: the brand, a progress dashboard, today's seeded challenges and a launcher into every module. It is also the only place Three.js is used.
 
 ## What it does
 
-- Presents the brand, a short pitch and entry points into the main modules.
-- Renders a **holographic orb** built with Three.js as an eye-catching hero
-  visual, loaded lazily so it never bloats other routes.
+- **Hero copy** with the title, pitch, two calls to action (Open the Pokédex, Start a Battle) and a progress-aware **"What's next"** link that points at the next unfinished goal (gym badge, Champion Gauntlet, first Spire clear, first cup, first fusion, next achievement, otherwise the World dex).
+- **Trainer dashboard**: the trainer rank plus chips for badges, daily streak, cups, best Spire depth, achievements and coins, all read from `ProfileService`.
+- **Holographic orb**: a Three.js scene (icosahedron core, wireframe shell, particle field) that reacts to the pointer. Desktop only, with a static gradient poster underneath.
+- **Today strip** with four cards:
+  - **Daily Challenge**: state-aware copy (ready, cleared, attempt spent), live streak and best, both matchup sprites, links to `/battle?daily=1`.
+  - **Who's that Pokémon?**: a seeded daily silhouette; the first tap reveals it, the second opens its detail page.
+  - **Today's Lab Special**: the seeded fusion pair of the day, linking into the Fusion Lab with both donors pre-filled.
+  - **Stat Showdown**: a teaser with two seeded faces (cosmetic) linking to `/showdown`.
+- **Feature grid** ("Everything inside"): 14 cards (Pokédex, Type Lab, Team Builder, Battle Engine, Arena, Tournaments, Ascension Spire, Odyssey, World Explorer, Fusion Lab, Contest Hall, Stat Showdown, Adventure, Trainer Profile), each type-themed, staggered in, with a cursor-following sheen and tilt.
 
 ## Files
 
-| File | Responsibility |
+| Path | Responsibility |
 | ---- | -------------- |
-| `features/home/home.ts` / `.html` / `.scss` | Landing layout + lazy hero bootstrap. |
-| `features/home/hero-scene.ts` | `createHeroScene()` — builds the Three.js scene and returns a disposer. |
+| `src/app/features/home/home.ts`, `home.html`, `home.scss` | Page component: hero, dashboard, Today strip, feature grid, lazy hero bootstrap and teardown. |
+| `src/app/features/home/hero-scene.ts` | `createHeroScene(canvas)`: builds the Three.js scene and returns a disposer. |
+| `src/app/features/profile/profile.service.ts` | Progress state (`state`, `rank`, `unlocked`, `totalAchievements`, `refresh()`) behind the dashboard and "What's next". |
+| `src/app/features/battle/daily.service.ts` | Daily challenge state (played/won today, streak, best, matchup). |
+| `src/app/game/fusion/fusion.ts` | `dailyFusionPair` for the lab special. |
+| `src/app/core/utils/rng.ts` | `SeededRng` and `dailySeed` for the day's silhouette and showdown faces. |
+
+## How it works
+
+- The component calls `profile.refresh()` on creation so the chips and the next step reflect current saves.
+- The Today strip uses only local state and seeded values (`dailySeed('whos-that')`, `dailySeed('fusion')`, `dailySeed('showdown')`) plus id-addressed sprite URLs, so the landing page makes no API calls.
+- After first render, `initHero` loads `./hero-scene` with a dynamic `import()`. It is skipped when the viewport is below 1024 px, when the user prefers reduced motion, when Data Saver is on, or when `navigator.deviceMemory` is under 4. If the user leaves before the chunk arrives, nothing is started.
+- `createHeroScene` returns a disposer called from `ngOnDestroy`. It stops the animation loop, disconnects the observers and listeners, and disposes geometries, materials and the renderer.
+- The render loop only runs while the canvas is on screen, the tab is visible and the WebGL context is alive; it handles context loss and restoration, uses a lower pixel ratio and no antialiasing on low-end devices, and drops to a pixel ratio of 1 after sustained slow frames.
 
 ## Key decisions
 
-- **Lazy Three.js.** `hero-scene.ts` is dynamically imported only after the home
-  view renders, so the ~150 KB renderer is never in the critical path of the
-  Pokédex or Battle routes.
-- **Disposer pattern.** `createHeroScene()` returns a cleanup function that stops
-  the animation loop and releases GPU resources on navigation away — no leaks.
-- **Graceful fallback.** If WebGL is unavailable or the user prefers reduced
-  motion, the scene is skipped and a static visual is shown instead.
+- **Lazy Three.js.** The renderer ships as a separate chunk that is only fetched when the orb will actually show, so no other route pays for it.
+- **Disposer pattern.** Teardown is explicit, so navigating away leaks no GPU resources or listeners.
+- **Graceful fallback.** The gradient poster is always present and the canvas fades in over it only once the scene is ready.
+- **Everything seeded or local.** Daily content is the same for every trainer and needs no network.
 
-## Mobile-first
+## Accessibility & mobile
 
-On mobile the layout is a single centered column with the 3D visual ordered
-first; at `lg` it becomes a two-column hero with copy beside the canvas.
+- The orb, poster and decorative sprites are `aria-hidden`; the dashboard and Today strip carry labels, and the feature cards are plain links with a heading each. The Who's-that card is a real button.
+- Below `lg` the orb is hidden and never started. The Today strip becomes a horizontal scroll-snap row (2 columns from `lg`, auto-fit at `xxl`), the dashboard chips scroll in a single row, and below `md` the feature grid is a dense two-column icon-and-title launcher; descriptions and "Explore" return at `md`.
+- Card tilt and sheen apply on hover-capable pointers and are skipped under `prefers-reduced-motion`.
 
-## Home v2
+## Tests
 
-- **Trainer dashboard** in the hero — live progress chips (rank, badges, cup wins,
-  best Spire depth, achievements, coins) aggregated from every system via
-  `ProfileService`.
-- **Complete, refreshed feature grid** (now includes Ascension Spire & Trainer
-  Profile) with **type-themed cards** that tilt to the cursor, sweep a sheen and
-  stagger in.
-- Animated gradient title + entrance motion; the 3D hero and reduced-motion
-  fallback are unchanged.
-
-## "Today" strip (v1.13)
-
-Two compact cards between the hero and the feature grid put the day's seeded
-content one tap away:
-
-- **Daily Challenge** — state-aware copy (ready / cleared / attempt spent),
-  the live streak + best, and both matchup sprites, linking to
-  `/battle?daily=1`.
-- **Today's Lab Special** — the seeded fusion pair of the day with both donor
-  sprites, linking straight into the Fusion Lab.
-
-Both cards read only local/seeded state (`DailyService`, `dailyFusionPair`)
-and id-addressed sprite URLs — the landing page still makes no API calls.
-
-v1.14 added a third card — **Who's that Pokémon?**: a seeded daily silhouette
-(sprite under `brightness(0)`); tap one reveals, tap two opens the detail
-page. Still zero API calls.
-
-## Mobile declutter (v1.14)
-
-At 375 px the landing page dropped from ~4600 px to ~1500 px tall:
-
-- The 3D orb is `display: none` below `lg`, and `initHero` checks the
-  viewport so the WebGL scene never even starts on phones.
-- The feature grid renders as a dense two-column icon+title launcher below
-  `md` (descriptions + "Explore →" return on larger screens).
-- The Today strip becomes a scroll-snap swipe row; the dashboard chips
-  scroll horizontally in a single row.
+- `src/app/features/home/home.spec.ts`: dashboard chips and refresh, next-step suggestions, the daily challenge states, Who's-that reveal and open, lab special link, feature cards and tilt. The spec forces a narrow viewport so the three.js hero is never loaded in tests; `hero-scene.ts` itself has no spec.

@@ -20,13 +20,17 @@ updated as work progresses. Detailed per-feature documentation lives in
 | 11 | Random battle + Arena | ✅ done |
 | 12 | Tournaments (brackets) | ✅ done |
 | 13 | World Explorer (regions) | ✅ done |
-| 14 | Berry Garden + Contest Mode | ✅ done |
+| 14 | Contest Mode (Poffins, appeals) | ✅ done |
 | 15 | Landing 3D hero (Three.js, lazy) | ✅ done |
 | 16 | PWA, polish, a11y, mobile-first | ✅ done |
 | 17 | GitHub Pages deployment | ✅ done |
 | 18 | Deep Systems Overhaul: engine (status/stages/abilities/items/weather/terrain/hazards/switching), Arena ladder + Gauntlet, Tournament formats + standings, Ascension Spire (new), Profile backbone, Contest/World/Team deepening | ✅ done |
 
-See [plan.md](plan.md) for the phase-by-phase breakdown of milestone 18.
+| 19 | The A–Z polish release (v2.1 → v3.0): robustness, performance, responsive system, accessibility & German/English, graphics, input/audio/haptics, acceptance suite | ✅ done |
+| 20 | Quality plan v3.0.1 → v3.0.12 (see [improvement-plan.md](improvement-plan.md)): stricter types and lint, decoupled architecture, one persistence layer + resumable runs, one battle core with deeper mechanics, accessibility, honest coverage, CI | ✅ done |
+
+The phase-by-phase breakdown of milestone 18 is archived in [archive/deep-systems-plan.md](archive/deep-systems-plan.md), the
+mobile-first push of v2.1 in [archive/mobile-overhaul-plan.md](archive/mobile-overhaul-plan.md).
 
 ## Git workflow
 - Default integration branch: **`develop`**.

@@ -1,172 +1,74 @@
 # Battle
 
-Seeded, type-accurate 1-v-1 battles with an animated arena and weather backdrops.
+Seeded, type-accurate 1-v-1 battles with an animated arena, weather backdrops and a Daily Challenge — all running on the same engine that powers every other battle mode in the app.
 
 ## What it does
 
-- **Pick a fighter** by name or dex number (datalist autocomplete), or hit
-  **Surprise me** for a random matchup. Both sides fight at level 50 with their
-  strongest level-up moves.
-- A **pure, seeded battle engine** resolves each turn: move order, accuracy,
-  STAB, type effectiveness, criticals and damage are all computed deterministically.
-- An **animated arena** plays the turn back: HP bars drain, sprites shake and
-  flash on hit, the battle log narrates ("super effective!", "critical hit!",
-  faints), and a victory/defeat banner offers **Rematch** or **New battle**.
-- **Weather backdrops** — each battle gets a fitting atmosphere (sun, rain,
-  thunderstorm, sandstorm, snow, fog, windswept leaves or clear) derived from the
-  fighters' types, with animated particle effects.
-- **PixiJS effect layer** — a lazily-loaded WebGL overlay paints type-coloured
-  impact bursts, crit flashes and charge swirls on each hit. It degrades
-  gracefully: if WebGL is unavailable or the user prefers reduced motion the
-  canvas is never created and the battle still plays with its CSS animations.
-- **Daily Challenge** (v1.4.0) — one deterministic matchup per UTC day, derived
-  from the date: same fighters, same battle seed for every trainer worldwide.
-  The first attempt of the day counts toward a consecutive-day win streak
-  (current/best/wins shown on the setup card, persisted); retries replay the
-  identical seeded battle for fun. A counted win pops a streak toast. Deep
-  link `/battle?daily=1` (used by the ⌘K palette action) auto-starts it.
-  The result panel offers a **Wordle-style share text** (one emoji per turn:
-  effectiveness, crits, misses) via the native share sheet or clipboard, and
-  streak milestones feed two achievements (*On Fire*, *Eternal Flame*) plus a
-  🔥 chip on the home dashboard.
+- **Pick a fighter** by name or dex number (datalist autocomplete from the Pokédex index) or hit **Surprise me**. The foe is a random Pokémon; both sides are built at level 50 with a four-move set (see "How it works").
+- **Turn-based fights.** Click a move or press the number keys **1–4**. Moves are disabled when they are out of PP or when a Choice lock, Encore or a charging move forces another one; when every move is out of PP a single **Struggle** button replaces them.
+- **Full mechanics on screen.** Status badges, stat-stage chips, volatile chips (Substitute, Confused, Seeded, Taunted, Encore, Charging, Recharging, Move locked), field chips (screens, Tailwind, Trick Room with turns left), the ability/item of each fighter, and a weather/terrain banner.
+- **Animated playback.** HP bars drain, sprites shake and flash, floating damage numbers and a `CRITICAL!` burst appear, and the log narrates super-effective/resisted hits, crits, faints and the result. A result panel offers **Rematch** or **New battle**.
+- **Battle speed.** A 1×/2×/3× chip on the arena re-paces all animation beats; the choice persists.
+- **Weather backdrops.** Each fight gets an atmosphere (clear, sun, rain, thunderstorm, sandstorm, snow, fog, windswept leaves) with CSS particles. Real engine weather wins over the type-derived ambience.
+- **PixiJS effect layer.** A lazily loaded WebGL overlay paints type-coloured impact bursts, crit flashes and charge swirls.
+- **Daily Challenge.** One deterministic matchup (and battle seed) per UTC day, identical for every trainer. The first attempt of the day counts toward a consecutive-day win streak (current / best / wins on the setup card); retries replay the same seeded battle for fun. A counted win shows a streak toast. `/battle?daily=1` (used by the command palette) starts it automatically. The result panel offers a Wordle-style share text (one emoji per turn: effectiveness, crit, miss) via the native share sheet or the clipboard.
+
+The 1-v-1 component has no switching and no Terastallization; those live in party battles (see [tournaments.md](tournaments.md)), which use the same engine.
 
 ## Files
 
-| File | Responsibility |
+| Path | Responsibility |
 | ---- | -------------- |
-| `game/engine/battle-types.ts` | `Battler`, `BattleMove`, `BattleSide`, `BattleEvent` (discriminated union), `BattleState`. |
-| `game/engine/damage.ts` | Pure `computeDamage()` (Gen V+ formula) + `resolveDamage`, `stabFor`, `moveEffectiveness` helpers. |
-| `game/engine/battle.ts` | `Battle` class: turn resolution, action ordering, seeded tie-breaks, simple expected-damage AI. |
-| `game/engine/index.ts` | Barrel export for the engine. |
-| `core/battle/battler-factory.ts` | `BattlerFactory` — builds `Battler`s from the API (stats, types, move pool), picks battle sprites. Shared by Battle, Arena, Tournaments, Spire, Odyssey (`features/battle/battle.service.ts` is an alias kept for the Adventure code). |
-| `core/ui/weather-overlay/weather.ts` | Cosmetic backdrop model (`Ambience`, `AMBIENCE_INFO`, `AMBIENCE_FOR_ENGINE`, `pickWeather`). |
-| `core/ui/weather-overlay/` | Shared `pv-weather-overlay` particle backdrop (used by battle, tournaments, arena). |
-| `core/ui/move-button/` | Shared `pv-move-button` (type-tinted, effectiveness badge, hover tooltip). |
-| `features/battle/pixi/battle-fx.ts` | Lazy `pv-battle-fx` PixiJS overlay: impact bursts, crit flashes, charge swirls. |
-| `features/battle/battle.ts` / `.html` / `.scss` | The component: setup form, daily-challenge card, animated arena, weather overlays, log, move buttons, result. |
-| `game/daily/daily.ts` (+ spec) | Pure daily logic: UTC day key, deterministic matchup, streak record fold. |
-| `features/battle/daily.service.ts` | Daily state: persisted streak record, result reporting, win toast. |
-| `game/engine/battle-core.ts` | `BattleCore` — the shared turn mechanics (move execution, residuals, state atoms) used by both engines. |
-| `game/engine/battle.ts` / `team-battle.ts` | The 1-v-1 duel and the party engine (switching, hazards, Tera, pivots) — thin hosts over the core. |
-| `game/engine/field-effects.ts` | Screens, Tailwind and Trick Room descriptors and maths. |
-| `game/engine/damage.spec.ts` / `battle.spec.ts` / `battle-mechanics.spec.ts` | Engine unit tests. |
-| `game/engine/golden-master.spec.ts` | Replays 80 seeded random battles and compares event-log hashes — guards refactors. |
+| [game/engine/battle-core.ts](../../src/app/game/engine/battle-core.ts) | `BattleCore`: the shared turn mechanics (move execution, residuals, volatiles, special damage, side/field conditions). |
+| [game/engine/battle.ts](../../src/app/game/engine/battle.ts) | `Battle`: the 1-v-1 host — a faint ends the match; exposes `takeTurn`, `forcedMove`, `mustStruggle`, AI helpers. |
+| [game/engine/team-battle.ts](../../src/app/game/engine/team-battle.ts) | `TeamBattle`: the party host (switching, hazards, Terastallization, pivots). |
+| [game/engine/battle-types.ts](../../src/app/game/engine/battle-types.ts) | `Battler`, `BattleMove`, `BattleSide`, `BattleState`, the `BattleEvent` union, `freshField`/`freshVolatiles`. |
+| [game/engine/damage.ts](../../src/app/game/engine/damage.ts) | Pure `computeDamage`, `stabFor` / `stabForSide` (Tera-aware), effectiveness helpers. |
+| [game/engine/ai.ts](../../src/app/game/engine/ai.ts) | `chooseAiMove` and the `random / basic / strong / elite` tiers. |
+| `game/engine/status.ts`, `stat-stages.ts`, `weather.ts`, `terrain.ts`, `hazards.ts`, `field-effects.ts` | Pure rule modules: status conditions, ±6 stages, weather, terrain, entry hazards, screens / Tailwind / Trick Room. |
+| [game/engine/abilities.ts](../../src/app/game/engine/abilities.ts), [items.ts](../../src/app/game/engine/items.ts) | Declarative registries: 41 abilities, 42 held items. |
+| [game/engine/move-convert.ts](../../src/app/game/engine/move-convert.ts) | Maps PokéAPI move DTOs to `BattleMove`s (secondary effects, ailments incl. confusion, special-damage moves, utility moves). |
+| [game/engine/rules.ts](../../src/app/game/engine/rules.ts) | Optional `BattleRules` (inverse chart, weather-boosted type) used by tournament modes. |
+| [core/battle/battler-factory.ts](../../src/app/core/battle/battler-factory.ts) | `BattlerFactory`: builds engine-ready `Battler`s from the API; shared by Battle, Arena, Tournaments, Spire, Odyssey and the RPG. |
+| [features/battle/battle.ts](../../src/app/features/battle/battle.ts) (+ `.html`, `.scss`) | `BattleComponent`: setup form, daily card, arena, move buttons, result. |
+| [features/battle/battle-presenter.ts](../../src/app/features/battle/battle-presenter.ts) | `BattlePresenterBase`: the event → log / HP / FX pipeline shared by the quick battle, the party match and the RPG battle. |
+| [features/battle/battle-view.ts](../../src/app/features/battle/battle-view.ts) | Pure `stageChips`, `volatileChips`, `fieldChips`. |
+| [features/battle/state-chips.ts](../../src/app/features/battle/state-chips.ts) | `pv-state-chips` / `pv-field-chips` components. |
+| [features/battle/pixi/battle-fx.ts](../../src/app/features/battle/pixi/battle-fx.ts) | `pv-battle-fx` PixiJS overlay. |
+| [features/battle/daily.service.ts](../../src/app/features/battle/daily.service.ts) | Daily state: today's matchup, persisted streak record, result reporting, win toast. |
+| [game/daily/daily.ts](../../src/app/game/daily/daily.ts) | Pure daily logic: UTC day key, deterministic matchup, streak fold, share text. |
+| [core/ui/weather-overlay/](../../src/app/core/ui/weather-overlay/weather.ts) | `Ambience` model (`pickWeather`, `AMBIENCE_FOR_ENGINE`) and the `pv-weather-overlay` particle backdrop. |
+| `core/ui/move-button/` | Shared `pv-move-button` (type tint, effectiveness badge, hotkey hint, tooltip). |
 
 ## How it works
 
-- **Engine.** `computeDamage` implements the standard formula
-  $((\frac{2L}{5}+2)\cdot P\cdot\frac{A}{D}/50 + 2)\times\text{mods}$, where mods are
-  STAB (×1.5), type effectiveness (from the tested type chart), a critical roll
-  (×1.5) and the 0.85–1.0 random factor. All randomness flows through a
-  `SeededRng`, so a `(player, opponent, seed)` triple always reproduces the same
-  battle.
-- **Turn order.** Actions sort by move priority, then Speed, then a seeded
-  coin-flip on ties. The AI (`chooseAiMove`) scores each move by expected power ×
-  effectiveness and picks the best.
-- **Battlers.** `buildBattler` fetches a Pokémon (cache-first), derives level-50
-  stats via `quickStats`, collects its types, and selects up to four damaging
-  level-up moves (falling back to Struggle).
-- **Sprites.** The arena uses the **high-resolution official artwork** so fighters
-  stay crisp at desktop sizes; the player's sprite is flipped to face the foe.
-- **Weather.** `pickWeather` maps each fighter's types to an atmosphere
-  (fire→sun, water→rain, electric→storm, ice→snow, rock/ground/steel→sand,
-  grass/bug→leaves, ghost/dark/poison/psychic/fairy→fog) and a seeded pick chooses
-  among the candidates, so the same matchup always gets the same sky. The
-  component renders a `.weather` layer with a tinted sky plus CSS-animated
-  particles (rain streaks, drifting snow, blowing sand, fog banks, sun rays,
-  falling leaves, lightning flashes).
-- **Playback.** `playEvents` walks the engine's `BattleEvent[]`, awaiting short
-  delays between beats to animate HP changes, shake/flash hits and append log lines.
+- **One turn core.** `Battle` and `TeamBattle` are thin hosts over `BattleCore`; they only define the format (a faint ends a duel; a party sends in the next member). Fixing a mechanic once fixes both.
+- **Turn loop.** Entry abilities, then actions ordered by priority, adjusted Speed (Tailwind, Trick Room, paralysis, stages) and a seeded tie-break, then move execution and end-of-turn residuals (status, weather, terrain, Leech Seed, items).
+- **Damage.** The standard formula with STAB ×1.5 (Terastallized: the original-type STAB is kept, the Tera type gains STAB, and a Tera type matching an original type doubles it — see `stabForSide`), type effectiveness, a ×1.5 crit and a 0.85–1.0 roll, plus screens, abilities and items. All randomness goes through one `SeededRng`, so `(player, opponent, seed)` reproduces a battle exactly. `golden-master.spec.ts` hashes the event logs of 40 duels and 40 team battles to guard refactors; a deliberate mechanics change regenerates them.
+- **Mechanics covered.** Statuses (burn, poison, toxic, paralysis, sleep, freeze), ±6 stat stages, sun / rain / sand / snow, four terrains, Stealth Rock / Spikes / Toxic Spikes, Reflect / Light Screen / Aurora Veil (snow only), Tailwind, Trick Room, confusion (2–5 turns), Substitute, Taunt, Encore, Protect, Leech Seed, recharge and two-turn moves, Struggle, Choice locks, multi-hit / drain / recoil, fixed and fractional damage, Knock Off, Terastallization and pivot moves (party battles).
+- **AI.** `chooseAiMove` scores each usable move with a tiny seeded jitter. `basic` is power × STAB × effectiveness; `strong` and `elite` estimate real damage, spot guaranteed KOs, value priority finishers and weigh status, setup and field control. The quick battle's foe plays `strong`.
+- **Battlers.** `BattlerFactory.buildBattler(idOrName, level = 50)` derives stats with `quickStats`, takes the first modelled ability (non-hidden preferred), and picks up to four moves from the 14 first level-up candidates: the strongest damaging ones, with one slot given to a useful status move when the species has one. If nothing qualifies it falls back to Struggle. With `{ levelMoves: true }` (RPG) it uses the moves known at that level instead.
+- **Presenter.** `BattlePresenterBase` owns the visual state signals and a paced `playEvents` walker; screens override hooks (`onSwitched`, `onFainted`, `onImpact`, `onEnd`, `syncSide`) rather than forking the pipeline. `applyBattleState(me, foe, field)` mirrors stages, weather/terrain turns, volatile chips and field chips from the engine after each turn.
+- **Weather.** `pickWeather` maps each fighter's types to ambiences (fire → sun, water → rain, electric → storm, ice → snow, rock/ground/steel → sand, grass/bug → leaves, ghost/dark/poison/psychic/fairy → fog) and a seeded pick chooses, so a matchup always gets the same sky; live engine weather overrides it.
+- **Daily.** `dailyMatchup(key)` seeds an RNG with `daily-<YYYY-MM-DD>` for two dex ids at level 50. `recordDailyResult` counts only the first attempt per day; the record is stored under `daily:record` via `SaveService` (`pv:` envelope).
 
 ## Key decisions
 
-- **Pure engine, dumb UI.** All game math lives in `game/engine` with no Angular
-  or DOM dependencies, which is what makes it unit-testable and reusable (e.g. a
-  future tournament simulator).
-- **Seeded everything.** A single RNG drives damage rolls, crits, tie-breaks and
-  weather — enabling reproducible battles and future replays/daily challenges.
-- **Official artwork over Showdown sprites.** The small animated pixel sprites
-  blurred when scaled up; the artwork is sharp on every screen size.
-- **CSS particles, not a canvas.** Weather is pure CSS so it stays lightweight and
-  fully honors `prefers-reduced-motion`. A richer PixiJS scene is a later phase.
+- **Pure engine, dumb UI.** All rules live in `game/engine` with no Angular or DOM dependency, so they are unit-testable and reused headlessly by the tournament simulator.
+- **One core, two hosts.** Duplicated mechanics had drifted apart (Leech Seed, Magic Guard, log texts); a single `BattleCore` plus golden-master hashes prevents that.
+- **Seeded everything.** Damage rolls, crits, ties, AI jitter and weather are reproducible — the basis for the Daily Challenge and for deterministic CPU matches.
+- **Shared presenter.** One event pipeline for three battle screens keeps pacing, FX and state chips consistent.
+- **Official artwork, CSS weather.** Artwork stays sharp at any size; weather is CSS particles so it is light and honours reduced motion. Pixi is only for the impact layer.
 
-## Mobile-first
+## Accessibility & mobile
 
-The arena stacks the two fighters vertically on phones and spreads them to
-opposite corners from `md` up; move buttons are a 2-column grid throughout. All
-weather animations and hit feedback are disabled under `prefers-reduced-motion`.
+- Phones stack the fighters vertically; from `md` they sit in opposite corners. Below 768 px the page header hides once the fight starts, cards and bars shrink and the log is height-capped so moves stay in thumb reach.
+- HP bars are `role="progressbar"` with a label and value; the battle log is `aria-live="polite"`; the speed chip has a title and `aria-label`; moves are real buttons with `aria-label` and a hotkey hint; errors use `role="alert"`.
+- `prefers-reduced-motion` disables weather animation and hit feedback; the Pixi canvas is never created for users who prefer reduced motion or lack WebGL.
+- Log lines, item/ability names and chip labels are translated (German data in `core/i18n/de.data*.ts`).
 
 ## Tests
 
-`damage.spec.ts` and `battle.spec.ts` cover determinism, speed/priority ordering,
-immunity, STAB/crit/super-effective scaling, KO → winner, no-ops after a battle
-ends, AI move selection and PP tracking — 17 tests, part of the green suite.
-
-## Deep overhaul (v2)
-
-The engine is now a full main-series turn loop: **status conditions** (burn/
-poison/toxic/paralysis/sleep/freeze with residuals + move gates), **stat stages**
-(−6..+6), **abilities** (~34, e.g. Intimidate/Levitate/Drought/Blaze/Sturdy),
-**held items** (Leftovers/Life Orb/Choice/Focus Sash/berries/orbs/rocks),
-**in-battle weather & terrain**, **entry hazards**, **secondary effects**,
-**multi-hit/drain/recoil**, and a **tiered AI** (`basic|strong|elite`). Wild
-Pokémon get a real ability and move secondaries mapped from the PokéAPI; the UI
-shows status badges, stat-stage chips, the field banner and ability/item chips.
-See [../plan.md](../plan.md) phases 0–3.
-
-## Shared battle presenter
-
-`features/battle/battle-presenter.ts` hosts the event→log/HP/FX pipeline
-(visual-state signals, paced `playEvents` walker, float/log/pulse atoms) used
-by the quick battle, the tournament match and the RPG battle. Components
-override hooks (`onSwitched`, `onFainted`, `onImpact`, `onEnd`, timing table)
-instead of forking the pipeline.
-
-The presenter also owns the **battle speed** (v1.12): a persisted 1×/2×/3×
-setting (`pv:battle:speed`) that divides every pacing beat via the shared
-`wait()` helper. Each battle UI surfaces it as a small `.speed-chip` overlay
-on its arena (top-right; top-left in the RPG, whose foe box sits right), so
-one tap re-paces the quick battle, tournament matches *and* RPG fights alike.
-
-## Mobile fit pass (v1.12)
-
-Below 768 px a fight fits one screen with the moves in thumb reach: the page
-header hides once the battle starts (`.battle.in-fight`), sprites and info
-cards shrink, badge/HP-bar sizes tighten and the log caps at ~110 px. The RPG
-battle got the same treatment (field 225 px min, log 74 px, denser commands).
-
-## Engine v3 — one core, deeper mechanics (v3.0.6)
-
-- **One turn core.** `Battle` and `TeamBattle` no longer duplicate the mechanics: both host `BattleCore`, which owns move
-  execution, residuals and the atoms. Fixing it once fixes both (Leech Seed, Magic Guard and the log texts used to differ).
-  `golden-master.spec.ts` hashes the event logs of 40 duels and 40 team battles; a refactor must leave them untouched, a
-  deliberate mechanics change regenerates them.
-- **Side & field conditions.** Reflect, Light Screen, Aurora Veil (snow only), Tailwind and Trick Room, with turn counters,
-  banner events (`field`) and AI scoring.
-- **Volatiles.** Confusion (2–5 turns, 1/3 self-hit), Substitute, Taunt, Encore, Protect (spam-proof), Leech Seed (also in party
-  battles), recharge and two-turn moves (Solar Beam skips the charge in sun), Struggle when out of PP, Choice locks.
-- **Special damage.** Fixed (Seismic Toss, Night Shade, Dragon Rage), fractional (Super Fang) and Knock Off (removes the item on
-  a copy, ×1.5 vs holders).
-- **Abilities** (+7): Mold Breaker, Sheer Force, Prankster, Moxie, Clear Body, Download, Tough Claws. **Items** (+21): Weakness
-  Policy, Air Balloon, Heavy-Duty Boots and the 18 type-boosting items.
-- **Party battles.** Terastallization (once per team, a `tera` flag on the move action: single defensive type, STAB rules),
-  pivot moves (U-turn, Volt Switch: the user owes a switch via `mustSwitch`/`forceSwitch`, resolved at the end of the turn),
-  Heavy-Duty Boots / Magic Guard vs hazards.
-- **Gen 9 weather.** Hail is gone: the Hail move sets Snow, which no longer chips.
-- `move-convert.ts` maps the new moves by name and by the PokéAPI `confusion` ailment; the German log lines and item/ability
-  names are in `de.data.ts`.
-
-## Battle UI v3 — shared presenter state & the new mechanics (v3.0.7)
-
-- **One presenter base.** `BattlePresenterBase` now owns the state every battle screen mirrors from its engine — stat stages,
-  weather/terrain and their turns, volatile chips and field chips — through a single `applyBattleState(me, foe, field)`; Battle and
-  the party match (`tournament-match`) lost their duplicated signals, stage-chip helpers and number-key parsing.
-- **Pure view helpers.** `features/battle/battle-view.ts` builds the stage chips, the per-side volatile chips (Tera, Substitute,
-  Confused, Seeded, Taunted, Encore, Charging, Recharging, Move locked) and the field chips (screens, Tailwind, Trick Room with owner
-  and turns); `pv-state-chips` / `pv-field-chips` render them.
-- **Tera button.** Party matches show *Terastallize · <type>* while the team's Tera is unused (hotkey `T`); the next move carries
-  `tera: true`.
-- **Locks & Struggle.** Moves are disabled when a Choice lock, Encore or a charging move forces another one; when every move is out
-  of PP a single *Struggle* button replaces them (both screens).
-- **Pivots.** After U-turn / Volt Switch the tray opens with "Choose who takes over!" (the CPU switches automatically).
-- New `field`, `substitute` and `tera` events are narrated in the log (translated).
+- Engine: `damage.spec.ts`, `battle.spec.ts`, `battle-mechanics.spec.ts`, `engine-mechanics.spec.ts`, `team-battle.spec.ts`, `ai.spec.ts`, `status.spec.ts`, `stat-stages.spec.ts`, `weather.spec.ts`, `terrain.spec.ts`, `hazards.spec.ts`, `rules.spec.ts`, `move-convert.spec.ts`, `registries.spec.ts`, and `golden-master.spec.ts` (event-log hashes).
+- Factory: `core/battle/battler-factory.spec.ts`.
+- UI: `features/battle/battle.spec.ts` (component and daily flow), `battle-view.spec.ts`, `daily.service.spec.ts`; pure daily logic in `game/daily/daily.spec.ts`; the weather backdrop in `core/ui/weather-overlay/weather-overlay.spec.ts`.
