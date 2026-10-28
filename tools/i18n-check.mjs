@@ -5,6 +5,7 @@
  *   node tools/i18n-check.mjs         # exit 1 when a literal has no translation
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { DICT_FILES } from './i18n-dict.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,13 +21,25 @@ function walk(dir, out = []) {
 }
 
 // Dictionary keys: 'English': 'German' pairs in de.ui.ts / de.data.ts (exact) and [en, de] tuples (patterns).
-const dictSrc = ['core/i18n/de.ui.ts', 'core/i18n/de.data.ts']
-  .map((f) => readFileSync(join(root, f), 'utf8'))
-  .join('\n');
 const unq = (s) => s.replace(/\\(.)/g, '$1');
 const keys = new Set();
-for (const m of dictSrc.matchAll(/^\s*'((?:[^'\\]|\\.)*)':\s*'/gm)) keys.add(unq(m[1]));
-for (const m of dictSrc.matchAll(/^\s*\[\s*'((?:[^'\\]|\\.)*)',\s*'/gm)) keys.add(unq(m[1]));
+/** key → file of its first definition, to report entries defined in more than one dictionary file. */
+const definedIn = new Map();
+const duplicates = [];
+for (const file of DICT_FILES) {
+  const text = readFileSync(join(root, 'core/i18n', file), 'utf8');
+  const found = [
+    ...[...text.matchAll(/^\s*'((?:[^'\\]|\\.)*)':\s*'/gm)].map((m) => ['exact', unq(m[1])]),
+    ...[...text.matchAll(/^\s*\[\s*'((?:[^'\\]|\\.)*)',\s*'/gm)].map((m) => ['pattern', unq(m[1])]),
+  ];
+  for (const [kind, key] of found) {
+    const id = `${kind}:${key}`;
+    if (definedIn.has(id))
+      duplicates.push(`${kind} "${key}" is in ${definedIn.get(id)} and ${file}`);
+    else definedIn.set(id, file);
+    keys.add(key);
+  }
+}
 
 const missing = new Map();
 const literal = /'((?:[^'\\]|\\.)*)'\s*\|\s*t\b/g;
@@ -38,6 +51,14 @@ for (const file of walk(root)) {
     if (!/[A-Za-zÄÖÜäöüß]{2}/.test(key)) continue;
     if (!keys.has(key)) missing.set(key, file.replace(root, ''));
   }
+}
+
+if (duplicates.length) {
+  console.log(
+    `${duplicates.length} duplicated dictionary entr${duplicates.length === 1 ? 'y' : 'ies'} (a later file would silently override the earlier one):`,
+  );
+  for (const d of duplicates) console.log(`  ${d}`);
+  process.exit(1);
 }
 
 if (missing.size) {

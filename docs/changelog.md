@@ -4,6 +4,24 @@ All notable, user-facing changes to PokéVerse Arena. Versions follow
 [semver](https://semver.org/); the app version is surfaced in the footer and
 kept in sync between `package.json` and `src/app/core/version.ts`.
 
+## v3.0.10 — 2026-10-28
+
+📦 **Bundle budgets & dictionary structure** (phase 10 of the [improvement plan](improvement-plan.md)).
+
+### Changed
+
+- **Budgets measured and tightened:** the initial bundle is 448 kB raw / 123 kB transferred (limits were 450/600 kB, now **470 warning / 520 error**);
+  the largest lazy chunk is PixiJS at 748 kB (limits 900 kB/1 MB → **800 / 900 kB**). Pixi and Three.js stay out of the initial bundle and of
+  the idle route preloads (they are loaded by dynamic `import()` only when a battle / the hero starts).
+- **German dictionary split by domain:** `de.data.ts` (1,364 lines) became `de.data.ts` (rest), `de.data.game.ts` (battle, abilities, items,
+  tournaments, spire, odyssey), `de.data.rpg.ts` (Adventure) and `de.patterns.ts` (sentence patterns). Smaller diffs, clear ownership.
+- `npm run i18n:check` now **fails on duplicated keys** across the dictionary files (the merge used to let a later file silently override an earlier one).
+
+### Fixed
+
+- 28 entries were defined twice. One of them was a real conflict: the *Clear* buttons (Pokédex, World) showed "Klar" (a stale data entry)
+  instead of "Leeren".
+
 ## v3.0.9 — 2026-10-28
 
 🧪 **Honest test coverage** (phase 9 of the [improvement plan](improvement-plan.md)).

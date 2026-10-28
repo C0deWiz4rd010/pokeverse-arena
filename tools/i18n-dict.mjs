@@ -1,10 +1,15 @@
 // Shared by the i18n tools: loads the German dictionary keys from the TypeScript sources.
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const src = ['../src/app/core/i18n/de.ui.ts', '../src/app/core/i18n/de.data.ts']
-  .map((p) => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8'))
-  .join('\n');
+const i18nDir = fileURLToPath(new URL('../src/app/core/i18n/', import.meta.url));
+
+/** Every dictionary source file: de.ui.ts, de.data*.ts and de.patterns.ts. */
+export const DICT_FILES = readdirSync(i18nDir)
+  .filter((n) => /^de\.(ui|data(\..+)?|patterns)\.ts$/.test(n))
+  .sort();
+
+const src = DICT_FILES.map((n) => readFileSync(i18nDir + n, 'utf8')).join('\n');
 
 const unescape = (s) => s.replace(/\\(.)/g, '$1');
 

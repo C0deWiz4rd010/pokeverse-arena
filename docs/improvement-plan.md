@@ -30,7 +30,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 | 7 | Battle-UI entdoppeln | v3.0.7 | ✅ |
 | 8 | Lade-/Fehler-/Leerzustände & Barrierefreiheit | v3.0.8 | ✅ |
 | 9 | Testabdeckung Features + Core | v3.0.9 | ✅ |
-| 10 | Performance, Bundle, i18n-Struktur | v3.0.10 | ⬜ |
+| 10 | Performance, Bundle, i18n-Struktur | v3.0.10 | ✅ |
 | 11 | CI/CD härten | v3.0.11 | ⬜ |
 | 12 | Dokumentation neu aufsetzen | v3.0.12 | ⬜ |
 
@@ -135,7 +135,7 @@ Einzige Berührung: ein Re-Export, wenn Evolution-Helfer aus `game/rpg` herausge
 
 1. Reale Bundle-Größen messen, Budgets in `angular.json:36-50` straffen (Ziel initial ~300/400 kB).
 2. Prüfen, dass `preload: true` auf `battle` (`app.routes.ts`) Pixi nicht vorlädt (BattleFx nur per `@defer`).
-3. `de.data.ts` (1275 Z.) nach Domänen splitten (species/moves/abilities/items/patterns); Duplicate-Key-Check in
+3. `de.data.ts` (1275 Z.) nach Domänen splitten (umgesetzt als rest / game / rpg / patterns – nach Fundort des Textes); Duplicate-Key-Check in
    `tools/i18n-check.mjs` (Spread in `de.ts:5` überschreibt still).
 4. Lighthouse-Basislinie halten (Perf ≥ 90, A11y 100).
 
